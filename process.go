@@ -21,6 +21,7 @@ import (
 	"subfinder/libsubfinder/sources/crtsh"
 	"subfinder/libsubfinder/sources/threatcrowd"
 	"subfinder/libsubfinder/sources/virustotal"
+	"subfinder/libsubfinder/sources/netcraft"
 )
 
 // ParseCmdLine ... Parses command line into settings
@@ -98,6 +99,15 @@ func main() {
 		fmt.Println(err)
 	}
 	for _, subdomain := range virustotalResults {
+		finalPassiveSubdomains = append(finalPassiveSubdomains, subdomain)
+	}
+
+	fmt.Printf("\n\n[-] Trying Netcraft Domain Query")
+	netcraftResults, err := netcraft.Query(state)
+	if err != nil {
+		fmt.Println(err)
+	}
+	for _, subdomain := range netcraftResults {
 		finalPassiveSubdomains = append(finalPassiveSubdomains, subdomain)
 	}
 
