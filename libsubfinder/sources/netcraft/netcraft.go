@@ -13,12 +13,18 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"crypto/sha1"	// Required for netcraft challenge response
+	"net/url"
+	"net/http"
+	"io"
 
 	"subfinder/libsubfinder/helper"
 )
 
 // Contains all subdomains found
 var globalSubdomains []string
+
+var gCookies []*http.Cookie
 
 // 
 // Local function to recursively enumerate subdomains until no subdomains
@@ -30,9 +36,31 @@ var globalSubdomains []string
 func enumerate(state *helper.State, baseUrl string) (err error) {
 
 	// Make a http request to Netcraft
-	resp, err := helper.GetHTTPResponse(baseUrl, 3000)
+	resp, gCookies, err := helper.GetHTTPCookieResponse(baseUrl, gCookies, 3000)
 	if err != nil {
 		return err
+	}
+
+	// Check all cookies for netcraft_js_verification_challenge
+	for i := 0; i < len(gCookies); i++ {
+		var curCookie *http.Cookie = gCookies[i]
+		if curCookie.Name == "netcraft_js_verification_challenge" {
+			// Get the current challenge string
+			challenge := url.QueryEscape(curCookie.Value)
+
+			// Create a sha1 hash as response
+			h := sha1.New()
+			io.WriteString(h, challenge)
+			response := fmt.Sprintf("%x", h.Sum(nil))
+
+			respCookie := &http.Cookie{
+				Name:   "netcraft_js_verification_response",
+				Value:  response,
+				Domain: ".netcraft.com",
+			}
+
+			gCookies = append(gCookies, respCookie)
+		}
 	}
 
 	// Get the response body
@@ -43,11 +71,6 @@ func enumerate(state *helper.State, baseUrl string) (err error) {
 
 	src := string(body)
 
-	// Regex for Netcraft
-	// NOTE : HTML Parsing using Regex is flawed and anyone who does so is banished from community.
-	// But, I had to make it work and other things were simply not working. Currently, it's acceptable
-
-	// TODO : Change it in near future
     re := regexp.MustCompile("<a href=\"http://toolbar.netcraft.com/site_report\\?url=(.*)\">")
     match := re.FindAllStringSubmatch(src, -1)
     
@@ -89,6 +112,9 @@ func enumerate(state *helper.State, baseUrl string) (err error) {
 // @return err : nil if successfull and error if failed
 //
 func Query(state *helper.State) (subdomains []string, err error) {
+
+	// Initialize global cookie holder
+	gCookies = nil
 
 	// Query using first page. Everything from there would be recursive
 	err = enumerate(state, "https://searchdns.netcraft.com/?restriction=site+ends+with&host="+state.Domain+"&lookup=wait..&position=limited")
