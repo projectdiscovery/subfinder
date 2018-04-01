@@ -10,6 +10,8 @@ package helper
 
 import (
 	"net/http"
+	"net/url"
+	"net/http/cookiejar"
 	"crypto/tls"
 	"time"
 )
@@ -50,4 +52,52 @@ func GetHTTPResponse(url string, timeout int) (resp *http.Response, err error) {
 	}
 
 	return resp, nil
+}
+
+// 
+// GetHTTPCookieResponse : Returns a HTTP Response object with a cookie object containing current cookies
+// @param url : URL To Visit (Note, It needs full url with scheme)
+// @params cookies : Cookies to send with the request
+// @param timeout : Seconds to wait for response until timeout
+// 
+// @return resp : HTTP Response object
+// @return cookie : Cookies recieved with the Request
+// @return err : nil if successfull else error
+//
+func GetHTTPCookieResponse(urls string, cookies []*http.Cookie, timeout int) (resp *http.Response, cookie []*http.Cookie, err error) {
+
+	var curCookieJar *cookiejar.Jar
+
+	curCookieJar, _ = cookiejar.New(nil)
+
+	// Add the cookies recieved via request params
+	u, _ := url.Parse(urls)
+	curCookieJar.SetCookies(u, cookies)
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	client := &http.Client{
+		Transport: tr,
+		Jar: curCookieJar,
+		Timeout:   time.Duration(timeout) * time.Second,
+	}
+
+	req, err := http.NewRequest("GET", urls, nil)
+	if err != nil {
+		return resp, cookie, err
+	}
+
+	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1")
+	req.Header.Add("Connection", "close")
+
+	resp, err = client.Do(req)
+	if err != nil {
+		return resp, cookie, err
+	}
+
+	cookie = curCookieJar.Cookies(req.URL)
+
+	return resp, cookie, nil
 }
