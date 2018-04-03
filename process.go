@@ -16,9 +16,10 @@ import (
 
 	"subfinder/libsubfinder/helper"
 
-	// Load different Data sources
+	// Load different Passive data sources
 	"subfinder/libsubfinder/sources/certspotter"
 	"subfinder/libsubfinder/sources/crtsh"
+	"subfinder/libsubfinder/sources/hackertarget"
 	"subfinder/libsubfinder/sources/threatcrowd"
 	"subfinder/libsubfinder/sources/virustotal"
 	"subfinder/libsubfinder/sources/netcraft"
@@ -90,6 +91,15 @@ func main() {
 		fmt.Println(err)
 	}
 	for _, subdomain := range threatcrowdResults {
+		finalPassiveSubdomains = append(finalPassiveSubdomains, subdomain)
+	}
+
+	fmt.Printf("\n\n[-] Trying Hackertarget API")
+	hackertargetResults, err := hackertarget.Query(state)
+	if err != nil {
+		fmt.Println(err)
+	}
+	for _, subdomain := range hackertargetResults {
 		finalPassiveSubdomains = append(finalPassiveSubdomains, subdomain)
 	}
 
