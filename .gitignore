@@ -8,6 +8,9 @@
 # JSON Configuration data
 config.json
 
+# Executable File
+process
+
 # Test binary, build with `go test -c`
 *.test
 
