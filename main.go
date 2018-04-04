@@ -23,9 +23,7 @@ var banner = `
              __     ___ __          __            
 .-----.--.--|  |--.'  _|__.-----.--|  .-----.----.
 |__ --|  |  |  _  |   _|  |     |  _  |  -__|   _|
-|_____|_____|_____|__| |__|__|__|_____|_____|__|  
-
-`
+|_____|_____|_____|__| |__|__|__|_____|_____|__|  `
 
 // Parses command line arguments into a setting structure
 func ParseCmdLine() (state *helper.State, err error) {
