@@ -26,9 +26,6 @@ import (
 //
 func Query(state *helper.State) (subdomains []string, err error) {
 
-	// Make a http request to CRT.SH server and request output in JSON
-	// format.
-	// I Think 5 minutes would be more than enough for CRT.SH :-)
 	resp, err := helper.GetHTTPResponse("https://api.hackertarget.com/hostsearch/?q="+state.Domain, 3000)
 	if err != nil {
 		return subdomains, err
