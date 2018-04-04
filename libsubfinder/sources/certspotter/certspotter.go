@@ -63,7 +63,7 @@ func Query(state *helper.State) (subdomains []string, err error) {
 
 			if state.Verbose == true {
 				if state.Color == true {
-					fmt.Printf("\n[\033[31;1;4mCERTSPOTTER\033[0m] %s", dns_name)
+					fmt.Printf("\n[%sCERTSPOTTER%s] %s", helper.Red, helper.Reset, dns_name)
 				} else {
 					fmt.Printf("\n[CERTSPOTTER] %s", dns_name)
 				}
