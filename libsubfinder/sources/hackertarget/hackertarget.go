@@ -44,7 +44,7 @@ func Query(state *helper.State) (subdomains []string, err error) {
 
 		if state.Verbose == true {
 			if state.Color == true {
-				fmt.Printf("\n[\033[31;1;4mHACKERTARGET\033[0m] %s", subdomain)
+				fmt.Printf("\n[%sHACKERTARGET%s] %s", helper.Red, helper.Reset, subdomain)
 			} else {
 				fmt.Printf("\n[HACKERTARGET] %s", subdomain)
 			}

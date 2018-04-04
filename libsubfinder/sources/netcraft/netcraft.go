@@ -80,7 +80,7 @@ func enumerate(state *helper.State, baseUrl string) (err error) {
 		
 		if state.Verbose == true {
 			if state.Color == true {
-				fmt.Printf("\n[\033[31;1;4mNETCRAFT\033[0m] %s", finishedSub)
+				fmt.Printf("\n[%sNETCRAFT%s] %s", helper.Red, helper.Reset, finishedSub)
 			} else {
 				fmt.Printf("\n[NETCRAFT] %s", finishedSub)
 			}
