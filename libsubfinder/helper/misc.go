@@ -12,6 +12,13 @@ import (
 	"io/ioutil"
 	"encoding/json"
 )
+
+// Current result structure
+type Result struct {
+    Subdomains []string     // Subdomains found
+    Error      error        // Any error that has occured
+}
+
 //
 // ReadConfigFile : Reads a config file from disk
 // 

@@ -25,31 +25,37 @@ type threatcrowd_object struct {
 // array of all results returned
 var threatcrowd_data threatcrowd_object
 
+// all subdomains found
+var subdomains []string 
+
 // 
 // Query : Queries awesome ThreatCrowd service for subdomains
 // @param state : current application state, holds all information found
-// 
-// @return subdomain : String array containing subdomains found
-// @return err : nil if successfull and error if failed
 //
-func Query(state *helper.State) (subdomains []string, err error) {
+func Query(state *helper.State, ch chan helper.Result) {
 
+	var result helper.Result
+	result.Subdomains = subdomains
+	
 	// Make a http request to Threatcrowd
 	resp, err := helper.GetHTTPResponse("https://www.threatcrowd.org/searchApi/v2/domain/report/?domain="+state.Domain, 3000)
 	if err != nil {
-		return subdomains, err
+		result.Error = err
+		ch <- result
 	}
 
 	// Get the response body
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return subdomains, err
+		result.Error = err
+		ch <- result
 	}
 
 	// Decode the json format
 	err = json.Unmarshal([]byte(resp_body), &threatcrowd_data)
 	if err != nil {
-		return subdomains, err
+		result.Error = err
+		ch <- result
 	}
 
 	// Append each subdomain found to subdomains array
@@ -71,5 +77,7 @@ func Query(state *helper.State) (subdomains []string, err error) {
 		subdomains = append(subdomains, subdomain)
 	}	
 
-	return subdomains, nil
+	result.Subdomains = subdomains
+	result.Error = nil
+	ch <-result
 }

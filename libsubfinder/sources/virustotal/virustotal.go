@@ -79,23 +79,26 @@ func queryVirustotalApi(state *helper.State) (subdomains []string, err error) {
 // 
 // Query : Queries awesome Virustotal Service for Subdomains
 // @param state : Current application state
-// 
-// @return subdomain : String array containing subdomains found
-// @return err : nil if successfull and error if failed
 //
-func Query(state *helper.State) (subdomains []string, err error) {
+func Query(state *helper.State, ch chan helper.Result) {
+
+	var result helper.Result
 
 	// We have recieved an API Key
 	// Now, we will use Virustotal API key to fetch subdomain info
 	if state.ConfigState.VirustotalAPIKey != "" {
 
 		// Get subdomains via API
-		subdomains, err = queryVirustotalApi(state)
+		subdomains, err := queryVirustotalApi(state)
 
 		if err != nil {
-			return subdomains, err
+			result.Subdomains = subdomains
+			result.Error = err
+			ch <- result
 		}
-	}
 
-	return subdomains, nil
+		result.Subdomains = subdomains
+		result.Error = nil
+		ch <-result
+	}
 }
