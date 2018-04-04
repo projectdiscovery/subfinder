@@ -28,70 +28,35 @@ import (
 
 func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 
-	// TODO : Add Go Concurrency to requests for data sources :-)
+	// TODO : Add Selection for search sources
 	fmt.Printf("\n\n[-] Searching For Subdomains in Crt.sh")
 	fmt.Printf("\n[-] Searching For Subdomains in Certspotter")
 	fmt.Printf("\n[-] Searching For Subdomains in Threatcrowd")
 	fmt.Printf("\n[-] Searching For Subdomains in Hackertarget")
-	fmt.Printf("\n[-] Searching For Subdomains in Certspotter")
 	fmt.Printf("\n[-] Searching For Subdomains in Virustotal")
 	fmt.Printf("\n[-] Searching For Subdomains in Netcraft\n")
 
-	crtSh, err := crtsh.Query(state)
-	if err != nil {
-		fmt.Println(err)
-	}
-	for _, subdomain := range crtSh {
-		finalPassiveSubdomains = append(finalPassiveSubdomains, subdomain)
-	}
+	ch := make(chan helper.Result, 6)
 
-	certspotterResults, err := certspotter.Query(state)
-	if err != nil {
-		fmt.Println(err)
-	}
-	for _, subdomain := range certspotterResults {
-		finalPassiveSubdomains = append(finalPassiveSubdomains, subdomain)
-	}
+	// Create goroutines for added speed and recieve data via channels
+	go crtsh.Query(state, ch)
+	go certspotter.Query(state, ch)
+	go hackertarget.Query(state, ch)
+	go threatcrowd.Query(state, ch)
+	go virustotal.Query(state, ch)
+	go netcraft.Query(state, ch)
 
-	threatcrowdResults, err := threatcrowd.Query(state)
-	if err != nil {
-		fmt.Println(err)
-	}
-	for _, subdomain := range threatcrowdResults {
-		finalPassiveSubdomains = append(finalPassiveSubdomains, subdomain)
-	}
+	// recieve data from all goroutines running
+	for i := 1; i <= 6; i++ {
+		result := <-ch
 
-	hackertargetResults, err := hackertarget.Query(state)
-	if err != nil {
-		fmt.Println(err)
-	}
-	for _, subdomain := range hackertargetResults {
-		finalPassiveSubdomains = append(finalPassiveSubdomains, subdomain)
-	}
-
-	/*fmt.Printf("\n\n[-] Trying DNSDB Domain Search")
-	dnsdbResults, err := dnsdb.Query(state)
-	if err != nil {
-		fmt.Println(err)
-	}
-	for _, subdomain := range dnsdbResults {
-		finalPassiveSubdomains = append(finalPassiveSubdomains, subdomain)
-	}*/
-
-	virustotalResults, err := virustotal.Query(state)
-	if err != nil {
-		fmt.Println(err)
-	}
-	for _, subdomain := range virustotalResults {
-		finalPassiveSubdomains = append(finalPassiveSubdomains, subdomain)
-	}
-
-	netcraftResults, err := netcraft.Query(state)
-	if err != nil {
-		fmt.Println(err)
-	}
-	for _, subdomain := range netcraftResults {
-		finalPassiveSubdomains = append(finalPassiveSubdomains, subdomain)
+		if result.Error != nil {
+			// some error occured
+			fmt.Println(result.Error)
+		}
+		for _, subdomain := range result.Subdomains {
+			finalPassiveSubdomains = append(finalPassiveSubdomains, subdomain)
+		}
 	}
 
 	// Now remove duplicate items from the slice

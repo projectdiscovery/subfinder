@@ -26,27 +26,39 @@ type crtsh_object struct {
 // array of all results returned
 var crtsh_data []crtsh_object
 
+// all subdomains found
+var subdomains []string 
+
 // 
 // Query : Queries awesome crt.sh service by comodo
 // @param state : current application state, holds all information found
-// 
-// @return subdomain : String array containing subdomains found
-// @return err : nil if successfull and error if failed
 //
-func Query(state *helper.State) (subdomains []string, err error) {
+func Query(state *helper.State, ch chan helper.Result) {
+
+	var result helper.Result
+	result.Subdomains = subdomains
 
 	// Make a http request to CRT.SH server and request output in JSON
 	// format.
 	// I Think 5 minutes would be more than enough for CRT.SH :-)
 	resp, err := helper.GetHTTPResponse("https://crt.sh/?q=%25."+state.Domain+"&output=json", 3000)
 	if err != nil {
-		return subdomains, err
+		result.Error = err
+		ch <- result
 	}
 
 	// Get the response body
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return subdomains, err
+		result.Error = err
+		ch <- result
+	}
+
+	if strings.Contains(string(resp_body), "The requested URL / was not found on this server.") {
+		// crt.sh is not showing subdomains for some reason
+		// move back
+		result.Error = nil
+		ch <- result
 	}
 
 	// Convert Response Body to string and then replace }{ to },{
@@ -64,7 +76,8 @@ func Query(state *helper.State) (subdomains []string, err error) {
 	// Decode the json format
 	err = json.Unmarshal([]byte(json_output), &crtsh_data)
 	if err != nil {
-		return subdomains, err
+		result.Error = err
+		ch <- result
 	}
 
 	// Append each subdomain found to subdomains array
@@ -86,5 +99,7 @@ func Query(state *helper.State) (subdomains []string, err error) {
 		subdomains = append(subdomains, subdomain.Name_value)
 	}
 
-	return subdomains, nil
+	result.Subdomains = subdomains
+	result.Error = nil
+	ch <-result
 }

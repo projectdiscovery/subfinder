@@ -25,31 +25,39 @@ type certspotter_object struct {
 // array of all results returned
 var certspotter_data []certspotter_object
 
+// all subdomains found
+var subdomains []string
+
 // 
 // Query : Queries awesome Certspotter service for subdomains
 // @param state : current application state, holds all information found
-// 
-// @return subdomain : String array containing subdomains found
-// @return err : nil if successfull and error if failed
 //
-func Query(state *helper.State) (subdomains []string, err error) {
+func Query(state *helper.State, ch chan helper.Result) {
+
+	// Create a result object 
+	var result helper.Result
+	result.Subdomains = subdomains
 
 	// Make a http request to Certspotter
 	resp, err := helper.GetHTTPResponse("https://certspotter.com/api/v0/certs?domain="+state.Domain, 3000)
 	if err != nil {
-		return subdomains, err
+		// Set values and return
+		result.Error = err
+		ch <- result
 	}
 
 	// Get the response body
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return subdomains, err
+		result.Error = err
+		ch <- result
 	}
 
 	// Decode the json format
 	err = json.Unmarshal([]byte(resp_body), &certspotter_data)
 	if err != nil {
-		return subdomains, err
+		result.Error = err
+		ch <- result
 	}
 
 	// Append each subdomain found to subdomains array
@@ -73,5 +81,7 @@ func Query(state *helper.State) (subdomains []string, err error) {
 		}	
 	}
 
-	return subdomains, nil
+	result.Subdomains = subdomains
+	result.Error = nil
+	ch <-result
 }

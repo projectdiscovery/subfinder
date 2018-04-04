@@ -17,24 +17,29 @@ import (
 	"subfinder/libsubfinder/helper"
 )
 
+// all subdomains found
+var subdomains []string 
+
 // 
 // Query : Queries awesome Hackertarget subdomain search service
 // @param state : current application state, holds all information found
-// 
-// @return subdomain : String array containing subdomains found
-// @return err : nil if successfull and error if failed
 //
-func Query(state *helper.State) (subdomains []string, err error) {
+func Query(state *helper.State, ch chan helper.Result) {
+
+	var result helper.Result
+	result.Subdomains = subdomains
 
 	resp, err := helper.GetHTTPResponse("https://api.hackertarget.com/hostsearch/?q="+state.Domain, 3000)
 	if err != nil {
-		return subdomains, err
+		result.Error = err
+		ch <- result
 	}
 
 	// Get the response body
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return subdomains, err
+		result.Error = err
+		ch <- result
 	}
 
 	scanner := bufio.NewScanner(strings.NewReader(string(resp_body)))
@@ -51,5 +56,7 @@ func Query(state *helper.State) (subdomains []string, err error) {
 		}
 	}
 
-	return subdomains, nil
+	result.Subdomains = subdomains
+	result.Error = nil
+	ch <-result
 }

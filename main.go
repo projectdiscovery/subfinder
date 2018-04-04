@@ -49,8 +49,8 @@ func ParseCmdLine() (state *helper.State, err error) {
 func main() {
 
 	fmt.Println(banner)
-	fmt.Printf("\nSubFinder v0.1.0 			Made with ❤ by @Ice3man")
-	fmt.Printf("\n===============================================================")
+	fmt.Printf("\nSubFinder v0.1.0 	  Made with ❤ by @Ice3man")
+	fmt.Printf("\n==================================================")
 
 	state, err := ParseCmdLine()
 	if err != nil {
