@@ -39,11 +39,12 @@ func Query(state *helper.State, ch chan helper.Result) {
 	result.Subdomains = subdomains
 
 	// Make a http request to Certspotter
-	resp, err := helper.GetHTTPResponse("https://certspotter.com/api/v0/certs?domain="+state.Domain, 3000)
+	resp, err := helper.GetHTTPResponse("https://certspotter.com/api/v0/certs?domain="+state.Domain, state.Timeout)
 	if err != nil {
 		// Set values and return
 		result.Error = err
 		ch <- result
+		return
 	}
 
 	// Get the response body
@@ -51,6 +52,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 	if err != nil {
 		result.Error = err
 		ch <- result
+		return
 	}
 
 	// Decode the json format
@@ -58,6 +60,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 	if err != nil {
 		result.Error = err
 		ch <- result
+		return
 	}
 
 	// Append each subdomain found to subdomains array

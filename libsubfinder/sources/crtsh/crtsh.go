@@ -41,10 +41,11 @@ func Query(state *helper.State, ch chan helper.Result) {
 	// Make a http request to CRT.SH server and request output in JSON
 	// format.
 	// I Think 5 minutes would be more than enough for CRT.SH :-)
-	resp, err := helper.GetHTTPResponse("https://crt.sh/?q=%25."+state.Domain+"&output=json", 3000)
+	resp, err := helper.GetHTTPResponse("https://crt.sh/?q=%25."+state.Domain+"&output=json", state.Timeout)
 	if err != nil {
 		result.Error = err
 		ch <- result
+		return
 	}
 
 	// Get the response body
@@ -52,6 +53,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 	if err != nil {
 		result.Error = err
 		ch <- result
+		return
 	}
 
 	if strings.Contains(string(resp_body), "The requested URL / was not found on this server.") {
@@ -59,6 +61,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 		// move back
 		result.Error = nil
 		ch <- result
+		return
 	}
 
 	// Convert Response Body to string and then replace }{ to },{
@@ -78,6 +81,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 	if err != nil {
 		result.Error = err
 		ch <- result
+		return
 	}
 
 	// Append each subdomain found to subdomains array
