@@ -38,10 +38,11 @@ func Query(state *helper.State, ch chan helper.Result) {
 	result.Subdomains = subdomains
 	
 	// Make a http request to Threatcrowd
-	resp, err := helper.GetHTTPResponse("https://www.threatcrowd.org/searchApi/v2/domain/report/?domain="+state.Domain, 3000)
+	resp, err := helper.GetHTTPResponse("https://www.threatcrowd.org/searchApi/v2/domain/report/?domain="+state.Domain, state.Timeout)
 	if err != nil {
 		result.Error = err
 		ch <- result
+		return
 	}
 
 	// Get the response body
@@ -49,6 +50,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 	if err != nil {
 		result.Error = err
 		ch <- result
+		return
 	}
 
 	// Decode the json format
@@ -56,6 +58,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 	if err != nil {
 		result.Error = err
 		ch <- result
+		return
 	}
 
 	// Append each subdomain found to subdomains array

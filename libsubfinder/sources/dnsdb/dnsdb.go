@@ -27,7 +27,7 @@ import (
 //
 func Query(state *helper.State) (subdomains []string, err error) {
 
-	resp, err := helper.GetHTTPResponse("https://www.dnsdb.org/f/"+state.Domain+".dnsdb.org/", 3000)
+	resp, err := helper.GetHTTPResponse("https://www.dnsdb.org/f/"+state.Domain+".dnsdb.org/", state.Timeout)
 	if err != nil {
 		return subdomains, err
 	}
@@ -40,7 +40,7 @@ func Query(state *helper.State) (subdomains []string, err error) {
 
 	body := string(resp_body)
 
-	re := regexp.MustCompile("(?<=href=\").+?(?=\")|(?<=href=').+?(?=')")
+	re := regexp.MustCompile("                           (?<=href=\").+?(?=\")|(?<=href=').+?(?=')")
     match := re.FindAllStringSubmatch(body, -1)
     
     for _, subdomain := range match {

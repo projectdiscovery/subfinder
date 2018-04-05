@@ -36,7 +36,7 @@ var gCookies []*http.Cookie
 func enumerate(state *helper.State, baseUrl string) (err error) {
 
 	// Make a http request to Netcraft
-	resp, gCookies, err := helper.GetHTTPCookieResponse(baseUrl, gCookies, 3000)
+	resp, gCookies, err := helper.GetHTTPCookieResponse(baseUrl, gCookies, state.Timeout)
 	if err != nil {
 		return err
 	}
@@ -124,6 +124,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 		result.Subdomains = globalSubdomains
 		result.Error = err
 		ch <- result
+		return
 	}
 
   	result.Subdomains = globalSubdomains

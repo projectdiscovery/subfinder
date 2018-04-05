@@ -29,10 +29,11 @@ func Query(state *helper.State, ch chan helper.Result) {
 	var result helper.Result
 	result.Subdomains = subdomains
 
-	resp, err := helper.GetHTTPResponse("https://api.hackertarget.com/hostsearch/?q="+state.Domain, 3000)
+	resp, err := helper.GetHTTPResponse("https://api.hackertarget.com/hostsearch/?q="+state.Domain, state.Timeout)
 	if err != nil {
 		result.Error = err
 		ch <- result
+		return
 	}
 
 	// Get the response body
@@ -40,6 +41,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 	if err != nil {
 		result.Error = err
 		ch <- result
+		return
 	}
 
 	scanner := bufio.NewScanner(strings.NewReader(string(resp_body)))

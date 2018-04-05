@@ -13,6 +13,7 @@ package helper
 type State struct {
 	Color   		bool		// Whether to use color or not
 	Threads 		int 		// Number of threads to use
+	Timeout 		int 		// Timeout for requests to different passive sources
 	Verbose 		bool 		// Show verbose information
 	Domain  		string		// Domain name to find subdomains for
 	Recursive 		bool		// Whether perform recursive subdomain discovery or not
@@ -32,5 +33,5 @@ func InitState() (state State, err error) {
 		return state, err
 	}
 
-	return State{true, 10, false, "", false, *config}, nil
+	return State{true, 10, 180, false, "", false, *config}, nil
 }
