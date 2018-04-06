@@ -63,9 +63,12 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 	}
 
 	// Now remove duplicate items from the slice
-	unique_passive_subdomains := helper.Unique(finalPassiveSubdomains)
-	fmt.Printf("\n\n[#] Total %d Unique subdomains found passively\n\n", len(unique_passive_subdomains))
-	for _, subdomain := range unique_passive_subdomains {
+	uniquePassiveSubdomains := helper.Unique(finalPassiveSubdomains)
+	// Now, validate all subdomains found
+	validPassiveSubdomains := helper.Validate(state, uniquePassiveSubdomains)
+
+	fmt.Printf("\n\n[#] Total %d Unique subdomains found passively\n\n", len(validPassiveSubdomains))
+	for _, subdomain := range validPassiveSubdomains {
 		fmt.Println(subdomain)
 	}
 

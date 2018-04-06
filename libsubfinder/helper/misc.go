@@ -86,3 +86,16 @@ func Unique(strSlice []string) []string {
     }    
     return list
 }
+
+//
+// Returns unique valid subdomains found 
+//
+func Validate(state *State, strslice []string) (subdomains []string) {
+    for _, entry := range strslice {
+        if state.Regex.MatchString(entry) == true {
+            subdomains = append(subdomains, entry)
+        }
+    }
+
+    return subdomains
+}

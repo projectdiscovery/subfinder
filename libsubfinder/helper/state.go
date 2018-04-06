@@ -9,6 +9,10 @@
 
 package helper
 
+import (
+	"regexp"
+)
+
 // Holds the State read in from the CLI
 type State struct {
 	Color   		bool		// Whether to use color or not
@@ -21,6 +25,7 @@ type State struct {
 	Bruteforce 		bool 		// Flag to decide whether to bruteforce or not 
 	WildcardIPs		[]string	// Wildcard IP Structure	
 	IsWildcard 		bool 		// Does the host has wildcard subdomains, if yes parse them carefully
+	Regex 			*regexp.Regexp // Regex object for parsing current subdomains
 
 	ConfigState  	Config		// Current configuration file state
 }
@@ -37,5 +42,5 @@ func InitState() (state State, err error) {
 		return state, err
 	}
 
-	return State{true, 10, 180, false, "", false, "", false, []string{}, true, *config}, nil
+	return State{true, 10, 180, false, "", false, "", false, []string{}, true, &regexp.Regexp{}, *config}, nil
 }
