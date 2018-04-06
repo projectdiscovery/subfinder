@@ -13,9 +13,11 @@ import (
 	"fmt"
 	"flag"
 	"os"
+	"regexp"
 
 	"subfinder/libsubfinder/helper"
 	"subfinder/libsubfinder/engines/passive"
+	//"subfinder/libsubfinder/engines/bruteforce"
 )
 
 
@@ -40,6 +42,8 @@ func ParseCmdLine() (state *helper.State, err error) {
 	flag.IntVar(&s.Timeout, "timeout", 180, "Timeout for passive discovery services")
 	flag.StringVar(&s.Domain, "d", "", "Domain to find subdomains for")
 	flag.BoolVar(&s.Recursive, "r", true, "Use recursion to find subdomains")
+	flag.StringVar(&s.Wordlist, "w", "", "Wordlist for doing subdomain bruteforcing")
+	flag.BoolVar(&s.Bruteforce, "b", false, "Use bruteforcing to find subdomains")
 
 	flag.Parse()
 
@@ -50,7 +54,7 @@ func ParseCmdLine() (state *helper.State, err error) {
 func main() {
 
 	fmt.Println(banner)
-	fmt.Printf("\nSubFinder v0.1.0 	  Made with ❤ by @Ice3man")
+	fmt.Printf("\nSubFinder v0.1.0 	  Made with %s❤%s by @Ice3man", helper.Green, helper.Reset)
 	fmt.Printf("\n==================================================")
 
 	state, err := ParseCmdLine()
@@ -65,5 +69,9 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Create a regex for validating subdomains found
+	state.Regex, _ = regexp.Compile("(.*)."+state.Domain)
+
 	passive.PassiveDiscovery(state)
+	//bruteforce.Bruteforce(state)
 }
