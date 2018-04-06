@@ -13,8 +13,8 @@ package helper
 
 var (
 	Red = "\033[31;1;4m"		// red color 
-	Cyan = "\033[36;1;4m"		// cyan color
-
+	Cyan = "\033[36;6;4m"		// cyan color
+	Green = "\033[32;6;4m"		// Green color
 	Reset = "\033[0m"			// reset for default color
 
 )
