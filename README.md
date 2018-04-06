@@ -1,6 +1,9 @@
 # SubFinder
+[![License](https://img.shields.io/badge/license-MIT-_red.svg)](https://opensource.org/licenses/MIT)
+[![Twitter](https://img.shields.io/badge/twitter-@Ice3man543-blue.svg)](https://twitter.com/Ice3man543)
+[![Twitter](https://img.shields.io/badge/twitter-@codingo__-blue.svg)](https://twitter.com/codingo_)
 
-SubFinder is a subdomain discovery tool that uses various techniques to discover massive amount of subdomains for any target. It has been aimed as a successor to the sublist3r project. Since the initial commit, the project has been aimed with speed and efficiency in mind. SubFinder uses Passive Sources, Search Engines, Pastebins, Internet Archives, etc to find subdomains and then it uses a permutation module inspired by altdns to generate permutations and resolved them at a great speed using a powerful bruteforcing engine. It can also perform plain bruteforce if needed. The tool is highly customizable and the code is built with modular approach making it easy to add functionalities and remove errors.
+SubFinder is a subdomain discovery tool that uses various techniques to discover massive amounts of subdomains for any target. It has been aimed as a successor to the [sublist3r project](https://github.com/aboul3la/Sublist3r). SubFinder uses Passive Sources, Search Engines, Pastebins, Internet Archives, etc to find subdomains and then it uses a permutation module inspired by altdns to generate permutations and resolved them at a great speed using a powerful bruteforcing engine. It can also perform plain bruteforce if needed. The tool is highly customizable and the code is built with modular approach making it easy to add functionalities and remove errors.
 
 
 
@@ -18,28 +21,23 @@ So finally after working hard, here is something that I hope you guys will :hear
 
 ## Features
 
-- Passive discovery using many different services.
+## Passive discovery using many different services.
 
-  - [x] Crt.sh
 
-  - [x] Threatcrowd
-
-  - [x] Certspotter
-
-  - [x] Netcraft
-
-  - [x] Hackertarget
-
-  - [x] Virustotal
-
-  - [ ] Ask
-
-    ​
+| Source         |
+|----------------|
+| Ask.com        |
+| Certspotter    |
+| Crt.sh         |
+| DNSDB          |
+| FindSubDomains |
+| HackerTarget   |
+| Netcraft       |
+| Threadcrowd    |
+| VirusTotal     |
 
 - Powerful Permutation Engine 
 
 - Powerful Bruteforcing and resolving engines.
 
 - Search Engine Support for subdomain discovery.
-
-  ​
