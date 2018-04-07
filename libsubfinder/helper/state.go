@@ -26,7 +26,10 @@ type State struct {
 }
 
 type Config struct {
-	VirustotalAPIKey	string	`json:"virustotalapikey"`		// Virustotal API Key
+	VirustotalAPIKey		string	`json:"virustotalApikey"`		// Virustotal API Key
+
+	PassivetotalUsername 	string  `json:"passivetotalUsername"`	// PassiveTotal Username (Email Address)
+	PassivetotalKey			string	`json:"passivetotalKey"`		// PassiveTotal api key 
 }
 
 func InitState() (state State, err error) {
