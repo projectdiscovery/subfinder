@@ -19,6 +19,13 @@ So finally after working hard, here is something that I hope you guys will :hear
 
 ## Passive discovery using many different services.
 
+- Powerful Permutation Engine 
+
+- Powerful Bruteforcing and resolving engines.
+
+- Search Engine Support for subdomain discovery.
+
+Support for a variety of sources, currently including:
 
 | Source         |
 |----------------|
@@ -32,8 +39,4 @@ So finally after working hard, here is something that I hope you guys will :hear
 | Threadcrowd    |
 | VirusTotal     |
 
-- Powerful Permutation Engine 
 
-- Powerful Bruteforcing and resolving engines.
-
-- Search Engine Support for subdomain discovery.
