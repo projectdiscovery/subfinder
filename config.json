@@ -1,3 +1,6 @@
 {
-	"virustotalapikey":""
+	"virustotalApikey":"",
+
+	"passivetotalUsername":"",
+	"passivetotalKey":""
 }

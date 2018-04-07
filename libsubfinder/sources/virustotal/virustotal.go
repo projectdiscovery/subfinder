@@ -102,4 +102,11 @@ func Query(state *helper.State, ch chan helper.Result) {
 		result.Error = nil
 		ch <-result
 	}
+
+	var subdomains []string
+	
+	result.Subdomains = subdomains
+	result.Error = nil
+	ch <- result
+	return
 }
