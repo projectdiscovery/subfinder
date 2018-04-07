@@ -13,7 +13,6 @@ import (
 	"fmt"
 	"flag"
 	"os"
-	"regexp"
 
 	"subfinder/libsubfinder/helper"
 	"subfinder/libsubfinder/engines/passive"
@@ -68,9 +67,6 @@ func main() {
 		fmt.Printf("\n\nsubfinder: Missing domain argument\nTry './subfinder -h' for more information\n")
 		os.Exit(1)
 	}
-
-	// Create a regex for validating subdomains found
-	state.Regex, _ = regexp.Compile("(.*)."+state.Domain)
 
 	passive.PassiveDiscovery(state)
 	//bruteforce.Bruteforce(state)
