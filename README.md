@@ -26,9 +26,10 @@ Support for a variety of sources, currently including:
 | Ask.com        |
 | Certspotter    |
 | Crt.sh         |
-| DNSDB          |
+| DNSDumpster    |
 | FindSubDomains |
 | HackerTarget   |
 | Netcraft       |
+| PassiveTotal   |
 | Threadcrowd    |
 | VirusTotal     |
