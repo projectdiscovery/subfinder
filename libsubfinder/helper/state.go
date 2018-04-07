@@ -25,8 +25,7 @@ type State struct {
 	Bruteforce 		bool 		// Flag to decide whether to bruteforce or not 
 	WildcardIPs		[]string	// Wildcard IP Structure	
 	IsWildcard 		bool 		// Does the host has wildcard subdomains, if yes parse them carefully
-	Regex 			*regexp.Regexp // Regex object for parsing current subdomains
-
+	
 	ConfigState  	Config		// Current configuration file state
 }
 
