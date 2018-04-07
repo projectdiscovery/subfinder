@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
     "crypto/rand"
     "io"
+    "strings"
 	"encoding/json"
     "fmt"
 )
@@ -92,7 +93,7 @@ func Unique(strSlice []string) []string {
 //
 func Validate(state *State, strslice []string) (subdomains []string) {
     for _, entry := range strslice {
-        if state.Regex.MatchString(entry) == true {
+        if strings.Contains(entry, state.Domain) {
             subdomains = append(subdomains, entry)
         }
     }
