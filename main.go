@@ -15,6 +15,7 @@ import (
 	"os"
 
 	"subfinder/libsubfinder/helper"
+	"subfinder/libsubfinder/output"
 	"subfinder/libsubfinder/engines/passive"
 	//"subfinder/libsubfinder/engines/bruteforce"
 )
@@ -40,6 +41,8 @@ func ParseCmdLine() (state *helper.State, err error) {
 	flag.IntVar(&s.Threads, "t", 10, "Number of concurrent threads")
 	flag.IntVar(&s.Timeout, "timeout", 180, "Timeout for passive discovery services")
 	flag.StringVar(&s.Domain, "d", "", "Domain to find subdomains for")
+	flag.StringVar(&s.Output, "o", "", "Name of the output file (optional)")
+	flag.BoolVar(&s.IsJSON, "oJ", false, "Write output in JSON Format")
 	flag.BoolVar(&s.Recursive, "r", true, "Use recursion to find subdomains")
 	flag.StringVar(&s.Wordlist, "w", "", "Wordlist for doing subdomain bruteforcing")
 	flag.BoolVar(&s.Bruteforce, "b", false, "Use bruteforcing to find subdomains")
@@ -68,6 +71,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	passive.PassiveDiscovery(state)
+	passiveSubdomains := passive.PassiveDiscovery(state)
+	if state.Output != "" {
+		err := output.WriteOutputText(state, passiveSubdomains)
+		if err != nil {
+			fmt.Printf("\nerror : %v", err)
+		} else {
+			fmt.Printf("\n[#] Successfully Written Output to File : %s", state.Output)
+		}
+	}
+
 	//bruteforce.Bruteforce(state)
 }
