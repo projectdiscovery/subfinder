@@ -36,7 +36,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 	var result helper.Result
 	result.Subdomains = subdomains
 
-	// Make a http request to Netcraft
+	// Make a http request to DNSDumpster
 	resp, gCookies, err := helper.GetHTTPCookieResponse("https://dnsdumpster.com", gCookies, state.Timeout)
 	if err != nil {
 		result.Error = err

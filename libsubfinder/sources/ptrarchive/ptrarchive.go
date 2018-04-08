@@ -20,7 +20,7 @@ import (
 var subdomains []string 
 
 // 
-// Query : Queries awesome DNSDumpster service for subdomains
+// Query : Queries awesome CertDB service for subdomains
 // @param state : current application state, holds all information found
 //
 func Query(state *helper.State, ch chan helper.Result) {
@@ -28,7 +28,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 	var result helper.Result
 	result.Subdomains = subdomains
 
-	// Make a http request to Netcraft
+	// Make a http request to CertDB
 	resp, err := helper.GetHTTPResponse("http://ptrarchive.com/tools/search2.htm?label="+state.Domain+"&date=ALL", state.Timeout)
 	if err != nil {
 		result.Error = err

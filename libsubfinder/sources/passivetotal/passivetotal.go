@@ -97,10 +97,11 @@ func Query(state *helper.State, ch chan helper.Result) {
 		result.Subdomains = subdomains
 		result.Error = nil
 		ch <-result
+		return
+	} else {
+		result.Subdomains = subdomains
+		result.Error = nil
+		ch <- result
+		return
 	}
-
-	result.Subdomains = subdomains
-	result.Error = nil
-	ch <- result
-	return
 }

@@ -17,6 +17,7 @@ import (
 
 	// Load different Passive data sources
 	"subfinder/libsubfinder/sources/certspotter"
+	"subfinder/libsubfinder/sources/certdb"
 	"subfinder/libsubfinder/sources/crtsh"
 	"subfinder/libsubfinder/sources/hackertarget"
 	"subfinder/libsubfinder/sources/findsubdomains"
@@ -33,6 +34,7 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 
 	// TODO : Add Selection for search sources
 	fmt.Printf("\n\n[-] Searching For Subdomains in Crt.sh")
+	fmt.Printf("\n[-] Searching For Subdomains in CertDB")
 	fmt.Printf("\n[-] Searching For Subdomains in Certspotter")
 	fmt.Printf("\n[-] Searching For Subdomains in Threatcrowd")
 	fmt.Printf("\n[-] Searching For Subdomains in Findsubdomains")
@@ -43,10 +45,11 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 	fmt.Printf("\n[-] Searching For Subdomains in Virustotal")
 	fmt.Printf("\n[-] Searching For Subdomains in Netcraft\n")
 
-	ch := make(chan helper.Result, 10)
+	ch := make(chan helper.Result, 11)
 
 	// Create goroutines for added speed and recieve data via channels
 	go crtsh.Query(state, ch)
+	go certdb.Query(state, ch)
 	go certspotter.Query(state, ch)
 	go hackertarget.Query(state, ch)
 	go findsubdomains.Query(state, ch)
@@ -58,7 +61,7 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 	go netcraft.Query(state, ch)
 
 	// recieve data from all goroutines running
-	for i := 1; i <= 10; i++ {
+	for i := 1; i <= 11; i++ {
 		result := <-ch
 
 		if result.Error != nil {
