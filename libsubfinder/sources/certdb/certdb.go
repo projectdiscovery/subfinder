@@ -20,23 +20,28 @@ import (
 var subdomains []string 
 
 // Parser subdomains from SSL Certificate Information Page
-func findSubdomains(link string, state *helper.State) (subdomainsfound []string, err error) {
+func findSubdomains(link string, state *helper.State, channel chan []string) {
+	var subdomainsfound []string
+
 	resp, err := helper.GetHTTPResponse("https://certdb.com"+link, state.Timeout)
 	if err != nil {
-		return subdomainsfound, err
+		channel <- subdomainsfound
+		return
 	}
 
     // Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return subdomainsfound, err
+		channel <- subdomainsfound
+		return
 	}
 
 	src := string(body)
 
 	SubdomainRegex, err := regexp.Compile("<a href=\"https://certdb.com/domain/(.*)\"  target='_blank' class='link-underlined' >")
 	if err != nil {
-		return subdomainsfound, err
+		channel <- subdomainsfound
+		return
 	}
 
 	match := SubdomainRegex.FindAllStringSubmatch(src, -1)
@@ -45,7 +50,8 @@ func findSubdomains(link string, state *helper.State) (subdomainsfound []string,
    		subdomainsfound = append(subdomainsfound, link[1])
 	}
 
-	return subdomainsfound, nil
+	channel <- subdomainsfound
+	return
 }	
 
 // 
@@ -80,14 +86,16 @@ func Query(state *helper.State, ch chan helper.Result) {
 	match := Regex.FindAllStringSubmatch(src, -1)
 
 	var initialSubs []string
+	var subsReturned []string
+
+	channel := make(chan []string, len(match))
 
    	for _, link := range match {
-   		subsReturned, err := findSubdomains(link[1], state)
-   		if err != nil {
-			result.Error = err
-			ch <- result
-			return
-		}
+   		go findSubdomains(link[1], state, channel)
+	}
+
+	for i:=0; i < len(match); i++ {
+		subsReturned = <-channel
 
 		initialSubs = append(initialSubs, subsReturned...)
 	}
