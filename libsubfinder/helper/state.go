@@ -17,6 +17,8 @@ type State struct {
 	Verbose 		bool 		// Show verbose information
 	Domain  		string		// Domain name to find subdomains for
 	Recursive 		bool		// Whether perform recursive subdomain discovery or not
+	Output 			string		// Name of output file
+	IsJSON			bool 		// Provide JSON output file
 	Wordlist		string		// Wordlist file for subdomains bruteforcing
 	Bruteforce 		bool 		// Flag to decide whether to bruteforce or not 
 	WildcardIPs		[]string	// Wildcard IP Structure	
@@ -40,5 +42,5 @@ func InitState() (state State, err error) {
 		return state, err
 	}
 
-	return State{true, 10, 180, false, "", false, "", false, []string{}, true, *config}, nil
+	return State{true, 10, 180, false, "", false, "", false, "", false, []string{}, true, *config}, nil
 }
