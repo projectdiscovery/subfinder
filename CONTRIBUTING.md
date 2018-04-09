@@ -44,8 +44,8 @@ Each package must import helper package. A template for a basic data source is g
 After making your changes, open the ```subfinder/libsubfinder/engines/passive/passive.go``` which is the main driver for passive discovery engine.
 
 - Import your example package in that file. `"subfinder/libsubfinder/sources/example"`
-- Add a print functions with other printing functions already there ```fmt.Printf("\n[-] Searching For Subdomains in PassiveTotal")`
-- Create a goquery for your example `go example.Query(state, ch)```
+- Add a print functions with other printing functions already there ```fmt.Printf("\n[-] Searching For Subdomains in PassiveTotal")```
+- Create a goquery for your example `go example.Query(state, ch)`
 - Increase number of sources by 1 in argument to buffered chanel and for loop for recieving results.
 
 And you will then have created your own passive package! Feel free to make a Pull Request and we'd be more than happy to add your changes and acknowledge you! :+1:
