@@ -15,26 +15,14 @@ So finally after working hard, here is something that I hope you guys will :hear
 
 ## Features
 
-- Powerful Permutation Engine 
+- Simple and modular code base making it easy to contribute.
+- Fast And Powerful Bruteforcing Module (In Development)
+- Powerful Permutation generation engine. (In Development)
 
-- Powerful Bruteforcing and resolving engines.
+## Install
 
-- Search Engine Support for subdomain discovery.
+The installation is easy. Git clone the repo and run go build.
 
-Support for a variety of sources, currently including:
-
-| Source         |
-|----------------|
-| Ask.com        |
-| Certdb         |
-| Certspotter    |
-| Crt.sh         |
-| DNSDB          |
-| DNSDumpster    |
-| FindSubDomains |
-| HackerTarget   |
-| Netcraft       |
-| PassiveTotal   |
-| ptrarchive     |
-| Threadcrowd    |
-| VirusTotal     |
+```bash
+git clone https://github.com/ice3man543/subfinder.git
+```
