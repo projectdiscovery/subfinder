@@ -14,10 +14,10 @@ import (
 	"flag"
 	"os"
 
-	"subfinder/libsubfinder/helper"
-	"subfinder/libsubfinder/output"
-	"subfinder/libsubfinder/engines/passive"
-	//"subfinder/libsubfinder/engines/bruteforce"
+	"github.com/ice3man543/subfinder/libsubfinder/helper"
+	"github.com/ice3man543/subfinder/libsubfinder/output"
+	"github.com/ice3man543/subfinder/libsubfinder/engines/passive"
+	//"github.com/ice3man543/subfinder/libsubfinder/engines/bruteforce"
 )
 
 
@@ -43,9 +43,12 @@ func ParseCmdLine() (state *helper.State, err error) {
 	flag.StringVar(&s.Domain, "d", "", "Domain to find subdomains for")
 	flag.StringVar(&s.Output, "o", "", "Name of the output file (optional)")
 	flag.BoolVar(&s.IsJSON, "oJ", false, "Write output in JSON Format")
+	flag.BoolVar(&s.Alive, "nw", false, "Remove Wildcard Subdomains from output")
 	flag.BoolVar(&s.Recursive, "r", true, "Use recursion to find subdomains")
 	flag.StringVar(&s.Wordlist, "w", "", "Wordlist for doing subdomain bruteforcing")
+	flag.StringVar(&s.Sources, "sr", "all", "Comma separated list of sources to use")
 	flag.BoolVar(&s.Bruteforce, "b", false, "Use bruteforcing to find subdomains")
+	flag.BoolVar(&s.WildcardForced, "fw", false, "Force Bruteforcing of Wildcard DNS")
 
 	flag.Parse()
 
@@ -77,7 +80,7 @@ func main() {
 		if err != nil {
 			fmt.Printf("\nerror : %v", err)
 		} else {
-			fmt.Printf("\n[#] Successfully Written Output to File : %s", state.Output)
+			fmt.Printf("\n[#] Successfully Written Output to File : %s\n", state.Output)
 		}
 	}
 
