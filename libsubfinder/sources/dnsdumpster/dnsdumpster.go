@@ -17,7 +17,7 @@ import (
 	"net/url"
 	"net/http/cookiejar"
 
-	"subfinder/libsubfinder/helper"
+	"github.com/ice3man543/subfinder/libsubfinder/helper"
 )
 
 // all subdomains found

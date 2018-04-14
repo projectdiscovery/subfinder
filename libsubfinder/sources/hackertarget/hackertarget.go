@@ -14,7 +14,7 @@ import (
 	"bufio"
 	"fmt"
 
-	"subfinder/libsubfinder/helper"
+	"github.com/ice3man543/subfinder/libsubfinder/helper"
 )
 
 // all subdomains found
