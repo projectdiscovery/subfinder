@@ -14,7 +14,7 @@ import (
 	"strings"
 	"fmt"
 
-	"subfinder/libsubfinder/helper"
+	"github.com/ice3man543/subfinder/libsubfinder/helper"
 )
 
 // Structure of a single dictionary of output by crt.sh

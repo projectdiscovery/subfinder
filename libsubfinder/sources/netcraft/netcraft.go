@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"io"
 
-	"subfinder/libsubfinder/helper"
+	"github.com/ice3man543/subfinder/libsubfinder/helper"
 )
 
 // Contains all subdomains found

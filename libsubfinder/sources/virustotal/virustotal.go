@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"strings"
 
-	"subfinder/libsubfinder/helper"
+	"github.com/ice3man543/subfinder/libsubfinder/helper"
 )
 
 type virustotalapi_object struct {
@@ -76,6 +76,15 @@ func queryVirustotalApi(state *helper.State) (subdomains []string, err error) {
 	return subdomains, nil
 }
 
+/*func queryVirustotal(state *helper.State) (subdomains []string, err error) {
+
+	subdomainRegex, err := regexp.Compile("<a target=\"_blank\" href=\"/en/domain/.*\">
+      (.*)
+    </a>")
+	if err != nil {
+		return subdomains, err
+	}
+}*/
 // 
 // Query : Queries awesome Virustotal Service for Subdomains
 // @param state : Current application state
@@ -104,7 +113,8 @@ func Query(state *helper.State, ch chan helper.Result) {
 		return 
 	} else {
 		var subdomains []string
-		
+		//subdomains, err := queryVirustotal(state)
+
 		result.Subdomains = subdomains
 		result.Error = nil
 		ch <- result

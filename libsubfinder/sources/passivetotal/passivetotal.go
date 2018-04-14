@@ -15,7 +15,7 @@ import (
 	"net/http"
 	"bytes"
 
-	"subfinder/libsubfinder/helper"
+	"github.com/ice3man543/subfinder/libsubfinder/helper"
 )
 
 type passivetotal_object struct {
@@ -36,7 +36,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 	var result helper.Result
 
 	// We have recieved an API Key
-	// Now, we will use Virustotal API key to fetch subdomain info
+	// Now, we will use passiveTotal API key to fetch subdomain info
 	if state.ConfigState.PassivetotalUsername != ""  && state.ConfigState.PassivetotalKey != "" {
 
 		// Get credentials for performing HTTP Basic Auth
