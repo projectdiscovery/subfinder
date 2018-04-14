@@ -76,24 +76,31 @@ func ReadConfigFile() (configuration *Config, err error) {
 // Returns unique items in a slice
 // Adapted from http://www.golangprograms.com/remove-duplicate-values-from-slice.html
 //
-func Unique(strSlice []string) []string {
-    keys := make(map[string]bool)
-    list := []string{} 
-    for _, entry := range strSlice {
-        if _, value := keys[entry]; !value {
-            keys[entry] = true
-            list = append(list, entry)
+func Unique(elements []string) []string {  
+    // Use map to record duplicates as we find them.
+    encountered := map[string]bool{}                
+    result := []string{}                              
+
+    for v := range elements {
+        if encountered[elements[v]] == true {
+            // Do not add duplicate.
+        } else {
+            // Record this element as an encountered element.
+            encountered[elements[v]] = true
+            // Append to result slice.
+            result = append(result, elements[v])
         }
-    }    
-    return list
+    }
+    // Return the new slice.
+    return result
 }
 
 //
-// Returns unique valid subdomains found 
+// Returns valid subdomains found ending with target domain
 //
 func Validate(state *State, strslice []string) (subdomains []string) {
     for _, entry := range strslice {
-        if strings.Contains(entry, state.Domain) {
+        if strings.HasSuffix(entry, state.Domain) {
             subdomains = append(subdomains, entry)
         }
     }
