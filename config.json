@@ -2,5 +2,7 @@
 	"virustotalApikey":"",
 
 	"passivetotalUsername":"",
-	"passivetotalKey":""
+	"passivetotalKey":"",
+
+	"securitytrailsKey":""
 }
