@@ -18,11 +18,14 @@ type State struct {
 	Domain  		string		// Domain name to find subdomains for
 	Recursive 		bool		// Whether perform recursive subdomain discovery or not
 	Output 			string		// Name of output file
+	Alive			bool 		// Get only alive subdomains (x - no wildcards :-))
 	IsJSON			bool 		// Provide JSON output file
 	Wordlist		string		// Wordlist file for subdomains bruteforcing
 	Bruteforce 		bool 		// Flag to decide whether to bruteforce or not 
-	WildcardIPs		[]string	// Wildcard IP Structure	
+	WildcardIPs		StringSet	// Wildcard IP Structure	
 	IsWildcard 		bool 		// Does the host has wildcard subdomains, if yes parse them carefully
+	WildcardForced  bool		// Force processing of wildcard DNS Responses
+	Sources 		string 		// Comma separated list of sources to use
 
 	ConfigState  	Config		// Current configuration file state
 }
@@ -32,6 +35,8 @@ type Config struct {
 
 	PassivetotalUsername 	string  `json:"passivetotalUsername"`	// PassiveTotal Username (Email Address)
 	PassivetotalKey			string	`json:"passivetotalKey"`		// PassiveTotal api key 
+
+	SecurityTrailsKey		string	`json:"securitytrailsKey"`		// SecurityTrails api key 
 }
 
 func InitState() (state State, err error) {
@@ -42,5 +47,5 @@ func InitState() (state State, err error) {
 		return state, err
 	}
 
-	return State{true, 10, 180, false, "", false, "", false, "", false, []string{}, true, *config}, nil
+	return State{true, 10, 180, false, "", false, "", false, false, "", false, StringSet{Set: map[string]bool{}}, true, false, "", *config}, nil
 }
