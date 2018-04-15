@@ -18,6 +18,8 @@ So finally after working hard, here is something that I hope you guys will :hear
 - Simple and modular code base making it easy to contribute.
 - Fast And Powerful Bruteforcing Module (In Development)
 - Powerful Permutation generation engine. (In Development)
+- Many Passive Data Sources (CertDB, CertSpotter, crtsh, DNSDumpster, FindSubdomains, Hackertarget, Netcraft, PassiveTotal, PTRArchive, SecurityTrails, Threatcrowd, VirusTotal)
+- Internet Archives support for finding subdomains (In development)
 
 ## Install
 
@@ -26,6 +28,12 @@ The installation is easy. Git clone the repo and run go build.
 ```bash
 go get github.com/ice3man543/subfinder
 ```
+To configure it to work with certain services, you need to have an API key for them. These are the services that do not work without an API key.
+- [Virustotal](https://www.virustotal.com/) 
+- [Passivetotal](http://passivetotal.org/)
+- [SecurityTrails](http://securitytrails.com/)
+
+Put these values in the config.json file and you should be good to go.
 
 ## NOTE
-Currently in active development. So some features may not work or maybe broken. Please do a PR or create an Issue for any features, suggestions or ideas. Would love to hear from you guys.
+This tool is currently in active development. So some features may not work or maybe broken. Please do a PR or create an Issue for any features, suggestions or ideas. Would love to hear from you guys.
