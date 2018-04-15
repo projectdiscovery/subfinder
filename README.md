@@ -35,5 +35,7 @@ To configure it to work with certain services, you need to have an API key for t
 
 Put these values in the config.json file and you should be good to go.
 
+> If your $GOPATH is /home/go, make sure to place your config.json file in $GOPATH/bin folder or wherever you have the binary. Otherwise, it will not work. 
+
 ## NOTE
 This tool is currently in active development. So some features may not work or maybe broken. Please do a PR or create an Issue for any features, suggestions or ideas. Would love to hear from you guys.
