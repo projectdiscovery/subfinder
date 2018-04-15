@@ -26,3 +26,6 @@ The installation is easy. Git clone the repo and run go build.
 ```bash
 go get github.com/ice3man543/subfinder
 ```
+
+## NOTE
+Currently in active development. So some features may not work or maybe broken. Please do a PR or create an Issue for any features, suggestions or ideas. Would love to hear from you guys.
