@@ -24,5 +24,5 @@ So finally after working hard, here is something that I hope you guys will :hear
 The installation is easy. Git clone the repo and run go build.
 
 ```bash
-git clone https://github.com/ice3man543/subfinder.git
+go get github.com/ice3man543/subfinder
 ```
