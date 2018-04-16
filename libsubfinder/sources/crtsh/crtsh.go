@@ -1,11 +1,11 @@
 // 
-// crtsh.go : A Golang based client for CRT.SH Parsing
 // Written By : @ice3man (Nizamul Rana)
 // 
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
 
+// A Golang based client for CRT.SH Parsing
 package crtsh
 
 import (
@@ -29,10 +29,7 @@ var crtsh_data []crtsh_object
 // all subdomains found
 var subdomains []string 
 
-// 
-// Query : Queries awesome crt.sh service by comodo
-// @param state : current application state, holds all information found
-//
+// Query function returns all subdomains found using the service.
 func Query(state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result

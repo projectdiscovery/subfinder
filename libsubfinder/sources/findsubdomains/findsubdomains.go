@@ -1,11 +1,11 @@
 // 
-// findsubdomains.go : Golang driver from findsubdomains.com
 // Written By : @ice3man (Nizamul Rana)
 // 
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
 
+// Golang driver from findsubdomains.com
 package findsubdomains
 
 import (
@@ -20,10 +20,7 @@ import (
 // all subdomains found
 var subdomains []string 
 
-// 
-// Query : Queries awesome Findsubdomains.com service for subdomains
-// @param state : current application state, holds all information found
-//
+// Query function returns all subdomains found using the service.
 func Query(state *helper.State, ch chan helper.Result) {
 	
 	var result helper.Result

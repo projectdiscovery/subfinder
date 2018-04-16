@@ -16,14 +16,10 @@ import (
 	"time"
 )
 
-// 
+
 // GetHTTPResponse : Returns a HTTP Response object
-// @param url : URL To Visit (Note, It needs full url with scheme)
-// @param timeout : Seconds to wait for response until timeout
-// 
-// @return resp : HTTP Response object
-// @return err : nil if successfull else error
-//
+// It needs URL To Visit. Note, It needs full url with scheme and a timeout value.
+// It returns a HTTP Response object
 func GetHTTPResponse(url string, timeout int) (resp *http.Response, err error) {
 
 	tr := &http.Transport{
@@ -40,9 +36,6 @@ func GetHTTPResponse(url string, timeout int) (resp *http.Response, err error) {
 		return resp, err
 	}
 
-	// TODO : Figure out a way to handle user agents as per user intention
-	// @codingo, I don't think it's correct to spam services by making requests with fake user agent
-	// 	What do you think
 	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1")
 	req.Header.Add("Connection", "close")
 
@@ -54,16 +47,10 @@ func GetHTTPResponse(url string, timeout int) (resp *http.Response, err error) {
 	return resp, nil
 }
 
-// 
-// GetHTTPCookieResponse : Returns a HTTP Response object with a cookie object containing current cookies
-// @param url : URL To Visit (Note, It needs full url with scheme)
-// @params cookies : Cookies to send with the request
-// @param timeout : Seconds to wait for response until timeout
-// 
-// @return resp : HTTP Response object
-// @return cookie : Cookies recieved with the Request
-// @return err : nil if successfull else error
-//
+// GetHTTPResponse : Returns a HTTP Response object
+// It needs URL To Visit and a cookie array to send with request. 
+// Note, It needs full url with scheme and a timeout value.
+// It returns a HTTP Response object with a cookie array. 
 func GetHTTPCookieResponse(urls string, cookies []*http.Cookie, timeout int) (resp *http.Response, cookie []*http.Cookie, err error) {
 
 	var curCookieJar *cookiejar.Jar

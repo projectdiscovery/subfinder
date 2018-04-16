@@ -1,12 +1,11 @@
-//
-// process.go : Contains main package drivers and stuff
+// subfinder : Subdomain discovery tool in golang
 // Written By : @codingo
 //		@ice3man
 //
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
-//
 
+// Contains main driver classes for the tool
 package main
 
 import (
@@ -68,7 +67,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Improve Usage guide here
 	if state.Domain == "" {
 		fmt.Printf("\n\nsubfinder: Missing domain argument\nTry './subfinder -h' for more information\n")
 		os.Exit(1)

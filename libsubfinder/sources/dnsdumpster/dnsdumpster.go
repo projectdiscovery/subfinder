@@ -1,11 +1,11 @@
 // 
-// dnsdumpster.go : A Parser for subdomains from DNSDumpster
 // Written By : @ice3man (Nizamul Rana)
 // 
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
 
+// A Parser for subdomains from DNSDumpster
 package dnsdumpster
 
 import (
@@ -24,10 +24,7 @@ import (
 var subdomains []string 
 var gCookies []*http.Cookie
 
-// 
-// Query : Queries awesome DNSDumpster service for subdomains
-// @param state : current application state, holds all information found
-//
+// Query function returns all subdomains found using the service.
 func Query(state *helper.State, ch chan helper.Result) {
 	// CookieJar to hold csrf cookie
 	var curCookieJar *cookiejar.Jar

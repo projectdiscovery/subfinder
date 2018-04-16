@@ -13,6 +13,8 @@ import (
 	"fmt"
 	"sync"
 	"strings"
+
+	//"github.com/miekg/dns"
 )
 
 // Method to eliminate Wildcard Is based on OJ Reeves Work on Gobuster Project
@@ -25,7 +27,7 @@ func InitializeWildcardDNS(state *State) bool {
 	// as our random UUID one
 	uuid, _ := NewUUID()
 
-	// Detection Logic adapted from GoBuster by @thecolonial
+	// Gets a list of IP's by resolving a non-existent host
 	wildcardIPs, err := net.LookupHost(fmt.Sprintf("%s.%s", uuid, state.Domain))
 
 	if err == nil{
@@ -39,39 +41,30 @@ func InitializeWildcardDNS(state *State) bool {
 	return false
 }
 
-//
-// CheckWildcardSubdomain : Checks if a given subdomain is a wildcard subdomain
-// @argument state : Current application state
-// @argument domain : Domain to find subdomains for
-// @argument channel : Both request and response channel. If blank, it means a wildcard subdomain
-func CheckWildcardSubdomain(state *State, domain string, channel chan string) {
-	// TODO: Add custom resolver list support
-	preparedSubdomain := <-channel + "." + domain
-	ipAddress, err := net.LookupHost(preparedSubdomain)
-	
-	if err == nil {
-		// No eror, let's see if it's a Wildcard subdomain
-		if !state.WildcardIPs.ContainsAny(ipAddress) {
-				channel <- preparedSubdomain
-				return 
+// Checks if a given subdomain is a wildcard subdomain
+// It takes Current application state, Domain to find subdomains for
+func CheckWildcardSubdomain(state *State, domain string, words chan string, donech chan struct{}, result chan string) {
+	for target := range channel {
+		preparedSubdomain := target + "." + domain
+		ipAddress, err := net.LookupHost(preparedSubdomain)
+			
+		if err == nil {
+			// No eror, let's see if it's a Wildcard subdomain
+			if !state.WildcardIPs.ContainsAny(ipAddress) {
+					channel <- preparedSubdomain
+			} else {
+					// This is likely a wildcard entry, skip it
+					channel <- ""
+			}
 		} else {
-				// This is likely a wildcard entry, skip it
-				channel <- ""
-				return 
+			channel <- ""
 		}
-	} else {
-		channel <- ""
-		return 
-	}
 
-	channel <- ""
-	return 
+		channel <- ""
+	}
 }
 
-//
-// RemoveWildcardSubdomains : Removes bad wildcard subdomains
-// @argument subdomains : Subdomains list
-// @return []string : List of valid subdomains
+// Removes bad wildcard subdomains from list of subdomains.
 func RemoveWildcardSubdomains(state *State, subdomains []string) []string {
 	wildcard := InitializeWildcardDNS(state)
 	if wildcard == true {
@@ -83,18 +76,18 @@ func RemoveWildcardSubdomains(state *State, subdomains []string) []string {
     var wg sync.WaitGroup
 	var channel = make(chan string)
 	
-	for i := 0; i < state.Threads; i++ {
-		wg.Add(1)
+	wg.Add(state.Threads)
 
+	for i := 0; i < state.Threads; i++ {
 		go func() {
-			defer wg.Done()
 			CheckWildcardSubdomain(state, state.Domain, channel)
+			wg.Done()
 		}()
 	} 
 
 	for _, entry := range subdomains {
-		// Get the subdomain. Some complex logic here :-) lol
 		sub := strings.Join(strings.Split(entry, ".")[:2][:], ".")
+		fmt.Printf("\n[!] %s", sub+"."+state.Domain)
 		channel <- sub
 	}
 
@@ -107,6 +100,10 @@ func RemoveWildcardSubdomains(state *State, subdomains []string) []string {
 			validSubdomains = append(validSubdomains, result)
 		}
 	}
+
+	close(channel)
+
+	wg.Wait()
 
 	return validSubdomains
 }

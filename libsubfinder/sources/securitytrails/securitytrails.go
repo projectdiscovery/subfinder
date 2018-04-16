@@ -1,12 +1,11 @@
 // 
-// securitytrails.go : A golang SecurityTrails API client for subdomain
-//		discovery.
 // Written By : @ice3man (Nizamul Rana)
 // 
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
 
+// A golang SecurityTrails API client for subdomain discovery.
 package securitytrails
 
 import (
@@ -27,10 +26,7 @@ var securitytrails_data securitytrails_object
 // all subdomains found
 var subdomains []string
 
-// 
-// Query : Queries awesome SecurityTrails Service for Subdomains
-// @param state : Current application state
-//
+// Query function returns all subdomains found using the service.
 func Query(state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result
