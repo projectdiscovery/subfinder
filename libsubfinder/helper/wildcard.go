@@ -43,7 +43,7 @@ func InitializeWildcardDNS(state *State) bool {
 
 // Checks if a given subdomain is a wildcard subdomain
 // It takes Current application state, Domain to find subdomains for
-func CheckWildcardSubdomain(state *State, domain string, words chan string, donech chan struct{}, result chan string) {
+func CheckWildcardSubdomain(state *State, domain string, channel chan string) {
 	for target := range channel {
 		preparedSubdomain := target + "." + domain
 		ipAddress, err := net.LookupHost(preparedSubdomain)
