@@ -1,4 +1,4 @@
-// 
+//
 // misc.go : contains misc helper function
 // Written By : @ice3man (Nizamul Rana)
 //
@@ -29,8 +29,6 @@ type BruteforceResult struct {
     Error   error           // Error
 }
 
-
-// 
 // NewUUID generates a random UUID according to RFC 4122
 // Taken from : https://play.golang.org/p/4FkNSiUDMg
 // 
@@ -48,12 +46,7 @@ func NewUUID() (string, error) {
     return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
 }
 
-//
-// ReadConfigFile : Reads a config file from disk
-// 
-// @return config : configuration structure
-// @return err : if no error nil, else error
-//
+// Reads a config file from disk and returns Configuration structure
 func ReadConfigFile() (configuration *Config, err error) {
 
 	var config Config
@@ -72,10 +65,9 @@ func ReadConfigFile() (configuration *Config, err error) {
     return &config, nil
 }
 
-// 
+
 // Returns unique items in a slice
 // Adapted from http://www.golangprograms.com/remove-duplicate-values-from-slice.html
-//
 func Unique(elements []string) []string {  
     // Use map to record duplicates as we find them.
     encountered := map[string]bool{}                
@@ -95,9 +87,7 @@ func Unique(elements []string) []string {
     return result
 }
 
-//
 // Returns valid subdomains found ending with target domain
-//
 func Validate(state *State, strslice []string) (subdomains []string) {
     for _, entry := range strslice {
         if strings.HasSuffix(entry, state.Domain) {

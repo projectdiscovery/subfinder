@@ -1,13 +1,12 @@
-// 
-// passive.go : Passive Subdomain Discovery Helper method
-//		Calls all the functions and also manages error handling
 //
 // Written By : @ice3man (Nizamul Rana)
 // 
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
-//
+// All Rights Reserved
 
+// Passive Subdomain Discovery Helper method
+// Calls all the functions and also manages error handling
 package passive 
 
 import (
@@ -32,6 +31,8 @@ import (
 	"github.com/ice3man543/subfinder/libsubfinder/sources/securitytrails"
 )
 
+// Sources configuration structure specifying what should we use
+// to do passive subdomain discovery.
 type Source struct {
 	Certdb 			bool
 	Crtsh 			bool
@@ -144,7 +145,7 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 	if sourceConfig.Securitytrails == true { go securitytrails.Query(state, ch) }
 	if sourceConfig.Netcraft == true { go netcraft.Query(state, ch) }
 
-	// recieve data from all goroutines running
+	// Recieve data from all goroutines running
 	for i := 0; i < sourceConfig.NoOfSources; i++ {
 		result := <-ch
 
@@ -163,8 +164,7 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 	validPassiveSubdomains := helper.Validate(state, uniquePassiveSubdomains)
 	
 	var PassiveSubdomains []string
-
-	// TODO : Fix Wildcard elimination methods
+	
 	if state.Alive == true {
 		// Nove remove all wildcard subdomains
 		PassiveSubdomains = helper.RemoveWildcardSubdomains(state, validPassiveSubdomains)

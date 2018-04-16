@@ -1,11 +1,11 @@
 // 
-// passivetotal.go : A golang client for Passive total Subdomain Discovery
 // Written By : @ice3man (Nizamul Rana)
 // 
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
 
+// A golang client for Passive total Subdomain Discovery
 package passivetotal
 
 import (
@@ -27,10 +27,7 @@ var passivetotal_data passivetotal_object
 // all subdomains found
 var subdomains []string
 
-// 
-// Query : Queries awesome Passivetotal Service for Subdomains
-// @param state : Current application state
-//
+// Query function returns all subdomains found using the service.
 func Query(state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result

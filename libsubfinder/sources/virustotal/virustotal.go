@@ -1,5 +1,4 @@
-// 
-// virustotal.go : A Virustotal Client for Subdomain Enumeration
+//
 // Written By : @ice3man (Nizamul Rana)
 // 
 // Distributed Under MIT License
@@ -10,6 +9,7 @@
 // rate limiting performed by Virustotal on scraping.
 // Direct queries and parsing can be also done :-)
 
+// A Virustotal Client for Subdomain Enumeration
 package virustotal
 
 import (
@@ -27,13 +27,9 @@ type virustotalapi_object struct {
 
 var virustotalapi_data virustotalapi_object
 
-// 
+
 // Local function to query virustotal API
 // Requires an API key
-//
-// @note : If the user specifies an API key in config.json, we use API
-//	If not, we try to scrape pages though it is highly discouraged
-//
 func queryVirustotalApi(state *helper.State) (subdomains []string, err error) {
 
 	// Make a search for a domain name and get HTTP Response
@@ -85,10 +81,8 @@ func queryVirustotalApi(state *helper.State) (subdomains []string, err error) {
 		return subdomains, err
 	}
 }*/
-// 
-// Query : Queries awesome Virustotal Service for Subdomains
-// @param state : Current application state
-//
+
+// Query function returns all subdomains found using the service.
 func Query(state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result

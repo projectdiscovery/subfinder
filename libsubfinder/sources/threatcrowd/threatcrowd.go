@@ -1,11 +1,11 @@
 // 
-// threatcrowd.go : A Golang based client for Threatcrowd API
 // Written By : @ice3man (Nizamul Rana)
 // 
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
 
+// A Golang based client for Threatcrowd API
 package threatcrowd
 
 import (
@@ -28,10 +28,7 @@ var threatcrowd_data threatcrowd_object
 // all subdomains found
 var subdomains []string 
 
-// 
-// Query : Queries awesome ThreatCrowd service for subdomains
-// @param state : current application state, holds all information found
-//
+// Query function returns all subdomains found using the service.
 func Query(state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result

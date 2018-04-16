@@ -1,11 +1,11 @@
 // 
-// netcraft.go : Netcraft Scraping Engine in Golang
 // Written By : @ice3man (Nizamul Rana)
 // 
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
 
+// Netcraft Scraping Engine in Golang
 package netcraft
 
 import (
@@ -24,15 +24,11 @@ import (
 // Contains all subdomains found
 var globalSubdomains []string
 
+// Global Holder for Netcraft cookies
 var gCookies []*http.Cookie
 
-// 
 // Local function to recursively enumerate subdomains until no subdomains
-// are left :-)
-//
-// @param baseUrl : Base URL is the URL with which to begin enumerating
-//				In recursion, it will be used to pass next Subdomains Link
-//
+// are left 
 func enumerate(state *helper.State, baseUrl string) (err error) {
 
 	// Make a http request to Netcraft
@@ -104,13 +100,7 @@ func enumerate(state *helper.State, baseUrl string) (err error) {
     return nil
 }
 
-// 
-// Query : Queries awesome Netcraft service for subdomains
-// @param state : current application state, holds all information found
-// 
-// @return subdomain : String array containing subdomains found
-// @return err : nil if successfull and error if failed
-//
+// Query function returns all subdomains found using the service.
 func Query(state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result

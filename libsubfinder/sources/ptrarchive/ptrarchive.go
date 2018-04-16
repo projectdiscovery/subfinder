@@ -1,11 +1,11 @@
 // 
-// ptrarchive.go : A PTRArchive subdomain parser in golang
 // Written By : @ice3man (Nizamul Rana)
 // 
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
 
+// A PTRArchive subdomain parser in golang
 package ptrarchive
 
 import (
@@ -19,10 +19,7 @@ import (
 // all subdomains found
 var subdomains []string 
 
-// 
-// Query : Queries awesome CertDB service for subdomains
-// @param state : current application state, holds all information found
-//
+// Query function returns all subdomains found using the service.
 func Query(state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result
