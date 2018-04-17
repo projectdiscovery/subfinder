@@ -39,3 +39,26 @@ Put these values in the config.json file and you should be good to go.
 
 ## NOTE
 This tool is currently in active development. So some features may not work or maybe broken. Please do a PR or create an Issue for any features, suggestions or ideas. Would love to hear from you guys.
+
+## Docker
+
+Git clone the repo, then build and run subfinder in a container with the following commands
+
+- Clone the repo using `git clone https://github.com/ice3man543/subfinder.git`
+- Edit your `Dockerfile` to include your API keys
+- Build your docker container
+```bash
+docker build -t subfinder .
+```
+
+- After building the container, run the following.
+```bash
+docker run --rm -it subfinder
+```
+> The above command is the same as running `-h`
+
+For example, this runs the tool against uber.com and output the results to your host file system:
+```bash
+docker run --rm -it subfinder -d uber.com > uber.com.txt
+```
+> Note: `-o uber.com.txt` would output into the docker container, which is deleted once the process finishes, because of the `--rm` segment of the docker command)
