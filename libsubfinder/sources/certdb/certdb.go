@@ -1,6 +1,6 @@
 //
 // Written By : @ice3man (Nizamul Rana)
-// 
+//
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
@@ -9,15 +9,15 @@
 package certdb
 
 import (
-	"io/ioutil"
 	"fmt"
+	"io/ioutil"
 	"regexp"
 
 	"github.com/ice3man543/subfinder/libsubfinder/helper"
 )
 
 // all subdomains found
-var subdomains []string 
+var subdomains []string
 
 // Parser subdomains from SSL Certificate Information Page
 func findSubdomains(link string, state *helper.State, channel chan []string) {
@@ -29,7 +29,7 @@ func findSubdomains(link string, state *helper.State, channel chan []string) {
 		return
 	}
 
-    // Get the response body
+	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		channel <- subdomainsfound
@@ -46,14 +46,13 @@ func findSubdomains(link string, state *helper.State, channel chan []string) {
 
 	match := SubdomainRegex.FindAllStringSubmatch(src, -1)
 
-   	for _, link := range match {
-   		subdomainsfound = append(subdomainsfound, link[1])
+	for _, link := range match {
+		subdomainsfound = append(subdomainsfound, link[1])
 	}
 
 	channel <- subdomainsfound
 	return
-}	
-
+}
 
 // Query function returns all subdomains found using the service.
 func Query(state *helper.State, ch chan helper.Result) {
@@ -69,7 +68,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 		return
 	}
 
-    // Get the response body
+	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		result.Error = err
@@ -88,11 +87,11 @@ func Query(state *helper.State, ch chan helper.Result) {
 
 	channel := make(chan []string, len(match))
 
-   	for _, link := range match {
-   		go findSubdomains(link[1], state, channel)
+	for _, link := range match {
+		go findSubdomains(link[1], state, channel)
 	}
 
-	for i:=0; i < len(match); i++ {
+	for i := 0; i < len(match); i++ {
 		subsReturned = <-channel
 
 		initialSubs = append(initialSubs, subsReturned...)
@@ -108,10 +107,9 @@ func Query(state *helper.State, ch chan helper.Result) {
 		}
 
 		subdomains = append(subdomains, subdomain)
-    }
+	}
 
-
-  	result.Subdomains = subdomains
+	result.Subdomains = subdomains
 	result.Error = nil
-	ch <-result
+	ch <- result
 }

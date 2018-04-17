@@ -9,29 +9,29 @@
 package helper
 
 import (
-	"io/ioutil"
     "crypto/rand"
-    "io"
-    "strings"
-	"encoding/json"
+    "encoding/json"
     "fmt"
+    "io"
+    "io/ioutil"
+    "strings"
 )
 
 // Current result structure
 type Result struct {
-    Subdomains []string     // Subdomains found
-    Error      error        // Any error that has occured
+    Subdomains []string // Subdomains found
+    Error      error    // Any error that has occured
 }
 
 // Current Bruteforce structure
 type BruteforceResult struct {
-    Entity  string          // Current Subdomain we found
-    Error   error           // Error
+    Entity string // Current Subdomain we found
+    Error  error  // Error
 }
 
 // NewUUID generates a random UUID according to RFC 4122
 // Taken from : https://play.golang.org/p/4FkNSiUDMg
-// 
+//
 // Used for bruteforcing and detection of Wildcard Subdomains :-)
 func NewUUID() (string, error) {
     uuid := make([]byte, 16)
@@ -49,29 +49,28 @@ func NewUUID() (string, error) {
 // Reads a config file from disk and returns Configuration structure
 func ReadConfigFile() (configuration *Config, err error) {
 
-	var config Config
+    var config Config
 
-	// Read the file
-	raw, err := ioutil.ReadFile("./config.json")
+    // Read the file
+    raw, err := ioutil.ReadFile("./config.json")
     if err != nil {
         return &config, err
     }
 
     err = json.Unmarshal(raw, &config)
-    if (err != nil) {
-    	return &config, err
+    if err != nil {
+        return &config, err
     }
 
     return &config, nil
 }
 
-
 // Returns unique items in a slice
 // Adapted from http://www.golangprograms.com/remove-duplicate-values-from-slice.html
-func Unique(elements []string) []string {  
+func Unique(elements []string) []string {
     // Use map to record duplicates as we find them.
-    encountered := map[string]bool{}                
-    result := []string{}                              
+    encountered := map[string]bool{}
+    result := []string{}
 
     for v := range elements {
         if encountered[elements[v]] == true {

@@ -1,9 +1,9 @@
-// 
-// brutefoce.go : Helper method for bruteforce functionality implemented 
+//
+// brutefoce.go : Helper method for bruteforce functionality implemented
 //	in subfinder.
 //
 // Written By : @ice3man (Nizamul Rana)
-// 
+//
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
@@ -11,13 +11,13 @@
 package bruteforce
 
 import (
+	"bufio"
 	"fmt"
 	"os"
-	"bufio"
 	"sync"
 
-	"github.com/ice3man543/subfinder/libsubfinder/helper"
 	"github.com/ice3man543/subfinder/libsubfinder/bruteforcer"
+	"github.com/ice3man543/subfinder/libsubfinder/helper"
 )
 
 func Bruteforce(state *helper.State) (subdomains []string) {
@@ -54,7 +54,7 @@ func Process(wordlist string, domain string, state *helper.State) (subdomains []
 
 	var wg sync.WaitGroup
 	var channel = make(chan string)
-	
+
 	for i := 0; i < state.Threads; i++ {
 		wg.Add(1)
 
@@ -62,7 +62,7 @@ func Process(wordlist string, domain string, state *helper.State) (subdomains []
 			defer wg.Done()
 			bruteforcer.CheckDNSEntry(state, domain, channel)
 		}()
-	} 
+	}
 
 	for _, word := range words {
 		channel <- word

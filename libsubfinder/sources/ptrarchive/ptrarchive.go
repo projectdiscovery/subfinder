@@ -1,6 +1,6 @@
-// 
+//
 // Written By : @ice3man (Nizamul Rana)
-// 
+//
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
@@ -9,15 +9,15 @@
 package ptrarchive
 
 import (
-	"io/ioutil"
 	"fmt"
+	"io/ioutil"
 	"regexp"
 
 	"github.com/ice3man543/subfinder/libsubfinder/helper"
 )
 
 // all subdomains found
-var subdomains []string 
+var subdomains []string
 
 // Query function returns all subdomains found using the service.
 func Query(state *helper.State, ch chan helper.Result) {
@@ -33,7 +33,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 		return
 	}
 
-    // Get the response body
+	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		result.Error = err
@@ -46,12 +46,12 @@ func Query(state *helper.State, ch chan helper.Result) {
 	// Parse Subdomains found
 	Regex, _ := regexp.Compile("] (.*) \\[")
 	match := Regex.FindAllStringSubmatch(src, -1)
-    
-    // String to hold initial subdomains
-    var initialSubs []string
 
-   	for _, data := range match {
-   		initialSubs = append(initialSubs, data[1])
+	// String to hold initial subdomains
+	var initialSubs []string
+
+	for _, data := range match {
+		initialSubs = append(initialSubs, data[1])
 	}
 
 	validSubdomains := helper.Validate(state, initialSubs)
@@ -66,10 +66,9 @@ func Query(state *helper.State, ch chan helper.Result) {
 		}
 
 		subdomains = append(subdomains, subdomain)
-    }
+	}
 
-
-  	result.Subdomains = subdomains
+	result.Subdomains = subdomains
 	result.Error = nil
-	ch <-result
+	ch <- result
 }

@@ -1,7 +1,7 @@
-// 
+//
 // helper.go : Main sources driver. Contains helper functions for other sources.
 // Written By : @ice3man (Nizamul Rana)
-// 
+//
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
@@ -9,13 +9,12 @@
 package helper
 
 import (
-	"net/http"
-	"net/url"
-	"net/http/cookiejar"
 	"crypto/tls"
+	"net/http"
+	"net/http/cookiejar"
+	"net/url"
 	"time"
 )
-
 
 // GetHTTPResponse : Returns a HTTP Response object
 // It needs URL To Visit. Note, It needs full url with scheme and a timeout value.
@@ -48,9 +47,9 @@ func GetHTTPResponse(url string, timeout int) (resp *http.Response, err error) {
 }
 
 // GetHTTPResponse : Returns a HTTP Response object
-// It needs URL To Visit and a cookie array to send with request. 
+// It needs URL To Visit and a cookie array to send with request.
 // Note, It needs full url with scheme and a timeout value.
-// It returns a HTTP Response object with a cookie array. 
+// It returns a HTTP Response object with a cookie array.
 func GetHTTPCookieResponse(urls string, cookies []*http.Cookie, timeout int) (resp *http.Response, cookie []*http.Cookie, err error) {
 
 	var curCookieJar *cookiejar.Jar
@@ -67,7 +66,7 @@ func GetHTTPCookieResponse(urls string, cookies []*http.Cookie, timeout int) (re
 
 	client := &http.Client{
 		Transport: tr,
-		Jar: curCookieJar,
+		Jar:       curCookieJar,
 		Timeout:   time.Duration(timeout) * time.Second,
 	}
 

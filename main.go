@@ -9,16 +9,15 @@
 package main
 
 import (
-	"fmt"
 	"flag"
+	"fmt"
 	"os"
 
+	"github.com/ice3man543/subfinder/libsubfinder/engines/passive"
 	"github.com/ice3man543/subfinder/libsubfinder/helper"
 	"github.com/ice3man543/subfinder/libsubfinder/output"
-	"github.com/ice3man543/subfinder/libsubfinder/engines/passive"
 	//"github.com/ice3man543/subfinder/libsubfinder/engines/bruteforce"
 )
-
 
 var banner = `
              __     ___ __          __            
@@ -43,9 +42,10 @@ func ParseCmdLine() (state *helper.State, err error) {
 	flag.StringVar(&s.Output, "o", "", "Name of the output file (optional)")
 	flag.BoolVar(&s.IsJSON, "oJ", false, "Write output in JSON Format")
 	flag.BoolVar(&s.Alive, "nw", false, "Remove Wildcard Subdomains from output")
+	flag.BoolVar(&s.Silent, "silent", false, "Show only subdomains in output")
 	flag.BoolVar(&s.Recursive, "r", true, "Use recursion to find subdomains")
 	flag.StringVar(&s.Wordlist, "w", "", "Wordlist for doing subdomain bruteforcing")
-	flag.StringVar(&s.Sources, "sr", "all", "Comma separated list of sources to use")
+	flag.StringVar(&s.Sources, "sources", "all", "Comma separated list of sources to use")
 	flag.BoolVar(&s.Bruteforce, "b", false, "Use bruteforcing to find subdomains")
 	flag.BoolVar(&s.WildcardForced, "fw", false, "Force Bruteforcing of Wildcard DNS")
 
@@ -54,12 +54,7 @@ func ParseCmdLine() (state *helper.State, err error) {
 	return &s, nil
 }
 
-
 func main() {
-
-	fmt.Println(banner)
-	fmt.Printf("\nSubFinder v0.1.0 	  Made with %s❤%s by @Ice3man", helper.Green, helper.Reset)
-	fmt.Printf("\n==================================================")
 
 	state, err := ParseCmdLine()
 	if err != nil {
@@ -67,8 +62,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	if state.Silent != true {
+		fmt.Println(banner)
+		fmt.Printf("\nSubFinder v0.1.0 	  Made with %s❤%s by @Ice3man", helper.Green, helper.Reset)
+		fmt.Printf("\n==================================================")
+	}
+
 	if state.Domain == "" {
-		fmt.Printf("\n\nsubfinder: Missing domain argument\nTry './subfinder -h' for more information\n")
+		if state.Silent != true {
+			fmt.Printf("\n\nsubfinder: Missing domain argument\nTry './subfinder -h' for more information\n")
+		}
 		os.Exit(1)
 	}
 
@@ -76,9 +79,13 @@ func main() {
 	if state.Output != "" {
 		err := output.WriteOutputText(state, passiveSubdomains)
 		if err != nil {
-			fmt.Printf("\nerror : %v", err)
+			if state.Silent != true {
+				fmt.Printf("\nerror : %v", err)
+			}
 		} else {
-			fmt.Printf("\n[#] Successfully Written Output to File : %s\n", state.Output)
+			if state.Silent != true {
+				fmt.Printf("\n[#] Successfully Written Output to File : %s\n", state.Output)
+			}
 		}
 	}
 

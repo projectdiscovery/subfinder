@@ -1,6 +1,6 @@
-// 
+//
 // Written By : @ice3man (Nizamul Rana)
-// 
+//
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
@@ -9,16 +9,16 @@
 package securitytrails
 
 import (
-	"io/ioutil"
-	"fmt"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/ice3man543/subfinder/libsubfinder/helper"
 )
 
 type securitytrails_object struct {
-	Subdomains	[]string `json:"subdomains"`
+	Subdomains []string `json:"subdomains"`
 }
 
 var securitytrails_data securitytrails_object
@@ -38,11 +38,11 @@ func Query(state *helper.State, ch chan helper.Result) {
 		securitytrailsKey := state.ConfigState.SecurityTrailsKey
 
 		client := &http.Client{}
-    	req, err := http.NewRequest("GET", "https://api.securitytrails.com/v1/domain/"+state.Domain+"/subdomains", nil)
+		req, err := http.NewRequest("GET", "https://api.securitytrails.com/v1/domain/"+state.Domain+"/subdomains", nil)
 
-    	req.Header.Add("APIKEY", securitytrailsKey)
+		req.Header.Add("APIKEY", securitytrailsKey)
 
-    	resp, err := client.Do(req)
+		resp, err := client.Do(req)
 		if err != nil {
 			result.Subdomains = subdomains
 			result.Error = err
@@ -70,7 +70,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 
 		// Append each subdomain found to subdomains array
 		for _, subdomain := range securitytrails_data.Subdomains {
-			finalSubdomain := subdomain+"."+state.Domain
+			finalSubdomain := subdomain + "." + state.Domain
 
 			if state.Verbose == true {
 				if state.Color == true {
@@ -85,7 +85,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 
 		result.Subdomains = subdomains
 		result.Error = nil
-		ch <-result
+		ch <- result
 		return
 	} else {
 		result.Subdomains = subdomains

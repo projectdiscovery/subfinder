@@ -1,6 +1,6 @@
-// 
+//
 // Written By : @ice3man (Nizamul Rana)
-// 
+//
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
@@ -9,17 +9,17 @@
 package certspotter
 
 import (
-	"io/ioutil"
 	"encoding/json"
-	"strings"
 	"fmt"
+	"io/ioutil"
+	"strings"
 
 	"github.com/ice3man543/subfinder/libsubfinder/helper"
 )
 
 // Structure of a single dictionary of output by crt.sh
 type certspotter_object struct {
-	Dns_names	[]string `json:"dns_names"`
+	Dns_names []string `json:"dns_names"`
 }
 
 // array of all results returned
@@ -31,7 +31,7 @@ var subdomains []string
 // Query function returns all subdomains found using the service.
 func Query(state *helper.State, ch chan helper.Result) {
 
-	// Create a result object 
+	// Create a result object
 	var result helper.Result
 	result.Subdomains = subdomains
 
@@ -78,10 +78,10 @@ func Query(state *helper.State, ch chan helper.Result) {
 			}
 
 			subdomains = append(subdomains, dns_name)
-		}	
+		}
 	}
 
 	result.Subdomains = subdomains
 	result.Error = nil
-	ch <-result
+	ch <- result
 }

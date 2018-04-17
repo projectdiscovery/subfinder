@@ -1,6 +1,6 @@
-// 
+//
 // Written By : @ice3man (Nizamul Rana)
-// 
+//
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
@@ -9,10 +9,10 @@
 package crtsh
 
 import (
-	"io/ioutil"
-	"strings"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"strings"
 
 	"github.com/ice3man543/subfinder/libsubfinder/helper"
 )
@@ -20,14 +20,14 @@ import (
 // Structure of a single dictionary of output by crt.sh
 // We only need name_value object hence this :-)
 type crtsh_object struct {
-	Name_value		string  `json:"name_value"`
+	Name_value string `json:"name_value"`
 }
 
 // array of all results returned
 var crtsh_data []crtsh_object
 
 // all subdomains found
-var subdomains []string 
+var subdomains []string
 
 // Query function returns all subdomains found using the service.
 func Query(state *helper.State, ch chan helper.Result) {
@@ -71,7 +71,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 	// 		{abc},
 	//		{abc}
 	// ]
-	json_output := "["+correct_format+"]"
+	json_output := "[" + correct_format + "]"
 
 	// Decode the json format
 	err = json.Unmarshal([]byte(json_output), &crtsh_data)
@@ -102,5 +102,5 @@ func Query(state *helper.State, ch chan helper.Result) {
 
 	result.Subdomains = subdomains
 	result.Error = nil
-	ch <-result
+	ch <- result
 }

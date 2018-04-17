@@ -1,11 +1,11 @@
 //
 // Written By : @ice3man (Nizamul Rana)
-// 
+//
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
 
-// NOTE : We are using Virustotal API here Since we wanted to eliminate the 
+// NOTE : We are using Virustotal API here Since we wanted to eliminate the
 // rate limiting performed by Virustotal on scraping.
 // Direct queries and parsing can be also done :-)
 
@@ -13,20 +13,19 @@
 package virustotal
 
 import (
-	"io/ioutil"
-	"fmt"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"strings"
 
 	"github.com/ice3man543/subfinder/libsubfinder/helper"
 )
 
 type virustotalapi_object struct {
-	Subdomains	[]string `json:"subdomains"`
+	Subdomains []string `json:"subdomains"`
 }
 
 var virustotalapi_data virustotalapi_object
-
 
 // Local function to query virustotal API
 // Requires an API key
@@ -67,7 +66,7 @@ func queryVirustotalApi(state *helper.State) (subdomains []string, err error) {
 		}
 
 		subdomains = append(subdomains, subdomain)
-	}	
+	}
 
 	return subdomains, nil
 }
@@ -103,8 +102,8 @@ func Query(state *helper.State, ch chan helper.Result) {
 
 		result.Subdomains = subdomains
 		result.Error = nil
-		ch <-result
-		return 
+		ch <- result
+		return
 	} else {
 		var subdomains []string
 		//subdomains, err := queryVirustotal(state)

@@ -1,6 +1,6 @@
-// 
+//
 // Written By : @ice3man (Nizamul Rana)
-// 
+//
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
@@ -9,14 +9,14 @@
 package netcraft
 
 import (
-	"io/ioutil"
+	"crypto/sha1" // Required for netcraft challenge response
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
-	"crypto/sha1"	// Required for netcraft challenge response
-	"net/url"
-	"net/http"
-	"io"
 
 	"github.com/ice3man543/subfinder/libsubfinder/helper"
 )
@@ -28,7 +28,7 @@ var globalSubdomains []string
 var gCookies []*http.Cookie
 
 // Local function to recursively enumerate subdomains until no subdomains
-// are left 
+// are left
 func enumerate(state *helper.State, baseUrl string) (err error) {
 
 	// Make a http request to Netcraft
@@ -67,13 +67,13 @@ func enumerate(state *helper.State, baseUrl string) (err error) {
 
 	src := string(body)
 
-    re := regexp.MustCompile("<a href=\"http://toolbar.netcraft.com/site_report\\?url=(.*)\">")
-    match := re.FindAllStringSubmatch(src, -1)
-    
-    for _, subdomain := range match {
-    	// Dirty Logic
-        finishedSub := strings.Split(subdomain[1], "//")[1]
-		
+	re := regexp.MustCompile("<a href=\"http://toolbar.netcraft.com/site_report\\?url=(.*)\">")
+	match := re.FindAllStringSubmatch(src, -1)
+
+	for _, subdomain := range match {
+		// Dirty Logic
+		finishedSub := strings.Split(subdomain[1], "//")[1]
+
 		if state.Verbose == true {
 			if state.Color == true {
 				fmt.Printf("\n[%sNETCRAFT%s] %s", helper.Red, helper.Reset, finishedSub)
@@ -83,28 +83,28 @@ func enumerate(state *helper.State, baseUrl string) (err error) {
 		}
 
 		globalSubdomains = append(globalSubdomains, finishedSub)
-    }
+	}
 
-    // we have another page full of juicy subdomains
-    if strings.Contains(src, "Next page") {
-    	// Checkout the link for the next page
-    	re_next := regexp.MustCompile("<A href=\"(.*?)\"><b>Next page</b></a>")
-    	match := re_next.FindStringSubmatch(src)
+	// we have another page full of juicy subdomains
+	if strings.Contains(src, "Next page") {
+		// Checkout the link for the next page
+		re_next := regexp.MustCompile("<A href=\"(.*?)\"><b>Next page</b></a>")
+		match := re_next.FindStringSubmatch(src)
 
-    	// Replace spaces with + characters in URL Query since they don't allow request to happen
-    	finalQuery := strings.Replace(match[1], " ", "+", -1)
-    	enumerate(state, "https://searchdns.netcraft.com"+finalQuery)
-    }
-    
-    // Finally, all subdomains found :-)
-    return nil
+		// Replace spaces with + characters in URL Query since they don't allow request to happen
+		finalQuery := strings.Replace(match[1], " ", "+", -1)
+		enumerate(state, "https://searchdns.netcraft.com"+finalQuery)
+	}
+
+	// Finally, all subdomains found :-)
+	return nil
 }
 
 // Query function returns all subdomains found using the service.
 func Query(state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result
-	
+
 	// Initialize global cookie holder
 	gCookies = nil
 
@@ -117,7 +117,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 		return
 	}
 
-  	result.Subdomains = globalSubdomains
+	result.Subdomains = globalSubdomains
 	result.Error = nil
 	ch <- result
 }

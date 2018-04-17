@@ -1,6 +1,6 @@
-// 
+//
 // Written By : @ice3man (Nizamul Rana)
-// 
+//
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
@@ -9,17 +9,17 @@
 package passivetotal
 
 import (
-	"io/ioutil"
-	"fmt"
-	"encoding/json"
-	"net/http"
 	"bytes"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 
 	"github.com/ice3man543/subfinder/libsubfinder/helper"
 )
 
 type passivetotal_object struct {
-	Subdomains	[]string `json:"subdomains"`
+	Subdomains []string `json:"subdomains"`
 }
 
 var passivetotal_data passivetotal_object
@@ -34,23 +34,23 @@ func Query(state *helper.State, ch chan helper.Result) {
 
 	// We have recieved an API Key
 	// Now, we will use passiveTotal API key to fetch subdomain info
-	if state.ConfigState.PassivetotalUsername != ""  && state.ConfigState.PassivetotalKey != "" {
+	if state.ConfigState.PassivetotalUsername != "" && state.ConfigState.PassivetotalKey != "" {
 
 		// Get credentials for performing HTTP Basic Auth
 		username := state.ConfigState.PassivetotalUsername
 		key := state.ConfigState.PassivetotalKey
 
 		// Create JSON Get body
-		var request = []byte(`{"query":"`+state.Domain+`"}`)
+		var request = []byte(`{"query":"` + state.Domain + `"}`)
 
 		client := &http.Client{}
-    	req, err := http.NewRequest("GET", "https://api.passivetotal.org/v2/enrichment/subdomains", bytes.NewBuffer(request))
-    	req.SetBasicAuth(username, key)
+		req, err := http.NewRequest("GET", "https://api.passivetotal.org/v2/enrichment/subdomains", bytes.NewBuffer(request))
+		req.SetBasicAuth(username, key)
 
-    	// Set content type as application/json
-    	req.Header.Set("Content-Type", "application/json")
+		// Set content type as application/json
+		req.Header.Set("Content-Type", "application/json")
 
-    	resp, err := client.Do(req)
+		resp, err := client.Do(req)
 		if err != nil {
 			result.Subdomains = subdomains
 			result.Error = err
@@ -78,7 +78,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 
 		// Append each subdomain found to subdomains array
 		for _, subdomain := range passivetotal_data.Subdomains {
-			finalSubdomain := subdomain+"."+state.Domain
+			finalSubdomain := subdomain + "." + state.Domain
 
 			if state.Verbose == true {
 				if state.Color == true {
@@ -93,7 +93,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 
 		result.Subdomains = subdomains
 		result.Error = nil
-		ch <-result
+		ch <- result
 		return
 	} else {
 		result.Subdomains = subdomains

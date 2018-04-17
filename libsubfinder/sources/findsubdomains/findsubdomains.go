@@ -1,6 +1,6 @@
-// 
+//
 // Written By : @ice3man (Nizamul Rana)
-// 
+//
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
@@ -9,8 +9,8 @@
 package findsubdomains
 
 import (
-	"io/ioutil"
 	"fmt"
+	"io/ioutil"
 	"regexp"
 	"strings"
 
@@ -18,11 +18,11 @@ import (
 )
 
 // all subdomains found
-var subdomains []string 
+var subdomains []string
 
 // Query function returns all subdomains found using the service.
 func Query(state *helper.State, ch chan helper.Result) {
-	
+
 	var result helper.Result
 	result.Subdomains = subdomains
 
@@ -44,13 +44,13 @@ func Query(state *helper.State, ch chan helper.Result) {
 
 	src := string(body)
 
-    re := regexp.MustCompile("<a class=\"aggregated-link\" rel=\"nofollow\" href=\"(.*)\" target=\"_blank\">")
-    match := re.FindAllStringSubmatch(src, -1)
-    
-    for _, subdomain := range match {
-    	// Dirty Logic
-        finishedSub := strings.Split(subdomain[1], "//")[1]
-		
+	re := regexp.MustCompile("<a class=\"aggregated-link\" rel=\"nofollow\" href=\"(.*)\" target=\"_blank\">")
+	match := re.FindAllStringSubmatch(src, -1)
+
+	for _, subdomain := range match {
+		// Dirty Logic
+		finishedSub := strings.Split(subdomain[1], "//")[1]
+
 		if state.Verbose == true {
 			if state.Color == true {
 				fmt.Printf("\n[%sFINDSUBDOMAINS%s] %s", helper.Red, helper.Reset, finishedSub)
@@ -62,7 +62,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 		subdomains = append(subdomains, finishedSub)
 	}
 
-  	result.Subdomains = subdomains
+	result.Subdomains = subdomains
 	result.Error = nil
-	ch <-result
+	ch <- result
 }

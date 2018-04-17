@@ -1,6 +1,6 @@
-// 
+//
 // Written By : @ice3man (Nizamul Rana)
-// 
+//
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
@@ -9,16 +9,16 @@
 package hackertarget
 
 import (
-	"io/ioutil"
-	"strings"
 	"bufio"
 	"fmt"
+	"io/ioutil"
+	"strings"
 
 	"github.com/ice3man543/subfinder/libsubfinder/helper"
 )
 
 // all subdomains found
-var subdomains []string 
+var subdomains []string
 
 // Query function returns all subdomains found using the service.
 func Query(state *helper.State, ch chan helper.Result) {
@@ -57,5 +57,5 @@ func Query(state *helper.State, ch chan helper.Result) {
 
 	result.Subdomains = subdomains
 	result.Error = nil
-	ch <-result
+	ch <- result
 }

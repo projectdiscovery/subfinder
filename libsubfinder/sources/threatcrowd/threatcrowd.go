@@ -1,6 +1,6 @@
-// 
+//
 // Written By : @ice3man (Nizamul Rana)
-// 
+//
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
@@ -9,31 +9,31 @@
 package threatcrowd
 
 import (
-	"io/ioutil"
 	"encoding/json"
-	"strings"
 	"fmt"
+	"io/ioutil"
+	"strings"
 
 	"github.com/ice3man543/subfinder/libsubfinder/helper"
 )
 
 // Struct containing json data we actually need
 type threatcrowd_object struct {
-	Subdomains	[]string `json:"subdomains"`
+	Subdomains []string `json:"subdomains"`
 }
 
 // array of all results returned
 var threatcrowd_data threatcrowd_object
 
 // all subdomains found
-var subdomains []string 
+var subdomains []string
 
 // Query function returns all subdomains found using the service.
 func Query(state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result
 	result.Subdomains = subdomains
-	
+
 	// Make a http request to Threatcrowd
 	resp, err := helper.GetHTTPResponse("https://www.threatcrowd.org/searchApi/v2/domain/report/?domain="+state.Domain, state.Timeout)
 	if err != nil {
@@ -75,9 +75,9 @@ func Query(state *helper.State, ch chan helper.Result) {
 		}
 
 		subdomains = append(subdomains, subdomain)
-	}	
+	}
 
 	result.Subdomains = subdomains
 	result.Error = nil
-	ch <-result
+	ch <- result
 }
