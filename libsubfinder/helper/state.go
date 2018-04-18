@@ -43,11 +43,8 @@ type Config struct {
 
 func InitState() (state State, err error) {
 
-	// Read the configuration file
-	config, err := ReadConfigFile()
-	if err != nil {
-		return state, err
-	}
+	// Read the configuration file and ignore errors
+	config, _ := ReadConfigFile()
 
 	return State{true, 10, 180, false, "", false, "", false, false, "", false, StringSet{Set: map[string]bool{}}, true, false, "", false, []string{}, *config}, nil
 }

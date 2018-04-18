@@ -14,6 +14,8 @@ import (
     "fmt"
     "io"
     "io/ioutil"
+    "os"
+    "path/filepath"
     "strings"
 )
 
@@ -51,8 +53,11 @@ func ReadConfigFile() (configuration *Config, err error) {
 
     var config Config
 
-    // Read the file
-    raw, err := ioutil.ReadFile("./config.json")
+    // Get current path
+    dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+
+    // Read the file by appending config.json to executable directory
+    raw, err := ioutil.ReadFile(dir + "/config.json")
     if err != nil {
         return &config, err
     }
