@@ -11,8 +11,8 @@ package helper
 import (
 	"fmt"
 	"net"
-	"strings"
-	"sync"
+	//"strings"
+	//"sync"
 	//"github.com/miekg/dns"
 )
 
@@ -40,6 +40,7 @@ func InitializeWildcardDNS(state *State) bool {
 	return false
 }
 
+/*
 // Checks if a given subdomain is a wildcard subdomain
 // It takes Current application state, Domain to find subdomains for
 func CheckWildcardSubdomain(state *State, domain string, words <-chan string, wg *sync.WaitGroup) {
@@ -64,7 +65,7 @@ func CheckWildcardSubdomain(state *State, domain string, words <-chan string, wg
 	}
 }
 
-func CheckWildcardSubdomain(state *State, domain string, words chan string, donech chan struct{}, result chan string) {
+func CheckWildcardSubdomain(state *State, domain string, words chan string, result chan string) {
 	for target := range channel {
 		preparedSubdomain := target + "." + domain
 		ipAddress, err := net.LookupHost(preparedSubdomain)
@@ -113,3 +114,4 @@ func RemoveWildcardSubdomains(state *State, subdomains []string) []string {
 
 	return validSubdomains
 }
+*/

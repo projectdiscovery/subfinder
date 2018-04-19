@@ -256,7 +256,7 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 
 	if state.Alive == true {
 		// Nove remove all wildcard subdomains
-		PassiveSubdomains = helper.RemoveWildcardSubdomains(state, validPassiveSubdomains)
+		//PassiveSubdomains = helper.RemoveWildcardSubdomains(state, validPassiveSubdomains)
 	}
 
 	PassiveSubdomains = validPassiveSubdomains
