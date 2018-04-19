@@ -62,15 +62,12 @@ func main() {
 		os.Exit(1)
 	}
 
-<<<<<<< 9ae536175028cdedecd50144bfd7999d5e0e09e6
 	if state.Silent != true {
 		fmt.Println(banner)
 		fmt.Printf("\nSubFinder v0.1.0 	  Made with %s❤%s by @Ice3man", helper.Green, helper.Reset)
 		fmt.Printf("\n==================================================")
 	}
 
-=======
->>>>>>> Updated Commenting Style and some other misc. changes
 	if state.Domain == "" {
 		if state.Silent != true {
 			fmt.Printf("\n\nsubfinder: Missing domain argument\nTry './subfinder -h' for more information\n")

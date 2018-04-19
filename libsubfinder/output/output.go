@@ -1,8 +1,4 @@
-<<<<<<< 9ae536175028cdedecd50144bfd7999d5e0e09e6
 //
-=======
-//  
->>>>>>> Updated Commenting Style and some other misc. changes
 // Written By : @ice3man (Nizamul Rana)
 //
 // Distributed Under MIT License

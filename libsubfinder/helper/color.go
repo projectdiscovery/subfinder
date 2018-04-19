@@ -6,14 +6,9 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-
-<<<<<<< 9ae536175028cdedecd50144bfd7999d5e0e09e6
-// Use like this
-=======
 package helper
 
-// Use like this 
->>>>>>> Updated Commenting Style and some other misc. changes
+// Use like this
 // 	fmt.Printf("[%sCRTSH%s] %s", r, rs, subdomain)
 var (
 	Red   = "\033[31;1;4m" // red color
