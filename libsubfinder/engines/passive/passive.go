@@ -29,6 +29,7 @@ import (
 	"github.com/ice3man543/subfinder/libsubfinder/sources/securitytrails"
 	"github.com/ice3man543/subfinder/libsubfinder/sources/threatcrowd"
 	"github.com/ice3man543/subfinder/libsubfinder/sources/virustotal"
+	"github.com/ice3man543/subfinder/libsubfinder/sources/waybackarchive"
 )
 
 // Sources configuration structure specifying what should we use
@@ -46,18 +47,20 @@ type Source struct {
 	Virustotal     bool
 	Securitytrails bool
 	Netcraft       bool
+	Waybackarchive bool
 
 	NoOfSources int
 }
 
 func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
-	sourceConfig := Source{false, false, false, false, false, false, false, false, false, false, false, false, 0}
+	sourceConfig := Source{false, false, false, false, false, false, false, false, false, false, false, false, false, 0}
 
 	fmt.Printf("\n")
 	if state.Sources == "all" {
 		// Search all data sources
 
 		if state.Silent != true {
+			fmt.Printf("\n[-] Searching For Subdomains in Crt.sh")
 			fmt.Printf("\n[-] Searching For Subdomains in CertDB")
 			fmt.Printf("\n[-] Searching For Subdomains in Certspotter")
 			fmt.Printf("\n[-] Searching For Subdomains in Threatcrowd")
@@ -68,10 +71,11 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 			fmt.Printf("\n[-] Searching For Subdomains in Hackertarget")
 			fmt.Printf("\n[-] Searching For Subdomains in Virustotal")
 			fmt.Printf("\n[-] Searching For Subdomains in Securitytrails")
+			fmt.Printf("\n[-] Searching For Subdomains in WaybackArchive")
 			fmt.Printf("\n[-] Searching For Subdomains in Netcraft\n")
 		}
 
-		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, 12}
+		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, 13}
 	} else {
 		// Check data sources and create a source configuration structure
 
@@ -149,6 +153,12 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 				}
 				sourceConfig.Netcraft = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
+			} else if source == "waybackarchive" {
+				if state.Silent != true {
+					fmt.Printf("\n[-] Searching For Subdomains in WaybackArchive")
+				}
+				sourceConfig.Waybackarchive = true
+				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			}
 		}
 	}
@@ -194,42 +204,8 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 	if sourceConfig.Netcraft == true {
 		go netcraft.Query(state, ch)
 	}
-
-	if sourceConfig.Crtsh == true {
-		go crtsh.Query(state, ch)
-	}
-	if sourceConfig.Certdb == true {
-		go certdb.Query(state, ch)
-	}
-	if sourceConfig.Certspotter == true {
-		go certspotter.Query(state, ch)
-	}
-	if sourceConfig.Threatcrowd == true {
-		go threatcrowd.Query(state, ch)
-	}
-	if sourceConfig.Findsubdomains == true {
-		go findsubdomains.Query(state, ch)
-	}
-	if sourceConfig.Dnsdumpster == true {
-		go dnsdumpster.Query(state, ch)
-	}
-	if sourceConfig.Passivetotal == true {
-		go passivetotal.Query(state, ch)
-	}
-	if sourceConfig.Ptrarchive == true {
-		go ptrarchive.Query(state, ch)
-	}
-	if sourceConfig.Hackertarget == true {
-		go hackertarget.Query(state, ch)
-	}
-	if sourceConfig.Virustotal == true {
-		go virustotal.Query(state, ch)
-	}
-	if sourceConfig.Securitytrails == true {
-		go securitytrails.Query(state, ch)
-	}
-	if sourceConfig.Netcraft == true {
-		go netcraft.Query(state, ch)
+	if sourceConfig.Waybackarchive == true {
+		go waybackarchive.Query(state, ch)
 	}
 
 	// Recieve data from all goroutines running
