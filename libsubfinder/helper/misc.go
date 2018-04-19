@@ -10,12 +10,8 @@ package helper
 
 import (
     "crypto/rand"
-    "encoding/json"
     "fmt"
     "io"
-    "io/ioutil"
-    "os"
-    "path/filepath"
     "strings"
 )
 
@@ -46,28 +42,6 @@ func NewUUID() (string, error) {
     // version 4 (pseudo-random); see section 4.1.3
     uuid[6] = uuid[6]&^0xf0 | 0x40
     return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
-}
-
-// Reads a config file from disk and returns Configuration structure
-func ReadConfigFile() (configuration *Config, err error) {
-
-    var config Config
-
-    // Get current path
-    dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
-
-    // Read the file by appending config.json to executable directory
-    raw, err := ioutil.ReadFile(dir + "/config.json")
-    if err != nil {
-        return &config, err
-    }
-
-    err = json.Unmarshal(raw, &config)
-    if err != nil {
-        return &config, err
-    }
-
-    return &config, nil
 }
 
 // Returns unique items in a slice
