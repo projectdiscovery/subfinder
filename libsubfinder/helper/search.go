@@ -41,4 +41,8 @@ func CheckMaxPages(config *BaseSearchConfiguration) bool {
 	}
 
 	return config.CurrentPageNo >= config.MaxPages
+<<<<<<< 9ae536175028cdedecd50144bfd7999d5e0e09e6
 }
+=======
+}
+>>>>>>> Updated Commenting Style and some other misc. changes

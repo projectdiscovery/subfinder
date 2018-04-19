@@ -16,6 +16,10 @@ import (
 	"time"
 )
 
+<<<<<<< 9ae536175028cdedecd50144bfd7999d5e0e09e6
+=======
+
+>>>>>>> Updated Commenting Style and some other misc. changes
 // GetHTTPResponse : Returns a HTTP Response object
 // It needs URL To Visit. Note, It needs full url with scheme and a timeout value.
 // It returns a HTTP Response object
@@ -47,9 +51,15 @@ func GetHTTPResponse(url string, timeout int) (resp *http.Response, err error) {
 }
 
 // GetHTTPResponse : Returns a HTTP Response object
+<<<<<<< 9ae536175028cdedecd50144bfd7999d5e0e09e6
 // It needs URL To Visit and a cookie array to send with request.
 // Note, It needs full url with scheme and a timeout value.
 // It returns a HTTP Response object with a cookie array.
+=======
+// It needs URL To Visit and a cookie array to send with request. 
+// Note, It needs full url with scheme and a timeout value.
+// It returns a HTTP Response object with a cookie array. 
+>>>>>>> Updated Commenting Style and some other misc. changes
 func GetHTTPCookieResponse(urls string, cookies []*http.Cookie, timeout int) (resp *http.Response, cookie []*http.Cookie, err error) {
 
 	var curCookieJar *cookiejar.Jar

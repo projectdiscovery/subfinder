@@ -1,4 +1,8 @@
+<<<<<<< 9ae536175028cdedecd50144bfd7999d5e0e09e6
 //
+=======
+// 
+>>>>>>> Updated Commenting Style and some other misc. changes
 // Written By : @ice3man (Nizamul Rana)
 //
 // Distributed Under MIT License
@@ -28,7 +32,11 @@ var globalSubdomains []string
 var gCookies []*http.Cookie
 
 // Local function to recursively enumerate subdomains until no subdomains
+<<<<<<< 9ae536175028cdedecd50144bfd7999d5e0e09e6
 // are left
+=======
+// are left 
+>>>>>>> Updated Commenting Style and some other misc. changes
 func enumerate(state *helper.State, baseUrl string) (err error) {
 
 	// Make a http request to Netcraft

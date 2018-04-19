@@ -70,9 +70,16 @@ func ReadConfigFile() (configuration *Config, err error) {
     return &config, nil
 }
 
+<<<<<<< 9ae536175028cdedecd50144bfd7999d5e0e09e6
 // Returns unique items in a slice
 // Adapted from http://www.golangprograms.com/remove-duplicate-values-from-slice.html
 func Unique(elements []string) []string {
+=======
+
+// Returns unique items in a slice
+// Adapted from http://www.golangprograms.com/remove-duplicate-values-from-slice.html
+func Unique(elements []string) []string {  
+>>>>>>> Updated Commenting Style and some other misc. changes
     // Use map to record duplicates as we find them.
     encountered := map[string]bool{}
     result := []string{}

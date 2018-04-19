@@ -54,6 +54,10 @@ func findSubdomains(link string, state *helper.State, channel chan []string) {
 	return
 }
 
+<<<<<<< 9ae536175028cdedecd50144bfd7999d5e0e09e6
+=======
+
+>>>>>>> Updated Commenting Style and some other misc. changes
 // Query function returns all subdomains found using the service.
 func Query(state *helper.State, ch chan helper.Result) {
 

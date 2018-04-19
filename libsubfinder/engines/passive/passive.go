@@ -7,7 +7,11 @@
 
 // Passive Subdomain Discovery Helper method
 // Calls all the functions and also manages error handling
+<<<<<<< 9ae536175028cdedecd50144bfd7999d5e0e09e6
 package passive
+=======
+package passive 
+>>>>>>> Updated Commenting Style and some other misc. changes
 
 import (
 	"fmt"
@@ -158,6 +162,7 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 	// Create goroutines for added speed and recieve data via channels
 	// Check if we the user has specified custom sources and if yes, run them
 	// via if statements.
+<<<<<<< 9ae536175028cdedecd50144bfd7999d5e0e09e6
 	if sourceConfig.Crtsh == true {
 		go crtsh.Query(state, ch)
 	}
@@ -194,6 +199,20 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 	if sourceConfig.Netcraft == true {
 		go netcraft.Query(state, ch)
 	}
+=======
+	if sourceConfig.Crtsh == true { go crtsh.Query(state, ch) }
+	if sourceConfig.Certdb == true { go certdb.Query(state, ch) }
+	if sourceConfig.Certspotter == true { go certspotter.Query(state, ch) }
+	if sourceConfig.Threatcrowd == true { go threatcrowd.Query(state, ch) }
+	if sourceConfig.Findsubdomains == true { go findsubdomains.Query(state, ch) }
+	if sourceConfig.Dnsdumpster == true { go dnsdumpster.Query(state, ch) }
+	if sourceConfig.Passivetotal == true { go passivetotal.Query(state, ch) }
+	if sourceConfig.Ptrarchive == true { go ptrarchive.Query(state, ch) }
+	if sourceConfig.Hackertarget == true { go hackertarget.Query(state, ch) }
+	if sourceConfig.Virustotal == true { go virustotal.Query(state, ch) }
+	if sourceConfig.Securitytrails == true { go securitytrails.Query(state, ch) }
+	if sourceConfig.Netcraft == true { go netcraft.Query(state, ch) }
+>>>>>>> Updated Commenting Style and some other misc. changes
 
 	// Recieve data from all goroutines running
 	for i := 0; i < sourceConfig.NoOfSources; i++ {
@@ -216,7 +235,11 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 	validPassiveSubdomains := helper.Validate(state, uniquePassiveSubdomains)
 
 	var PassiveSubdomains []string
+<<<<<<< 9ae536175028cdedecd50144bfd7999d5e0e09e6
 
+=======
+	
+>>>>>>> Updated Commenting Style and some other misc. changes
 	if state.Alive == true {
 		// Nove remove all wildcard subdomains
 		PassiveSubdomains = helper.RemoveWildcardSubdomains(state, validPassiveSubdomains)

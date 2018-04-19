@@ -12,7 +12,11 @@ import (
 	"fmt"
 	"net"
 	"strings"
+<<<<<<< 9ae536175028cdedecd50144bfd7999d5e0e09e6
 	"sync"
+=======
+
+>>>>>>> Updated Commenting Style and some other misc. changes
 	//"github.com/miekg/dns"
 )
 
@@ -42,6 +46,7 @@ func InitializeWildcardDNS(state *State) bool {
 
 // Checks if a given subdomain is a wildcard subdomain
 // It takes Current application state, Domain to find subdomains for
+<<<<<<< 9ae536175028cdedecd50144bfd7999d5e0e09e6
 func CheckWildcardSubdomain(state *State, domain string, words <-chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -61,6 +66,26 @@ func CheckWildcardSubdomain(state *State, domain string, words <-chan string, wg
 			}
 		} else {
 		}
+=======
+func CheckWildcardSubdomain(state *State, domain string, words chan string, donech chan struct{}, result chan string) {
+	for target := range channel {
+		preparedSubdomain := target + "." + domain
+		ipAddress, err := net.LookupHost(preparedSubdomain)
+			
+		if err == nil {
+			// No eror, let's see if it's a Wildcard subdomain
+			if !state.WildcardIPs.ContainsAny(ipAddress) {
+					channel <- preparedSubdomain
+			} else {
+					// This is likely a wildcard entry, skip it
+					channel <- ""
+			}
+		} else {
+			channel <- ""
+		}
+
+		channel <- ""
+>>>>>>> Updated Commenting Style and some other misc. changes
 	}
 }
 
@@ -73,20 +98,42 @@ func RemoveWildcardSubdomains(state *State, subdomains []string) []string {
 
 	var wg sync.WaitGroup
 	var channel = make(chan string)
+<<<<<<< 9ae536175028cdedecd50144bfd7999d5e0e09e6
 
 	wg.Add(state.Threads)
 
 	for i := 0; i < state.Threads; i++ {
 		go CheckWildcardSubdomain(state, state.Domain, channel, &wg)
 	}
+=======
+	
+	wg.Add(state.Threads)
+
+	for i := 0; i < state.Threads; i++ {
+		go func() {
+			CheckWildcardSubdomain(state, state.Domain, channel)
+			wg.Done()
+		}()
+	} 
+>>>>>>> Updated Commenting Style and some other misc. changes
 
 	for _, entry := range subdomains {
 		sub := strings.Join(strings.Split(entry, ".")[:2][:], ".")
+		fmt.Printf("\n[!] %s", sub+"."+state.Domain)
 		channel <- sub
 	}
 
 	close(channel)
 	wg.Wait()
 
+<<<<<<< 9ae536175028cdedecd50144bfd7999d5e0e09e6
 	return state.FinalResults
 }
+=======
+	close(channel)
+
+	wg.Wait()
+
+	return validSubdomains
+}
+>>>>>>> Updated Commenting Style and some other misc. changes
