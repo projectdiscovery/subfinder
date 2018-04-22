@@ -28,6 +28,7 @@ type State struct {
 	Sources        string    // Comma separated list of sources to use
 	Silent         bool      // Show only silent output or not
 	FinalResults   []string  // Contains final bruteforcing results
+	SetConfig      string    // Used for changing the current configuration file details
 
 	ConfigState Config // Current configuration file state
 }
@@ -46,5 +47,5 @@ func InitState() (state State, err error) {
 	// Read the configuration file and ignore errors
 	config, _ := ReadConfigFile()
 
-	return State{true, 10, 180, false, "", false, "", false, false, "", false, StringSet{Set: map[string]bool{}}, true, false, "", false, []string{}, *config}, nil
+	return State{true, 10, 180, false, "", false, "", false, false, "", false, StringSet{Set: map[string]bool{}}, true, false, "", false, []string{}, "", *config}, nil
 }

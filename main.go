@@ -9,9 +9,13 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"reflect"
+	"strings"
 
 	"github.com/ice3man543/subfinder/libsubfinder/engines/passive"
 	"github.com/ice3man543/subfinder/libsubfinder/helper"
@@ -48,6 +52,7 @@ func ParseCmdLine() (state *helper.State, err error) {
 	flag.StringVar(&s.Sources, "sources", "all", "Comma separated list of sources to use")
 	flag.BoolVar(&s.Bruteforce, "b", false, "Use bruteforcing to find subdomains")
 	flag.BoolVar(&s.WildcardForced, "fw", false, "Force Bruteforcing of Wildcard DNS")
+	flag.StringVar(&s.SetConfig, "set-config", "none", "Comma separated list of configuration details")
 
 	flag.Parse()
 
@@ -65,7 +70,32 @@ func main() {
 	if state.Silent != true {
 		fmt.Println(banner)
 		fmt.Printf("\nSubFinder v0.1.0 	  Made with %s❤%s by @Ice3man", helper.Green, helper.Reset)
-		fmt.Printf("\n==================================================")
+		fmt.Printf("\n==================================================\n")
+	}
+
+	if state.SetConfig != "none" {
+		setConfig := strings.Split(state.SetConfig, ",")
+
+		// Build Configuration path
+		home := helper.GetHomeDir()
+		path := home + "/.config/subfinder/config.json"
+
+		for _, config := range setConfig {
+			object := strings.Split(config, "=")
+
+			// Change value dynamically using reflect package
+			reflect.ValueOf(&state.ConfigState).Elem().FieldByName(object[0]).SetString(object[1])
+			configJson, _ := json.MarshalIndent(state.ConfigState, "", "	")
+			err = ioutil.WriteFile(path, configJson, 0644)
+			if err != nil {
+				fmt.Printf("\n\n[!] Error : %v\n", err)
+				os.Exit(1)
+			}
+
+			fmt.Printf("[-] Successfully configured %s=>%s\n", object[0], object[1])
+		}
+
+		os.Exit(0)
 	}
 
 	if state.Domain == "" {
