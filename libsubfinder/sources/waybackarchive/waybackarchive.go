@@ -52,6 +52,8 @@ func Query(state *helper.State, ch chan helper.Result) {
 		return
 	}
 
+	var initialSubs []string
+
 	// Append each subdomain found to subdomains array
 	for _, url := range urls {
 
@@ -67,6 +69,12 @@ func Query(state *helper.State, ch chan helper.Result) {
 			subdomain = strings.Split(first, ":")[0]
 		}
 
+		initialSubs = append(initialSubs, subdomain)
+	}
+
+	validSubdomains := helper.Unique(initialSubs)
+
+	for _, subdomain := range validSubdomains {
 		if state.Verbose == true {
 			if state.Color == true {
 				fmt.Printf("\n[%sWAYBACKARCHIVE%s] %s", helper.Red, helper.Reset, subdomain)
