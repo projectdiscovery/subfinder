@@ -9,7 +9,9 @@
 package output
 
 import (
+     "encoding/json"
      "io"
+     "io/ioutil"
      "os"
 
      "github.com/ice3man543/subfinder/libsubfinder/helper"
@@ -31,6 +33,25 @@ func WriteOutputText(state *helper.State, subdomains []string) error {
      }
 
      file.Close()
+
+     return nil
+}
+
+// Writes subdomains output to a json file
+func WriteOutputJSON(state *helper.State, subdomains []string) error {
+     _, err := os.Create(state.Output)
+
+     if err != nil {
+          return err
+     }
+
+     data, err := json.MarshalIndent(subdomains, "", "    ")
+     if err != nil {
+          return err
+     }
+
+     // Write the output to file
+     err = ioutil.WriteFile(state.Output, data, 0644)
 
      return nil
 }
