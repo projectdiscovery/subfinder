@@ -17,7 +17,7 @@ import (
 )
 
 // Gets current user directory
-func getHomeDir() string {
+func GetHomeDir() string {
 	usr, err := user.Current()
 	if err != nil {
 		fmt.Printf("\n\n[!] Error : %v\n", err)
@@ -57,7 +57,7 @@ func ReadConfigFile() (configuration *Config, err error) {
 	var config Config
 
 	// Get current path
-	home := getHomeDir()
+	home := GetHomeDir()
 
 	path := home + "/.config/subfinder/config.json"
 	status, _ := exists(path)
