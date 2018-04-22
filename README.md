@@ -18,8 +18,7 @@ So finally after working hard, here is something that I hope you guys will :hear
 - Simple and modular code base making it easy to contribute.
 - Fast And Powerful Bruteforcing Module (In Development)
 - Powerful Permutation generation engine. (In Development)
-- Many Passive Data Sources (CertDB, CertSpotter, crtsh, DNSDumpster, FindSubdomains, Hackertarget, Netcraft, PassiveTotal, PTRArchive, SecurityTrails, Threatcrowd, VirusTotal)
-- Internet Archives support for finding subdomains (In development)
+- Many Passive Data Sources (CertDB, CertSpotter, crtsh, DNSDumpster, FindSubdomains, Hackertarget, Netcraft, PassiveTotal, PTRArchive, SecurityTrails, Threatcrowd, VirusTotal, Waybackarchive)
 
 ## Install
 
@@ -33,9 +32,9 @@ To configure it to work with certain services, you need to have an API key for t
 - [Passivetotal](http://passivetotal.org/)
 - [SecurityTrails](http://securitytrails.com/)
 
-Put these values in the config.json file and you should be good to go.
+Put these values in the $HOME/.config/subfinder/config.json file which will be created when you run the tool for the first time and you should be good to go.
 
-> If your $GOPATH is /home/go, make sure to place your config.json file in $GOPATH/bin folder or wherever you have the binary. Otherwise, it will not work. 
+> The tools creates a configuration directory in $HOME/.config/subfinder/. Please edit the config.json file created there after running the tool once without any options. 
 
 ## Docker
 
