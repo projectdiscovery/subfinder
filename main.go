@@ -77,14 +77,27 @@ func main() {
 
 	passiveSubdomains := passive.PassiveDiscovery(state)
 	if state.Output != "" {
-		err := output.WriteOutputText(state, passiveSubdomains)
-		if err != nil {
-			if state.Silent != true {
-				fmt.Printf("\nerror : %v", err)
+		if state.IsJSON == true {
+			err := output.WriteOutputJSON(state, passiveSubdomains)
+			if err != nil {
+				if state.Silent != true {
+					fmt.Printf("\nerror : %v", err)
+				}
+			} else {
+				if state.Silent != true {
+					fmt.Printf("\n[#] Successfully Written Output to File : %s\n", state.Output)
+				}
 			}
 		} else {
-			if state.Silent != true {
-				fmt.Printf("\n[#] Successfully Written Output to File : %s\n", state.Output)
+			err := output.WriteOutputText(state, passiveSubdomains)
+			if err != nil {
+				if state.Silent != true {
+					fmt.Printf("\nerror : %v", err)
+				}
+			} else {
+				if state.Silent != true {
+					fmt.Printf("\n[#] Successfully Written Output to File : %s\n", state.Output)
+				}
 			}
 		}
 	}
