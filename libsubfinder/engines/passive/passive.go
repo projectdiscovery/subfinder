@@ -20,6 +20,7 @@ import (
 	"github.com/ice3man543/subfinder/libsubfinder/sources/certdb"
 	"github.com/ice3man543/subfinder/libsubfinder/sources/certspotter"
 	"github.com/ice3man543/subfinder/libsubfinder/sources/crtsh"
+	"github.com/ice3man543/subfinder/libsubfinder/sources/dnsdb"
 	"github.com/ice3man543/subfinder/libsubfinder/sources/dnsdumpster"
 	"github.com/ice3man543/subfinder/libsubfinder/sources/findsubdomains"
 	"github.com/ice3man543/subfinder/libsubfinder/sources/hackertarget"
@@ -50,12 +51,13 @@ type Source struct {
 	Netcraft       bool
 	Waybackarchive bool
 	Threatminer    bool
+	Dnsdb          bool
 
 	NoOfSources int
 }
 
 func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
-	sourceConfig := Source{false, false, false, false, false, false, false, false, false, false, false, false, false, false, 0}
+	sourceConfig := Source{false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, 0}
 
 	fmt.Printf("\n")
 	if state.Sources == "all" {
@@ -75,10 +77,11 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 			fmt.Printf("\n[-] Searching For Subdomains in Securitytrails")
 			fmt.Printf("\n[-] Searching For Subdomains in WaybackArchive")
 			fmt.Printf("\n[-] Searching For Subdomains in ThreatMiner")
+			fmt.Printf("\n[-] Searching For Subdomains in Dnsdb")
 			fmt.Printf("\n[-] Searching For Subdomains in Netcraft\n")
 		}
 
-		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, true, 14}
+		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, 15}
 	} else {
 		// Check data sources and create a source configuration structure
 
@@ -168,6 +171,12 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 				}
 				sourceConfig.Threatminer = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
+			} else if source == "dnsdb" {
+				if state.Silent != true {
+					fmt.Printf("\n[-] Searching For Subdomains in DnsDB")
+				}
+				sourceConfig.Dnsdb = true
+				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			}
 		}
 	}
@@ -218,6 +227,9 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 	}
 	if sourceConfig.Threatminer == true {
 		go threatminer.Query(state, ch)
+	}
+	if sourceConfig.Dnsdb == true {
+		go dnsdb.Query(state, ch)
 	}
 
 	// Recieve data from all goroutines running
