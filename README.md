@@ -5,7 +5,7 @@
 
 SubFinder is a subdomain discovery tool that uses various techniques to discover massive amounts of subdomains for any target. It has been aimed as a successor to the [sublist3r project](https://github.com/aboul3la/Sublist3r). SubFinder uses Passive Sources, Search Engines, Pastebins, Internet Archives, etc to find subdomains and then it uses a permutation module inspired by altdns to generate permutations and resolve them quickly using a powerful bruteforcing engine. It can also perform plain bruteforce if needed. The tool is highly customizable, and the code is built with a modular approach in mind making it easy to add functionalities and remove errors.
 
-[![SubFinder in action](https://asciinema.org/a/177851.png)](https://asciinema.org/a/177851)
+[![asciicast](https://asciinema.org/a/177851.png)](https://asciinema.org/a/177851)
 
 ## Why?
 
