@@ -77,8 +77,8 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 			fmt.Printf("\n[-] Searching For Subdomains in Securitytrails")
 			fmt.Printf("\n[-] Searching For Subdomains in WaybackArchive")
 			fmt.Printf("\n[-] Searching For Subdomains in ThreatMiner")
+			fmt.Printf("\n[-] Searching For Subdomains in Dnsdb")
 			fmt.Printf("\n[-] Searching For Subdomains in Netcraft\n")
-			fmt.Printf("\n[-] Searching For Subdomains in Dnsdb\n")
 		}
 
 		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, 15}
