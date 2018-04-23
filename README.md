@@ -19,14 +19,40 @@ So finally after working hard, here is something that I hope you guys will :hear
 - Fast And Powerful Bruteforcing Module (In Development)
 - Powerful Permutation generation engine. (In Development)
 - Many Passive Data Sources (CertDB, CertSpotter, crtsh, DNSDumpster, FindSubdomains, Hackertarget, Netcraft, PassiveTotal, PTRArchive, SecurityTrails, Threatcrowd, VirusTotal, Waybackarchive, Threatminer)
+- Multiple Output formats
 
 ## Install
 
+### Direct
 The installation is easy. Git clone the repo and run go build.
 
 ```bash
 go get github.com/ice3man543/subfinder
 ```
+
+### Docker
+
+Git clone the repo, then build and run subfinder in a container with the following commands
+
+- Clone the repo using `git clone https://github.com/ice3man543/subfinder.git`
+- Build your docker container
+```bash
+docker build -t subfinder .
+```
+
+- After building the container, run the following.
+```bash
+docker run -it subfinder
+```
+> The above command is the same as running `-h`
+
+For example, this runs the tool against uber.com and output the results to your host file system:
+```bash
+docker run -it subfinder -d uber.com > uber.com.txt
+```
+
+### Post Install
+
 To configure it to work with certain services, you need to have an API key for them. These are the services that do not work without an API key.
 
 - [Virustotal](https://www.virustotal.com/) 
@@ -40,29 +66,12 @@ Theses values are stored in the $HOME/.config/subfinder/config.json file which w
 ./subfinder --set-config PassivetotalUsername=hacker,PassivetotalKey=supersecret
 ```
 
-## Docker
+If you are using docker, you can use the following command to accomplish the same.
 
-Git clone the repo, then build and run subfinder in a container with the following commands
-
-- Clone the repo using `git clone https://github.com/ice3man543/subfinder.git`
-- Edit your `Dockerfile` to include your API keys
-- Build your docker container
 ```bash
-docker build -t subfinder .
+docker run -it subfinder --set-config VirustotalAPIKey=0x41414141
+docker run -it subfinder  --set-config PassivetotalUsername=hacker,PassivetotalKey=supersecret
 ```
-
-- After building the container, run the following.
-```bash
-docker run --rm -it subfinder
-```
-> The above command is the same as running `-h`
-
-For example, this runs the tool against uber.com and output the results to your host file system:
-```bash
-docker run --rm -it subfinder -d uber.com > uber.com.txt
-```
-> Note: `-o uber.com.txt` would output into the docker container, which is deleted once the process finishes, because of the `--rm` segment of the docker command)
-
 ## Usage
 
 ```bash
@@ -93,7 +102,6 @@ This tool is currently in active development. So some features may not work or m
 ## Acknowledgements
 
 - @FranticFerret for his work on adding docker support.
-- @tomnomnom for ideas regarding configuration file.
 
 ## License
 
