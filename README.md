@@ -111,7 +111,6 @@ This tool is currently in active development. So some features may not work or m
 ## Acknowledgements
 
 - @FranticFerret for his work on adding docker support.
-- @himanshudas for adding DnsDB Support to the tool.
 
 ## License
 
