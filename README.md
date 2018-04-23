@@ -18,7 +18,7 @@ So finally after working hard, here is something that I hope you guys will :hear
 - Simple and modular code base making it easy to contribute.
 - Fast And Powerful Bruteforcing Module (In Development)
 - Powerful Permutation generation engine. (In Development)
-- Many Passive Data Sources (CertDB, CertSpotter, crtsh, DNSDumpster, FindSubdomains, Hackertarget, Netcraft, PassiveTotal, PTRArchive, SecurityTrails, Threatcrowd, VirusTotal, Waybackarchive, Threatminer)
+- Many Passive Data Sources (CertDB, CertSpotter, crtsh, DNSDumpster, FindSubdomains, Hackertarget, Netcraft, PassiveTotal, PTRArchive, SecurityTrails, Threatcrowd, VirusTotal, Waybackarchive, Threatminer, DnsDB)
 - Multiple Output formats
 
 ## Install
