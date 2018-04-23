@@ -46,9 +46,11 @@ docker run -it subfinder
 ```
 > The above command is the same as running `-h`
 
+##### NOTE: Please follow the Post Install steps given after this to correctly configure the tool.
+
 For example, this runs the tool against uber.com and output the results to your host file system:
 ```bash
-docker run -it subfinder -d uber.com > uber.com.txt
+docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it subfinder -d uber.com > uber.com.txt
 ```
 
 ### Post Install
@@ -66,12 +68,19 @@ Theses values are stored in the $HOME/.config/subfinder/config.json file which w
 ./subfinder --set-config PassivetotalUsername=hacker,PassivetotalKey=supersecret
 ```
 
-If you are using docker, you can use the following command to accomplish the same.
+If you are using docker, you need to first create your directory structure holding subfinder configuration file. You can either run the binary in your host system and let it create the directory structure of files, after which you can use --set-config flag to set the api values like before. Or you can run - 
+```bash
+mkdir $HOME/.config/subfinder
+cp config.json $HOME/.config/subfinder/config.json
+nano $HOME/.config/subfinder/config.json (optional)
+```
+After that, you can pass it as a volume using the following sample command.
 
 ```bash
-docker run -it subfinder --set-config VirustotalAPIKey=0x41414141
-docker run -it subfinder  --set-config PassivetotalUsername=hacker,PassivetotalKey=supersecret
+sudo docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it subfinder -d freelancer.com
 ```
+Now, you can also pass --set-config inside the docker to change the configuration options.
+
 ## Usage
 
 ```bash
