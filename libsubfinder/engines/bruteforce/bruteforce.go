@@ -16,7 +16,6 @@ import (
 	"os"
 	"sync"
 
-	"github.com/Ice3man543/subfinder/libsubfinder/bruteforcer"
 	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
 
