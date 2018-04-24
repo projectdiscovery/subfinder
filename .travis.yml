@@ -9,7 +9,7 @@ language: go
 go:
   - 1.9
   - master 
-
+  
 # Do `go get` dependencies. Don't only build with the
 # code in vendor/
 install: false
