@@ -26,6 +26,7 @@ import (
 	"github.com/ice3man543/subfinder/libsubfinder/sources/netcraft"
 	"github.com/ice3man543/subfinder/libsubfinder/sources/passivetotal"
 	"github.com/ice3man543/subfinder/libsubfinder/sources/ptrarchive"
+	"github.com/ice3man543/subfinder/libsubfinder/sources/riddler"
 	"github.com/ice3man543/subfinder/libsubfinder/sources/securitytrails"
 	"github.com/ice3man543/subfinder/libsubfinder/sources/threatcrowd"
 	"github.com/ice3man543/subfinder/libsubfinder/sources/threatminer"
@@ -50,12 +51,13 @@ type Source struct {
 	Netcraft       bool
 	Waybackarchive bool
 	Threatminer    bool
+	Riddler        bool
 
 	NoOfSources int
 }
 
 func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
-	sourceConfig := Source{false, false, false, false, false, false, false, false, false, false, false, false, false, false, 0}
+	sourceConfig := Source{false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, 0}
 
 	fmt.Printf("\n")
 	if state.Sources == "all" {
@@ -75,10 +77,11 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 			fmt.Printf("\n[-] Searching For Subdomains in Securitytrails")
 			fmt.Printf("\n[-] Searching For Subdomains in WaybackArchive")
 			fmt.Printf("\n[-] Searching For Subdomains in ThreatMiner")
+			fmt.Printf("\n[-] Searching For Subdomains in Riddler")
 			fmt.Printf("\n[-] Searching For Subdomains in Netcraft\n")
 		}
 
-		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, true, 14}
+		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, 15}
 	} else {
 		// Check data sources and create a source configuration structure
 
@@ -168,6 +171,12 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 				}
 				sourceConfig.Threatminer = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
+			} else if source == "riddler" {
+				if state.Silent != true {
+					fmt.Printf("\n[-] Searching For Subdomains in Riddler")
+				}
+				sourceConfig.Riddler = true
+				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			}
 		}
 	}
@@ -218,6 +227,9 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 	}
 	if sourceConfig.Threatminer == true {
 		go threatminer.Query(state, ch)
+	}
+	if sourceConfig.Riddler == true {
+		go riddler.Query(state, ch)
 	}
 
 	// Recieve data from all goroutines running
