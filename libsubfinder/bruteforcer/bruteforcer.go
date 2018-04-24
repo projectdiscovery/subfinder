@@ -6,7 +6,7 @@
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
-
+/*
 package bruteforcer
 
 import (
@@ -36,3 +36,4 @@ func CheckDNSEntry(state *helper.State, domain string, channel chan string) {
 		return
 	}
 }
+*/
