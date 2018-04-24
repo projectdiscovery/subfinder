@@ -1,0 +1,46 @@
+language: go
+
+# Only the last two Go releases are supported by the Go team with security
+# updates. Any versions older than that should be considered deprecated.
+# Don't bother testing with them. tip builds your code with the latest
+# development version of Go. This can warn you that your code will break
+# in the next version of Go. Don't worry! Later we declare that test runs
+# are allowed to fail on Go tip.
+go:
+  - 1.9
+  - master 
+
+# Skip the install step. Don't `go get` dependencies. Only build with the
+# code in vendor/
+install: true
+
+matrix:
+  # It's ok if our code fails on unstable development versions of Go.
+  allow_failures:
+    - go: master
+  # Don't wait for tip tests to finish. Mark the test run green if the
+  # tests pass on the stable versions of Go.
+  fast_finish: true
+
+# Don't email me the results of the test runs.
+notifications:
+  email: false
+
+# Anything in before_script that returns a nonzero exit code will
+# flunk the build and immediately stop. It's sorta like having
+# set -e enabled in bash. 
+before_script:
+  - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/) # All the .go files, excluding vendor/
+  - go get github.com/golang/lint/golint                        # Linter
+  - go get honnef.co/go/tools/cmd/megacheck                     # Badass static analyzer/linter
+  - go get github.com/fzipp/gocyclo
+
+# script always run to completion (set +e). All of these code checks are must haves
+# in a modern Go project.
+script:
+  - test -z $(gofmt -s -l $GO_FILES)         # Fail if a .go file hasn't been formatted with gofmt
+  - go test -v -race ./...                   # Run all the tests with the race detector enabled
+  - go vet ./...                             # go vet is the official Go static analyzer
+  - megacheck ./...                          # "go vet on steroids" + linter
+  - gocyclo -over 19 $GO_FILES               # forbid code with huge functions
+  - golint -set_exit_status $(go list ./...) # one last linter
