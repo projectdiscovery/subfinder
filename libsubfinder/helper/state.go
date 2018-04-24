@@ -40,6 +40,9 @@ type Config struct {
 	PassivetotalKey      string `json:"passivetotalKey"`      // PassiveTotal api key
 
 	SecurityTrailsKey string `json:"securitytrailsKey"` // SecurityTrails api key
+
+	RiddlerEmail    string `json:"riddlerEmail"`    // Riddler Email
+	RiddlerPassword string `json:"riddlerPassword"` // Riddler Password
 }
 
 func InitState() (state State, err error) {
