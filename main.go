@@ -17,10 +17,10 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/ice3man543/subfinder/libsubfinder/engines/passive"
-	"github.com/ice3man543/subfinder/libsubfinder/helper"
-	"github.com/ice3man543/subfinder/libsubfinder/output"
-	//"github.com/ice3man543/subfinder/libsubfinder/engines/bruteforce"
+	"github.com/Ice3man543/subfinder/libsubfinder/engines/passive"
+	"github.com/Ice3man543/subfinder/libsubfinder/helper"
+	"github.com/Ice3man543/subfinder/libsubfinder/output"
+	//"github.com/Ice3man543/subfinder/libsubfinder/engines/bruteforce"
 )
 
 var banner = `
