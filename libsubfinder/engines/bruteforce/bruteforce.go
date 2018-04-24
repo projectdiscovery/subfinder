@@ -11,10 +11,10 @@
 package bruteforce
 
 import (
-	"bufio"
+	//"bufio"
 	"fmt"
 	"os"
-	"sync"
+	//"sync"
 
 	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
@@ -36,7 +36,7 @@ func Bruteforce(state *helper.State) (subdomains []string) {
 
 func Process(wordlist string, domain string, state *helper.State) (subdomains []string, err error) {
 
-	// Holds current words read from dictionary
+	/*// Holds current words read from dictionary
 	words := []string{}
 
 	// Open the wordlist file
@@ -59,7 +59,7 @@ func Process(wordlist string, domain string, state *helper.State) (subdomains []
 
 		go func() {
 			defer wg.Done()
-			bruteforcer.CheckDNSEntry(state, domain, channel)
+			//bruteforcer.CheckDNSEntry(state, domain, channel)
 		}()
 	}
 
@@ -74,7 +74,7 @@ func Process(wordlist string, domain string, state *helper.State) (subdomains []
 		}
 	}
 
-	wg.Wait()
+	wg.Wait()*/
 
 	return subdomains, err
 }
