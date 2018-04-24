@@ -9,9 +9,9 @@ language: go
 go:
   - 1.9
   - master 
-
-# Don't skip the install step. Do `go get` dependencies and don't only build with
-# the code in vendor/
+  
+# Do `go get` dependencies. Don't only build with the
+# code in vendor/
 install: false
 
 matrix:
