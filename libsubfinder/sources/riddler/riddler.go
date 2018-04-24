@@ -15,7 +15,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/ice3man543/subfinder/libsubfinder/helper"
+	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
 
 type authentication struct {
