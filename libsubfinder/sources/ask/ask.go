@@ -14,7 +14,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ice3man543/subfinder/libsubfinder/helper"
+	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
 
 // Contains all subdomains found
