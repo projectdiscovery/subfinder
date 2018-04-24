@@ -18,7 +18,7 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/ice3man543/subfinder/libsubfinder/helper"
+	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
 
 type virustotalapi_object struct {

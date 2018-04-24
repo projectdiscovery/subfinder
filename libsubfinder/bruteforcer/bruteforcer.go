@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/ice3man543/subfinder/libsubfinder/helper"
+	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
 
 func CheckDNSEntry(state *helper.State, domain string, channel chan string) {
