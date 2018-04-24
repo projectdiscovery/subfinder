@@ -10,9 +10,9 @@ go:
   - 1.9
   - master 
 
-# Skip the install step. Don't `go get` dependencies. Only build with the
-# code in vendor/
-install: true
+# Don't skip the install step. Do `go get` dependencies and don't only build with
+# the code in vendor/
+install: false
 
 matrix:
   # It's ok if our code fails on unstable development versions of Go.
