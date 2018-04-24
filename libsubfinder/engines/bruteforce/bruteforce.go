@@ -16,8 +16,8 @@ import (
 	"os"
 	"sync"
 
-	"github.com/ice3man543/subfinder/libsubfinder/bruteforcer"
-	"github.com/ice3man543/subfinder/libsubfinder/helper"
+	"github.com/Ice3man543/subfinder/libsubfinder/bruteforcer"
+	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
 
 func Bruteforce(state *helper.State) (subdomains []string) {
