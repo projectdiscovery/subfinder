@@ -14,7 +14,7 @@ import (
      "io/ioutil"
      "os"
 
-     "github.com/ice3man543/subfinder/libsubfinder/helper"
+     "github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
 
 // Write output to a normal text file
