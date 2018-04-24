@@ -25,22 +25,22 @@ So finally after working hard, here is something that I hope you guys will :hear
 
 | Source         	| Usage        	|
 |----------------	|--------------	|
-| ask            	| Natively     	|
-| certdb         	| Natively     	|
-| certspotter    	| Natively     	|
-| crtsh          	| Natively     	|
-| dnsdumpster    	| Natively     	|
-| findsubdomains 	| Natively     	|
-| hackertarget   	| Natively     	|
-| netcraft       	| Natively     	|
-| passivetotal   	| With API key 	|
-| ptrarchive     	| Natively     	|
-| riddler        	| Natively     	|
-| securitytrails 	| With API key 	|
-| threatcrowd    	| Natively     	|
-| threatminer    	| Natively     	|
-| virustotal     	| With API key 	|
-| waybackarchive 	| Natively     	|
+| Ask            	| Natively     	|
+| CertDB         	| Natively     	|
+| Certspotter    	| Natively     	|
+| Crtsh          	| Natively     	|
+| DNSdumpster    	| Natively     	|
+| Findsubdomains 	| Natively     	|
+| Hackertarget   	| Natively     	|
+| Netcraft       	| Natively     	|
+| Passivetotal   	| With API key 	|
+| Ptrarchive     	| Natively     	|
+| Riddler        	| Natively     	|
+| Securitytrails 	| With API key 	|
+| Threatcrowd    	| Natively     	|
+| Threatminer    	| Natively     	|
+| Virustotal     	| With API key 	|
+| Waybackarchive 	| Natively     	|
 
 # Usage
 
