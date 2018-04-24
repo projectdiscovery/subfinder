@@ -1,11 +1,11 @@
-// 
+//
 // ask.go : Ask subdomain parsing engine in golang
 // Written By : @ice3man (Nizamul Rana)
-// 
+//
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
-
+/*
 package netcraft
 
 import (
@@ -31,7 +31,7 @@ var askConfiguration helper.BaseSearchConfiguration = {
 	[]	// All Subdomains found on current search engine
 }
 
-// 
+//
 // Local function to recursively enumerate subdomains until no subdomains
 // are left :-)
 //
@@ -56,11 +56,11 @@ func enumerate(state *helper.State, baseUrl string) (err error) {
 
     re := regexp.MustCompile("<a href=\"http://toolbar.netcraft.com/site_report\\?url=(.*)\">")
     match := re.FindAllStringSubmatch(src, -1)
-    
+
     for _, subdomain := range match {
     	// Dirty Logic
         finishedSub := strings.Split(subdomain[1], "//")[1]
-		
+
 		if state.Verbose == true {
 			if state.Color == true {
 				fmt.Printf("\n[\033[31;1;4mNETCRAFT\033[0m] %s", finishedSub)
@@ -86,10 +86,10 @@ func enumerate(state *helper.State, baseUrl string) (err error) {
     return nil
 }
 
-// 
+//
 // Query : Queries awesome Ask service for subdomains
 // @param state : current application state, holds all information found
-// 
+//
 // @return subdomain : String array containing subdomains found
 // @return err : nil if successfull and error if failed
 //
@@ -103,3 +103,4 @@ func Query(state *helper.State) (subdomains []string, err error) {
 
   	return globalSubdomains, nil
 }
+*/
