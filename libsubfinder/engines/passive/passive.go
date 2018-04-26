@@ -17,6 +17,7 @@ import (
 	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 
 	// Load different Passive data sources
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/censys"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/certdb"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/certspotter"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/crtsh"
@@ -37,6 +38,7 @@ import (
 // Sources configuration structure specifying what should we use
 // to do passive subdomain discovery.
 type Source struct {
+	Censys         bool
 	Certdb         bool
 	Crtsh          bool
 	Certspotter    bool
@@ -57,13 +59,14 @@ type Source struct {
 }
 
 func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
-	sourceConfig := Source{false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, 0}
+	sourceConfig := Source{false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, 0}
 
 	fmt.Printf("\n")
 	if state.Sources == "all" {
 		// Search all data sources
 
 		if state.Silent != true {
+			fmt.Printf("\n[-] Searching For Subdomains in Censys")
 			fmt.Printf("\n[-] Searching For Subdomains in Crt.sh")
 			fmt.Printf("\n[-] Searching For Subdomains in CertDB")
 			fmt.Printf("\n[-] Searching For Subdomains in Certspotter")
@@ -81,7 +84,7 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 			fmt.Printf("\n[-] Searching For Subdomains in Netcraft\n")
 		}
 
-		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, 15}
+		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, 15}
 	} else {
 		// Check data sources and create a source configuration structure
 
@@ -177,6 +180,12 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 				}
 				sourceConfig.Riddler = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
+			} else if source == "censys" {
+				if state.Silent != true {
+					fmt.Printf("\n[-] Searching For Subdomains in Censys")
+				}
+				sourceConfig.Censys = true
+				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			}
 		}
 	}
@@ -230,6 +239,9 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 	}
 	if sourceConfig.Riddler == true {
 		go riddler.Query(state, ch)
+	}
+	if sourceConfig.Censys == true {
+		go censys.Query(state, ch)
 	}
 
 	// Recieve data from all goroutines running
