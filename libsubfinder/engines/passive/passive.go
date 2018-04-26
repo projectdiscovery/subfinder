@@ -61,7 +61,7 @@ type Source struct {
 }
 
 func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
-	sourceConfig := Source{false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, 0}
+	sourceConfig := Source{false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, 0}
 
 	fmt.Printf("\n")
 	if state.Sources == "all" {
@@ -84,11 +84,10 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 			fmt.Printf("\n[-] Searching For Subdomains in ThreatMiner")
 			fmt.Printf("\n[-] Searching For Subdomains in Riddler")
 			fmt.Printf("\n[-] Searching For Subdomains in Netcraft")
-			fmt.Printf("\n[-] Searching For Subdomains in Dnsdb\n")			
+			fmt.Printf("\n[-] Searching For Subdomains in Dnsdb\n")
 		}
 
-
-		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, 16}
+		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, 17}
 	} else {
 		// Check data sources and create a source configuration structure
 
@@ -195,7 +194,7 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 					fmt.Printf("\n[-] Searching For Subdomains in Dnsdb")
 				}
 				sourceConfig.Dnsdb = true
-				sourceConfig.NoOfSources = sourceConfig.NoOfSources +1
+				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			}
 		}
 	}
@@ -252,6 +251,7 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 	}
 	if sourceConfig.Censys == true {
 		go censys.Query(state, ch)
+	}
 	if sourceConfig.Dnsdb == true {
 		go dnsdb.Query(state, ch)
 	}

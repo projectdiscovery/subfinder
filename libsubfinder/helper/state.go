@@ -29,8 +29,10 @@ type State struct {
 	Silent         bool      // Show only silent output or not
 	FinalResults   []string  // Contains final bruteforcing results
 	SetConfig      string    // Used for changing the current configuration file details
+	SetSetting     string    // Used for passing custom configuration to the application
 
-	ConfigState Config // Current configuration file state
+	CurrentSettings Setting // Current application settings
+	ConfigState     Config  // Current configuration file state
 }
 
 type Config struct {
@@ -43,6 +45,21 @@ type Config struct {
 
 	RiddlerEmail    string `json:"riddlerEmail"`    // Riddler Email
 	RiddlerPassword string `json:"riddlerPassword"` // Riddler Password
+
+	CensysUsername string `json:"censysUsername"` // Censys Username
+	CensysSecret   string `json:"censysSecret"`   // Censys API Key
+}
+
+type Setting struct {
+	CensysPages string // Censys pages to check. For All, use "all"
+}
+
+func InitializeSettings() (setting *Setting) {
+	var settings Setting
+
+	settings.CensysPages = "10" // Default is 10 pages. Strikes a fine balance
+
+	return &settings
 }
 
 func InitState() (state State, err error) {
@@ -50,5 +67,7 @@ func InitState() (state State, err error) {
 	// Read the configuration file and ignore errors
 	config, _ := ReadConfigFile()
 
-	return State{true, 10, 180, false, "", false, "", false, false, "", false, StringSet{Set: map[string]bool{}}, true, false, "", false, []string{}, "", *config}, nil
+	setting := InitializeSettings()
+
+	return State{true, 10, 180, false, "", false, "", false, false, "", false, StringSet{Set: map[string]bool{}}, true, false, "", false, []string{}, "", "", *setting, *config}, nil
 }

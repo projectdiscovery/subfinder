@@ -68,7 +68,7 @@ func Unique(elements []string) []string {
 // Returns valid subdomains found ending with target domain
 func Validate(state *State, strslice []string) (subdomains []string) {
     for _, entry := range strslice {
-        if strings.HasSuffix(entry, state.Domain) {
+        if strings.HasSuffix(entry, "."+state.Domain) {
             subdomains = append(subdomains, entry)
         }
     }
