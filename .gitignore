@@ -10,6 +10,8 @@ config.json
 
 # Executable File
 process
+subfinder
+main
 
 # Test binary, build with `go test -c`
 *.test

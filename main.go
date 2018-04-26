@@ -54,6 +54,7 @@ func ParseCmdLine() (state *helper.State, err error) {
 	flag.BoolVar(&s.Bruteforce, "b", false, "Use bruteforcing to find subdomains")
 	flag.BoolVar(&s.WildcardForced, "fw", false, "Force Bruteforcing of Wildcard DNS")
 	flag.StringVar(&s.SetConfig, "set-config", "none", "Comma separated list of configuration details")
+	flag.StringVar(&s.SetSetting, "set-settings", "none", "Comma separated list of settings")
 
 	flag.Parse()
 
@@ -97,6 +98,22 @@ func main() {
 		}
 
 		os.Exit(0)
+	}
+
+	if state.SetSetting != "none" {
+		setSetting := strings.Split(state.SetSetting, ",")
+
+		for _, setting := range setSetting {
+			object := strings.Split(setting, "=")
+
+			// Change value dynamically using reflect package
+			reflect.ValueOf(&state.CurrentSettings).Elem().FieldByName(object[0]).SetString(object[1])
+			if state.Silent != true {
+				if state.Verbose == true {
+					fmt.Printf("[-] Successfully Set %s=>%s\n", object[0], object[1])
+				}
+			}
+		}
 	}
 
 	if state.Domain == "" {
