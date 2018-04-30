@@ -182,3 +182,4 @@ For checking all pages returned by censys, you can use "all" option. Note, It is
 
 - @FranticFerret for his work on adding docker support.
 - @himanshudas for adding DnsDB support
+- @Mzack9999 for fixing failing docker build process
