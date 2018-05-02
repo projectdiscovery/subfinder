@@ -25,6 +25,7 @@ This project began it's life as a Bug Bounty World slack channel discussion. We 
 
 | Source         	| Usage        	|
 |----------------	|--------------	|
+| Baidu           | Natively      |
 | Censys         	| With API Key  |
 | CertDB         	| Natively     	|
 | Certspotter    	| Natively     	|
@@ -182,4 +183,4 @@ For checking all pages returned by censys, you can use "all" option. Note, It is
 
 - @FranticFerret for his work on adding docker support.
 - @himanshudas for adding DnsDB support
-- @Mzack9999 for fixing failing docker build process
+- @Mzack9999 for fixing and improving docker builds and adding Baidu Search Engine. 
