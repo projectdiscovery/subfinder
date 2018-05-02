@@ -12,6 +12,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"regexp"
+	"time"
+	"math/rand"
+	"strconv"
+	"sort"
+	"net/url"
 
 	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
@@ -24,36 +29,70 @@ func Query(state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result
 	result.Subdomains = subdomains
-	resp, err := helper.GetHTTPResponse("https://www.baidu.com/s?rn=100&pn=0&wd=site:" + state.Domain +"&oq=site:" + state.Domain, state.Timeout)
-	if err != nil {
-		result.Error = err
-		ch <- result
-		return
-	}
-
-	// Get the response body
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		result.Error = err
-		ch <- result
-		return
-	}
-	src := string(body)
-	
-	re := regexp.MustCompile(`(?m)(\w+\.)+` + state.Domain)
-	match := re.FindAllString(src, -1)
-	for _, subdomain := range match {
-
-		if state.Verbose == true {
-			if state.Color == true {
-				fmt.Printf("\n[%sBaidu%s] %s", helper.Red, helper.Reset, subdomain)
-			} else {
-				fmt.Printf("\n[Baidu] %s", subdomain)
-			}
+	min_iterations := 5
+	max_iterations := 760
+	search_query := ""
+	current_page := 0
+	for current_iteration := 0; current_iteration <= max_iterations; current_iteration++ {
+		new_search_query := "site:" + state.Domain
+		if len(subdomains) > 0 {
+			new_search_query += " -site:www." + state.Domain
+		}
+		new_search_query = url.QueryEscape(new_search_query)
+		if search_query != new_search_query {
+			current_page = 0
+			search_query = new_search_query
 		}
 
-		subdomains = append(subdomains, subdomain)
+		resp, err := helper.GetHTTPResponse("https://www.baidu.com/s?rn=100&pn=" + strconv.Itoa(current_page) + "&wd=" + search_query +"&oq=" + search_query, state.Timeout)
+		if err != nil {
+			result.Error = err
+			ch <- result
+			return
+		}
+
+		// Get the response body
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			result.Error = err
+			ch <- result
+			return
+		}
+		src := string(body)
+		
+		re := regexp.MustCompile(`([a-z0-9]+\.)+` + state.Domain)
+		match := re.FindAllString(src, -1)
+
+		new_subdomains_found := 0
+		for _, subdomain := range match {
+			if sort.StringsAreSorted(subdomains) == false {
+				sort.Strings(subdomains)
+			}
+			
+			insert_index := sort.SearchStrings(subdomains, subdomain)
+			if insert_index < len(subdomains) && subdomains[insert_index] == subdomain {
+				continue
+			}
+
+			if state.Verbose == true {
+				if state.Color == true {
+					fmt.Printf("\n[%sBaidu%s] %s", helper.Red, helper.Reset, subdomain)
+				} else {
+					fmt.Printf("\n[Baidu] %s", subdomain)
+				}
+			}
+
+			subdomains = append(subdomains, subdomain)
+			new_subdomains_found++
+		}
+		// If no new subdomains are found exits after min_iterations
+		if new_subdomains_found == 0 && current_iteration > min_iterations {
+			break
+		}
+		current_page++
+		time.Sleep(time.Duration((3 +rand.Intn(5))) * time.Second)
 	}
+
 	result.Subdomains = subdomains
 	result.Error = nil
 	ch <- result
