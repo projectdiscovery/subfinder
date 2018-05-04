@@ -35,6 +35,7 @@ import (
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/virustotal"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/waybackarchive"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/baidu"
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/bing"
 )
 
 // Sources configuration structure specifying what should we use
@@ -58,12 +59,13 @@ type Source struct {
 	Riddler        bool
 	Dnsdb          bool
 	Baidu          bool
+	Bing           bool
 
 	NoOfSources int
 }
 
 func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
-	sourceConfig := Source{false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, 0}
+	sourceConfig := Source{false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, 0}
 
 	fmt.Printf("\n")
 	if state.Sources == "all" {
@@ -87,10 +89,11 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 			fmt.Printf("\n[-] Searching For Subdomains in Riddler")
 			fmt.Printf("\n[-] Searching For Subdomains in Netcraft")
 			fmt.Printf("\n[-] Searching For Subdomains in Dnsdb")
-			fmt.Printf("\n[-] Searching For Subdomains in Baidu\n")
+			fmt.Printf("\n[-] Searching For Subdomains in Baidu")
+			fmt.Printf("\n[-] Searching For Subdomains in Bing\n")
 		}
 
-		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, 18}
+		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, 19}
 	} else {
 		// Check data sources and create a source configuration structure
 
@@ -204,6 +207,12 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 				}
 				sourceConfig.Baidu = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
+			} else if source == "bing" {
+				if state.Silent != true {
+					fmt.Printf("\n[-] Searching For Subdomains in Bing")
+				}
+				sourceConfig.Bing = true
+				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			}
 		}
 	}
@@ -266,6 +275,9 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 	}
 	if sourceConfig.Baidu == true {
 		go baidu.Query(state, ch)
+	}
+	if sourceConfig.Bing == true {
+		go bing.Query(state, ch)
 	}
 
 	// Recieve data from all goroutines running
