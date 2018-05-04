@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A golang client for Baidu Subdomain Discovery
+// A golang client for Ask Subdomain Discovery
 package ask
 
 import (
