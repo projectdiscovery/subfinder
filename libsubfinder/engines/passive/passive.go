@@ -35,6 +35,7 @@ import (
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/virustotal"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/waybackarchive"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/baidu"
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/bing"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/ask"
 )
 
@@ -59,6 +60,7 @@ type Source struct {
 	Riddler        bool
 	Dnsdb          bool
 	Baidu          bool
+	Bing           bool
 	Ask            bool
 
 	NoOfSources int
@@ -90,6 +92,7 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 			fmt.Printf("\n[-] Searching For Subdomains in Netcraft")
 			fmt.Printf("\n[-] Searching For Subdomains in Dnsdb")
 			fmt.Printf("\n[-] Searching For Subdomains in Baidu")
+			fmt.Printf("\n[-] Searching For Subdomains in Bing")
 			fmt.Printf("\n[-] Searching For Subdomains in Ask\n")
 		}
 
@@ -207,6 +210,11 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 				}
 				sourceConfig.Baidu = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
+			} else if source == "bing" {
+				if state.Silent != true {
+					fmt.Printf("\n[-] Searching For Subdomains in Bing")
+				}
+				sourceConfig.Bing = true
 			} else if source == "ask" {
 				if state.Silent != true {
 					fmt.Printf("\n[-] Searching For Subdomains in Ask")
@@ -276,6 +284,8 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 	if sourceConfig.Baidu == true {
 		go baidu.Query(state, ch)
 	}
+	if sourceConfig.Bing == true {
+		go bing.Query(state, ch)
 	if sourceConfig.Ask == true {
 		go ask.Query(state, ch)
 	}
