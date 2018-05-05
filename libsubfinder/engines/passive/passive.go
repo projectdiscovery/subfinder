@@ -17,6 +17,9 @@ import (
 	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 
 	// Load different Passive data sources
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/ask"
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/baidu"
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/bing"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/censys"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/certdb"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/certspotter"
@@ -34,9 +37,6 @@ import (
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/threatminer"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/virustotal"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/waybackarchive"
-	"github.com/Ice3man543/subfinder/libsubfinder/sources/baidu"
-	"github.com/Ice3man543/subfinder/libsubfinder/sources/bing"
-	"github.com/Ice3man543/subfinder/libsubfinder/sources/ask"
 )
 
 // Sources configuration structure specifying what should we use
@@ -67,7 +67,7 @@ type Source struct {
 }
 
 func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
-	sourceConfig := Source{false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, 0}
+	sourceConfig := Source{false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, 0}
 
 	fmt.Printf("\n")
 	if state.Sources == "all" {
@@ -96,7 +96,7 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 			fmt.Printf("\n[-] Searching For Subdomains in Ask\n")
 		}
 
-		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, 19}
+		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, 19}
 	} else {
 		// Check data sources and create a source configuration structure
 
@@ -286,6 +286,7 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 	}
 	if sourceConfig.Bing == true {
 		go bing.Query(state, ch)
+	}
 	if sourceConfig.Ask == true {
 		go ask.Query(state, ch)
 	}
