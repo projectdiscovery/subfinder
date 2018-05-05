@@ -30,6 +30,8 @@ type State struct {
 	FinalResults   []string  // Contains final bruteforcing results
 	SetConfig      string    // Used for changing the current configuration file details
 	SetSetting     string    // Used for passing custom configuration to the application
+	DomainList     string    // List of domains to find subdomains for
+	OutputDir      string    // Directory to output results to if domain list is used
 
 	CurrentSettings Setting // Current application settings
 	ConfigState     Config  // Current configuration file state
@@ -75,5 +77,5 @@ func InitState() (state State, err error) {
 
 	setting := InitializeSettings()
 
-	return State{true, 10, 180, false, "", false, "", false, false, "", false, StringSet{Set: map[string]bool{}}, true, false, "", false, []string{}, "", "", *setting, *config}, nil
+	return State{true, 10, 180, false, "", false, "", false, false, "", false, StringSet{Set: map[string]bool{}}, true, false, "", false, []string{}, "", "", "", "", *setting, *config}, nil
 }

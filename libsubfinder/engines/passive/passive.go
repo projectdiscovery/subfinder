@@ -10,11 +10,14 @@
 package passive
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 
 	"github.com/Ice3man543/subfinder/libsubfinder/helper"
+	"github.com/Ice3man543/subfinder/libsubfinder/output"
 
 	// Load different Passive data sources
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/ask"
@@ -38,6 +41,8 @@ import (
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/virustotal"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/waybackarchive"
 )
+
+var DomainList []string
 
 // Sources configuration structure specifying what should we use
 // to do passive subdomain discovery.
@@ -66,6 +71,123 @@ type Source struct {
 	NoOfSources int
 }
 
+func Discover(state *helper.State, domain string, sourceConfig *Source) (subdomains []string) {
+
+	var finalPassiveSubdomains []string
+
+	// Set state domain to current domain
+	state.Domain = domain
+	ch := make(chan helper.Result, sourceConfig.NoOfSources)
+
+	if state.Silent != true {
+		fmt.Printf("\n[+] Finding subdomains for : %s", domain)
+	}
+
+	// Create goroutines for added speed and recieve data via channels
+	// Check if we the user has specified custom sources and if yes, run them
+	// via if statements.
+	if sourceConfig.Crtsh == true {
+		go crtsh.Query(state, ch)
+	}
+	if sourceConfig.Certdb == true {
+		go certdb.Query(state, ch)
+	}
+	if sourceConfig.Certspotter == true {
+		go certspotter.Query(state, ch)
+	}
+	if sourceConfig.Threatcrowd == true {
+		go threatcrowd.Query(state, ch)
+	}
+	if sourceConfig.Findsubdomains == true {
+		go findsubdomains.Query(state, ch)
+	}
+	if sourceConfig.Dnsdumpster == true {
+		go dnsdumpster.Query(state, ch)
+	}
+	if sourceConfig.Passivetotal == true {
+		go passivetotal.Query(state, ch)
+	}
+	if sourceConfig.Ptrarchive == true {
+		go ptrarchive.Query(state, ch)
+	}
+	if sourceConfig.Hackertarget == true {
+		go hackertarget.Query(state, ch)
+	}
+	if sourceConfig.Virustotal == true {
+		go virustotal.Query(state, ch)
+	}
+	if sourceConfig.Securitytrails == true {
+		go securitytrails.Query(state, ch)
+	}
+	if sourceConfig.Netcraft == true {
+		go netcraft.Query(state, ch)
+	}
+	if sourceConfig.Waybackarchive == true {
+		go waybackarchive.Query(state, ch)
+	}
+	if sourceConfig.Threatminer == true {
+		go threatminer.Query(state, ch)
+	}
+	if sourceConfig.Riddler == true {
+		go riddler.Query(state, ch)
+	}
+	if sourceConfig.Censys == true {
+		go censys.Query(state, ch)
+	}
+	if sourceConfig.Dnsdb == true {
+		go dnsdb.Query(state, ch)
+	}
+	if sourceConfig.Baidu == true {
+		go baidu.Query(state, ch)
+	}
+	if sourceConfig.Bing == true {
+		go bing.Query(state, ch)
+	}
+	if sourceConfig.Ask == true {
+		go ask.Query(state, ch)
+	}
+
+	// Recieve data from all goroutines running
+	for i := 0; i < sourceConfig.NoOfSources; i++ {
+		result := <-ch
+
+		if result.Error != nil {
+			// some error occured
+			if state.Silent != true {
+				fmt.Printf("\nerror: %v\n", result.Error)
+			}
+		}
+		for _, subdomain := range result.Subdomains {
+			finalPassiveSubdomains = append(finalPassiveSubdomains, subdomain)
+		}
+	}
+
+	// Now remove duplicate items from the slice
+	uniquePassiveSubdomains := helper.Unique(finalPassiveSubdomains)
+	// Now, validate all subdomains found
+	validPassiveSubdomains := helper.Validate(state, uniquePassiveSubdomains)
+
+	var PassiveSubdomains []string
+
+	if state.Alive == true {
+		// Nove remove all wildcard subdomains
+		//PassiveSubdomains = helper.RemoveWildcardSubdomains(state, validPassiveSubdomains)
+	}
+
+	PassiveSubdomains = validPassiveSubdomains
+
+	// Sort the subdomains found alphabetically
+	sort.Strings(PassiveSubdomains)
+
+	if state.Silent != true {
+		fmt.Printf("\n\n[~] Total %d Unique subdomains found for %s\n\n", len(PassiveSubdomains), domain)
+	}
+	for _, subdomain := range PassiveSubdomains {
+		fmt.Println(subdomain)
+	}
+
+	return PassiveSubdomains
+}
 func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 	sourceConfig := Source{false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, 0}
 
@@ -225,110 +347,60 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 		}
 	}
 
-	ch := make(chan helper.Result, sourceConfig.NoOfSources)
+	var tempResults []string
+	var hostResults []string
 
-	// Create goroutines for added speed and recieve data via channels
-	// Check if we the user has specified custom sources and if yes, run them
-	// via if statements.
-	if sourceConfig.Crtsh == true {
-		go crtsh.Query(state, ch)
-	}
-	if sourceConfig.Certdb == true {
-		go certdb.Query(state, ch)
-	}
-	if sourceConfig.Certspotter == true {
-		go certspotter.Query(state, ch)
-	}
-	if sourceConfig.Threatcrowd == true {
-		go threatcrowd.Query(state, ch)
-	}
-	if sourceConfig.Findsubdomains == true {
-		go findsubdomains.Query(state, ch)
-	}
-	if sourceConfig.Dnsdumpster == true {
-		go dnsdumpster.Query(state, ch)
-	}
-	if sourceConfig.Passivetotal == true {
-		go passivetotal.Query(state, ch)
-	}
-	if sourceConfig.Ptrarchive == true {
-		go ptrarchive.Query(state, ch)
-	}
-	if sourceConfig.Hackertarget == true {
-		go hackertarget.Query(state, ch)
-	}
-	if sourceConfig.Virustotal == true {
-		go virustotal.Query(state, ch)
-	}
-	if sourceConfig.Securitytrails == true {
-		go securitytrails.Query(state, ch)
-	}
-	if sourceConfig.Netcraft == true {
-		go netcraft.Query(state, ch)
-	}
-	if sourceConfig.Waybackarchive == true {
-		go waybackarchive.Query(state, ch)
-	}
-	if sourceConfig.Threatminer == true {
-		go threatminer.Query(state, ch)
-	}
-	if sourceConfig.Riddler == true {
-		go riddler.Query(state, ch)
-	}
-	if sourceConfig.Censys == true {
-		go censys.Query(state, ch)
-	}
-	if sourceConfig.Dnsdb == true {
-		go dnsdb.Query(state, ch)
-	}
-	if sourceConfig.Baidu == true {
-		go baidu.Query(state, ch)
-	}
-	if sourceConfig.Bing == true {
-		go bing.Query(state, ch)
-	}
-	if sourceConfig.Ask == true {
-		go ask.Query(state, ch)
+	if state.DomainList != "" {
+		// Open the wordlist file
+		wordfile, err := os.Open(state.DomainList)
+		if err != nil {
+			return finalPassiveSubdomains
+		}
+
+		scanner := bufio.NewScanner(wordfile)
+
+		for scanner.Scan() {
+			DomainList = append(DomainList, scanner.Text())
+		}
+	} else {
+		DomainList = append(DomainList, state.Domain)
 	}
 
-	// Recieve data from all goroutines running
-	for i := 0; i < sourceConfig.NoOfSources; i++ {
-		result := <-ch
+	// Perform enumeration such that even if there is a domain list, we
+	// can easily reuse the same code
+	for _, Domain := range DomainList {
+		// Make the first run
+		results := Discover(state, Domain, &sourceConfig)
+		finalPassiveSubdomains = append(finalPassiveSubdomains, results...)
+		hostResults = append(hostResults, results...)
 
-		if result.Error != nil {
-			// some error occured
-			if state.Silent != true {
-				fmt.Printf("\nerror: %v\n", result.Error)
+		// Perform Recursive Enumeration Here
+		// FIXME: There are some errros related to regexp issues here
+		// Fix them. Otherwise, this is pretty good.
+		if state.Recursive == true {
+			for _, foundSub := range results {
+				tempResults = Discover(state, foundSub, &sourceConfig)
+				finalPassiveSubdomains = append(finalPassiveSubdomains, tempResults...)
+				hostResults = append(hostResults, tempResults...)
 			}
 		}
-		for _, subdomain := range result.Subdomains {
-			finalPassiveSubdomains = append(finalPassiveSubdomains, subdomain)
+
+		// Write the output to individual files in a directory
+		if state.OutputDir != "" {
+			output.WriteOutputToDir(state, hostResults, Domain)
+		}
+		// Truncate the whole array
+		hostResults = hostResults[:cap(hostResults)]
+	}
+
+	if state.Output != "" {
+		err := output.WriteOutputToFile(state, finalPassiveSubdomains)
+		if err != nil {
+			if state.Silent == true {
+				fmt.Printf("\nerror: %v\n", err)
+			}
 		}
 	}
 
-	// Now remove duplicate items from the slice
-	uniquePassiveSubdomains := helper.Unique(finalPassiveSubdomains)
-	// Now, validate all subdomains found
-	validPassiveSubdomains := helper.Validate(state, uniquePassiveSubdomains)
-
-	var PassiveSubdomains []string
-
-	if state.Alive == true {
-		// Nove remove all wildcard subdomains
-		//PassiveSubdomains = helper.RemoveWildcardSubdomains(state, validPassiveSubdomains)
-	}
-
-	PassiveSubdomains = validPassiveSubdomains
-
-	// Sort the subdomains found alphabetically
-	sort.Strings(PassiveSubdomains)
-
-	if state.Silent != true {
-		fmt.Printf("\n\n[#] Total %d Unique subdomains found passively\n\n", len(PassiveSubdomains))
-	}
-	for _, subdomain := range PassiveSubdomains {
-		fmt.Println(subdomain)
-	}
-
-	return PassiveSubdomains
+	return finalPassiveSubdomains
 }

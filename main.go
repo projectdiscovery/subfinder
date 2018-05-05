@@ -19,7 +19,6 @@ import (
 
 	"github.com/Ice3man543/subfinder/libsubfinder/engines/passive"
 	"github.com/Ice3man543/subfinder/libsubfinder/helper"
-	"github.com/Ice3man543/subfinder/libsubfinder/output"
 	//"github.com/Ice3man543/subfinder/libsubfinder/engines/bruteforce"
 )
 
@@ -48,13 +47,15 @@ func ParseCmdLine() (state *helper.State, err error) {
 	flag.BoolVar(&s.IsJSON, "oJ", false, "Write output in JSON Format")
 	flag.BoolVar(&s.Alive, "nw", false, "Remove Wildcard Subdomains from output")
 	flag.BoolVar(&s.Silent, "silent", false, "Show only subdomains in output")
-	flag.BoolVar(&s.Recursive, "r", true, "Use recursion to find subdomains")
+	flag.BoolVar(&s.Recursive, "r", false, "Use recursion to find subdomains")
 	flag.StringVar(&s.Wordlist, "w", "", "Wordlist for doing subdomain bruteforcing")
 	flag.StringVar(&s.Sources, "sources", "all", "Comma separated list of sources to use")
 	flag.BoolVar(&s.Bruteforce, "b", false, "Use bruteforcing to find subdomains")
 	flag.BoolVar(&s.WildcardForced, "fw", false, "Force Bruteforcing of Wildcard DNS")
 	flag.StringVar(&s.SetConfig, "set-config", "none", "Comma separated list of configuration details")
 	flag.StringVar(&s.SetSetting, "set-settings", "none", "Comma separated list of settings")
+	flag.StringVar(&s.DomainList, "dl", "", "List of domains to find subdomains for")
+	flag.StringVar(&s.OutputDir, "od", "", "Directory to output results to ")
 
 	flag.Parse()
 
@@ -133,39 +134,14 @@ func main() {
 		}
 	}
 
-	if state.Domain == "" {
+	/*if state.Domain == "" {
 		if state.Silent != true {
 			fmt.Printf("\n\nsubfinder: Missing domain argument\nTry './subfinder -h' for more information\n")
 		}
 		os.Exit(1)
-	}
+	}*/
 
-	passiveSubdomains := passive.PassiveDiscovery(state)
-	if state.Output != "" {
-		if state.IsJSON == true {
-			err := output.WriteOutputJSON(state, passiveSubdomains)
-			if err != nil {
-				if state.Silent != true {
-					fmt.Printf("\nerror : %v", err)
-				}
-			} else {
-				if state.Silent != true {
-					fmt.Printf("\n[#] Successfully Written Output to File : %s\n", state.Output)
-				}
-			}
-		} else {
-			err := output.WriteOutputText(state, passiveSubdomains)
-			if err != nil {
-				if state.Silent != true {
-					fmt.Printf("\nerror : %v", err)
-				}
-			} else {
-				if state.Silent != true {
-					fmt.Printf("\n[#] Successfully Written Output to File : %s\n", state.Output)
-				}
-			}
-		}
-	}
+	_ = passive.PassiveDiscovery(state)
 
 	//bruteforce.Bruteforce(state)
 }

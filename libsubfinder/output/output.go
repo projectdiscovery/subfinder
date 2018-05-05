@@ -10,6 +10,7 @@ package output
 
 import (
      "encoding/json"
+     "fmt"
      "io"
      "io/ioutil"
      "os"
@@ -52,6 +53,73 @@ func WriteOutputJSON(state *helper.State, subdomains []string) error {
 
      // Write the output to file
      err = ioutil.WriteFile(state.Output, data, 0644)
+
+     return nil
+}
+
+func WriteOutputToFile(state *helper.State, subdomains []string) (err error) {
+     if state.Output != "" {
+          if state.IsJSON == true {
+               err := WriteOutputJSON(state, subdomains)
+               if err != nil {
+                    fmt.Printf("\nerror : %v", err)
+               } else {
+                    if state.Silent != true {
+                         fmt.Printf("\n[~] Successfully Written Output to File : %s\n", state.Output)
+                    }
+               }
+          } else {
+               err := WriteOutputText(state, subdomains)
+               if err != nil {
+                    fmt.Printf("\nerror : %v", err)
+               } else {
+                    if state.Silent != true {
+                         fmt.Printf("\n[~] Successfully Written Output to File : %s\n", state.Output)
+                    }
+               }
+          }
+     }
+
+     return nil
+}
+func WriteOutputToDir(state *helper.State, subdomains []string, domain string) (err error) {
+     if state.OutputDir != "" {
+          if state.IsJSON == false {
+               file, err := os.Create(state.OutputDir + domain + "_hosts.txt")
+
+               if err != nil {
+                    return err
+               }
+
+               for _, subdomain := range subdomains {
+                    _, err := io.WriteString(file, subdomain+"\n")
+                    if err != nil {
+                         return err
+                    }
+               }
+
+               file.Close()
+
+               return nil
+          } else {
+
+               _, err := os.Create(state.OutputDir + domain + "_hosts.json")
+
+               if err != nil {
+                    return err
+               }
+
+               data, err := json.MarshalIndent(subdomains, "", "    ")
+               if err != nil {
+                    return err
+               }
+
+               // Write the output to file
+               err = ioutil.WriteFile(state.OutputDir+domain+"_hosts.json", data, 0644)
+
+               return nil
+          }
+     }
 
      return nil
 }
