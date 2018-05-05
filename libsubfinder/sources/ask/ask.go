@@ -11,10 +11,10 @@ package ask
 import (
 	"fmt"
 	"io/ioutil"
-	"regexp"
-	"strconv"
-	"sort"
 	"net/url"
+	"regexp"
+	"sort"
+	"strconv"
 
 	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
@@ -27,7 +27,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result
 	result.Subdomains = subdomains
-	min_iterations := 15
+	min_iterations, _ := strconv.Atoi(state.CurrentSettings.AskPages)
 	max_iterations := 760
 	search_query := ""
 	current_page := 0
@@ -41,8 +41,8 @@ func Query(state *helper.State, ch chan helper.Result) {
 			current_page = 0
 			search_query = new_search_query
 		}
-		
-		resp, err := helper.GetHTTPResponse("http://www.ask.com/web?q=" + search_query + "&page=" + strconv.Itoa(current_page) + "&qid=8D6EE6BF52E0C04527E51F64F22C4534&o=0&l=dir&qsrc=998&qo=pagination", state.Timeout)
+
+		resp, err := helper.GetHTTPResponse("http://www.ask.com/web?q="+search_query+"&page="+strconv.Itoa(current_page)+"&qid=8D6EE6BF52E0C04527E51F64F22C4534&o=0&l=dir&qsrc=998&qo=pagination", state.Timeout)
 		if err != nil {
 			result.Error = err
 			ch <- result
@@ -57,7 +57,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 			return
 		}
 		src := string(body)
-		
+
 		re := regexp.MustCompile(`([a-z0-9]+\.)+` + state.Domain)
 		match := re.FindAllString(src, -1)
 
@@ -66,7 +66,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 			if sort.StringsAreSorted(subdomains) == false {
 				sort.Strings(subdomains)
 			}
-			
+
 			insert_index := sort.SearchStrings(subdomains, subdomain)
 			if insert_index < len(subdomains) && subdomains[insert_index] == subdomain {
 				continue

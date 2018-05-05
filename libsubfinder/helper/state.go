@@ -52,6 +52,9 @@ type Config struct {
 
 type Setting struct {
 	CensysPages string // Censys pages to check. For All, use "all"
+	AskPages    string // Ask search pages to check
+	BaiduPages  string // Ask search pages to check
+	BingPages   string // Ask search pages to check
 }
 
 func InitializeSettings() (setting *Setting) {
@@ -59,6 +62,9 @@ func InitializeSettings() (setting *Setting) {
 
 	settings.CensysPages = "10" // Default is 10 pages. Strikes a fine balance
 
+	settings.AskPages = "15"
+	settings.BaiduPages = "5"
+	settings.BingPages = "50"
 	return &settings
 }
 

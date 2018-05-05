@@ -11,12 +11,12 @@ package baidu
 import (
 	"fmt"
 	"io/ioutil"
-	"regexp"
-	"time"
 	"math/rand"
-	"strconv"
-	"sort"
 	"net/url"
+	"regexp"
+	"sort"
+	"strconv"
+	"time"
 
 	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
@@ -29,7 +29,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result
 	result.Subdomains = subdomains
-	min_iterations := 5
+	min_iterations, _ := strconv.Atoi(state.CurrentSettings.BaiduPages)
 	max_iterations := 760
 	search_query := ""
 	current_page := 0
@@ -44,7 +44,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 			search_query = new_search_query
 		}
 
-		resp, err := helper.GetHTTPResponse("https://www.baidu.com/s?rn=100&pn=" + strconv.Itoa(current_page) + "&wd=" + search_query +"&oq=" + search_query, state.Timeout)
+		resp, err := helper.GetHTTPResponse("https://www.baidu.com/s?rn=100&pn="+strconv.Itoa(current_page)+"&wd="+search_query+"&oq="+search_query, state.Timeout)
 		if err != nil {
 			result.Error = err
 			ch <- result
@@ -59,7 +59,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 			return
 		}
 		src := string(body)
-		
+
 		re := regexp.MustCompile(`([a-z0-9]+\.)+` + state.Domain)
 		match := re.FindAllString(src, -1)
 
@@ -68,7 +68,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 			if sort.StringsAreSorted(subdomains) == false {
 				sort.Strings(subdomains)
 			}
-			
+
 			insert_index := sort.SearchStrings(subdomains, subdomain)
 			if insert_index < len(subdomains) && subdomains[insert_index] == subdomain {
 				continue
@@ -90,7 +90,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 			break
 		}
 		current_page++
-		time.Sleep(time.Duration((3 +rand.Intn(5))) * time.Second)
+		time.Sleep(time.Duration((3 + rand.Intn(5))) * time.Second)
 	}
 
 	result.Subdomains = subdomains

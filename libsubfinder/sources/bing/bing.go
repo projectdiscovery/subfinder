@@ -11,10 +11,10 @@ package bing
 import (
 	"fmt"
 	"io/ioutil"
-	"regexp"
-	"strconv"
-	"sort"
 	"net/url"
+	"regexp"
+	"sort"
+	"strconv"
 
 	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
@@ -27,7 +27,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result
 	result.Subdomains = subdomains
-	min_iterations := 50
+	min_iterations, _ := strconv.Atoi(state.CurrentSettings.BingPages)
 	max_iterations := 760
 	search_query := ""
 	current_page := 0
@@ -42,7 +42,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 			search_query = new_search_query
 		}
 
-		resp, err := helper.GetHTTPResponse("https://www.bing.com/search?q=" + search_query + "&go=Submit&first=" + strconv.Itoa(current_page), state.Timeout)
+		resp, err := helper.GetHTTPResponse("https://www.bing.com/search?q="+search_query+"&go=Submit&first="+strconv.Itoa(current_page), state.Timeout)
 		if err != nil {
 			result.Error = err
 			ch <- result
@@ -69,7 +69,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 			if sort.StringsAreSorted(subdomains) == false {
 				sort.Strings(subdomains)
 			}
-			
+
 			insert_index := sort.SearchStrings(subdomains, subdomain)
 			if insert_index < len(subdomains) && subdomains[insert_index] == subdomain {
 				continue
