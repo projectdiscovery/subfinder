@@ -75,6 +75,10 @@ func Discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 
 	var finalPassiveSubdomains []string
 
+	if strings.Contains(domain, "*.") {
+		domain = strings.Split(domain, "*.")[1]
+	}
+
 	// Set state domain to current domain
 	state.Domain = domain
 	ch := make(chan helper.Result, sourceConfig.NoOfSources)

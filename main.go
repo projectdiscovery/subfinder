@@ -134,12 +134,12 @@ func main() {
 		}
 	}
 
-	/*if state.Domain == "" {
+	if state.Domain == "" && state.DomainList == "" {
 		if state.Silent != true {
 			fmt.Printf("\n\nsubfinder: Missing domain argument\nTry './subfinder -h' for more information\n")
 		}
 		os.Exit(1)
-	}*/
+	}
 
 	_ = passive.PassiveDiscovery(state)
 
