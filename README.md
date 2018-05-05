@@ -18,31 +18,10 @@ This project began it's life as a Bug Bounty World slack channel discussion. We 
 - Simple and modular code base making it easy to contribute.
 - Fast And Powerful Bruteforcing Module (In Development)
 - Powerful Permutation generation engine. (In Development)
-- Many Passive Data Sources (17 At Present)
+- Many Passive Data Sources (20 At Present)
 - Multiple Output formats
 
-## Sources
-
-| Source         	| Usage        	|
-|----------------	|--------------	|
-| Baidu           | Natively      |
-| Censys         	| With API Key  |
-| CertDB         	| Natively     	|
-| Certspotter    	| Natively     	|
-| Crtsh          	| Natively     	|
-| DnsDB          	| Natively     	|
-| DNSdumpster    	| Natively     	|
-| Findsubdomains 	| Natively     	|
-| Hackertarget   	| Natively     	|
-| Netcraft       	| Natively     	|
-| Passivetotal   	| With API key 	|
-| Ptrarchive     	| Natively     	|
-| Riddler        	| Natively     	|
-| Securitytrails 	| With API key 	|
-| Threatcrowd    	| Natively     	|
-| Threatminer    	| Natively     	|
-| Virustotal     	| With API key 	|
-| Waybackarchive 	| Natively     	|
+> Ask, Baidu, Bing, Censys, CertDB, CertSpotter, CrtSH, DnsDB, DNSDumpster, FindSubdomains, Hackertarget, Netcraft, PassiveTotal, PTRArchive, Riddler, SecurityTrails, ThreatCrowd, ThreatMiner, Virustotal, WaybackArchive
 
 # Usage
 
@@ -56,8 +35,10 @@ This will display help for the tool. Here are all the switches it supports.
 | -b   | Use bruteforcing top find subdomains | ./subfinder -d example.com -b |
 | -c   | Don't show colored output            | ./subfinder -c |
 | -d   | Domain to find subdomains for        | ./subfinder -d example.com |
+| -dl  | List of domains to find subdomains for | ./subfinder -dl hosts.txt | 
 | -nw  | Remove wildcard subdomains           | ./subfinder -nw |
 | -o   | Name of the output file (Optional)   | ./subfinder -o output.txt | 
+| -od  | Output to directory (When using multiple hosts) | ./subfinder -od ~/misc/out/ |
 | -oJ  | Write output in JSON format          | ./subfinder -o output.json -oJ |
 | -r   | Use recursive subdomain finding (default: true) | ./subfinder -r |
 | --set-config | Sets a configuration option | ./subfinder --set-config example=something |
@@ -179,8 +160,15 @@ For example, you can pass the number of Censys pages to check using the followin
 
 For checking all pages returned by censys, you can use "all" option. Note, It is a string.
 
+These are the settings currently supported 
+```bash
+CensysPages
+AskPages
+BaiduPages
+BingPages
+```
 # Acknowledgements
 
 - @FranticFerret for his work on adding docker support.
 - @himanshudas for adding DnsDB support
-- @Mzack9999 for fixing and improving docker builds and adding Baidu Search Engine. 
+- @Mzack9999 for fixing and improving docker builds and adding Ask, Baidu, Bing Search Engine Support !
