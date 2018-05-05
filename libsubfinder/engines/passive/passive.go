@@ -36,6 +36,7 @@ import (
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/waybackarchive"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/baidu"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/bing"
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/ask"
 )
 
 // Sources configuration structure specifying what should we use
@@ -60,6 +61,7 @@ type Source struct {
 	Dnsdb          bool
 	Baidu          bool
 	Bing           bool
+	Ask            bool
 
 	NoOfSources int
 }
@@ -90,7 +92,8 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 			fmt.Printf("\n[-] Searching For Subdomains in Netcraft")
 			fmt.Printf("\n[-] Searching For Subdomains in Dnsdb")
 			fmt.Printf("\n[-] Searching For Subdomains in Baidu")
-			fmt.Printf("\n[-] Searching For Subdomains in Bing\n")
+			fmt.Printf("\n[-] Searching For Subdomains in Bing")
+			fmt.Printf("\n[-] Searching For Subdomains in Ask\n")
 		}
 
 		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, 19}
@@ -212,6 +215,11 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 					fmt.Printf("\n[-] Searching For Subdomains in Bing")
 				}
 				sourceConfig.Bing = true
+			} else if source == "ask" {
+				if state.Silent != true {
+					fmt.Printf("\n[-] Searching For Subdomains in Ask")
+				}
+				sourceConfig.Ask = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			}
 		}
@@ -278,6 +286,8 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 	}
 	if sourceConfig.Bing == true {
 		go bing.Query(state, ch)
+	if sourceConfig.Ask == true {
+		go ask.Query(state, ch)
 	}
 
 	// Recieve data from all goroutines running
