@@ -86,7 +86,24 @@ func main() {
 			object := strings.Split(config, "=")
 
 			// Change value dynamically using reflect package
-			reflect.ValueOf(&state.ConfigState).Elem().FieldByName(object[0]).SetString(object[1])
+			if strings.EqualFold(object[0], "virustotalapikey") == true {
+				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("VirustotalAPIKey").SetString(object[1])
+			} else if strings.EqualFold(object[0], "passivetotalusername") == true {
+				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("PassivetotalUsername").SetString(object[1])
+			} else if strings.EqualFold(object[0], "passivetotalkey") == true {
+				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("PassivetotalKey").SetString(object[1])
+			} else if strings.EqualFold(object[0], "securitytrailskey") == true {
+				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("SecurityTrailsKey").SetString(object[1])
+			} else if strings.EqualFold(object[0], "riddleremail") == true {
+				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("RiddlerEmail").SetString(object[1])
+			} else if strings.EqualFold(object[0], "riddlerpassword") == true {
+				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("RiddlerPassword").SetString(object[1])
+			} else if strings.EqualFold(object[0], "censysusername") == true {
+				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("CensysUsername").SetString(object[1])
+			} else if strings.EqualFold(object[0], "censyssecret") == true {
+				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("CensysSecret").SetString(object[1])
+			}
+
 			configJson, _ := json.MarshalIndent(state.ConfigState, "", "	")
 			err = ioutil.WriteFile(path, configJson, 0644)
 			if err != nil {
