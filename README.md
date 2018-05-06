@@ -32,7 +32,7 @@ This will display help for the tool. Here are all the switches it supports.
 
 | Flag | Description | Example |
 |------|-------------|---------|
-| -b   | Use bruteforcing top find subdomains | ./subfinder -d example.com -b |
+| -b   | Use bruteforcing to find subdomains | ./subfinder -d example.com -b |
 | -c   | Don't show colored output            | ./subfinder -c |
 | -d   | Domain to find subdomains for        | ./subfinder -d example.com |
 | -dl  | List of domains to find subdomains for | ./subfinder -dl hosts.txt | 
