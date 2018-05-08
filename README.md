@@ -58,6 +58,11 @@ The installation is easy. Git clone the repo and run go build.
 go get github.com/ice3man543/subfinder
 ```
 
+## Upgrading
+If you wish to upgrade the package you can use:
+```bash
+go get -u github.com/ice3man543/subfinder
+```
 ## Running in a Docker Container
 
 Git clone the repo, then build and run subfinder in a container with the following commands
