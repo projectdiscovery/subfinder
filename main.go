@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 
@@ -131,6 +132,21 @@ func main() {
 					fmt.Printf("[-] Successfully Set %s=>%s\n", object[0], object[1])
 				}
 			}
+		}
+	}
+
+	if state.Output != "" {
+		dir := filepath.Dir(state.Output)
+		exists, _ := helper.Exists(dir)
+		if exists == false {
+			fmt.Printf("\n[!] The specified output directory does not exists !\n")
+			os.Exit(1)
+		}
+	} else if state.OutputDir != "" {
+		exists, _ := helper.Exists(state.OutputDir)
+		if exists == false {
+			fmt.Printf("\n[!] The specified output directory does not exists !\n")
+			os.Exit(1)
 		}
 	}
 

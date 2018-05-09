@@ -21,10 +21,10 @@ type Result struct {
     Error      error    // Any error that has occured
 }
 
-// Current Bruteforce structure
-type BruteforceResult struct {
-    Entity string // Current Subdomain we found
-    Error  error  // Error
+// Struct containing jobs
+type Job struct {
+    Work   string
+    Result string
 }
 
 // NewUUID generates a random UUID according to RFC 4122
