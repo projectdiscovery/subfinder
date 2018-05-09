@@ -28,7 +28,7 @@ func GetHomeDir() string {
 }
 
 // exists returns whether the given file or directory exists or not
-func exists(path string) (bool, error) {
+func Exists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
 		return true, nil
@@ -60,7 +60,7 @@ func ReadConfigFile() (configuration *Config, err error) {
 	home := GetHomeDir()
 
 	path := home + "/.config/subfinder/config.json"
-	status, _ := exists(path)
+	status, _ := Exists(path)
 
 	if status == true {
 		raw, err := ioutil.ReadFile(path)
