@@ -55,7 +55,7 @@ func ParseCmdLine() (state *helper.State, err error) {
 	flag.BoolVar(&s.WildcardForced, "fw", false, "Force Bruteforcing of Wildcard DNS")
 	flag.StringVar(&s.SetConfig, "set-config", "none", "Comma separated list of configuration details")
 	flag.StringVar(&s.SetSetting, "set-settings", "none", "Comma separated list of settings")
-	flag.StringVar(&s.DomainList, "dl", "", "List of domains to find subdomains for")
+	flag.StringVar(&s.DomainList, "dL", "", "List of domains to find subdomains for")
 	flag.StringVar(&s.OutputDir, "od", "", "Directory to output results to ")
 
 	flag.Parse()
