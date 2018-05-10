@@ -52,6 +52,10 @@ func Query(state *helper.State, ch chan helper.Result) {
 		// First Capturing group
 		subdomain := m[1]
 
+		if !helper.IsSubdomainValid(state, subdomain) {
+			continue
+		}
+
 		if state.Verbose == true {
 			if state.Color == true {
 				fmt.Printf("\n[%sTHREATMINER%s] %s", helper.Red, helper.Reset, subdomain)

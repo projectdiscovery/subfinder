@@ -95,6 +95,11 @@ func Query(state *helper.State, ch chan helper.Result) {
 	for _, host := range hostResponse {
 
 		subdomain := host.Host
+
+		if !helper.IsSubdomainValid(state, subdomain) {
+			continue
+		}
+
 		if state.Verbose == true {
 			if state.Color == true {
 				fmt.Printf("\n[%sRIDDLER%s] %s", helper.Red, helper.Reset, subdomain)

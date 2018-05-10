@@ -72,6 +72,10 @@ func Query(state *helper.State, ch chan helper.Result) {
 		for _, subdomain := range securitytrails_data.Subdomains {
 			finalSubdomain := subdomain + "." + state.Domain
 
+			if !helper.IsSubdomainValid(state, finalSubdomain) {
+				continue
+			}
+
 			if state.Verbose == true {
 				if state.Color == true {
 					fmt.Printf("\n[%sSECURITYTRAILS%s] %s", helper.Red, helper.Reset, finalSubdomain)

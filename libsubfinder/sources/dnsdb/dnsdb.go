@@ -47,6 +47,10 @@ func Query(state *helper.State, ch chan helper.Result) {
 		string_split := strings.Split(subdomain[0], "\">")[1]
 		finishedSub := strings.TrimRight(string_split, "</a>")
 
+		if !helper.IsSubdomainValid(state, finishedSub) {
+			continue
+		}
+
 		if state.Verbose == true {
 			if state.Color == true {
 				fmt.Printf("\n[%sDNSDB%s] %s", helper.Red, helper.Reset, finishedSub)

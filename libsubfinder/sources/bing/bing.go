@@ -24,7 +24,7 @@ var subdomains []string
 
 // Query function returns all subdomains found using the service.
 func Query(state *helper.State, ch chan helper.Result) {
-
+	
 	var result helper.Result
 	result.Subdomains = subdomains
 	min_iterations, _ := strconv.Atoi(state.CurrentSettings.BingPages)
@@ -60,12 +60,17 @@ func Query(state *helper.State, ch chan helper.Result) {
 		// suppress all %xx sequences with a space
 		re_sub := regexp.MustCompile(`%.{2}`)
 		src := re_sub.ReplaceAllLiteralString(string(body), " ")
-
+		
 		re := regexp.MustCompile(`([a-z0-9]+\.)+` + state.Domain)
 		match := re.FindAllString(src, -1)
 
 		new_subdomains_found := 0
 		for _, subdomain := range match {
+
+			if !helper.IsSubdomainValid(state, subdomain) {
+				continue
+			}
+			
 			if sort.StringsAreSorted(subdomains) == false {
 				sort.Strings(subdomains)
 			}

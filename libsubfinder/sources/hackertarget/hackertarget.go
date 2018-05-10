@@ -44,6 +44,11 @@ func Query(state *helper.State, ch chan helper.Result) {
 	scanner := bufio.NewScanner(strings.NewReader(string(resp_body)))
 	for scanner.Scan() {
 		subdomain := strings.Split(scanner.Text(), ",")[0]
+
+		if !helper.IsSubdomainValid(state, subdomain) {
+			continue
+		}
+
 		subdomains = append(subdomains, subdomain)
 
 		if state.Verbose == true {

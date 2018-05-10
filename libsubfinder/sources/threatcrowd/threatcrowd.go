@@ -66,6 +66,10 @@ func Query(state *helper.State, ch chan helper.Result) {
 			subdomain = strings.Split(subdomain, "*.")[1]
 		}
 
+		if !helper.IsSubdomainValid(state, subdomain) {
+			continue
+		}
+
 		if state.Verbose == true {
 			if state.Color == true {
 				fmt.Printf("\n[%sTHREATCROWD%s] %s", helper.Red, helper.Reset, subdomain)

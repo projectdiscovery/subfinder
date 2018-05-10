@@ -69,7 +69,9 @@ func Query(state *helper.State, ch chan helper.Result) {
 			subdomain = strings.Split(first, ":")[0]
 		}
 
-		initialSubs = append(initialSubs, subdomain)
+		if helper.IsSubdomainValid(state, subdomain) {
+			initialSubs = append(initialSubs, subdomain)
+		}
 	}
 
 	validSubdomains := helper.Unique(initialSubs)

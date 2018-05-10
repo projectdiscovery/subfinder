@@ -74,6 +74,10 @@ func enumerate(state *helper.State, baseUrl string) (err error) {
 		// Dirty Logic
 		finishedSub := strings.Split(subdomain[1], "//")[1]
 
+		if !helper.IsSubdomainValid(state, finishedSub) {
+			continue
+		}
+
 		if state.Verbose == true {
 			if state.Color == true {
 				fmt.Printf("\n[%sNETCRAFT%s] %s", helper.Red, helper.Reset, finishedSub)

@@ -51,6 +51,10 @@ func Query(state *helper.State, ch chan helper.Result) {
 		// Dirty Logic
 		finishedSub := strings.Split(subdomain[1], "//")[1]
 
+		if !helper.IsSubdomainValid(state, finishedSub) {
+			continue
+		}
+
 		if state.Verbose == true {
 			if state.Color == true {
 				fmt.Printf("\n[%sFINDSUBDOMAINS%s] %s", helper.Red, helper.Reset, finishedSub)

@@ -75,3 +75,8 @@ func Validate(state *State, strslice []string) (subdomains []string) {
 
     return subdomains
 }
+
+// Check if a subdomain is valid with target domain
+func IsSubdomainValid(state *State, subdomain string) (bool) {
+    return strings.HasSuffix(subdomain, "." + state.Domain)
+}

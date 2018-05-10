@@ -89,6 +89,10 @@ func Query(state *helper.State, ch chan helper.Result) {
 			subdomain.Name_value = strings.Split(subdomain.Name_value, "*.")[1]
 		}
 
+		if !helper.IsSubdomainValid(state, subdomain.Name_value) {
+			continue
+		}
+
 		if state.Verbose == true {
 			if state.Color == true {
 				fmt.Printf("\n[%sCRT.SH%s] %s", helper.Red, helper.Reset, subdomain.Name_value)

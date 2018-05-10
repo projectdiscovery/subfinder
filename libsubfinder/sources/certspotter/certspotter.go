@@ -69,6 +69,10 @@ func Query(state *helper.State, ch chan helper.Result) {
 				dns_name = strings.Split(dns_name, "*.")[1]
 			}
 
+			if !helper.IsSubdomainValid(state, dns_name) {
+				continue
+			}
+
 			if state.Verbose == true {
 				if state.Color == true {
 					fmt.Printf("\n[%sCERTSPOTTER%s] %s", helper.Red, helper.Reset, dns_name)

@@ -98,6 +98,11 @@ func Query(state *helper.State, ch chan helper.Result) {
 	}
 
 	for _, subdomain := range initialSubs {
+
+		if !helper.IsSubdomainValid(state, subdomain) {
+			continue
+		}
+		
 		if state.Verbose == true {
 			if state.Color == true {
 				fmt.Printf("\n[%sCERTDB%s] %s", helper.Red, helper.Reset, subdomain)

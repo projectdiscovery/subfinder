@@ -57,6 +57,10 @@ func queryVirustotalApi(state *helper.State) (subdomains []string, err error) {
 			subdomain = strings.Split(subdomain, "*.")[1]
 		}
 
+		if !helper.IsSubdomainValid(state, subdomain) {
+			continue
+		}
+
 		if state.Verbose == true {
 			if state.Color == true {
 				fmt.Printf("\n[%sVIRUSTOTAL%s] %s", helper.Red, helper.Reset, subdomain)

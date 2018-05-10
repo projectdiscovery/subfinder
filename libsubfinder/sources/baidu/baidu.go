@@ -65,6 +65,11 @@ func Query(state *helper.State, ch chan helper.Result) {
 
 		new_subdomains_found := 0
 		for _, subdomain := range match {
+
+			if !helper.IsSubdomainValid(state, subdomain) {
+				continue
+			}
+
 			if sort.StringsAreSorted(subdomains) == false {
 				sort.Strings(subdomains)
 			}
