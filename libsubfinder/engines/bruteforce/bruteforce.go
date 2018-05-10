@@ -19,6 +19,18 @@ import (
 	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
 
+/*
+var wg, wg2 sync.WaitGroup
+
+func produce(jobs chan<- *Job) {
+	// Generate jobs:
+	id := 0
+	for c := 'a'; c <= 'z'; c++ {
+		id++
+		jobs <- &Job{Id: id, Work: fmt.Sprintf("%c", c)}
+	}
+	close(jobs)
+}*/
 func Bruteforce(state *helper.State) (subdomains []string) {
 	wildcard := helper.InitializeWildcardDNS(state)
 	if wildcard == true {

@@ -9,6 +9,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -46,18 +47,19 @@ func ParseCmdLine() (state *helper.State, err error) {
 	flag.StringVar(&s.Domain, "d", "", "Domain to find subdomains for")
 	flag.StringVar(&s.Output, "o", "", "Name of the output file (optional)")
 	flag.BoolVar(&s.IsJSON, "oJ", false, "Write output in JSON Format")
-	flag.BoolVar(&s.Alive, "nw", false, "Remove Wildcard Subdomains from output")
+	flag.BoolVar(&s.Alive, "nW", false, "Remove Wildcard Subdomains from output")
 	flag.BoolVar(&s.Silent, "silent", false, "Show only subdomains in output")
-	flag.BoolVar(&s.Recursive, "r", false, "Use recursion to find subdomains")
+	flag.BoolVar(&s.Recursive, "recursive", false, "Use recursion to find subdomains")
 	flag.StringVar(&s.Wordlist, "w", "", "Wordlist for doing subdomain bruteforcing")
 	flag.StringVar(&s.Sources, "sources", "all", "Comma separated list of sources to use")
 	flag.BoolVar(&s.Bruteforce, "b", false, "Use bruteforcing to find subdomains")
-	flag.BoolVar(&s.WildcardForced, "fw", false, "Force Bruteforcing of Wildcard DNS")
 	flag.StringVar(&s.SetConfig, "set-config", "none", "Comma separated list of configuration details")
 	flag.StringVar(&s.SetSetting, "set-settings", "none", "Comma separated list of settings")
-	flag.StringVar(&s.DomainList, "dl", "", "List of domains to find subdomains for")
-	flag.StringVar(&s.OutputDir, "od", "", "Directory to output results to ")
-
+	flag.StringVar(&s.DomainList, "dL", "", "List of domains to find subdomains for")
+	flag.StringVar(&s.OutputDir, "oD", "", "Directory to output results to ")
+	flag.StringVar(&s.ComResolver, "r", "", "Comma-separated list of resolvers to use")
+	flag.StringVar(&s.ListResolver, "rL", "", "Text file containing list of resolvers to use")
+	flag.BoolVar(&s.AquatoneJSON, "oA", false, "Use aquatone style json output format")
 	flag.Parse()
 
 	return &s, nil
@@ -133,6 +135,40 @@ func main() {
 				}
 			}
 		}
+	}
+
+	if state.ComResolver != "" {
+		// Load the Resolvers from list
+		setResolvers := strings.Split(state.ComResolver, ",")
+
+		for _, resolver := range setResolvers {
+			state.LoadResolver = append(state.LoadResolver, resolver)
+		}
+	}
+
+	if state.ListResolver != "" {
+		// Load the resolvers from file
+		file, err := os.Open(state.ListResolver)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "\nerror: %v\n", err)
+			os.Exit(1)
+		}
+
+		defer file.Close()
+
+		scanner := bufio.NewScanner(file)
+
+		for scanner.Scan() {
+			// Send the job to the channel
+			state.LoadResolver = append(state.LoadResolver, scanner.Text())
+		}
+	}
+
+	// Use the default resolvers
+	if state.ComResolver == "" && state.ListResolver == "" {
+		state.LoadResolver = append(state.LoadResolver, "1.1.1.1")
+		state.LoadResolver = append(state.LoadResolver, "8.8.8.8")
+		state.LoadResolver = append(state.LoadResolver, "8.8.4.4")
 	}
 
 	if state.Output != "" {

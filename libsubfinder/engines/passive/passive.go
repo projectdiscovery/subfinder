@@ -16,6 +16,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/bogdanovich/dns_resolver"
+
+	"github.com/Ice3man543/subfinder/libsubfinder/engines/resolver"
 	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 	"github.com/Ice3man543/subfinder/libsubfinder/output"
 
@@ -81,6 +84,18 @@ func Discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 
 	// Set state domain to current domain
 	state.Domain = domain
+
+	// Now, perform checks for wildcard ip
+	helper.Resolver = dns_resolver.New(state.LoadResolver)
+
+	// Initialize Wildcard Subdomains
+	state.IsWildcard, state.WildcardIP = helper.InitWildcard(domain)
+	if state.IsWildcard == true {
+		if state.Silent != true {
+			fmt.Printf("\n[~] Wildcard IPs found at %s IP(s) %s", domain, state.WildcardIP)
+		}
+	}
+
 	ch := make(chan helper.Result, sourceConfig.NoOfSources)
 
 	if state.Silent != true {
@@ -175,10 +190,13 @@ func Discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 
 	if state.Alive == true {
 		// Nove remove all wildcard subdomains
-		//PassiveSubdomains = helper.RemoveWildcardSubdomains(state, validPassiveSubdomains)
+		JobArray := resolver.Resolve(state, validPassiveSubdomains)
+		for _, job := range JobArray {
+			PassiveSubdomains = append(PassiveSubdomains, job.Work)
+		}
+	} else {
+		PassiveSubdomains = validPassiveSubdomains
 	}
-
-	PassiveSubdomains = validPassiveSubdomains
 
 	// Sort the subdomains found alphabetically
 	sort.Strings(PassiveSubdomains)
@@ -379,8 +397,6 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 		hostResults = append(hostResults, results...)
 
 		// Perform Recursive Enumeration Here
-		// FIXME: There are some errros related to regexp issues here
-		// Fix them. Otherwise, this is pretty good.
 		if state.Recursive == true {
 			for _, foundSub := range results {
 				tempResults = Discover(state, foundSub, &sourceConfig)
@@ -394,7 +410,7 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 			output.WriteOutputToDir(state, hostResults, Domain)
 		}
 		// Truncate the whole array
-		hostResults = hostResults[:cap(hostResults)]
+		hostResults = nil
 	}
 
 	if state.Output != "" {

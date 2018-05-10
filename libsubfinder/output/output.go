@@ -57,6 +57,31 @@ func WriteOutputJSON(state *helper.State, subdomains []string) error {
      return nil
 }
 
+// Writes subdomains output to a json file
+func WriteOutputAquatoneJSON(state *helper.State, subdomains []*helper.Job) error {
+     m := make(map[string]string)
+     _, err := os.Create(state.Output)
+
+     if err != nil {
+          return err
+     }
+
+     for _, job := range subdomains {
+          // Set correct values
+          m[job.Work] = job.Result
+     }
+
+     data, err := json.MarshalIndent(m, "", "    ")
+     if err != nil {
+          return err
+     }
+
+     // Write the output to file
+     err = ioutil.WriteFile(state.Output, data, 0644)
+
+     return nil
+}
+
 func WriteOutputToFile(state *helper.State, subdomains []string) (err error) {
      if state.Output != "" {
           if state.IsJSON == true {
