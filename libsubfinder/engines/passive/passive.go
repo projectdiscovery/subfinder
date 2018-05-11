@@ -187,15 +187,24 @@ func Discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	validPassiveSubdomains := helper.Validate(state, uniquePassiveSubdomains)
 
 	var PassiveSubdomains []string
+	var JobArray []*helper.Job
 
 	if state.Alive == true {
 		// Nove remove all wildcard subdomains
-		JobArray := resolver.Resolve(state, validPassiveSubdomains)
+		JobArray = resolver.Resolve(state, validPassiveSubdomains)
 		for _, job := range JobArray {
 			PassiveSubdomains = append(PassiveSubdomains, job.Work)
 		}
 	} else {
 		PassiveSubdomains = validPassiveSubdomains
+	}
+
+	if state.AquatoneJSON == true {
+		if state.Silent != true {
+			fmt.Printf("\n[-] Writing Aquatone Style output to %s", state.Output)
+		}
+
+		output.WriteOutputAquatoneJSON(state, JobArray)
 	}
 
 	// Sort the subdomains found alphabetically
@@ -218,10 +227,14 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 		// Search all data sources
 
 		if state.Silent != true {
+			fmt.Printf("\n[-] Searching For Subdomains in Ask")
+			fmt.Printf("\n[-] Searching For Subdomains in Baidu")
+			fmt.Printf("\n[-] Searching For Subdomains in Bing")
 			fmt.Printf("\n[-] Searching For Subdomains in Censys")
 			fmt.Printf("\n[-] Searching For Subdomains in Crt.sh")
 			fmt.Printf("\n[-] Searching For Subdomains in CertDB")
 			fmt.Printf("\n[-] Searching For Subdomains in Certspotter")
+			fmt.Printf("\n[-] Searching For Subdomains in Dnsdb")
 			fmt.Printf("\n[-] Searching For Subdomains in Threatcrowd")
 			fmt.Printf("\n[-] Searching For Subdomains in Findsubdomains")
 			fmt.Printf("\n[-] Searching For Subdomains in DNSDumpster")
@@ -233,11 +246,7 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 			fmt.Printf("\n[-] Searching For Subdomains in WaybackArchive")
 			fmt.Printf("\n[-] Searching For Subdomains in ThreatMiner")
 			fmt.Printf("\n[-] Searching For Subdomains in Riddler")
-			fmt.Printf("\n[-] Searching For Subdomains in Netcraft")
-			fmt.Printf("\n[-] Searching For Subdomains in Dnsdb")
-			fmt.Printf("\n[-] Searching For Subdomains in Baidu")
-			fmt.Printf("\n[-] Searching For Subdomains in Bing")
-			fmt.Printf("\n[-] Searching For Subdomains in Ask\n")
+			fmt.Printf("\n[-] Searching For Subdomains in Netcraft\n")
 		}
 
 		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, 19}
@@ -414,10 +423,12 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 	}
 
 	if state.Output != "" {
-		err := output.WriteOutputToFile(state, finalPassiveSubdomains)
-		if err != nil {
-			if state.Silent == true {
-				fmt.Printf("\nerror: %v\n", err)
+		if state.AquatoneJSON != true {
+			err := output.WriteOutputToFile(state, finalPassiveSubdomains)
+			if err != nil {
+				if state.Silent == true {
+					fmt.Printf("\nerror: %v\n", err)
+				}
 			}
 		}
 	}
