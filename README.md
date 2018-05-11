@@ -41,7 +41,9 @@ This will display help for the tool. Here are all the switches it supports.
 | -oA  | Write output in JSON format (Required -nW)  | ./subfinder -o output.txt -nw -oA | 
 | -oD  | Output to directory (When using multiple hosts) | ./subfinder -od ~/misc/out/ |
 | -oJ  | Write output in JSON format          | ./subfinder -o output.json -oJ |
-| -r   | Use recursive subdomain finding (default: true) | ./subfinder -r |
+| -r  | Comma-separated list of resolvers to use | ./subfinder -r 8.8.8.8,1.1.1.1 |
+| -rL  | File containing list of resolvers to use | ./subfinder -rL resolvers.txt |
+| --recursive  | Use recursive subdomain finding (default: true) | ./subfinder --recursive |
 | --set-config | Sets a configuration option | ./subfinder --set-config example=something |
 | --set-settings | Sets a setting option | ./subfinder --set-settings CensysPages=10 |
 | --silent | Show only the subdomains found    | ./subfinder --silent |
@@ -178,6 +180,13 @@ You can also write output in JSON format as used by Aquatone.
 ```bash
 ./subfinder -d freelancer.com -o result_aquatone.json -oA -nW -v 
 ```
+
+You can specify custom resolvers too.
+```bash
+./subfinder -d freelancer.com -o result_aquatone.json -oA -nW -v -r 8.8.8.8,1.1.1.1
+./subfinder -d freelancer.com -o result_aquatone.json -oA -nW -v -rL resolvers.txt
+```
+
 # Frequently Asked Questions (FAQ)
 ## How do I move settings between machines?
 Configuration for subfinder is saved at ```~/.config/subfinder/config.json``` which can be copied between machines.
