@@ -368,6 +368,7 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 					fmt.Printf("\n[-] Searching For Subdomains in Bing")
 				}
 				sourceConfig.Bing = true
+				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			} else if source == "ask" {
 				if state.Silent != true {
 					fmt.Printf("\n[-] Searching For Subdomains in Ask")
