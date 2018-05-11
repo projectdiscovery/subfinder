@@ -35,10 +35,11 @@ This will display help for the tool. Here are all the switches it supports.
 | -b   | Use bruteforcing to find subdomains | ./subfinder -d example.com -b |
 | -c   | Don't show colored output            | ./subfinder -c |
 | -d   | Domain to find subdomains for        | ./subfinder -d example.com |
-| -dl  | List of domains to find subdomains for | ./subfinder -dl hosts.txt | 
-| -nw  | Remove wildcard subdomains           | ./subfinder -nw |
+| -dL  | List of domains to find subdomains for | ./subfinder -dl hosts.txt | 
+| -nW  | Remove wildcard subdomains           | ./subfinder -nw |
 | -o   | Name of the output file (Optional)   | ./subfinder -o output.txt | 
-| -od  | Output to directory (When using multiple hosts) | ./subfinder -od ~/misc/out/ |
+| -oA  | Write output in JSON format (Required -nW)  | ./subfinder -o output.txt -nw -oA | 
+| -oD  | Output to directory (When using multiple hosts) | ./subfinder -od ~/misc/out/ |
 | -oJ  | Write output in JSON format          | ./subfinder -o output.json -oJ |
 | -r   | Use recursive subdomain finding (default: true) | ./subfinder -r |
 | --set-config | Sets a configuration option | ./subfinder --set-config example=something |
@@ -171,6 +172,11 @@ CensysPages
 AskPages
 BaiduPages
 BingPages
+```
+
+You can also write output in JSON format as used by Aquatone.
+```bash
+./subfinder -d freelancer.com -o result_aquatone.json -oA -nW -v 
 ```
 # Frequently Asked Questions (FAQ)
 ## How do I move settings between machines?
