@@ -9,7 +9,7 @@ ENV SRC_DIR=/go/src/github.com/Ice3man543/subfinder/
 ADD . $SRC_DIR
 
 # Build it:
-RUN cd $SRC_DIR; go build -o main; cp main /app/
+RUN cd $SRC_DIR; go get; go build -o main; cp main /app/
 
 ENTRYPOINT ["./main"]
 CMD ["-h"]
