@@ -189,7 +189,7 @@ func Discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	var PassiveSubdomains []string
 	var JobArray []*helper.Job
 
-	if state.Alive == true {
+	if state.Alive == true || state.AquatoneJSON == true {
 		// Nove remove all wildcard subdomains
 		JobArray = resolver.Resolve(state, validPassiveSubdomains)
 		for _, job := range JobArray {
@@ -368,7 +368,6 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 					fmt.Printf("\n[-] Searching For Subdomains in Bing")
 				}
 				sourceConfig.Bing = true
-				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			} else if source == "ask" {
 				if state.Silent != true {
 					fmt.Printf("\n[-] Searching For Subdomains in Ask")
@@ -406,12 +405,39 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 		finalPassiveSubdomains = append(finalPassiveSubdomains, results...)
 		hostResults = append(hostResults, results...)
 
+		if state.Output != "" {
+			if state.IsJSON != true {
+				if state.AquatoneJSON != true {
+					err := output.WriteOutputToFile(state, results)
+					if err != nil {
+						if state.Silent == true {
+							fmt.Printf("\nerror: %v\n", err)
+						}
+					}
+				}
+			}
+		}
+
 		// Perform Recursive Enumeration Here
 		if state.Recursive == true {
 			for _, foundSub := range results {
 				tempResults = Discover(state, foundSub, &sourceConfig)
 				finalPassiveSubdomains = append(finalPassiveSubdomains, tempResults...)
 				hostResults = append(hostResults, tempResults...)
+
+				// Write second round of results
+				if state.Output != "" {
+					if state.IsJSON != true {
+						if state.AquatoneJSON != true {
+							err := output.WriteOutputToFile(state, hostResults)
+							if err != nil {
+								if state.Silent == true {
+									fmt.Printf("\nerror: %v\n", err)
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 
@@ -421,17 +447,6 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 		}
 		// Truncate the whole array
 		hostResults = nil
-	}
-
-	if state.Output != "" {
-		if state.AquatoneJSON != true {
-			err := output.WriteOutputToFile(state, finalPassiveSubdomains)
-			if err != nil {
-				if state.Silent == true {
-					fmt.Printf("\nerror: %v\n", err)
-				}
-			}
-		}
 	}
 
 	return finalPassiveSubdomains
