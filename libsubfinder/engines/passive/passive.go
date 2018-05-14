@@ -92,14 +92,17 @@ func Discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	state.IsWildcard, state.WildcardIP = helper.InitWildcard(domain)
 	if state.IsWildcard == true {
 		if state.Silent != true {
-			fmt.Printf("\n[~] Wildcard IPs found at %s IP(s) %s", domain, state.WildcardIP)
+			fmt.Printf("\nFound Wildcard DNS at %s", domain)
+			for _, ip := range state.WildcardIP {
+				fmt.Printf("\n - %s", ip)
+			}
 		}
 	}
 
 	ch := make(chan helper.Result, sourceConfig.NoOfSources)
 
 	if state.Silent != true {
-		fmt.Printf("\n[+] Finding subdomains for : %s", domain)
+		fmt.Printf("\nRunning enumeration on %s", domain)
 	}
 
 	// Create goroutines for added speed and recieve data via channels
@@ -191,6 +194,7 @@ func Discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 
 	if state.Alive == true || state.AquatoneJSON == true {
 		// Nove remove all wildcard subdomains
+		fmt.Printf("\nResolving %s%d%s Unique Hosts found", helper.Info, len(validPassiveSubdomains), helper.Reset)
 		JobArray = resolver.Resolve(state, validPassiveSubdomains)
 		for _, job := range JobArray {
 			PassiveSubdomains = append(PassiveSubdomains, job.Work)
@@ -201,7 +205,7 @@ func Discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 
 	if state.AquatoneJSON == true {
 		if state.Silent != true {
-			fmt.Printf("\n[-] Writing Aquatone Style output to %s", state.Output)
+			fmt.Printf("\n\nWriting Enumeration Output To %s", state.Output)
 		}
 
 		output.WriteOutputAquatoneJSON(state, JobArray)
@@ -211,10 +215,16 @@ func Discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	sort.Strings(PassiveSubdomains)
 
 	if state.Silent != true {
-		fmt.Printf("\n\n[~] Total %d Unique subdomains found for %s\n\n", len(PassiveSubdomains), domain)
+		fmt.Printf("\n\nTotal %s%d%s Unique subdomains found for %s\n\n", helper.Info, len(PassiveSubdomains), helper.Reset, domain)
 	}
-	for _, subdomain := range PassiveSubdomains {
-		fmt.Println(subdomain)
+	if state.Alive == true || state.AquatoneJSON == true {
+		for _, job := range JobArray {
+			fmt.Printf("\n%s\t\t%s", job.Result, job.Work)
+		}
+	} else {
+		for _, subdomain := range PassiveSubdomains {
+			fmt.Println(subdomain)
+		}
 	}
 
 	return PassiveSubdomains
@@ -227,26 +237,26 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 		// Search all data sources
 
 		if state.Silent != true {
-			fmt.Printf("\n[-] Searching For Subdomains in Ask")
-			fmt.Printf("\n[-] Searching For Subdomains in Baidu")
-			fmt.Printf("\n[-] Searching For Subdomains in Bing")
-			fmt.Printf("\n[-] Searching For Subdomains in Censys")
-			fmt.Printf("\n[-] Searching For Subdomains in Crt.sh")
-			fmt.Printf("\n[-] Searching For Subdomains in CertDB")
-			fmt.Printf("\n[-] Searching For Subdomains in Certspotter")
-			fmt.Printf("\n[-] Searching For Subdomains in Dnsdb")
-			fmt.Printf("\n[-] Searching For Subdomains in Threatcrowd")
-			fmt.Printf("\n[-] Searching For Subdomains in Findsubdomains")
-			fmt.Printf("\n[-] Searching For Subdomains in DNSDumpster")
-			fmt.Printf("\n[-] Searching For Subdomains in PassiveTotal")
-			fmt.Printf("\n[-] Searching For Subdomains in PTRArchive")
-			fmt.Printf("\n[-] Searching For Subdomains in Hackertarget")
-			fmt.Printf("\n[-] Searching For Subdomains in Virustotal")
-			fmt.Printf("\n[-] Searching For Subdomains in Securitytrails")
-			fmt.Printf("\n[-] Searching For Subdomains in WaybackArchive")
-			fmt.Printf("\n[-] Searching For Subdomains in ThreatMiner")
-			fmt.Printf("\n[-] Searching For Subdomains in Riddler")
-			fmt.Printf("\n[-] Searching For Subdomains in Netcraft\n")
+			fmt.Printf("\nRunning Source: %sAsk%s", helper.Info, helper.Reset)
+			fmt.Printf("\nRunning Source: %sBaidu%s", helper.Info, helper.Reset)
+			fmt.Printf("\nRunning Source: %sBing%s", helper.Info, helper.Reset)
+			fmt.Printf("\nRunning Source: %sCensys%s", helper.Info, helper.Reset)
+			fmt.Printf("\nRunning Source: %sCrt.sh%s", helper.Info, helper.Reset)
+			fmt.Printf("\nRunning Source: %sCertDB%s", helper.Info, helper.Reset)
+			fmt.Printf("\nRunning Source: %sCertspotter%s", helper.Info, helper.Reset)
+			fmt.Printf("\nRunning Source: %sDnsdb%s", helper.Info, helper.Reset)
+			fmt.Printf("\nRunning Source: %sThreatcrowd%s", helper.Info, helper.Reset)
+			fmt.Printf("\nRunning Source: %sFindsubdomains%s", helper.Info, helper.Reset)
+			fmt.Printf("\nRunning Source: %sDNSDumpster%s", helper.Info, helper.Reset)
+			fmt.Printf("\nRunning Source: %sPassiveTotal%s", helper.Info, helper.Reset)
+			fmt.Printf("\nRunning Source: %sPTRArchive%s", helper.Info, helper.Reset)
+			fmt.Printf("\nRunning Source: %sHackertarget%s", helper.Info, helper.Reset)
+			fmt.Printf("\nRunning Source: %sVirustotal%s", helper.Info, helper.Reset)
+			fmt.Printf("\nRunning Source: %sSecuritytrails%s", helper.Info, helper.Reset)
+			fmt.Printf("\nRunning Source: %sWaybackArchive%s", helper.Info, helper.Reset)
+			fmt.Printf("\nRunning Source: %sThreatMiner%s", helper.Info, helper.Reset)
+			fmt.Printf("\nRunning Source: %sRiddler%s", helper.Info, helper.Reset)
+			fmt.Printf("\nRunning Source: %sNetcraft%s\n", helper.Info, helper.Reset)
 		}
 
 		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, 19}
@@ -257,126 +267,128 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 		for _, source := range dataSources {
 			if source == "crtsh" {
 				if state.Silent != true {
-					fmt.Printf("\n[-] Searching For Subdomains in Crt.sh")
+					fmt.Printf("\nRunning Source: %sCrt.sh%s", helper.Info, helper.Reset)
 				}
 				sourceConfig.Crtsh = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			} else if source == "certdb" {
 				if state.Silent != true {
-					fmt.Printf("\n[-] Searching For Subdomains in CertDB")
+					fmt.Printf("\nRunning Source: %sCertDB%s", helper.Info, helper.Reset)
 				}
 				sourceConfig.Certdb = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			} else if source == "certspotter" {
 				if state.Silent != true {
-					fmt.Printf("\n[-] Searching For Subdomains in Certspotter")
+					fmt.Printf("\nRunning Source: %sCertspotter%s", helper.Info, helper.Reset)
 				}
 				sourceConfig.Certspotter = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			} else if source == "threatcrowd" {
 				if state.Silent != true {
-					fmt.Printf("\n[-] Searching For Subdomains in Threatcrowd")
+					fmt.Printf("\nRunning Source: %sThreatcrowd%s", helper.Info, helper.Reset)
 				}
 				sourceConfig.Threatcrowd = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			} else if source == "findsubdomains" {
 				if state.Silent != true {
-					fmt.Printf("\n[-] Searching For Subdomains in Findsubdomains")
+					fmt.Printf("\nRunning Source: %sFindsubdomains%s", helper.Info, helper.Reset)
 				}
 				sourceConfig.Findsubdomains = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			} else if source == "dnsdumpster" {
 				if state.Silent != true {
-					fmt.Printf("\n[-] Searching For Subdomains in DNSDumpster")
+					fmt.Printf("\nRunning Source: %sDNSDumpster%s", helper.Info, helper.Reset)
 				}
 				sourceConfig.Dnsdumpster = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			} else if source == "passivetotal" {
 				if state.Silent != true {
-					fmt.Printf("\n[-] Searching For Subdomains in PassiveTotal")
+					fmt.Printf("\nRunning Source: %sPassiveTotal%s", helper.Info, helper.Reset)
 				}
 				sourceConfig.Passivetotal = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			} else if source == "ptrarchive" {
 				if state.Silent != true {
-					fmt.Printf("\n[-] Searching For Subdomains in PTRArchive")
+					fmt.Printf("\nRunning Source: %sPTRArchive%s", helper.Info, helper.Reset)
 				}
 				sourceConfig.Ptrarchive = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			} else if source == "hackertarget" {
 				if state.Silent != true {
-					fmt.Printf("\n[-] Searching For Subdomains in Hackertarget")
+					fmt.Printf("\nRunning Source: %sHackertarget%s", helper.Info, helper.Reset)
 				}
 				sourceConfig.Hackertarget = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			} else if source == "virustotal" {
 				if state.Silent != true {
-					fmt.Printf("\n[-] Searching For Subdomains in Virustotal")
+					fmt.Printf("\nRunning Source: %sVirustotal%s", helper.Info, helper.Reset)
 				}
 				sourceConfig.Virustotal = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			} else if source == "securitytrails" {
 				if state.Silent != true {
-					fmt.Printf("\n[-] Searching For Subdomains in Securitytrails")
+					fmt.Printf("\nRunning Source: %sSecuritytrails%s", helper.Info, helper.Reset)
 				}
 				sourceConfig.Securitytrails = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			} else if source == "netcraft" {
 				if state.Silent != true {
-					fmt.Printf("\n[-] Searching For Subdomains in Netcraft")
+					fmt.Printf("\nRunning Source: %sNetcraft%s\n", helper.Info, helper.Reset)
 				}
 				sourceConfig.Netcraft = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			} else if source == "waybackarchive" {
 				if state.Silent != true {
-					fmt.Printf("\n[-] Searching For Subdomains in WaybackArchive")
+					fmt.Printf("\nRunning Source: %sWaybackArchive%s", helper.Info, helper.Reset)
 				}
 				sourceConfig.Waybackarchive = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			} else if source == "threatminer" {
 				if state.Silent != true {
-					fmt.Printf("\n[-] Searching For Subdomains in ThreatMiner")
+					fmt.Printf("\nRunning Source: %sThreatMiner%s", helper.Info, helper.Reset)
 				}
 				sourceConfig.Threatminer = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			} else if source == "riddler" {
 				if state.Silent != true {
-					fmt.Printf("\n[-] Searching For Subdomains in Riddler")
+					fmt.Printf("\nRunning Source: %sRiddler%s", helper.Info, helper.Reset)
 				}
 				sourceConfig.Riddler = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			} else if source == "censys" {
 				if state.Silent != true {
-					fmt.Printf("\n[-] Searching For Subdomains in Censys")
+					fmt.Printf("\nRunning Source: %sCensys%s", helper.Info, helper.Reset)
 				}
 				sourceConfig.Censys = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			} else if source == "dnsdb" {
 				if state.Silent != true {
-					fmt.Printf("\n[-] Searching For Subdomains in Dnsdb")
+					fmt.Printf("\nRunning Source: %sDnsdb%s", helper.Info, helper.Reset)
 				}
 				sourceConfig.Dnsdb = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			} else if source == "baidu" {
 				if state.Silent != true {
-					fmt.Printf("\n[-] Searching For Subdomains in Baidu")
+					fmt.Printf("\nRunning Source: %sBaidu%s", helper.Info, helper.Reset)
 				}
 				sourceConfig.Baidu = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			} else if source == "bing" {
 				if state.Silent != true {
-					fmt.Printf("\n[-] Searching For Subdomains in Bing")
+					fmt.Printf("\nRunning Source: %sBing%s", helper.Info, helper.Reset)
 				}
 				sourceConfig.Bing = true
 			} else if source == "ask" {
 				if state.Silent != true {
-					fmt.Printf("\n[-] Searching For Subdomains in Ask")
+					fmt.Printf("\nRunning Source: %sAsk%s", helper.Info, helper.Reset)
 				}
 				sourceConfig.Ask = true
 				sourceConfig.NoOfSources = sourceConfig.NoOfSources + 1
 			}
 		}
 	}
+
+	fmt.Printf("\n")
 
 	var tempResults []string
 	var hostResults []string
@@ -411,7 +423,7 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 					err := output.WriteOutputToFile(state, results)
 					if err != nil {
 						if state.Silent == true {
-							fmt.Printf("\nerror: %v\n", err)
+							fmt.Printf("\n%s-> %v%s\n", helper.Bad, err, helper.Reset)
 						}
 					}
 				}
@@ -432,7 +444,7 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 							err := output.WriteOutputToFile(state, hostResults)
 							if err != nil {
 								if state.Silent == true {
-									fmt.Printf("\nerror: %v\n", err)
+									fmt.Printf("\n%s-> %v%s\n", helper.Bad, err, helper.Reset)
 								}
 							}
 						}
