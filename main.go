@@ -193,7 +193,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	_ = passive.PassiveDiscovery(state)
-
+	_ = passive.Enumerate(state)
+	fmt.Printf("\n")
 	//bruteforce.Bruteforce(state)
 }

@@ -36,7 +36,7 @@ type response struct {
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(state *helper.State, ch chan helper.Result) {
+func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 	var uniqueSubdomains []string
 	var initialSubdomains []string
@@ -59,7 +59,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 
 			for i := 1; i <= CensysPages; i++ {
 				// Create JSON Get body
-				var request = []byte(`{"query":"` + state.Domain + `", "page":` + strconv.Itoa(i) + `, "fields":["parsed.names","parsed.extensions.subject_alt_name.dns_names"], "flatten":true}`)
+				var request = []byte(`{"query":"` + domain + `", "page":` + strconv.Itoa(i) + `, "fields":["parsed.names","parsed.extensions.subject_alt_name.dns_names"], "flatten":true}`)
 
 				client := &http.Client{}
 				req, err := http.NewRequest("POST", "https://www.censys.io/api/v1/search/certificates", bytes.NewBuffer(request))
@@ -104,7 +104,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 					}
 				}
 
-				validSubdomains := helper.Validate(state, initialSubdomains)
+				validSubdomains := helper.Validate(domain, initialSubdomains)
 				uniqueSubdomains = helper.Unique(validSubdomains)
 			}
 
@@ -128,7 +128,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 		} else if state.CurrentSettings.CensysPages == "all" {
 
 			// Create JSON Get body
-			var request = []byte(`{"query":"` + state.Domain + `", "page":1, "fields":["parsed.names","parsed.extensions.subject_alt_name.dns_names"], "flatten":true}`)
+			var request = []byte(`{"query":"` + domain + `", "page":1, "fields":["parsed.names","parsed.extensions.subject_alt_name.dns_names"], "flatten":true}`)
 
 			client := &http.Client{}
 			req, err := http.NewRequest("POST", "https://www.censys.io/api/v1/search/certificates", bytes.NewBuffer(request))
@@ -173,7 +173,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 				}
 			}
 
-			validSubdomains := helper.Validate(state, initialSubdomains)
+			validSubdomains := helper.Validate(domain, initialSubdomains)
 			uniqueSubdomains = helper.Unique(validSubdomains)
 
 			// Append each subdomain found to subdomains array
@@ -196,7 +196,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 
 			for i := 2; i <= hostResponse.Metadata.Pages; i++ {
 				// Create JSON Get body
-				var request = []byte(`{"query":"` + state.Domain + `", "page":` + strconv.Itoa(i) + `, "fields":["parsed.names","parsed.extensions.subject_alt_name.dns_names"], "flatten":true}`)
+				var request = []byte(`{"query":"` + domain + `", "page":` + strconv.Itoa(i) + `, "fields":["parsed.names","parsed.extensions.subject_alt_name.dns_names"], "flatten":true}`)
 
 				client := &http.Client{}
 				req, err := http.NewRequest("POST", "https://www.censys.io/api/v1/search/certificates", bytes.NewBuffer(request))
@@ -241,7 +241,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 					}
 				}
 
-				validSubdomains := helper.Validate(state, initialSubdomains)
+				validSubdomains := helper.Validate(domain, initialSubdomains)
 				uniqueSubdomains = helper.Unique(validSubdomains)
 
 				// Append each subdomain found to subdomains array

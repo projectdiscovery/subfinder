@@ -29,14 +29,14 @@ var certspotter_data []certspotter_object
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(state *helper.State, ch chan helper.Result) {
+func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 	// Create a result object
 	var result helper.Result
 	result.Subdomains = subdomains
 
 	// Make a http request to Certspotter
-	resp, err := helper.GetHTTPResponse("https://certspotter.com/api/v0/certs?domain="+state.Domain, state.Timeout)
+	resp, err := helper.GetHTTPResponse("https://certspotter.com/api/v0/certs?domain="+domain, state.Timeout)
 	if err != nil {
 		// Set values and return
 		result.Error = err

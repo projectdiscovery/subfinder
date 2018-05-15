@@ -20,13 +20,13 @@ import (
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(state *helper.State, ch chan helper.Result) {
+func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result
 	result.Subdomains = subdomains
 
 	// Make a http request to CertDB
-	resp, err := helper.GetHTTPResponse("https://www.threatminer.org/getData.php?e=subdomains_container&q="+state.Domain+"&t=0&rt=10&p=1", state.Timeout)
+	resp, err := helper.GetHTTPResponse("https://www.threatminer.org/getData.php?e=subdomains_container&q="+domain+"&t=0&rt=10&p=1", state.Timeout)
 	if err != nil {
 		result.Error = err
 		ch <- result
@@ -44,7 +44,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 	src := string(body)
 
 	// Parse Subdomains found
-	Regex, _ := regexp.Compile("\"domain\\.php\\?q=([a-zA-Z0-9\\*_.-]+\\." + state.Domain + ")")
+	Regex, _ := regexp.Compile("\"domain\\.php\\?q=([a-zA-Z0-9\\*_.-]+\\." + domain + ")")
 	match := Regex.FindAllStringSubmatch(src, -1)
 
 	for _, m := range match {

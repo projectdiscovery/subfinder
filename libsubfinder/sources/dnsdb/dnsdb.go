@@ -21,12 +21,12 @@ import (
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(state *helper.State, ch chan helper.Result) {
+func Query(domain string, state *helper.State, ch chan helper.Result) {
 	var result helper.Result
 	result.Subdomains = subdomains
 
 	// Make a http request to DnsDB
-	resp, err := helper.GetHTTPResponse("http://www.dnsdb.org/f/"+state.Domain+".dnsdb.org/", state.Timeout)
+	resp, err := helper.GetHTTPResponse("http://www.dnsdb.org/f/"+domain+".dnsdb.org/", state.Timeout)
 	if err != nil {
 		result.Error = err
 		ch <- result
@@ -42,7 +42,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 	src := string(body)
 	re := regexp.MustCompile("<a[^>]*?[^>]*>(.*?)</a>")
 	match := re.FindAllStringSubmatch(src, -1)
-	
+
 	for _, subdomain := range match {
 		string_split := strings.Split(subdomain[0], "\">")[1]
 		finishedSub := strings.TrimRight(string_split, "</a>")

@@ -27,7 +27,7 @@ var securitytrails_data securitytrails_object
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(state *helper.State, ch chan helper.Result) {
+func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result
 
@@ -38,7 +38,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 		securitytrailsKey := state.ConfigState.SecurityTrailsKey
 
 		client := &http.Client{}
-		req, err := http.NewRequest("GET", "https://api.securitytrails.com/v1/domain/"+state.Domain+"/subdomains", nil)
+		req, err := http.NewRequest("GET", "https://api.securitytrails.com/v1/domain/"+domain+"/subdomains", nil)
 
 		req.Header.Add("APIKEY", securitytrailsKey)
 
@@ -70,7 +70,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 
 		// Append each subdomain found to subdomains array
 		for _, subdomain := range securitytrails_data.Subdomains {
-			finalSubdomain := subdomain + "." + state.Domain
+			finalSubdomain := subdomain + "." + domain
 
 			if state.Verbose == true {
 				if state.Color == true {

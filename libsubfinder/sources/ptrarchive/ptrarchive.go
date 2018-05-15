@@ -20,13 +20,13 @@ import (
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(state *helper.State, ch chan helper.Result) {
+func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result
 	result.Subdomains = subdomains
 
 	// Make a http request to CertDB
-	resp, err := helper.GetHTTPResponse("http://ptrarchive.com/tools/search2.htm?label="+state.Domain+"&date=ALL", state.Timeout)
+	resp, err := helper.GetHTTPResponse("http://ptrarchive.com/tools/search2.htm?label="+domain+"&date=ALL", state.Timeout)
 	if err != nil {
 		result.Error = err
 		ch <- result
@@ -54,7 +54,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 		initialSubs = append(initialSubs, data[1])
 	}
 
-	validSubdomains := helper.Validate(state, initialSubs)
+	validSubdomains := helper.Validate(domain, initialSubs)
 
 	for _, subdomain := range validSubdomains {
 		if state.Verbose == true {

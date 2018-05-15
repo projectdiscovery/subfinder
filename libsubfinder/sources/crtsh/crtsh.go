@@ -30,7 +30,7 @@ var crtsh_data []crtsh_object
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(state *helper.State, ch chan helper.Result) {
+func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result
 	result.Subdomains = subdomains
@@ -38,7 +38,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 	// Make a http request to CRT.SH server and request output in JSON
 	// format.
 	// I Think 5 minutes would be more than enough for CRT.SH :-)
-	resp, err := helper.GetHTTPResponse("https://crt.sh/?q=%25."+state.Domain+"&output=json", state.Timeout)
+	resp, err := helper.GetHTTPResponse("https://crt.sh/?q=%25."+domain+"&output=json", state.Timeout)
 	if err != nil {
 		result.Error = err
 		ch <- result

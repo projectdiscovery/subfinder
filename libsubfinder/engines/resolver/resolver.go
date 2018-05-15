@@ -9,92 +9,65 @@
 package resolver
 
 import (
-    "fmt"
-    "sync"
+	"fmt"
 
-    "github.com/Ice3man543/subfinder/libsubfinder/helper"
+	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
 
-var ValidSubdomains []*helper.Job
-var wg, wg2 sync.WaitGroup
+func consume(args ...interface{}) interface{} {
+	target := args[0].(string)
+	state := args[1].(*helper.State)
+	ips, err := helper.ResolveHost(target)
+	if err != nil {
+		return ""
+	}
 
-func analyze(state *helper.State, results <-chan *helper.Job) {
-    defer wg2.Done()
-    for job := range results {
-        if job.Result != "" {
-            if state.Silent != true {
-                if state.Verbose == true {
-                    fmt.Printf("\n[+] %s : %s", job.Work, job.Result)
-                }
-            }
-            ValidSubdomains = append(ValidSubdomains, job)
-        }
-    }
+	if len(ips) <= 0 {
+		// We didn't found any ips
+		return ""
+	} else {
+		if state.IsWildcard == true {
+			result := helper.CheckWildcard(state, ips)
+			if result == true {
+				// We have a wildcard ip
+				return ""
+			}
+			return ips[0]
+		}
+		return ips[0]
+	}
 }
 
-func consume(jobs <-chan *helper.Job, results chan<- *helper.Job, state *helper.State) {
-    defer wg.Done()
-    for job := range jobs {
-        ips, err := helper.ResolveHost(job.Work)
-        if err != nil {
-            continue
-        }
+// Resolve handle a list of subdomains to resolve
+func Resolve(state *helper.State, list []string) (subdomains []string) {
 
-        if len(ips) <= 0 {
-            // We didn't found any ips
-            job.Result = ""
-            results <- job
-        } else {
-            if state.IsWildcard == true {
-                result := helper.CheckWildcard(state, ips)
-                if result == true {
-                    // We have a wildcard ip
-                    job.Result = ""
-                    results <- job
-                } else {
-                    // Not a wildcard subdomains ip
-                    job.Result = ips[0]
-                    results <- job
-                }
-            } else {
-                job.Result = ips[0]
-                results <- job
-            }
-        }
-    }
-}
+	resolverPool := helper.NewPool(state.Threads)
 
-func produce(jobs chan<- *helper.Job, list []string) {
+	resolverPool.Run()
 
-    for _, target := range list {
-        // Send the job to the channel
-        jobs <- &helper.Job{Work: fmt.Sprintf("%s", target), Result: ""}
-    }
+	// add jobs
+	for _, target := range list {
+		// Send the job to the channel
+		resolverPool.Add(consume, target, state)
+	}
 
-    close(jobs)
-}
+	resolverPool.Wait()
 
-func Resolve(state *helper.State, list []string) (subdomains []*helper.Job) {
-    jobs := make(chan *helper.Job, 100)    // Buffered channel
-    results := make(chan *helper.Job, 100) // Buffered channel
+	var ValidSubdomains []string
 
-    // Start consumers:
-    for i := 0; i < state.Threads; i++ {
-        wg.Add(1)
-        go consume(jobs, results, state)
-    }
+	completedJobs := resolverPool.Results()
+	for _, job := range completedJobs {
+		if job.Result != nil {
+			result := job.Result.(string)
+			if !state.Silent {
+				target := job.Args[0].(string)
+				fmt.Printf("\n[+] %s : %s", target, job.Result)
+			}
+			ValidSubdomains = append(ValidSubdomains, result)
+		}
+	}
 
-    // Start producing
-    go produce(jobs, list)
+	resolverPool.Stop()
 
-    // Start analyzing
-    wg2.Add(1)
-    go analyze(state, results)
-
-    wg.Wait()
-    close(results)
-
-    wg2.Wait()
-
-    return ValidSubdomains
+	return ValidSubdomains
 }

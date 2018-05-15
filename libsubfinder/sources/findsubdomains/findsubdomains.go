@@ -21,13 +21,13 @@ import (
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(state *helper.State, ch chan helper.Result) {
+func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result
 	result.Subdomains = subdomains
 
 	// Make a http request to Netcraft
-	resp, err := helper.GetHTTPResponse("https://findsubdomains.com/subdomains-of/"+state.Domain, state.Timeout)
+	resp, err := helper.GetHTTPResponse("https://findsubdomains.com/subdomains-of/"+domain, state.Timeout)
 	if err != nil {
 		result.Error = err
 		ch <- result
