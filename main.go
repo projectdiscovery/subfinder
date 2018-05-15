@@ -42,7 +42,7 @@ func ParseCmdLine() (state *helper.State, err error) {
 	}
 
 	flag.BoolVar(&s.Verbose, "v", false, "Verbose output")
-	flag.BoolVar(&s.Color, "no-color", true, "Don't Use colors in outpout")
+	flag.BoolVar(&s.Color, "no-color", true, "Don't Use colors in output")
 	flag.IntVar(&s.Threads, "t", 10, "Number of concurrent threads")
 	flag.IntVar(&s.Timeout, "timeout", 180, "Timeout for passive discovery services")
 	flag.StringVar(&s.Domain, "d", "", "Domain to find subdomains for")
