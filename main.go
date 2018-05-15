@@ -60,7 +60,7 @@ func ParseCmdLine() (state *helper.State, err error) {
 	flag.StringVar(&s.OutputDir, "oD", "", "Directory to output results to ")
 	flag.StringVar(&s.ComResolver, "r", "", "Comma-separated list of resolvers to use")
 	flag.StringVar(&s.ListResolver, "rL", "", "Text file containing list of resolvers to use")
-	flag.BoolVar(&s.AquatoneJSON, "oA", false, "Use aquatone style json output format")
+	flag.BoolVar(&s.AquatoneJSON, "oT", false, "Use aquatone style json output format")
 	flag.Parse()
 
 	return &s, nil
