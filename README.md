@@ -9,6 +9,18 @@ SubFinder is a subdomain discovery tool that uses various techniques to discover
 
 [![asciicast](https://raw.githubusercontent.com/Ice3man543/ice3man543.github.io/master/assets/asciinema.png)](https://asciinema.org/a/177851)
 
+# Product Comparisons
+A comparison of subdomain products was done against the Yahoo.com public bug bounty program with the following results:
+
+| Product                                              	| Results 	|
+|------------------------------------------------------	|---------	|
+| [AMass](https://github.com/caffix/amass)             	| 5768    	|
+| [Aquatone](https://github.com/michenriksen/aquatone) 	| 6256    	|
+| Subfinder                                            	| 14,626   	|
+| [Sublist3r](https://github.com/aboul3la/Sublist3r)   	| 3001    	|
+
+This was openly discussed on twitter prior for verification [here](https://twitter.com/codingo_/status/994349671324598272). Results taken in May of 2018.
+
 # Why?
 
 This project began it's life as a Bug Bounty World slack channel discussion. We were talking about how the cornerstone subdomain tool at the time, sublist3r, appeared to have been abandoned. The goal of this project was to make a low dependancy, manageable project in Go that would continue to be maintained over time. I decided to rewrite the sublist3r project and posted about it. @codingo offered to contribute to the project and subfinder was born. 
