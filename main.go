@@ -191,6 +191,6 @@ func main() {
 	}
 
 	_ = passive.PassiveDiscovery(state)
-
+	fmt.Printf("\n")
 	//bruteforce.Bruteforce(state)
 }
