@@ -16,7 +16,7 @@ A comparison of subdomain products was done against the Yahoo.com public bug bou
 |------------------------------------------------------	|---------	|
 | [AMass](https://github.com/caffix/amass)             	| 5768    	|
 | [Aquatone](https://github.com/michenriksen/aquatone) 	| 6256    	|
-| Subfinder                                            	| 14,626   	|
+| Subfinder                                            	| 9761   	|
 | [Sublist3r](https://github.com/aboul3la/Sublist3r)   	| 3001    	|
 
 This was openly discussed on twitter prior for verification [here](https://twitter.com/codingo_/status/994349671324598272). Results taken in May of 2018.
