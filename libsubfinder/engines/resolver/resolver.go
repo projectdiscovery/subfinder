@@ -24,7 +24,7 @@ func analyze(state *helper.State, results <-chan *helper.Job) {
         if job.Result != "" {
             if state.Silent != true {
                 if state.Verbose == true {
-                    fmt.Printf("\n[+] %s : %s", job.Work, job.Result)
+                    fmt.Printf("\n[RESOLVED] %s : %s", job.Work, job.Result)
                 }
             }
             ValidSubdomains = append(ValidSubdomains, job)
