@@ -233,14 +233,17 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	state.IsWildcard, state.WildcardIP = helper.InitWildcard(domain)
 	if state.IsWildcard == true {
 		if state.Silent != true {
-			fmt.Printf("\n[~] Wildcard IPs found at %s IP(s) %s", domain, state.WildcardIP)
+			fmt.Printf("\nFound Wildcard DNS at %s", domain)
+			for _, ip := range state.WildcardIP {
+				fmt.Printf("\n - %s", ip)
+			}
 		}
 	}
 
 	ch := make(chan helper.Result, sourceConfig.nbrActive())
 
 	if state.Silent != true {
-		fmt.Printf("\n[+] Finding subdomains for : %s", domain)
+		fmt.Printf("\nRunning enumeration on %s", domain)
 	}
 
 	// Create goroutines for added speed and recieve data via channels
@@ -329,15 +332,18 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 
 	var PassiveSubdomains []string
 
-	if state.Alive == true {
+	if state.Alive || state.AquatoneJSON {
 		// Nove remove all wildcard subdomains
 		PassiveSubdomains = resolver.Resolve(state, validPassiveSubdomains)
+		if state.Silent != true {
+			fmt.Printf("\nResolving %s%d%s Unique Hosts found", helper.Info, len(validPassiveSubdomains), helper.Reset)
+		}
 	} else {
 		PassiveSubdomains = validPassiveSubdomains
 	}
 
-	if state.AquatoneJSON == true {
-		if state.Silent != true {
+	if state.AquatoneJSON {
+		if !state.Silent {
 			fmt.Printf("\n[-] Writing Aquatone Style output to %s", state.Output)
 		}
 
@@ -347,9 +353,10 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	// Sort the subdomains found alphabetically
 	sort.Strings(PassiveSubdomains)
 
-	if state.Silent != true {
+	if !state.Silent {
 		fmt.Printf("\n\n[~] Total %d Unique subdomains found for %s\n\n", len(PassiveSubdomains), domain)
 	}
+
 	for _, subdomain := range PassiveSubdomains {
 		fmt.Println(subdomain)
 	}
@@ -418,6 +425,19 @@ func Enumerate(state *helper.State) []string {
 	}
 
 	passivePool.Stop()
+
+	if state.Output != "" {
+		if !state.IsJSON {
+			if !state.AquatoneJSON {
+				err := output.WriteOutputToFile(state, allSubdomains)
+				if err != nil {
+					if state.Silent {
+						fmt.Printf("\n%s-> %v%s\n", helper.Bad, err, helper.Reset)
+					}
+				}
+			}
+		}
+	}
 
 	return allSubdomains
 }

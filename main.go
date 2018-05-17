@@ -25,11 +25,12 @@ import (
 )
 
 var banner = `
-   ____     __   _____         __       
-  / __/_ __/ /  / __(_)__  ___/ /__ ____
- _\ \/ // / _ \/ _// / _ \/ _  / -_) __/
-/___/\_,_/_.__/_/ /_/_//_/\_,_/\__/_/   
-                                      `
+               __    _____           __         
+   _______  __/ /_  / __(_)___  ____/ /__  _____
+  / ___/ / / / __ \/ /_/ / __ \/ __  / _ \/ ___/
+ (__  ) /_/ / /_/ / __/ / / / / /_/ /  __/ /    
+/____/\__,_/_.___/_/ /_/_/ /_/\__,_/\___/_/       
+                             v0.1.1 - by @ice3man `
 
 // Parses command line arguments into a setting structure
 func ParseCmdLine() (state *helper.State, err error) {
@@ -41,7 +42,7 @@ func ParseCmdLine() (state *helper.State, err error) {
 	}
 
 	flag.BoolVar(&s.Verbose, "v", false, "Verbose output")
-	flag.BoolVar(&s.Color, "c", true, "Use colour in outpout")
+	flag.BoolVar(&s.Color, "no-color", true, "Don't Use colors in output")
 	flag.IntVar(&s.Threads, "t", 10, "Number of concurrent threads")
 	flag.IntVar(&s.Timeout, "timeout", 180, "Timeout for passive discovery services")
 	flag.StringVar(&s.Domain, "d", "", "Domain to find subdomains for")
@@ -59,7 +60,7 @@ func ParseCmdLine() (state *helper.State, err error) {
 	flag.StringVar(&s.OutputDir, "oD", "", "Directory to output results to ")
 	flag.StringVar(&s.ComResolver, "r", "", "Comma-separated list of resolvers to use")
 	flag.StringVar(&s.ListResolver, "rL", "", "Text file containing list of resolvers to use")
-	flag.BoolVar(&s.AquatoneJSON, "oA", false, "Use aquatone style json output format")
+	flag.BoolVar(&s.AquatoneJSON, "oT", false, "Use aquatone style json output format")
 	flag.Parse()
 
 	return &s, nil
@@ -75,8 +76,6 @@ func main() {
 
 	if state.Silent != true {
 		fmt.Println(banner)
-		fmt.Printf("\nSubFinder v0.1.0 	  Made with %s❤%s by @Ice3man", helper.Green, helper.Reset)
-		fmt.Printf("\n==================================================\n")
 	}
 
 	if state.SetConfig != "none" {
@@ -115,7 +114,7 @@ func main() {
 				os.Exit(1)
 			}
 
-			fmt.Printf("[-] Successfully configured %s=>%s\n", object[0], object[1])
+			fmt.Printf("Successfully configured %s%s%s=>%s\n", helper.Info, object[0], helper.Reset, object[1])
 		}
 
 		os.Exit(0)
@@ -131,7 +130,7 @@ func main() {
 			reflect.ValueOf(&state.CurrentSettings).Elem().FieldByName(object[0]).SetString(object[1])
 			if state.Silent != true {
 				if state.Verbose == true {
-					fmt.Printf("[-] Successfully Set %s=>%s\n", object[0], object[1])
+					fmt.Printf("Successfully Set %s%s%s=>%s\n", helper.Info, object[0], helper.Reset, object[1])
 				}
 			}
 		}
@@ -175,20 +174,18 @@ func main() {
 		dir := filepath.Dir(state.Output)
 		exists, _ := helper.Exists(dir)
 		if exists == false {
-			fmt.Printf("\n[!] The specified output directory does not exists !\n")
-			os.Exit(1)
+			fmt.Printf("\n%s-> The specified output directory does not exists !%s\n", helper.Yellow, helper.Reset)
 		}
 	} else if state.OutputDir != "" {
 		exists, _ := helper.Exists(state.OutputDir)
 		if exists == false {
-			fmt.Printf("\n[!] The specified output directory does not exists !\n")
-			os.Exit(1)
+			fmt.Printf("\n%s-> The specified output directory does not exists !%s\n", helper.Yellow, helper.Reset)
 		}
 	}
 
 	if state.Domain == "" && state.DomainList == "" {
 		if state.Silent != true {
-			fmt.Printf("\n\nsubfinder: Missing domain argument\nTry './subfinder -h' for more information\n")
+			fmt.Printf("\n\n%s-> Missing \"domain\" argument %s\nTry %s'./subfinder -h'%s for more information\n", helper.Bad, helper.Reset, helper.Info, helper.Reset)
 		}
 		os.Exit(1)
 	}

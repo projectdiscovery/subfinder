@@ -38,9 +38,9 @@ This will display help for the tool. Here are all the switches it supports.
 | -dL  | List of domains to find subdomains for | ./subfinder -dl hosts.txt | 
 | -nW  | Remove wildcard subdomains           | ./subfinder -nw |
 | -o   | Name of the output file (Optional)   | ./subfinder -o output.txt | 
-| -oA  | Write output in JSON format (Required -nW)  | ./subfinder -o output.txt -nw -oA | 
-| -oD  | Output to directory (When using multiple hosts) | ./subfinder -od ~/misc/out/ |
+| -oT  | Write output in Aquatone style JSON format (Required -nW)  | ./subfinder -o output.txt -nw -oA | 
 | -oJ  | Write output in JSON format          | ./subfinder -o output.json -oJ |
+| -oD  | Output to directory (When using multiple hosts) | ./subfinder -od ~/misc/out/ |
 | -r  | Comma-separated list of resolvers to use | ./subfinder -r 8.8.8.8,1.1.1.1 |
 | -rL  | File containing list of resolvers to use | ./subfinder -rL resolvers.txt |
 | --recursive  | Use recursive subdomain finding (default: true) | ./subfinder --recursive |
