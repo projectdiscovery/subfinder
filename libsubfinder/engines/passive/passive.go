@@ -194,7 +194,9 @@ func Discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 
 	if state.Alive == true || state.AquatoneJSON == true {
 		// Nove remove all wildcard subdomains
-		fmt.Printf("\nResolving %s%d%s Unique Hosts found", helper.Info, len(validPassiveSubdomains), helper.Reset)
+		if state.Silent != true {
+			fmt.Printf("\nResolving %s%d%s Unique Hosts found", helper.Info, len(validPassiveSubdomains), helper.Reset)
+		}
 		JobArray = resolver.Resolve(state, validPassiveSubdomains)
 		for _, job := range JobArray {
 			PassiveSubdomains = append(PassiveSubdomains, job.Work)
@@ -219,7 +221,11 @@ func Discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	}
 	if state.Alive == true || state.AquatoneJSON == true {
 		for _, job := range JobArray {
-			fmt.Printf("\n%s\t\t%s", job.Result, job.Work)
+			if state.Silent != true {
+				fmt.Printf("\n%s\t\t%s", job.Result, job.Work)
+			} else {
+				fmt.Printf("\n%s", job.Work)
+			}
 		}
 	} else {
 		for _, subdomain := range PassiveSubdomains {
@@ -259,7 +265,7 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 			fmt.Printf("\nRunning Source: %sNetcraft%s\n", helper.Info, helper.Reset)
 		}
 
-		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, 19}
+		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, 20}
 	} else {
 		// Check data sources and create a source configuration structure
 
