@@ -1,15 +1,7 @@
-# iron/go:dev is the alpine image with the go tools added
-FROM iron/go:dev
-WORKDIR /app
+FROM golang:1.8-onbuild
 
-# Set an env var that matches your github repo name
-ENV SRC_DIR=/go/src/github.com/Ice3man543/subfinder/
+MAINTAINER Anshuman Bhartiya (anshuman.bhartiya@gmail.com)
 
-# Add the source code:
-ADD . $SRC_DIR
+ADD wordlists /
 
-# Build it:
-RUN cd $SRC_DIR; go get; go build -o main; cp main /app/
-
-ENTRYPOINT ["./main"]
-CMD ["-h"]
+ENTRYPOINT ["app"]
