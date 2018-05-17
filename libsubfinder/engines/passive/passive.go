@@ -259,7 +259,7 @@ func PassiveDiscovery(state *helper.State) (finalPassiveSubdomains []string) {
 			fmt.Printf("\nRunning Source: %sNetcraft%s\n", helper.Info, helper.Reset)
 		}
 
-		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, 19}
+		sourceConfig = Source{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, 20}
 	} else {
 		// Check data sources and create a source configuration structure
 
