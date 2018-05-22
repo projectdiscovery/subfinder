@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"errors"
 
 	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
@@ -64,6 +65,12 @@ func Query(state *helper.State, ch chan helper.Result) {
 	if err != nil {
 		result.Subdomains = subdomains
 		result.Error = err
+		ch <- result
+		return
+	}
+
+	if auth.Response.User.Authentication_token == "" {
+		result.Error = errors.New("failed to get authentication token")
 		ch <- result
 		return
 	}
