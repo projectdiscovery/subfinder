@@ -58,14 +58,20 @@ func WriteOutputJSON(state *helper.State, subdomains []string) error {
 }
 
 // Writes subdomains output to a json file
-func WriteOutputAquatoneJSON(state *helper.State, subdomains []string) error {
+func WriteOutputAquatoneJSON(state *helper.State, subdomains []helper.Domain) error {
+	m := make(map[string]string)
 	_, err := os.Create(state.Output)
 
 	if err != nil {
 		return err
 	}
 
-	data, err := json.MarshalIndent(subdomains, "", "    ")
+	for _, subdomain := range subdomains {
+		// Set correct values
+		m[subdomain.Fqdn] = subdomain.IP
+	}
+
+	data, err := json.MarshalIndent(m, "", "    ")
 	if err != nil {
 		return err
 	}

@@ -21,10 +21,10 @@ type Result struct {
 	Error      error    // Any error that has occured
 }
 
-// Struct containing jobs
-type TmpJob struct {
-	Work   string
-	Result string
+//Domain structure
+type Domain struct {
+	IP   string
+	Fqdn string
 }
 
 // NewUUID generates a random UUID according to RFC 4122

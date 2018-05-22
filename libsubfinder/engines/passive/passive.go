@@ -331,10 +331,14 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	validPassiveSubdomains := helper.Validate(domain, uniquePassiveSubdomains)
 
 	var PassiveSubdomains []string
+	var passiveSubdomainsArray []helper.Domain
 
 	if state.Alive || state.AquatoneJSON {
 		// Nove remove all wildcard subdomains
-		PassiveSubdomains = resolver.Resolve(state, validPassiveSubdomains)
+		passiveSubdomainsArray = resolver.Resolve(state, validPassiveSubdomains)
+		for _, subdomain := range passiveSubdomainsArray {
+			PassiveSubdomains = append(PassiveSubdomains, subdomain.Fqdn)
+		}
 		if state.Silent != true {
 			fmt.Printf("\nResolving %s%d%s Unique Hosts found", helper.Info, len(validPassiveSubdomains), helper.Reset)
 		}
@@ -347,7 +351,7 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 			fmt.Printf("\n[-] Writing Aquatone Style output to %s", state.Output)
 		}
 
-		output.WriteOutputAquatoneJSON(state, PassiveSubdomains)
+		output.WriteOutputAquatoneJSON(state, passiveSubdomainsArray)
 	}
 
 	// Sort the subdomains found alphabetically

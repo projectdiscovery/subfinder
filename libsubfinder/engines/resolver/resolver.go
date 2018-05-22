@@ -39,7 +39,7 @@ func consume(args ...interface{}) interface{} {
 }
 
 // Resolve handle a list of subdomains to resolve
-func Resolve(state *helper.State, list []string) (subdomains []string) {
+func Resolve(state *helper.State, list []string) (subdomains []helper.Domain) {
 
 	resolverPool := helper.NewPool(state.Threads)
 
@@ -53,17 +53,19 @@ func Resolve(state *helper.State, list []string) (subdomains []string) {
 
 	resolverPool.Wait()
 
-	var ValidSubdomains []string
+	var ValidSubdomains []helper.Domain
 
 	completedJobs := resolverPool.Results()
 	for _, job := range completedJobs {
 		if job.Result != nil {
-			result := job.Result.(string)
+			fqdn := job.Args[0].(string)
+			ip := job.Result.(string)
+			subdomain := helper.Domain{IP: ip, Fqdn: fqdn}
 			if !state.Silent {
-				target := job.Args[0].(string)
-				fmt.Printf("\n[+] %s : %s", target, job.Result)
+
+				fmt.Printf("\n[+] %s : %s", fqdn, ip)
 			}
-			ValidSubdomains = append(ValidSubdomains, result)
+			ValidSubdomains = append(ValidSubdomains, subdomain)
 		}
 	}
 
