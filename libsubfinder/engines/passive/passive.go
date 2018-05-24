@@ -338,12 +338,12 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 
 	if state.Alive || state.AquatoneJSON {
 		// Nove remove all wildcard subdomains
+		if state.Silent != true {
+			fmt.Printf("\n\nResolving %s%d%s Unique Hosts found", helper.Info, len(validPassiveSubdomains), helper.Reset)
+		}
 		passiveSubdomainsArray = resolver.Resolve(state, validPassiveSubdomains)
 		for _, subdomain := range passiveSubdomainsArray {
 			PassiveSubdomains = append(PassiveSubdomains, subdomain.Fqdn)
-		}
-		if state.Silent != true {
-			fmt.Printf("\nResolving %s%d%s Unique Hosts found", helper.Info, len(validPassiveSubdomains), helper.Reset)
 		}
 	} else {
 		PassiveSubdomains = validPassiveSubdomains
@@ -431,7 +431,6 @@ func Enumerate(state *helper.State) []string {
 	for _, job := range completedJobs {
 		if job.Result != nil {
 			results := job.Result.([]string)
-
 			if state.Output != "" {
 				if !state.IsJSON {
 					if !state.AquatoneJSON {
