@@ -61,9 +61,10 @@ func Resolve(state *helper.State, list []string) (subdomains []helper.Domain) {
 			fqdn := job.Args[0].(string)
 			ip := job.Result.(string)
 			subdomain := helper.Domain{IP: ip, Fqdn: fqdn}
-			if !state.Silent {
-
-				fmt.Printf("\n[+] %s : %s", fqdn, ip)
+			if state.Silent != true {
+				if state.Verbose == true {
+					fmt.Printf("\n[RESOLVED] %s : %s", subdomain.Fqdn, subdomain.IP)
+				}
 			}
 			ValidSubdomains = append(ValidSubdomains, subdomain)
 		}

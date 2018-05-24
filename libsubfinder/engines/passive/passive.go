@@ -146,61 +146,64 @@ func (s *Source) enable(dataSources []string) {
 
 func (s *Source) printSummary() {
 	if s.Crtsh {
-		fmt.Printf("\n[-] Searching For Subdomains in Crt.sh")
+		fmt.Printf("\nRunning Source: %sCrt.sh%s", helper.Info, helper.Reset)
 	}
 	if s.Certdb {
-		fmt.Printf("\n[-] Searching For Subdomains in CertDB")
+		fmt.Printf("\nRunning Source: %sCertDB%s", helper.Info, helper.Reset)
 	}
 	if s.Certspotter {
-		fmt.Printf("\n[-] Searching For Subdomains in Certspotter")
+		fmt.Printf("\nRunning Source: %sCertspotter%s", helper.Info, helper.Reset)
 	}
 	if s.Threatcrowd {
-		fmt.Printf("\n[-] Searching For Subdomains in Threatcrowd")
+		fmt.Printf("\nRunning Source: %sThreatcrowd%s", helper.Info, helper.Reset)
+	}
+	if s.Findsubdomains {
+		fmt.Printf("\nRunning Source: %sFindsubdomains%s", helper.Info, helper.Reset)
 	}
 	if s.Dnsdumpster {
-		fmt.Printf("\n[-] Searching For Subdomains in DNSDumpster")
+		fmt.Printf("\nRunning Source: %sDNSDumpster%s", helper.Info, helper.Reset)
 	}
 	if s.Passivetotal {
-		fmt.Printf("\n[-] Searching For Subdomains in PassiveTotal")
+		fmt.Printf("\nRunning Source: %sPassiveTotal%s", helper.Info, helper.Reset)
 	}
 	if s.Ptrarchive {
-		fmt.Printf("\n[-] Searching For Subdomains in PTRArchive")
+		fmt.Printf("\nRunning Source: %sPTRArchive%s", helper.Info, helper.Reset)
 	}
 	if s.Hackertarget {
-		fmt.Printf("\n[-] Searching For Subdomains in Hackertarget")
+		fmt.Printf("\nRunning Source: %sHackertarget%s", helper.Info, helper.Reset)
 	}
 	if s.Virustotal {
-		fmt.Printf("\n[-] Searching For Subdomains in Virustotal")
+		fmt.Printf("\nRunning Source: %sVirustotal%s", helper.Info, helper.Reset)
 	}
 	if s.Securitytrails {
-		fmt.Printf("\n[-] Searching For Subdomains in Securitytrails")
+		fmt.Printf("\nRunning Source: %sSecuritytrails%s", helper.Info, helper.Reset)
 	}
 	if s.Netcraft {
-		fmt.Printf("\n[-] Searching For Subdomains in Netcraft")
+		fmt.Printf("\nRunning Source: %sNetcraft%s\n", helper.Info, helper.Reset)
 	}
 	if s.Waybackarchive {
-		fmt.Printf("\n[-] Searching For Subdomains in WaybackArchive")
+		fmt.Printf("\nRunning Source: %sWaybackArchive%s", helper.Info, helper.Reset)
 	}
 	if s.Threatminer {
-		fmt.Printf("\n[-] Searching For Subdomains in ThreatMiner")
+		fmt.Printf("\nRunning Source: %sThreatMiner%s", helper.Info, helper.Reset)
 	}
 	if s.Riddler {
-		fmt.Printf("\n[-] Searching For Subdomains in Riddler")
+		fmt.Printf("\nRunning Source: %sRiddler%s", helper.Info, helper.Reset)
 	}
 	if s.Censys {
-		fmt.Printf("\n[-] Searching For Subdomains in Censys")
+		fmt.Printf("\nRunning Source: %sCensys%s", helper.Info, helper.Reset)
 	}
 	if s.Dnsdb {
-		fmt.Printf("\n[-] Searching For Subdomains in Dnsdb")
+		fmt.Printf("\nRunning Source: %sDnsdb%s", helper.Info, helper.Reset)
 	}
 	if s.Baidu {
-		fmt.Printf("\n[-] Searching For Subdomains in Baidu")
+		fmt.Printf("\nRunning Source: %sBaidu%s", helper.Info, helper.Reset)
 	}
 	if s.Bing {
-		fmt.Printf("\n[-] Searching For Subdomains in Bing")
+		fmt.Printf("\nRunning Source: %sBing%s", helper.Info, helper.Reset)
 	}
 	if s.Ask {
-		fmt.Printf("\n[-] Searching For Subdomains in Ask")
+		fmt.Printf("\nRunning Source: %sAsk%s", helper.Info, helper.Reset)
 	}
 }
 
@@ -348,7 +351,7 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 
 	if state.AquatoneJSON {
 		if !state.Silent {
-			fmt.Printf("\n[-] Writing Aquatone Style output to %s", state.Output)
+			fmt.Printf("\n\nWriting Enumeration Output To %s", state.Output)
 		}
 
 		output.WriteOutputAquatoneJSON(state, passiveSubdomainsArray)
@@ -358,11 +361,21 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	sort.Strings(PassiveSubdomains)
 
 	if !state.Silent {
-		fmt.Printf("\n\n[~] Total %d Unique subdomains found for %s\n\n", len(PassiveSubdomains), domain)
+		fmt.Printf("\n\nTotal %s%d%s Unique subdomains found for %s\n\n", helper.Info, len(PassiveSubdomains), helper.Reset, domain)
 	}
 
-	for _, subdomain := range PassiveSubdomains {
-		fmt.Println(subdomain)
+	if state.Alive || state.AquatoneJSON {
+		for _, subdomain := range passiveSubdomainsArray {
+			if state.Silent != true {
+				fmt.Printf("\n%s\t\t%s", subdomain.IP, subdomain.Fqdn)
+			} else {
+				fmt.Printf("\n%s", subdomain.Fqdn)
+			}
+		}
+	} else {
+		for _, subdomain := range PassiveSubdomains {
+			fmt.Println(subdomain)
+		}
 	}
 
 	return PassiveSubdomains
@@ -417,31 +430,32 @@ func Enumerate(state *helper.State) []string {
 	completedJobs := passivePool.Results()
 	for _, job := range completedJobs {
 		if job.Result != nil {
-			result := job.Result.([]string)
+			results := job.Result.([]string)
 
-			// Write the output to individual files in a directory
-			// if state.OutputDir != "" {
-			// 	output.WriteOutputToDir(state, result, Domain)
-			// }
+			if state.Output != "" {
+				if !state.IsJSON {
+					if !state.AquatoneJSON {
+						err := output.WriteOutputToFile(state, results)
+						if err != nil {
+							if state.Silent == true {
+								fmt.Printf("\n%s-> %v%s\n", helper.Bad, err, helper.Reset)
+							}
+						}
+					}
+				}
+			}
 
-			allSubdomains = append(allSubdomains, result...)
+			allSubdomains = append(allSubdomains, results...)
 		}
 	}
 
 	passivePool.Stop()
 
-	if state.Output != "" {
-		if !state.IsJSON {
-			if !state.AquatoneJSON {
-				err := output.WriteOutputToFile(state, allSubdomains)
-				if err != nil {
-					if state.Silent {
-						fmt.Printf("\n%s-> %v%s\n", helper.Bad, err, helper.Reset)
-					}
-				}
-			}
-		}
-	}
+	// Write the output to individual files in a directory
+	// TODO: group results by domain and write to directory
+	// if state.OutputDir != "" {
+	// 	output.WriteOutputToDir(state, allSubdomains, Domain)
+	// }
 
 	return allSubdomains
 }
