@@ -52,149 +52,101 @@ var DomainList []string
 // Source configuration structure specifying what should we use
 // to do passive subdomain discovery.
 type Source struct {
+	Ask            bool
+	Baidu          bool
+	Bing           bool
 	Censys         bool
 	Certdb         bool
 	Crtsh          bool
 	Certspotter    bool
-	Threatcrowd    bool
-	Findsubdomains bool
+	Dnsdb          bool
 	Dnsdumpster    bool
+	Findsubdomains bool
+	Hackertarget   bool
+	Netcraft       bool
 	Passivetotal   bool
 	Ptrarchive     bool
-	Hackertarget   bool
-	Virustotal     bool
-	Securitytrails bool
-	Netcraft       bool
-	Waybackarchive bool
-	Threatminer    bool
 	Riddler        bool
-	Dnsdb          bool
-	Baidu          bool
-	Bing           bool
-	Ask            bool
+	Securitytrails bool
+	Threatcrowd    bool
+	Threatminer    bool
+	Virustotal     bool
+	Waybackarchive bool
 }
 
 func (s *Source) enableAll() {
-	s.Censys = true
-	s.Certdb = true
-	s.Crtsh = true
-	s.Certspotter = true
-	s.Threatcrowd = true
-	s.Findsubdomains = true
-	s.Dnsdumpster = true
-	s.Passivetotal = true
-	s.Ptrarchive = true
-	s.Hackertarget = true
-	s.Virustotal = true
-	s.Securitytrails = true
-	s.Netcraft = true
-	s.Waybackarchive = true
-	s.Threatminer = true
-	s.Riddler = true
-	s.Dnsdb = true
+	s.Ask = true
 	s.Baidu = true
 	s.Bing = true
-	s.Ask = true
+	s.Censys = true
+	s.Certdb = true
+	s.Certspotter = true
+	s.Crtsh = true
+	s.Dnsdb = true
+	s.Dnsdumpster = true
+	s.Findsubdomains = true
+	s.Hackertarget = true
+	s.Netcraft = true
+	s.Passivetotal = true
+	s.Ptrarchive = true
+	s.Riddler = true
+	s.Securitytrails = true
+	s.Threatcrowd = true
+	s.Threatminer = true
+	s.Virustotal = true
+	s.Waybackarchive = true
 }
 
 func (s *Source) enable(dataSources []string) {
 	for _, source := range dataSources {
 		switch source {
-		case "crtsh":
-			s.Crtsh = true
-		case "certdb":
-			s.Certdb = true
-		case "certspotter":
-			s.Certspotter = true
-		case "threatcrowd":
-			s.Threatcrowd = true
-		case "findsubdomains":
-			s.Findsubdomains = true
-		case "dnsdumpster":
-			s.Dnsdumpster = true
-		case "passivetotal":
-			s.Passivetotal = true
-		case "ptrarchive":
-			s.Ptrarchive = true
-		case "hackertarget":
-			s.Hackertarget = true
-		case "virustotal":
-			s.Virustotal = true
-		case "securitytrails":
-			s.Securitytrails = true
-		case "netcraft":
-			s.Netcraft = true
-		case "waybackarchive":
-			s.Waybackarchive = true
-		case "threatminer":
-			s.Threatminer = true
-		case "riddler":
-			s.Riddler = true
-		case "censys":
-			s.Censys = true
-		case "dnsdb":
-			s.Dnsdb = true
+		case "ask":
+			s.Ask = true
 		case "baidu":
 			s.Baidu = true
 		case "bing":
 			s.Bing = true
-		case "ask":
-			s.Ask = true
+		case "censys":
+			s.Censys = true
+		case "certdb":
+			s.Certdb = true
+		case "certspotter":
+			s.Certspotter = true
+		case "crtsh":
+			s.Crtsh = true
+		case "dnsdb":
+			s.Dnsdb = true
+		case "dnsdumpster":
+			s.Dnsdumpster = true
+		case "findsubdomains":
+			s.Findsubdomains = true
+		case "hackertarget":
+			s.Hackertarget = true
+		case "netcraft":
+			s.Netcraft = true
+		case "passivetotal":
+			s.Passivetotal = true
+		case "ptrarchive":
+			s.Ptrarchive = true
+		case "riddler":
+			s.Riddler = true
+		case "securitytrails":
+			s.Securitytrails = true
+		case "threatcrowd":
+			s.Threatcrowd = true
+		case "threatminer":
+			s.Threatminer = true
+		case "virustotal":
+			s.Virustotal = true
+		case "waybackarchive":
+			s.Waybackarchive = true
 		}
 	}
 }
 
 func (s *Source) printSummary() {
-	if s.Crtsh {
-		fmt.Printf("\nRunning Source: %sCrt.sh%s", helper.Info, helper.Reset)
-	}
-	if s.Certdb {
-		fmt.Printf("\nRunning Source: %sCertDB%s", helper.Info, helper.Reset)
-	}
-	if s.Certspotter {
-		fmt.Printf("\nRunning Source: %sCertspotter%s", helper.Info, helper.Reset)
-	}
-	if s.Threatcrowd {
-		fmt.Printf("\nRunning Source: %sThreatcrowd%s", helper.Info, helper.Reset)
-	}
-	if s.Findsubdomains {
-		fmt.Printf("\nRunning Source: %sFindsubdomains%s", helper.Info, helper.Reset)
-	}
-	if s.Dnsdumpster {
-		fmt.Printf("\nRunning Source: %sDNSDumpster%s", helper.Info, helper.Reset)
-	}
-	if s.Passivetotal {
-		fmt.Printf("\nRunning Source: %sPassiveTotal%s", helper.Info, helper.Reset)
-	}
-	if s.Ptrarchive {
-		fmt.Printf("\nRunning Source: %sPTRArchive%s", helper.Info, helper.Reset)
-	}
-	if s.Hackertarget {
-		fmt.Printf("\nRunning Source: %sHackertarget%s", helper.Info, helper.Reset)
-	}
-	if s.Virustotal {
-		fmt.Printf("\nRunning Source: %sVirustotal%s", helper.Info, helper.Reset)
-	}
-	if s.Securitytrails {
-		fmt.Printf("\nRunning Source: %sSecuritytrails%s", helper.Info, helper.Reset)
-	}
-	if s.Netcraft {
-		fmt.Printf("\nRunning Source: %sNetcraft%s\n", helper.Info, helper.Reset)
-	}
-	if s.Waybackarchive {
-		fmt.Printf("\nRunning Source: %sWaybackArchive%s", helper.Info, helper.Reset)
-	}
-	if s.Threatminer {
-		fmt.Printf("\nRunning Source: %sThreatMiner%s", helper.Info, helper.Reset)
-	}
-	if s.Riddler {
-		fmt.Printf("\nRunning Source: %sRiddler%s", helper.Info, helper.Reset)
-	}
-	if s.Censys {
-		fmt.Printf("\nRunning Source: %sCensys%s", helper.Info, helper.Reset)
-	}
-	if s.Dnsdb {
-		fmt.Printf("\nRunning Source: %sDnsdb%s", helper.Info, helper.Reset)
+	if s.Ask {
+		fmt.Printf("\nRunning Source: %sAsk%s", helper.Info, helper.Reset)
 	}
 	if s.Baidu {
 		fmt.Printf("\nRunning Source: %sBaidu%s", helper.Info, helper.Reset)
@@ -202,8 +154,56 @@ func (s *Source) printSummary() {
 	if s.Bing {
 		fmt.Printf("\nRunning Source: %sBing%s", helper.Info, helper.Reset)
 	}
-	if s.Ask {
-		fmt.Printf("\nRunning Source: %sAsk%s", helper.Info, helper.Reset)
+	if s.Censys {
+		fmt.Printf("\nRunning Source: %sCensys%s", helper.Info, helper.Reset)
+	}
+	if s.Certdb {
+		fmt.Printf("\nRunning Source: %sCertDB%s", helper.Info, helper.Reset)
+	}
+	if s.Certspotter {
+		fmt.Printf("\nRunning Source: %sCertspotter%s", helper.Info, helper.Reset)
+	}
+	if s.Crtsh {
+		fmt.Printf("\nRunning Source: %sCrt.sh%s", helper.Info, helper.Reset)
+	}
+	if s.Dnsdb {
+		fmt.Printf("\nRunning Source: %sDnsdb%s", helper.Info, helper.Reset)
+	}
+	if s.Dnsdumpster {
+		fmt.Printf("\nRunning Source: %sDNSDumpster%s", helper.Info, helper.Reset)
+	}
+	if s.Findsubdomains {
+		fmt.Printf("\nRunning Source: %sFindsubdomains%s", helper.Info, helper.Reset)
+	}
+	if s.Hackertarget {
+		fmt.Printf("\nRunning Source: %sHackertarget%s", helper.Info, helper.Reset)
+	}
+	if s.Netcraft {
+		fmt.Printf("\nRunning Source: %sNetcraft%s\n", helper.Info, helper.Reset)
+	}
+	if s.Passivetotal {
+		fmt.Printf("\nRunning Source: %sPassiveTotal%s", helper.Info, helper.Reset)
+	}
+	if s.Ptrarchive {
+		fmt.Printf("\nRunning Source: %sPTRArchive%s", helper.Info, helper.Reset)
+	}
+	if s.Riddler {
+		fmt.Printf("\nRunning Source: %sRiddler%s", helper.Info, helper.Reset)
+	}
+	if s.Securitytrails {
+		fmt.Printf("\nRunning Source: %sSecuritytrails%s", helper.Info, helper.Reset)
+	}
+	if s.Threatcrowd {
+		fmt.Printf("\nRunning Source: %sThreatcrowd%s", helper.Info, helper.Reset)
+	}
+	if s.Threatminer {
+		fmt.Printf("\nRunning Source: %sThreatMiner%s", helper.Info, helper.Reset)
+	}
+	if s.Virustotal {
+		fmt.Printf("\nRunning Source: %sVirustotal%s", helper.Info, helper.Reset)
+	}
+	if s.Waybackarchive {
+		fmt.Printf("\nRunning Source: %sWaybackArchive%s", helper.Info, helper.Reset)
 	}
 }
 
