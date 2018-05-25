@@ -19,6 +19,7 @@ import (
 
 	"github.com/bogdanovich/dns_resolver"
 
+	"github.com/Ice3man543/subfinder/libsubfinder/engines/bruteforce"
 	"github.com/Ice3man543/subfinder/libsubfinder/engines/resolver"
 	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 	"github.com/Ice3man543/subfinder/libsubfinder/output"
@@ -179,7 +180,7 @@ func (s *Source) printSummary() {
 		fmt.Printf("\nRunning Source: %sHackertarget%s", helper.Info, helper.Reset)
 	}
 	if s.Netcraft {
-		fmt.Printf("\nRunning Source: %sNetcraft%s\n", helper.Info, helper.Reset)
+		fmt.Printf("\nRunning Source: %sNetcraft%s", helper.Info, helper.Reset)
 	}
 	if s.Passivetotal {
 		fmt.Printf("\nRunning Source: %sPassiveTotal%s", helper.Info, helper.Reset)
@@ -203,7 +204,7 @@ func (s *Source) printSummary() {
 		fmt.Printf("\nRunning Source: %sVirustotal%s", helper.Info, helper.Reset)
 	}
 	if s.Waybackarchive {
-		fmt.Printf("\nRunning Source: %sWaybackArchive%s", helper.Info, helper.Reset)
+		fmt.Printf("\nRunning Source: %sWaybackArchive%s\n", helper.Info, helper.Reset)
 	}
 }
 
@@ -339,6 +340,38 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	// Now, validate all subdomains found
 	validPassiveSubdomains := helper.Validate(domain, uniquePassiveSubdomains)
 
+	var words []string
+	var BruteforceSubdomainList []string
+	// Start the bruteforcing workflow if the user has asked for it
+	if state.Bruteforce == true && state.Wordlist != "" {
+		file, err := os.Open(state.Wordlist)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "\nerror: %v\n", err)
+			os.Exit(1)
+		}
+
+		defer file.Close()
+
+		scanner := bufio.NewScanner(file)
+
+		for scanner.Scan() {
+			// Send the job to the channel
+			words = append(words, scanner.Text())
+		}
+
+		if state.Silent != true {
+			fmt.Printf("\n\nStarting Bruteforcing of %s%s%s with %s%d%s words", helper.Info, domain, helper.Reset, helper.Info, len(words), helper.Reset)
+		}
+
+		BruteforceSubdomainsArray := bruteforce.Brute(state, words, domain)
+		for _, subdomain := range BruteforceSubdomainsArray {
+			BruteforceSubdomainList = append(BruteforceSubdomainList, subdomain.Fqdn)
+		}
+	}
+
+	// Append bruteforced subdomains to validPassiveSubdomains
+	validPassiveSubdomains = append(validPassiveSubdomains, BruteforceSubdomainList...)
+
 	var PassiveSubdomains []string
 	var passiveSubdomainsArray []helper.Domain
 
@@ -357,7 +390,7 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 
 	if state.AquatoneJSON {
 		if !state.Silent {
-			fmt.Printf("\n\nWriting Enumeration Output To %s", state.Output)
+			fmt.Printf("\n\nWriting Resolved Enumeration Output To %s", state.Output)
 		}
 
 		output.WriteOutputAquatoneJSON(state, passiveSubdomainsArray)
@@ -438,13 +471,11 @@ func Enumerate(state *helper.State) []string {
 		if job.Result != nil {
 			results := job.Result.([]string)
 			if state.Output != "" {
-				if !state.IsJSON {
-					if !state.AquatoneJSON {
-						err := output.WriteOutputToFile(state, results)
-						if err != nil {
-							if state.Silent == true {
-								fmt.Printf("\n%s-> %v%s\n", helper.Bad, err, helper.Reset)
-							}
+				if state.IsJSON == true {
+					err := output.WriteOutputJSON(state, results)
+					if err != nil {
+						if state.Silent == true {
+							fmt.Printf("\n%s-> %v%s\n", helper.Bad, err, helper.Reset)
 						}
 					}
 				}
@@ -476,7 +507,7 @@ func analyzeDomain(args ...interface{}) interface{} {
 	if state.Output != "" {
 		if !state.IsJSON {
 			if !state.AquatoneJSON {
-				err := output.WriteOutputToFile(state, foundSubdomains)
+				err := output.WriteOutputTextArray(state, foundSubdomains)
 				if err != nil {
 					if state.Silent {
 						fmt.Printf("\n%s-> %v%s\n", helper.Bad, err, helper.Reset)

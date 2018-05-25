@@ -9,6 +9,10 @@
 
 package helper
 
+import (
+	"os"
+)
+
 // Holds the State read in from the CLI
 type State struct {
 	Color        bool     // Whether to use color or not
@@ -35,6 +39,7 @@ type State struct {
 	ComResolver  string   // Comma-separated list of resolvers to use
 	ListResolver string   // File to load resolvers from
 	AquatoneJSON bool     // Use aquatone style json format
+	OutputHandle *os.File // Handle to the output file used for output buffering
 
 	CurrentSettings Setting // Current application settings
 	ConfigState     Config  // Current configuration file state
@@ -80,5 +85,5 @@ func InitState() (state State, err error) {
 
 	setting := InitializeSettings()
 
-	return State{true, 10, 180, false, "", false, "", false, false, "", false, []string{}, true, "", false, []string{}, "", "", "", "", []string{}, "", "", false, *setting, *config}, nil
+	return State{true, 10, 180, false, "", false, "", false, false, "", false, []string{}, true, "", false, []string{}, "", "", "", "", []string{}, "", "", false, nil, *setting, *config}, nil
 }

@@ -10,7 +10,6 @@ package output
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -19,21 +18,22 @@ import (
 )
 
 // Write output to a normal text file
-func WriteOutputText(state *helper.State, subdomains []string) error {
-	file, err := os.Create(state.Output)
-
+func WriteOutputText(state *helper.State, subdomain string) error {
+	_, err := state.OutputHandle.WriteString(subdomain + "\n")
 	if err != nil {
 		return err
 	}
 
+	return nil
+}
+
+func WriteOutputTextArray(state *helper.State, subdomains []string) error {
 	for _, subdomain := range subdomains {
-		_, err := io.WriteString(file, subdomain+"\n")
+		_, err := state.OutputHandle.WriteString(subdomain + "\n")
 		if err != nil {
 			return err
 		}
 	}
-
-	file.Close()
 
 	return nil
 }
@@ -82,31 +82,6 @@ func WriteOutputAquatoneJSON(state *helper.State, subdomains []helper.Domain) er
 	return nil
 }
 
-func WriteOutputToFile(state *helper.State, subdomains []string) (err error) {
-	if state.Output != "" {
-		if state.IsJSON == true {
-			err := WriteOutputJSON(state, subdomains)
-			if err != nil {
-				fmt.Printf("\nerror : %v", err)
-			} else {
-				if state.Silent != true {
-					fmt.Printf("\n[~] Successfully Written Output to File : %s\n", state.Output)
-				}
-			}
-		} else {
-			err := WriteOutputText(state, subdomains)
-			if err != nil {
-				fmt.Printf("\nerror : %v", err)
-			} else {
-				if state.Silent != true {
-					fmt.Printf("\n[~] Successfully Written Output to File : %s\n", state.Output)
-				}
-			}
-		}
-	}
-
-	return nil
-}
 func WriteOutputToDir(state *helper.State, subdomains []string, domain string) (err error) {
 	if state.OutputDir != "" {
 		if state.IsJSON == false {
