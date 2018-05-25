@@ -1,92 +1,77 @@
 //
-// brutefoce.go : Helper method for bruteforce functionality implemented
-//	in subfinder.
-//
+// bruteforce.go : A DNS Bruteforcer in Golang
 // Written By : @ice3man (Nizamul Rana)
 //
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
-//
+// All Rights Reserved
 
 package bruteforce
 
 import (
-	//"bufio"
 	"fmt"
-	"os"
-	//"sync"
 
 	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
 
-/*
-var wg, wg2 sync.WaitGroup
-
-func produce(jobs chan<- *Job) {
-	// Generate jobs:
-	id := 0
-	for c := 'a'; c <= 'z'; c++ {
-		id++
-		jobs <- &Job{Id: id, Work: fmt.Sprintf("%c", c)}
-	}
-	close(jobs)
-}*/
-func Bruteforce(state *helper.State) (subdomains []string) {
-	wildcard := helper.InitializeWildcardDNS(state)
-	if wildcard == true {
-		fmt.Printf("\n%s[!]%s Wildcard DNS Detected ! False Positives are likely :-(\n\n", helper.Cyan, helper.Reset)
-	}
-
-	subdomains, err := Process(state.Wordlist, state.Domain, state)
+func consume(args ...interface{}) interface{} {
+	target := args[0].(string)
+	state := args[1].(*helper.State)
+	domain := args[2].(string)
+	ips, err := helper.ResolveHost(fmt.Sprintf("%s.%s", target, domain))
 	if err != nil {
-		fmt.Printf("\n%v\n", err)
-		os.Exit(1)
+		return ""
 	}
 
-	return subdomains
+	if len(ips) <= 0 {
+		// We didn't found any ips
+		return ""
+	} else {
+		if state.IsWildcard == true {
+			result := helper.CheckWildcard(state, ips)
+			if result == true {
+				// We have a wildcard ip
+				return ""
+			}
+			return ips[0]
+		}
+		return ips[0]
+	}
 }
 
-func Process(wordlist string, domain string, state *helper.State) (subdomains []string, err error) {
+// Resolve handle a list of subdomains to resolve
+func Brute(state *helper.State, list []string, domain string) (subdomains []helper.Domain) {
 
-	/*// Holds current words read from dictionary
-	words := []string{}
+	brutePool := helper.NewPool(state.Threads)
 
-	// Open the wordlist file
-	wordfile, err := os.Open(state.Wordlist)
-	if err != nil {
-		return subdomains, err
+	brutePool.Run()
+
+	// add jobs
+	for _, target := range list {
+		// Send the job to the channel
+		brutePool.Add(consume, target, state, domain)
 	}
 
-	scanner := bufio.NewScanner(wordfile)
+	brutePool.Wait()
 
-	for scanner.Scan() {
-		words = append(words, scanner.Text())
-	}
+	var ValidSubdomains []helper.Domain
 
-	var wg sync.WaitGroup
-	var channel = make(chan string)
-
-	for i := 0; i < state.Threads; i++ {
-		wg.Add(1)
-
-		go func() {
-			defer wg.Done()
-			//bruteforcer.CheckDNSEntry(state, domain, channel)
-		}()
-	}
-
-	for _, word := range words {
-		channel <- word
-	}
-
-	for _, _ = range words {
-		result := <-channel
-		if result != "" {
-			fmt.Printf("%s\n", result)
+	completedJobs := brutePool.Results()
+	for _, job := range completedJobs {
+		if job.Result != "" {
+			fqdn := job.Args[0].(string)
+			ip := job.Result.(string)
+			subdomain := helper.Domain{IP: ip, Fqdn: fmt.Sprintf("%s.%s", fqdn, domain)}
+			if state.Silent != true {
+				if state.Verbose == true {
+					fmt.Printf("\n[%sBRUTE%s] %s : %s", helper.Info, helper.Reset, subdomain.Fqdn, subdomain.IP)
+				}
+			}
+			ValidSubdomains = append(ValidSubdomains, subdomain)
 		}
 	}
 
-	wg.Wait()*/
+	brutePool.Stop()
 
-	return subdomains, err
+	return ValidSubdomains
 }
