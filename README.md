@@ -16,7 +16,7 @@ This project began it's life as a Bug Bounty World slack channel discussion. We 
 # Features
 
 - Simple and modular code base making it easy to contribute.
-- Fast And Powerful Bruteforcing Module (In Development)
+- Fast And Powerful Bruteforcing Module 
 - Powerful Permutation generation engine. (In Development)
 - Many Passive Data Sources (20 At Present)
 - Multiple Output formats
@@ -165,7 +165,6 @@ For example, you can pass the number of Censys pages to check using the followin
 ```bash
 ./subfinder -d freelancer.com --sources censys --set-settings CensysPages=2 -v 
 ```
-
 For checking all pages returned by censys, you can use "all" option. Note, It is a string.
 
 These are the settings currently supported 
@@ -174,6 +173,11 @@ CensysPages
 AskPages
 BaiduPages
 BingPages
+```
+
+For using bruteforcing capabilities, you can use -b flag with -w option to specify a wordlist.
+```bash
+./subfinder -d freelancer.com -b -w jhaddix_all.txt -t 100 --sources censys --set-settings CensysPages=2 -v 
 ```
 
 You can also write output in JSON format as used by Aquatone.
