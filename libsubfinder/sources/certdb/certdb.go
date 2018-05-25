@@ -20,7 +20,11 @@ import (
 var subdomains []string
 
 // Parser subdomains from SSL Certificate Information Page
-func findSubdomains(link string, state *helper.State, channel chan []string) {
+func findSubdomains(args ...interface{}) interface{} {
+
+	domain := args[0].(string)
+	state := args[1].(*helper.State)
+
 	var subdomainsfound []string
 
 	resp, err := helper.GetHTTPResponse("https://certdb.com"+link, state.Timeout)

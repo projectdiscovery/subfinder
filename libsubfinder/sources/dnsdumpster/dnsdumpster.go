@@ -25,7 +25,11 @@ var subdomains []string
 var gCookies []*http.Cookie
 
 // Query function returns all subdomains found using the service.
-func Query(domain string, state *helper.State, ch chan helper.Result) {
+func Query(args ...interface{}) interface{} {
+
+	domain := args[0].(string)
+	state := args[1].(*helper.State)
+
 	// CookieJar to hold csrf cookie
 	var curCookieJar *cookiejar.Jar
 	curCookieJar, _ = cookiejar.New(nil)

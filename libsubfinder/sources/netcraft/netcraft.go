@@ -101,7 +101,10 @@ func enumerate(state *helper.State, baseUrl string) (err error) {
 }
 
 // Query function returns all subdomains found using the service.
-func Query(domain string, state *helper.State, ch chan helper.Result) {
+func Query(args ...interface{}) interface{} {
+
+	domain := args[0].(string)
+	state := args[1].(*helper.State)
 
 	var result helper.Result
 

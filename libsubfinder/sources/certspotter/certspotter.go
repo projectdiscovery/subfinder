@@ -29,7 +29,10 @@ var certspotter_data []certspotter_object
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(domain string, state *helper.State, ch chan helper.Result) {
+func Query(args ...interface{}) interface{} {
+
+	domain := args[0].(string)
+	state := args[1].(*helper.State)
 
 	// Create a result object
 	var result helper.Result

@@ -243,7 +243,10 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 		}
 	}
 
-	ch := make(chan helper.Result, sourceConfig.nbrActive())
+	domainDiscoverPool := helper.NewPool(sourceConfig.nbrActive())
+	domainDiscoverPool.Run()
+
+	domainDiscoverPool.Wait()
 
 	if state.Silent != true {
 		fmt.Printf("\nRunning enumeration on %s", domain)
@@ -252,81 +255,84 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	// Create goroutines for added speed and recieve data via channels
 	// Check if we the user has specified custom sources and if yes, run them
 	// via if statements.
-	if sourceConfig.Crtsh == true {
-		go crtsh.Query(domain, state, ch)
+	if sourceConfig.Crtsh {
+		domainDiscoverPool.Add(crtsh.Query, domain, state)
 	}
-	if sourceConfig.Certdb == true {
-		go certdb.Query(domain, state, ch)
+	if sourceConfig.Certdb {
+		domainDiscoverPool.Add(certdb.Query, domain, state)
 	}
-	if sourceConfig.Certspotter == true {
-		go certspotter.Query(domain, state, ch)
+	if sourceConfig.Certspotter {
+		domainDiscoverPool.Add(certspotter.Query, domain, state)
 	}
-	if sourceConfig.Threatcrowd == true {
-		go threatcrowd.Query(domain, state, ch)
+	if sourceConfig.Threatcrowd {
+		domainDiscoverPool.Add(threatcrowd.Query, domain, state)
 	}
-	if sourceConfig.Findsubdomains == true {
-		go findsubdomains.Query(domain, state, ch)
+	if sourceConfig.Findsubdomains {
+		domainDiscoverPool.Add(findsubdomains.Query, domain, state)
 	}
-	if sourceConfig.Dnsdumpster == true {
-		go dnsdumpster.Query(domain, state, ch)
+	if sourceConfig.Dnsdumpster {
+		domainDiscoverPool.Add(dnsdumpster.Query, domain, state)
 	}
-	if sourceConfig.Passivetotal == true {
-		go passivetotal.Query(domain, state, ch)
+	if sourceConfig.Passivetotal {
+		domainDiscoverPool.Add(passivetotal.Query, domain, state)
 	}
-	if sourceConfig.Ptrarchive == true {
-		go ptrarchive.Query(domain, state, ch)
+	if sourceConfig.Ptrarchive {
+		domainDiscoverPool.Add(ptrarchive.Query, domain, state)
 	}
-	if sourceConfig.Hackertarget == true {
-		go hackertarget.Query(domain, state, ch)
+	if sourceConfig.Hackertarget {
+		domainDiscoverPool.Add(hackertarget.Query, domain, state)
 	}
-	if sourceConfig.Virustotal == true {
-		go virustotal.Query(domain, state, ch)
+	if sourceConfig.Virustotal {
+		domainDiscoverPool.Add(virustotal.Query, domain, state)
 	}
-	if sourceConfig.Securitytrails == true {
-		go securitytrails.Query(domain, state, ch)
+	if sourceConfig.Securitytrails {
+		domainDiscoverPool.Add(securitytrails.Query, domain, state)
 	}
-	if sourceConfig.Netcraft == true {
-		go netcraft.Query(domain, state, ch)
+	if sourceConfig.Netcraft {
+		domainDiscoverPool.Add(netcraft.Query, domain, state)
 	}
-	if sourceConfig.Waybackarchive == true {
-		go waybackarchive.Query(domain, state, ch)
+	if sourceConfig.Waybackarchive {
+		domainDiscoverPool.Add(waybackarchive.Query, domain, state)
 	}
-	if sourceConfig.Threatminer == true {
-		go threatminer.Query(domain, state, ch)
+	if sourceConfig.Threatminer {
+		domainDiscoverPool.Add(threatminer.Query, domain, state)
 	}
-	if sourceConfig.Riddler == true {
-		go riddler.Query(domain, state, ch)
+	if sourceConfig.Riddler {
+		domainDiscoverPool.Add(riddler.Query, domain, state)
 	}
-	if sourceConfig.Censys == true {
-		go censys.Query(domain, state, ch)
+	if sourceConfig.Censys {
+		domainDiscoverPool.Add(censys.Query, domain, state)
 	}
-	if sourceConfig.Dnsdb == true {
-		go dnsdb.Query(domain, state, ch)
+	if sourceConfig.Dnsdb {
+		domainDiscoverPool.Add(dnsdb.Query, domain, state)
 	}
-	if sourceConfig.Baidu == true {
-		go baidu.Query(domain, state, ch)
+	if sourceConfig.Baidu {
+		domainDiscoverPool.Add(baidu.Query, domain, state)
 	}
-	if sourceConfig.Bing == true {
-		go bing.Query(domain, state, ch)
+	if sourceConfig.Bing {
+		domainDiscoverPool.Add(bing.Query, domain, state)
 	}
-	if sourceConfig.Ask == true {
-		go ask.Query(domain, state, ch)
+	if sourceConfig.Ask {
+		domainDiscoverPool.Add(ask.Query, domain, state)
 	}
 
-	// Recieve data from all goroutines running
-	for i := 0; i < sourceConfig.nbrActive(); i++ {
-		result := <-ch
+	domainDiscoverPool.Wait()
 
-		if result.Error != nil {
+	completedJobs := domainDiscoverPool.Results()
+	for _, job := range completedJobs {
+		if job.Err != nil {
 			// some error occured
-			if state.Silent != true {
-				fmt.Printf("\nerror: %v\n", result.Error)
+			if !state.Silent {
+				fmt.Printf("\nerror: %v\n", job.Err)
 			}
 		}
+		results := job.Result.([]string)
 		for _, subdomain := range result.Subdomains {
 			finalPassiveSubdomains = append(finalPassiveSubdomains, subdomain)
 		}
 	}
+
+	passivePool.Stop()
 
 	// Now remove duplicate items from the slice
 	uniquePassiveSubdomains := helper.Unique(finalPassiveSubdomains)
