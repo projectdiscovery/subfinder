@@ -175,6 +175,15 @@ func main() {
 		exists, _ := helper.Exists(dir)
 		if exists == false {
 			fmt.Printf("\n%s-> The specified output directory does not exists !%s\n", helper.Yellow, helper.Reset)
+		} else {
+			// Get a handle to the out file if it is not json
+			if state.AquatoneJSON != true && state.IsJSON != true {
+				state.OutputHandle, err = os.OpenFile(state.Output, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+				if err != nil {
+					return
+				}
+
+			}
 		}
 	} else if state.OutputDir != "" {
 		exists, _ := helper.Exists(state.OutputDir)

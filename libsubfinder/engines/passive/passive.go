@@ -384,7 +384,7 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 
 	if state.AquatoneJSON {
 		if !state.Silent {
-			fmt.Printf("\n\nWriting Enumeration Output To %s", state.Output)
+			fmt.Printf("\n\nWriting Resolved Enumeration Output To %s", state.Output)
 		}
 
 		output.WriteOutputAquatoneJSON(state, passiveSubdomainsArray)
@@ -465,13 +465,11 @@ func Enumerate(state *helper.State) []string {
 		if job.Result != nil {
 			results := job.Result.([]string)
 			if state.Output != "" {
-				if !state.IsJSON {
-					if !state.AquatoneJSON {
-						err := output.WriteOutputToFile(state, results)
-						if err != nil {
-							if state.Silent == true {
-								fmt.Printf("\n%s-> %v%s\n", helper.Bad, err, helper.Reset)
-							}
+				if state.IsJSON == true {
+					err := output.WriteOutputJSON(state, results)
+					if err != nil {
+						if state.Silent == true {
+							fmt.Printf("\n%s-> %v%s\n", helper.Bad, err, helper.Reset)
 						}
 					}
 				}
@@ -503,7 +501,7 @@ func analyzeDomain(args ...interface{}) interface{} {
 	if state.Output != "" {
 		if !state.IsJSON {
 			if !state.AquatoneJSON {
-				err := output.WriteOutputToFile(state, foundSubdomains)
+				err := output.WriteOutputTextArray(state, foundSubdomains)
 				if err != nil {
 					if state.Silent {
 						fmt.Printf("\n%s-> %v%s\n", helper.Bad, err, helper.Reset)
