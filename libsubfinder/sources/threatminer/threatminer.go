@@ -25,23 +25,18 @@ func Query(args ...interface{}) interface{} {
 	domain := args[0].(string)
 	state := args[1].(*helper.State)
 
-	var result helper.Result
-	result.Subdomains = subdomains
-
 	// Make a http request to CertDB
 	resp, err := helper.GetHTTPResponse("https://www.threatminer.org/getData.php?e=subdomains_container&q="+domain+"&t=0&rt=10&p=1", state.Timeout)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	src := string(body)
@@ -66,7 +61,5 @@ func Query(args ...interface{}) interface{} {
 		subdomains = append(subdomains, subdomain)
 	}
 
-	result.Subdomains = subdomains
-	result.Error = nil
-	ch <- result
+	return subdomains
 }

@@ -32,16 +32,14 @@ func Query(args ...interface{}) interface{} {
 	// Make a http request to DnsDB
 	resp, err := helper.GetHTTPResponse("http://www.dnsdb.org/f/"+domain+".dnsdb.org/", state.Timeout)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 	src := string(body)
 	re := regexp.MustCompile("<a[^>]*?[^>]*>(.*?)</a>")
@@ -61,7 +59,5 @@ func Query(args ...interface{}) interface{} {
 
 		subdomains = append(subdomains, finishedSub)
 	}
-	result.Subdomains = subdomains
-	result.Error = nil
-	ch <- result
+	return subdomains
 }

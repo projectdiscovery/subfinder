@@ -327,12 +327,12 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 			}
 		}
 		results := job.Result.([]string)
-		for _, subdomain := range result.Subdomains {
+		for _, subdomain := range results {
 			finalPassiveSubdomains = append(finalPassiveSubdomains, subdomain)
 		}
 	}
 
-	passivePool.Stop()
+	domainDiscoverPool.Stop()
 
 	// Now remove duplicate items from the slice
 	uniquePassiveSubdomains := helper.Unique(finalPassiveSubdomains)

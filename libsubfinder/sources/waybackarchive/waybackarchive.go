@@ -26,23 +26,18 @@ func Query(args ...interface{}) interface{} {
 	domain := args[0].(string)
 	state := args[1].(*helper.State)
 
-	var result helper.Result
-	result.Subdomains = subdomains
-
 	// Make a http request to Threatcrowd
 	resp, err := helper.GetHTTPResponse("http://web.archive.org/cdx/search/cdx?url=*."+domain+"/*&output=json&fl=original&collapse=urlkey", state.Timeout)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	// Get the response body
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	var urls [][]string
@@ -50,9 +45,8 @@ func Query(args ...interface{}) interface{} {
 	// Decode the json format
 	err = json.Unmarshal([]byte(resp_body), &urls)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	var initialSubs []string
@@ -89,7 +83,5 @@ func Query(args ...interface{}) interface{} {
 		subdomains = append(subdomains, subdomain)
 	}
 
-	result.Subdomains = subdomains
-	result.Error = nil
-	ch <- result
+	return subdomains
 }

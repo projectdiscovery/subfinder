@@ -34,23 +34,18 @@ func Query(args ...interface{}) interface{} {
 	var curCookieJar *cookiejar.Jar
 	curCookieJar, _ = cookiejar.New(nil)
 
-	var result helper.Result
-	result.Subdomains = subdomains
-
 	// Make a http request to DNSDumpster
 	resp, gCookies, err := helper.GetHTTPCookieResponse("https://dnsdumpster.com", gCookies, state.Timeout)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	src := string(body)
@@ -84,9 +79,8 @@ func Query(args ...interface{}) interface{} {
 	// Get the response body
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	src = string(body)
@@ -116,7 +110,5 @@ func Query(args ...interface{}) interface{} {
 		subdomains = append(subdomains, subdomain)
 	}
 
-	result.Subdomains = subdomains
-	result.Error = nil
-	ch <- result
+	return subdomains
 }

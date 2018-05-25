@@ -87,7 +87,7 @@ func Query(args ...interface{}) interface{} {
 	domain := args[0].(string)
 	state := args[1].(*helper.State)
 
-	var result helper.Result
+	var subdomains []string
 
 	// We have recieved an API Key
 	// Now, we will use Virustotal API key to fetch subdomain info
@@ -97,23 +97,10 @@ func Query(args ...interface{}) interface{} {
 		subdomains, err := queryVirustotalApi(domain, state)
 
 		if err != nil {
-			result.Subdomains = subdomains
-			result.Error = err
-			ch <- result
-			return
+			fmt.Printf("\nerror: %v\n", err)
+			return subdomains
 		}
-
-		result.Subdomains = subdomains
-		result.Error = nil
-		ch <- result
-		return
-	} else {
-		var subdomains []string
-		//subdomains, err := queryVirustotal(state)
-
-		result.Subdomains = subdomains
-		result.Error = nil
-		ch <- result
-		return
 	}
+
+	return subdomains
 }

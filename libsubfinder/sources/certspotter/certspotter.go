@@ -34,33 +34,26 @@ func Query(args ...interface{}) interface{} {
 	domain := args[0].(string)
 	state := args[1].(*helper.State)
 
-	// Create a result object
-	var result helper.Result
-	result.Subdomains = subdomains
-
 	// Make a http request to Certspotter
 	resp, err := helper.GetHTTPResponse("https://certspotter.com/api/v0/certs?domain="+domain, state.Timeout)
 	if err != nil {
 		// Set values and return
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	// Get the response body
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	// Decode the json format
 	err = json.Unmarshal([]byte(resp_body), &certspotter_data)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	// Append each subdomain found to subdomains array
@@ -84,7 +77,5 @@ func Query(args ...interface{}) interface{} {
 		}
 	}
 
-	result.Subdomains = subdomains
-	result.Error = nil
-	ch <- result
+	return subdomains
 }

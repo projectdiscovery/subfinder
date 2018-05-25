@@ -31,17 +31,15 @@ func Query(args ...interface{}) interface{} {
 
 	resp, err := helper.GetHTTPResponse("https://api.hackertarget.com/hostsearch/?q="+domain, state.Timeout)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	// Get the response body
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	scanner := bufio.NewScanner(strings.NewReader(string(resp_body)))
@@ -58,7 +56,5 @@ func Query(args ...interface{}) interface{} {
 		}
 	}
 
-	result.Subdomains = subdomains
-	result.Error = nil
-	ch <- result
+	return subdomains
 }

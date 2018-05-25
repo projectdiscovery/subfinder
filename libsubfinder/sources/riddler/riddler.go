@@ -11,7 +11,6 @@ package riddler
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -44,9 +43,6 @@ func Query(args ...interface{}) interface{} {
 	domain := args[0].(string)
 	state := args[1].(*helper.State)
 
-	var result helper.Result
-	result.Subdomains = subdomains
-
 	hc := http.Client{}
 
 	var data = []byte(`{"email":"` + state.ConfigState.RiddlerEmail + `", "password":"` + state.ConfigState.RiddlerPassword + `"}`)
@@ -60,23 +56,19 @@ func Query(args ...interface{}) interface{} {
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	err = json.Unmarshal([]byte(body), &auth)
 	if err != nil {
-		result.Subdomains = subdomains
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	if auth.Response.User.Authentication_token == "" {
-		result.Error = errors.New("failed to get authentication token")
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", "failed to get authentication token")
+		return subdomains
 	}
 
 	data = []byte(`{"query":"pld:` + domain + `", "output":"host", "limit":500}`)
@@ -90,17 +82,14 @@ func Query(args ...interface{}) interface{} {
 	// Get the response body
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", "failed to get authentication token")
+		return subdomains
 	}
 
 	err = json.Unmarshal([]byte(body), &hostResponse)
 	if err != nil {
-		result.Subdomains = subdomains
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	for _, host := range hostResponse {
@@ -117,7 +106,5 @@ func Query(args ...interface{}) interface{} {
 		subdomains = append(subdomains, subdomain)
 	}
 
-	result.Subdomains = subdomains
-	result.Error = nil
-	ch <- result
+	return subdomains
 }

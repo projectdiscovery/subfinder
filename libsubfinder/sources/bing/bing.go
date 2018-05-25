@@ -28,8 +28,6 @@ func Query(args ...interface{}) interface{} {
 	domain := args[0].(string)
 	state := args[1].(*helper.State)
 
-	var result helper.Result
-	result.Subdomains = subdomains
 	min_iterations, _ := strconv.Atoi(state.CurrentSettings.BingPages)
 	max_iterations := 760
 	search_query := ""
@@ -47,17 +45,15 @@ func Query(args ...interface{}) interface{} {
 
 		resp, err := helper.GetHTTPResponse("https://www.bing.com/search?q="+search_query+"&go=Submit&first="+strconv.Itoa(current_page), state.Timeout)
 		if err != nil {
-			result.Error = err
-			ch <- result
-			return
+			fmt.Printf("\nerror: %v\n", err)
+			return subdomains
 		}
 
 		// Get the response body
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			result.Error = err
-			ch <- result
-			return
+			fmt.Printf("\nerror: %v\n", err)
+			return subdomains
 		}
 
 		// suppress all %xx sequences with a space
@@ -96,7 +92,5 @@ func Query(args ...interface{}) interface{} {
 		current_page++
 	}
 
-	result.Subdomains = subdomains
-	result.Error = nil
-	ch <- result
+	return subdomains
 }
