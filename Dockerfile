@@ -1,7 +1,18 @@
-FROM golang:1.8-onbuild
+FROM golang:latest
+WORKDIR /app
 
-MAINTAINER Anshuman Bhartiya (anshuman.bhartiya@gmail.com)
+# Set an env var that matches your github repo name
+ENV SRC_DIR=/go/src/github.com/Ice3man543/subfinder/
 
-ADD wordlists /
+# Add the source code:
+ADD libsubfinder ${SRC_DIR}/libsubfinder
+ADD main.go ${SRC_DIR}/main.go
+ADD process.go ${SRC_DIR}/process.go
 
-ENTRYPOINT ["app"]
+# Build it:
+RUN cd $SRC_DIR; go get; go build -o main; cp main /app/
+
+COPY wordlists/ ./wordlists/
+
+ENTRYPOINT ["./main"]
+
