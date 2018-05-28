@@ -29,10 +29,10 @@ var virustotalapi_data virustotalapi_object
 
 // Local function to query virustotal API
 // Requires an API key
-func queryVirustotalApi(state *helper.State) (subdomains []string, err error) {
+func queryVirustotalApi(domain string, state *helper.State) (subdomains []string, err error) {
 
 	// Make a search for a domain name and get HTTP Response
-	resp, err := helper.GetHTTPResponse("https://www.virustotal.com/vtapi/v2/domain/report?apikey="+state.ConfigState.VirustotalAPIKey+"&domain="+state.Domain, state.Timeout)
+	resp, err := helper.GetHTTPResponse("https://www.virustotal.com/vtapi/v2/domain/report?apikey="+state.ConfigState.VirustotalAPIKey+"&domain="+domain, state.Timeout)
 	if err != nil {
 		return subdomains, err
 	}
@@ -82,7 +82,7 @@ func queryVirustotalApi(state *helper.State) (subdomains []string, err error) {
 }*/
 
 // Query function returns all subdomains found using the service.
-func Query(state *helper.State, ch chan helper.Result) {
+func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result
 
@@ -91,7 +91,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 	if state.ConfigState.VirustotalAPIKey != "" {
 
 		// Get subdomains via API
-		subdomains, err := queryVirustotalApi(state)
+		subdomains, err := queryVirustotalApi(domain, state)
 
 		if err != nil {
 			result.Subdomains = subdomains

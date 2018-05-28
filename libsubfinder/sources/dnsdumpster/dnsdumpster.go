@@ -25,7 +25,7 @@ var subdomains []string
 var gCookies []*http.Cookie
 
 // Query function returns all subdomains found using the service.
-func Query(state *helper.State, ch chan helper.Result) {
+func Query(domain string, state *helper.State, ch chan helper.Result) {
 	// CookieJar to hold csrf cookie
 	var curCookieJar *cookiejar.Jar
 	curCookieJar, _ = cookiejar.New(nil)
@@ -65,7 +65,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 	form := url.Values{}
 
 	form.Add("csrfmiddlewaretoken", csrfmiddlewaretoken[1])
-	form.Add("targetip", state.Domain)
+	form.Add("targetip", domain)
 
 	// Create a post request to get subdomain data
 	req, err := http.NewRequest("POST", "https://dnsdumpster.com", strings.NewReader(form.Encode()))
@@ -98,7 +98,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 		initialSubs = append(initialSubs, data[1])
 	}
 
-	validSubdomains := helper.Validate(state, initialSubs)
+	validSubdomains := helper.Validate(domain, initialSubs)
 
 	for _, subdomain := range validSubdomains {
 		if state.Verbose == true {

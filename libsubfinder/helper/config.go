@@ -74,17 +74,16 @@ func ReadConfigFile() (configuration *Config, err error) {
 		}
 
 		return &config, nil
-	} else {
-		CreateDirIfNotExist(home + "/.config/subfinder/")
-		configJson, _ := json.MarshalIndent(config, "", "	")
-		err = ioutil.WriteFile(path, configJson, 0644)
-		if err != nil {
-			fmt.Printf("\n\n[!] Error : %v\n", err)
-			os.Exit(1)
-		}
-
-		fmt.Printf("\n[NOTE] Edit %s with your options !", path)
-		return &config, nil
 	}
+	CreateDirIfNotExist(home + "/.config/subfinder/")
+	configJSON, _ := json.MarshalIndent(config, "", "	")
+	err = ioutil.WriteFile(path, configJSON, 0644)
+	if err != nil {
+		fmt.Printf("\n\n[!] Error : %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("\n[NOTE] Edit %s with your options !", path)
+	return &config, nil
 
 }

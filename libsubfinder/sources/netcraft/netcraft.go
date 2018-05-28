@@ -101,7 +101,7 @@ func enumerate(state *helper.State, baseUrl string) (err error) {
 }
 
 // Query function returns all subdomains found using the service.
-func Query(state *helper.State, ch chan helper.Result) {
+func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result
 
@@ -109,7 +109,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 	gCookies = nil
 
 	// Query using first page. Everything from there would be recursive
-	err := enumerate(state, "https://searchdns.netcraft.com/?restriction=site+ends+with&host="+state.Domain+"&lookup=wait..&position=limited")
+	err := enumerate(state, "https://searchdns.netcraft.com/?restriction=site+ends+with&host="+domain+"&lookup=wait..&position=limited")
 	if err != nil {
 		result.Subdomains = globalSubdomains
 		result.Error = err

@@ -25,7 +25,7 @@ import (
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(state *helper.State, ch chan helper.Result) {
+func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result
 	result.Subdomains = subdomains
@@ -34,9 +34,9 @@ func Query(state *helper.State, ch chan helper.Result) {
 	search_query := ""
 	current_page := 0
 	for current_iteration := 0; current_iteration <= max_iterations; current_iteration++ {
-		new_search_query := "site:" + state.Domain
+		new_search_query := "site:" + domain
 		if len(subdomains) > 0 {
-			new_search_query += " -site:www." + state.Domain
+			new_search_query += " -site:www." + domain
 		}
 		new_search_query = url.QueryEscape(new_search_query)
 		if search_query != new_search_query {
@@ -60,7 +60,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 		}
 		src := string(body)
 
-		re := regexp.MustCompile(`([a-z0-9]+\.)+` + state.Domain)
+		re := regexp.MustCompile(`([a-z0-9]+\.)+` + domain)
 		match := re.FindAllString(src, -1)
 
 		new_subdomains_found := 0

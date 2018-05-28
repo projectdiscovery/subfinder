@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"errors"
 
 	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
@@ -38,7 +39,7 @@ var auth authentication
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(state *helper.State, ch chan helper.Result) {
+func Query(domain string, state *helper.State, ch chan helper.Result) {
 	var result helper.Result
 	result.Subdomains = subdomains
 
@@ -67,8 +68,14 @@ func Query(state *helper.State, ch chan helper.Result) {
 		ch <- result
 		return
 	}
-
-	data = []byte(`{"query":"pld:` + state.Domain + `", "output":"host", "limit":500}`)
+  
+  if auth.Response.User.Authentication_token == "" {
+		result.Error = errors.New("failed to get authentication token")
+		ch <- result
+		return
+	}
+  
+  data = []byte(`{"query":"pld:` + domain + `", "output":"host", "limit":500}`)
 
 	req, err = http.NewRequest("POST", "https://riddler.io/api/search", bytes.NewBuffer(data))
 	req.Header.Add("Content-Type", "application/json")

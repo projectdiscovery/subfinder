@@ -28,7 +28,7 @@ var passivetotal_data passivetotal_object
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(state *helper.State, ch chan helper.Result) {
+func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 	var result helper.Result
 
@@ -41,7 +41,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 		key := state.ConfigState.PassivetotalKey
 
 		// Create JSON Get body
-		var request = []byte(`{"query":"` + state.Domain + `"}`)
+		var request = []byte(`{"query":"` + domain + `"}`)
 
 		client := &http.Client{}
 		req, err := http.NewRequest("GET", "https://api.passivetotal.org/v2/enrichment/subdomains", bytes.NewBuffer(request))
@@ -78,7 +78,7 @@ func Query(state *helper.State, ch chan helper.Result) {
 
 		// Append each subdomain found to subdomains array
 		for _, subdomain := range passivetotal_data.Subdomains {
-			finalSubdomain := subdomain + "." + state.Domain
+			finalSubdomain := subdomain + "." + domain
 
 			if state.Verbose == true {
 				if state.Color == true {

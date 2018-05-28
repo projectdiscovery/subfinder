@@ -9,22 +9,22 @@
 package helper
 
 import (
-    "crypto/rand"
-    "fmt"
-    "io"
-    "strings"
+	"crypto/rand"
+	"fmt"
+	"io"
+	"strings"
 )
 
 // Current result structure
 type Result struct {
-    Subdomains []string // Subdomains found
-    Error      error    // Any error that has occured
+	Subdomains []string // Subdomains found
+	Error      error    // Any error that has occured
 }
 
-// Struct containing jobs
-type Job struct {
-    Work   string
-    Result string
+//Domain structure
+type Domain struct {
+	IP   string
+	Fqdn string
 }
 
 // NewUUID generates a random UUID according to RFC 4122
@@ -32,46 +32,46 @@ type Job struct {
 //
 // Used for bruteforcing and detection of Wildcard Subdomains :-)
 func NewUUID() (string, error) {
-    uuid := make([]byte, 16)
-    n, err := io.ReadFull(rand.Reader, uuid)
-    if n != len(uuid) || err != nil {
-        return "", err
-    }
-    // variant bits; see section 4.1.1
-    uuid[8] = uuid[8]&^0xc0 | 0x80
-    // version 4 (pseudo-random); see section 4.1.3
-    uuid[6] = uuid[6]&^0xf0 | 0x40
-    return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
+	uuid := make([]byte, 16)
+	n, err := io.ReadFull(rand.Reader, uuid)
+	if n != len(uuid) || err != nil {
+		return "", err
+	}
+	// variant bits; see section 4.1.1
+	uuid[8] = uuid[8]&^0xc0 | 0x80
+	// version 4 (pseudo-random); see section 4.1.3
+	uuid[6] = uuid[6]&^0xf0 | 0x40
+	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
 }
 
 // Returns unique items in a slice
 // Adapted from http://www.golangprograms.com/remove-duplicate-values-from-slice.html
 func Unique(elements []string) []string {
-    // Use map to record duplicates as we find them.
-    encountered := map[string]bool{}
-    result := []string{}
+	// Use map to record duplicates as we find them.
+	encountered := map[string]bool{}
+	result := []string{}
 
-    for v := range elements {
-        if encountered[elements[v]] == true {
-            // Do not add duplicate.
-        } else {
-            // Record this element as an encountered element.
-            encountered[elements[v]] = true
-            // Append to result slice.
-            result = append(result, elements[v])
-        }
-    }
-    // Return the new slice.
-    return result
+	for v := range elements {
+		if encountered[elements[v]] == true {
+			// Do not add duplicate.
+		} else {
+			// Record this element as an encountered element.
+			encountered[elements[v]] = true
+			// Append to result slice.
+			result = append(result, elements[v])
+		}
+	}
+	// Return the new slice.
+	return result
 }
 
-// Returns valid subdomains found ending with target domain
-func Validate(state *State, strslice []string) (subdomains []string) {
-    for _, entry := range strslice {
-        if strings.HasSuffix(entry, "."+state.Domain) {
-            subdomains = append(subdomains, entry)
-        }
-    }
+//Validate returns valid subdomains found ending with target domain
+func Validate(domain string, strslice []string) (subdomains []string) {
+	for _, entry := range strslice {
+		if strings.HasSuffix(entry, "."+domain) {
+			subdomains = append(subdomains, entry)
+		}
+	}
 
-    return subdomains
+	return subdomains
 }
