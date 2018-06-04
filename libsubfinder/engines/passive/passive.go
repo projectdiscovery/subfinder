@@ -30,6 +30,7 @@ import (
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/bing"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/censys"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/certdb"
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/certificatetransparency"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/certspotter"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/crtsh"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/dnsdb"
@@ -53,26 +54,27 @@ var DomainList []string
 // Source configuration structure specifying what should we use
 // to do passive subdomain discovery.
 type Source struct {
-	Ask            bool
-	Baidu          bool
-	Bing           bool
-	Censys         bool
-	Certdb         bool
-	Crtsh          bool
-	Certspotter    bool
-	Dnsdb          bool
-	Dnsdumpster    bool
-	Findsubdomains bool
-	Hackertarget   bool
-	Netcraft       bool
-	Passivetotal   bool
-	Ptrarchive     bool
-	Riddler        bool
-	Securitytrails bool
-	Threatcrowd    bool
-	Threatminer    bool
-	Virustotal     bool
-	Waybackarchive bool
+	Ask                     bool
+	Baidu                   bool
+	Bing                    bool
+	Censys                  bool
+	Certdb                  bool
+	Crtsh                   bool
+	Certspotter             bool
+	Dnsdb                   bool
+	Dnsdumpster             bool
+	Findsubdomains          bool
+	Hackertarget            bool
+	Netcraft                bool
+	Passivetotal            bool
+	Ptrarchive              bool
+	Riddler                 bool
+	Securitytrails          bool
+	Threatcrowd             bool
+	Threatminer             bool
+	Virustotal              bool
+	Waybackarchive          bool
+	CertificateTransparency bool
 }
 
 func (s *Source) enableAll() {
@@ -96,6 +98,7 @@ func (s *Source) enableAll() {
 	s.Threatminer = true
 	s.Virustotal = true
 	s.Waybackarchive = true
+	s.CertificateTransparency = true
 }
 
 func (s *Source) enable(dataSources []string) {
@@ -141,6 +144,8 @@ func (s *Source) enable(dataSources []string) {
 			s.Virustotal = true
 		case "waybackarchive":
 			s.Waybackarchive = true
+		case "certificatetransparency":
+			s.CertificateTransparency = true
 		}
 	}
 }
@@ -205,6 +210,9 @@ func (s *Source) printSummary() {
 	}
 	if s.Waybackarchive {
 		fmt.Printf("\nRunning Source: %sWaybackArchive%s\n", helper.Info, helper.Reset)
+	}
+	if s.CertificateTransparency {
+		fmt.Printf("\nRunning Source: %sCertificateTransparency%s\n", helper.Info, helper.Reset)
 	}
 }
 
@@ -312,6 +320,9 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	}
 	if sourceConfig.Ask == true {
 		go ask.Query(domain, state, ch)
+	}
+	if sourceConfig.CertificateTransparency == true {
+		go certificatetransparency.Query(domain, state, ch)
 	}
 
 	// Recieve data from all goroutines running
