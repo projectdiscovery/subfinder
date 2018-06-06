@@ -55,6 +55,9 @@ This will display help for the tool. Here are all the switches it supports.
 
 # Installation Instructions
 ## Direct Installation
+
+#### SubFinder requires go1.10+ to install successfully !
+
 The installation is easy. Git clone the repo and run go build.
 
 ```bash
