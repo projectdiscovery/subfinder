@@ -60,9 +60,9 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 		if state.Verbose == true {
 			if state.Color == true {
-				fmt.Printf("\n[%sCertificateTransparency%s] %s", helper.Red, helper.Reset, subdomain)
+				fmt.Printf("\n[%sEntrust-CTSearch%s] %s", helper.Red, helper.Reset, subdomain)
 			} else {
-				fmt.Printf("\n[CertificateTransparency] %s", subdomain)
+				fmt.Printf("\n[Entrust-CTSearch] %s", subdomain)
 			}
 		}
 
