@@ -42,6 +42,7 @@ import (
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/ptrarchive"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/riddler"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/securitytrails"
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/shodan"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/threatcrowd"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/threatminer"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/virustotal"
@@ -75,6 +76,7 @@ type Source struct {
 	Virustotal              bool
 	Waybackarchive          bool
 	CertificateTransparency bool
+	Shodan                  bool
 }
 
 func (s *Source) enableAll() {
@@ -99,6 +101,7 @@ func (s *Source) enableAll() {
 	s.Virustotal = true
 	s.Waybackarchive = true
 	s.CertificateTransparency = true
+	s.Shodan = true
 }
 
 func (s *Source) enable(dataSources []string) {
@@ -146,6 +149,8 @@ func (s *Source) enable(dataSources []string) {
 			s.Waybackarchive = true
 		case "certificatetransparency":
 			s.CertificateTransparency = true
+		case "shodan":
+			s.Shodan = true
 		}
 	}
 }
@@ -213,6 +218,9 @@ func (s *Source) printSummary() {
 	}
 	if s.CertificateTransparency {
 		fmt.Printf("\nRunning Source: %sCertificateTransparency%s\n", helper.Info, helper.Reset)
+	}
+	if s.Shodan {
+		fmt.Printf("\nRunning Source: %sShodan%s\n", helper.Info, helper.Reset)
 	}
 }
 
@@ -323,6 +331,9 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	}
 	if sourceConfig.CertificateTransparency == true {
 		go certificatetransparency.Query(domain, state, ch)
+	}
+	if sourceConfig.Shodan == true {
+		go shodan.Query(domain, state, ch)
 	}
 
 	// Recieve data from all goroutines running
