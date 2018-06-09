@@ -18,7 +18,8 @@ func consume(args ...interface{}) interface{} {
 	target := args[0].(string)
 	state := args[1].(*helper.State)
 	domain := args[2].(string)
-	ips, err := helper.ResolveHost(fmt.Sprintf("%s.%s", target, domain))
+	host := fmt.Sprintf("%s.%s", target, domain)
+	ips, err := helper.ResolveHost(host)
 	if err != nil {
 		return ""
 	}
@@ -33,7 +34,11 @@ func consume(args ...interface{}) interface{} {
 				// We have a wildcard ip
 				return ""
 			}
-			return ips[0]
+		}
+		if !state.Silent {
+			if state.Verbose {
+				fmt.Printf("\n[%sBRUTE%s] %s : %s", helper.Info, helper.Reset, host, ips[0])
+			}
 		}
 		return ips[0]
 	}
@@ -62,11 +67,6 @@ func Brute(state *helper.State, list []string, domain string) (subdomains []help
 			fqdn := job.Args[0].(string)
 			ip := job.Result.(string)
 			subdomain := helper.Domain{IP: ip, Fqdn: fmt.Sprintf("%s.%s", fqdn, domain)}
-			if state.Silent != true {
-				if state.Verbose == true {
-					fmt.Printf("\n[%sBRUTE%s] %s : %s", helper.Info, helper.Reset, subdomain.Fqdn, subdomain.IP)
-				}
-			}
 			ValidSubdomains = append(ValidSubdomains, subdomain)
 		}
 	}
