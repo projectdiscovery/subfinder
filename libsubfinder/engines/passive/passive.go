@@ -37,6 +37,7 @@ import (
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/dnsdumpster"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/findsubdomains"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/hackertarget"
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/ipv4info"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/netcraft"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/passivetotal"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/ptrarchive"
@@ -75,6 +76,7 @@ type Source struct {
 	Virustotal              bool
 	Waybackarchive          bool
 	CertificateTransparency bool
+	Ipv4Info                bool
 }
 
 func (s *Source) enableAll() {
@@ -146,6 +148,8 @@ func (s *Source) enable(dataSources []string) {
 			s.Waybackarchive = true
 		case "certificatetransparency":
 			s.CertificateTransparency = true
+		case "ipv4info":
+			s.Ipv4Info = true
 		}
 	}
 }
@@ -213,6 +217,9 @@ func (s *Source) printSummary() {
 	}
 	if s.CertificateTransparency {
 		fmt.Printf("\nRunning Source: %sCertificateTransparency%s\n", helper.Info, helper.Reset)
+	}
+	if s.Ipv4Info {
+		fmt.Printf("\nRunning Source: %sIpv4Info%s\n", helper.Info, helper.Reset)
 	}
 }
 
@@ -323,6 +330,9 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	}
 	if sourceConfig.CertificateTransparency == true {
 		go certificatetransparency.Query(domain, state, ch)
+	}
+	if sourceConfig.Ipv4Info == true {
+		go ipv4info.Query(domain, state, ch)
 	}
 
 	// Recieve data from all goroutines running
