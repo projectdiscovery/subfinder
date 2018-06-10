@@ -101,6 +101,7 @@ func (s *Source) enableAll() {
 	s.Virustotal = true
 	s.Waybackarchive = true
 	s.CertificateTransparency = true
+	s.Ipv4Info = true
 }
 
 func (s *Source) enable(dataSources []string) {
