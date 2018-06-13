@@ -214,10 +214,10 @@ func (s *Source) printSummary() {
 		fmt.Printf("\nRunning Source: %sVirustotal%s", helper.Info, helper.Reset)
 	}
 	if s.Waybackarchive {
-		fmt.Printf("\nRunning Source: %sWaybackArchive%s\n", helper.Info, helper.Reset)
+		fmt.Printf("\nRunning Source: %sWaybackArchive%s", helper.Info, helper.Reset)
 	}
 	if s.CertificateTransparency {
-		fmt.Printf("\nRunning Source: %sCertificateTransparency%s\n", helper.Info, helper.Reset)
+		fmt.Printf("\nRunning Source: %sCertificateTransparency%s", helper.Info, helper.Reset)
 	}
 	if s.Ipv4Info {
 		fmt.Printf("\nRunning Source: %sIpv4Info%s\n", helper.Info, helper.Reset)
