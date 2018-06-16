@@ -48,6 +48,7 @@ This will display help for the tool. Here are all the switches it supports.
 | --set-settings | Sets a setting option | ./subfinder --set-settings CensysPages=10 |
 | --silent | Show only the subdomains found    | ./subfinder --silent |
 | --sources | Comma separated list of sources to use (optional) | ./subfinder --sources threatcrowd,virustotal |
+| --exclude-sources | Comma separated list of sources not to use (optional) | ./subfinder --exclude-sources threatcrowd,virustotal |
 | -t   | Number of concurrent threads (Bruteforce) | ./subfinder -t 10 |
 | --timeout | Seconds to wait until quitting connection | ./subfinder --timeout 10 |
 | -v | Display verbose output  | ./subfinder -v |
@@ -185,13 +186,13 @@ For using bruteforcing capabilities, you can use -b flag with -w option to speci
 
 You can also write output in JSON format as used by Aquatone.
 ```bash
-./subfinder -d freelancer.com -o result_aquatone.json -oA -nW -v 
+./subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v 
 ```
 
 You can specify custom resolvers too.
 ```bash
-./subfinder -d freelancer.com -o result_aquatone.json -oA -nW -v -r 8.8.8.8,1.1.1.1
-./subfinder -d freelancer.com -o result_aquatone.json -oA -nW -v -rL resolvers.txt
+./subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v -r 8.8.8.8,1.1.1.1
+./subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v -rL resolvers.txt
 ```
 
 # Frequently Asked Questions (FAQ)
