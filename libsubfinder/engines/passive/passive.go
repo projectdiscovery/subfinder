@@ -155,6 +155,57 @@ func (s *Source) enable(dataSources []string) {
 	}
 }
 
+func (s *Source) disable(dataSources []string) {
+	for _, source := range dataSources {
+		switch source {
+		case "ask":
+			s.Ask = false
+		case "baidu":
+			s.Baidu = false
+		case "bing":
+			s.Bing = false
+		case "censys":
+			s.Censys = false
+		case "certdb":
+			s.Certdb = false
+		case "certspotter":
+			s.Certspotter = false
+		case "crtsh":
+			s.Crtsh = false
+		case "dnsdb":
+			s.Dnsdb = false
+		case "dnsdumpster":
+			s.Dnsdumpster = false
+		case "findsubdomains":
+			s.Findsubdomains = false
+		case "hackertarget":
+			s.Hackertarget = false
+		case "netcraft":
+			s.Netcraft = false
+		case "passivetotal":
+			s.Passivetotal = false
+		case "ptrarchive":
+			s.Ptrarchive = false
+		case "riddler":
+			s.Riddler = false
+		case "securitytrails":
+			s.Securitytrails = false
+		case "threatcrowd":
+			s.Threatcrowd = false
+		case "threatminer":
+			s.Threatminer = false
+		case "virustotal":
+			s.Virustotal = false
+		case "waybackarchive":
+			s.Waybackarchive = false
+		case "certificatetransparency":
+			s.CertificateTransparency = false
+		case "ipv4info":
+			s.Ipv4Info = false
+		}
+	}
+}
+
 func (s *Source) printSummary() {
 	if s.Ask {
 		fmt.Printf("\nRunning Source: %sAsk%s", helper.Info, helper.Reset)
@@ -442,12 +493,16 @@ func Enumerate(state *helper.State) []string {
 
 	fmt.Printf("\n")
 	if state.Sources == "all" {
-		// Search all data sources
 		sourceConfig.enableAll()
 	} else {
 		// Check data sources and create a source configuration structure
 		dataSources := strings.Split(state.Sources, ",")
 		sourceConfig.enable(dataSources)
+	}
+
+	if state.ExcludeSource != "" {
+		dataSources := strings.Split(state.ExcludeSource, ",")
+		sourceConfig.disable(dataSources)
 	}
 
 	if !state.Silent {

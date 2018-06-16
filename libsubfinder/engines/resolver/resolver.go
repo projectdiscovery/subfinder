@@ -32,7 +32,12 @@ func consume(args ...interface{}) interface{} {
 				// We have a wildcard ip
 				return ""
 			}
-			return ips[0]
+		}
+
+		if !state.Silent {
+			if state.Verbose {
+				fmt.Printf("\n[%sRESOLVED%s] %s : %s", helper.Info, helper.Reset, target, ips[0])
+			}
 		}
 		return ips[0]
 	}
