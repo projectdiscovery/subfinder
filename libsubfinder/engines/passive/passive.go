@@ -25,6 +25,7 @@ import (
 	"github.com/Ice3man543/subfinder/libsubfinder/output"
 
 	// Load different Passive data sources
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/archiveis"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/ask"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/baidu"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/bing"
@@ -56,6 +57,7 @@ var DomainList []string
 // to do passive subdomain discovery.
 type Source struct {
 	Ask                     bool
+	Archiveis               bool
 	Baidu                   bool
 	Bing                    bool
 	Censys                  bool
@@ -81,6 +83,7 @@ type Source struct {
 
 func (s *Source) enableAll() {
 	s.Ask = true
+	s.Archiveis = true
 	s.Baidu = true
 	s.Bing = true
 	s.Censys = true
@@ -109,6 +112,8 @@ func (s *Source) enable(dataSources []string) {
 		switch source {
 		case "ask":
 			s.Ask = true
+		case "archiveis":
+			s.Archiveis = true
 		case "baidu":
 			s.Baidu = true
 		case "bing":
@@ -160,6 +165,8 @@ func (s *Source) disable(dataSources []string) {
 		switch source {
 		case "ask":
 			s.Ask = false
+		case "archiveis":
+			s.Archiveis = false
 		case "baidu":
 			s.Baidu = false
 		case "bing":
@@ -209,6 +216,9 @@ func (s *Source) disable(dataSources []string) {
 func (s *Source) printSummary() {
 	if s.Ask {
 		fmt.Printf("\nRunning Source: %sAsk%s", helper.Info, helper.Reset)
+	}
+	if s.Archiveis {
+		fmt.Printf("\nRunning Source: %sArchive.is%s", helper.Info, helper.Reset)
 	}
 	if s.Baidu {
 		fmt.Printf("\nRunning Source: %sBaidu%s", helper.Info, helper.Reset)
@@ -385,6 +395,9 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	}
 	if sourceConfig.Ipv4Info == true {
 		go ipv4info.Query(domain, state, ch)
+	}
+	if sourceConfig.Archiveis == true {
+		go archiveis.Query(domain, state, ch)
 	}
 
 	// Recieve data from all goroutines running

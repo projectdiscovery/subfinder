@@ -65,6 +65,15 @@ func Unique(elements []string) []string {
 	return result
 }
 
+func SubdomainExists(key string, values []string) bool {
+	for _, data := range values {
+		if key == data {
+			return true
+		}
+	}
+	return false
+}
+
 //Validate returns valid subdomains found ending with target domain
 func Validate(domain string, strslice []string) (subdomains []string) {
 	for _, entry := range strslice {
