@@ -12,6 +12,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
+	"regexp"
 	"strings"
 )
 
@@ -72,6 +73,11 @@ func SubdomainExists(key string, values []string) bool {
 		}
 	}
 	return false
+}
+
+func SubdomainRegex(domain string) *regexp.Regexp {
+	re := regexp.MustCompile(`(([a-zA-Z0-9]{1}|[a-zA-Z0-9]{1}[a-zA-Z0-9-]{0,61}[a-zA-Z0-9]{1})[.]{1})+` + domain)
+	return re
 }
 
 //Validate returns valid subdomains found ending with target domain

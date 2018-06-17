@@ -13,7 +13,6 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/url"
-	"regexp"
 	"sort"
 	"strconv"
 	"time"
@@ -60,7 +59,7 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 		}
 		src := string(body)
 
-		re := regexp.MustCompile(`([a-z0-9]+\.)+` + domain)
+		re := helper.SubdomainRegex(domain)
 		match := re.FindAllString(src, -1)
 
 		new_subdomains_found := 0

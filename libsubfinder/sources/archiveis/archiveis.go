@@ -19,11 +19,7 @@ import (
 // Contains all subdomains found
 var globalSubdomains []string
 
-// Local function to recursively enumerate subdomains until no subdomains
-// are left
 func enumerate(state *helper.State, baseUrl string, domain string) (err error) {
-
-	// Make a http request to Netcraft
 	resp, err := helper.GetHTTPResponse(baseUrl, state.Timeout)
 	if err != nil {
 		return err
@@ -37,7 +33,7 @@ func enumerate(state *helper.State, baseUrl string, domain string) (err error) {
 
 	src := string(body)
 
-	re := regexp.MustCompile(`([a-z0-9]+\.)+` + domain)
+	re := helper.SubdomainRegex(domain)
 	match := re.FindAllStringSubmatch(src, -1)
 
 	for _, subdomain := range match {
