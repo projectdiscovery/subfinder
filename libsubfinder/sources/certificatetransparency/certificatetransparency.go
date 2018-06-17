@@ -11,7 +11,6 @@ package certificatetransparency
 import (
 	"fmt"
 	"io/ioutil"
-	"regexp"
 	"sort"
 	"strings"
 
@@ -45,7 +44,7 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 	// suppress all %xx sequences with a space
 	src := strings.Replace(string(body), "u003d", " ", -1)
 
-	re := regexp.MustCompile(`([a-z0-9]+\.)+` + domain)
+	re := helper.SubdomainRegex(domain)
 	match := re.FindAllString(src, -1)
 
 	for _, subdomain := range match {

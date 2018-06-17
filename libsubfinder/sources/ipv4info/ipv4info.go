@@ -163,19 +163,22 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 }
 
 func extractSubdomains(domain, text string, state *helper.State) (subdomains []string) {
-	re := regexp.MustCompile(`([a-z0-9]+\.)+` + domain)
+	re := helper.SubdomainRegex(domain)
 	match := re.FindAllString(text, -1)
 
 	for _, subdomain := range match {
-		if state.Verbose == true {
-			if state.Color == true {
-				fmt.Printf("\n[%sIpv4Info%s] %s", helper.Red, helper.Reset, subdomain)
-			} else {
-				fmt.Printf("\n[Ipv4Info] %s", subdomain)
+		if helper.SubdomainExists(subdomain, subdomains) == false {
+			if state.Verbose == true {
+				if state.Color == true {
+					fmt.Printf("\n[%sIpv4Info%s] %s", helper.Red, helper.Reset, subdomain)
+				} else {
+					fmt.Printf("\n[Ipv4Info] %s", subdomain)
+				}
 			}
-		}
 
-		subdomains = append(subdomains, subdomain)
+			subdomains = append(subdomains, subdomain)
+		}
 	}
+
 	return subdomains
 }
