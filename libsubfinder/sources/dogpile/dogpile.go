@@ -11,7 +11,6 @@ package dogpile
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"regexp"
 	"strconv"
@@ -31,7 +30,7 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 	maxPages, _ := strconv.Atoi(state.CurrentSettings.DogpilePages)
 	for currentPage := 0; currentPage <= maxPages; currentPage++ {
 		url := "http://www.dogpile.com/search/web?q=" + domain + "&qsi=" + strconv.Itoa(currentPage*15+1)
-		log.Print(url)
+
 		resp, err := helper.GetHTTPResponse(url, state.Timeout)
 		if err != nil {
 			result.Error = err

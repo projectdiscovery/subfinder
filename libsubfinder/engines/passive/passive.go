@@ -312,13 +312,13 @@ func (s *Source) printSummary() {
 		fmt.Printf("\nRunning Source: %sCertificateTransparency%s", helper.Info, helper.Reset)
 	}
 	if s.Ipv4Info {
-		fmt.Printf("\nRunning Source: %sIpv4Info%s\n", helper.Info, helper.Reset)
+		fmt.Printf("\nRunning Source: %sIpv4Info%s", helper.Info, helper.Reset)
 	}
 	if s.Yahoo {
-		fmt.Printf("\nRunning Source: %sYahoo%s\n", helper.Info, helper.Reset)
+		fmt.Printf("\nRunning Source: %sYahoo%s", helper.Info, helper.Reset)
 	}
 	if s.Dogpile {
-		fmt.Printf("\nRunning Source: %sDogpile%s\n", helper.Info, helper.Reset)
+		fmt.Printf("\nRunning Source: %sDogpile%s", helper.Info, helper.Reset)
 	}
 	if s.Exalead {
 		fmt.Printf("\nRunning Source: %sExalead%s\n", helper.Info, helper.Reset)
