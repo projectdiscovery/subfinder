@@ -36,6 +36,8 @@ import (
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/crtsh"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/dnsdb"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/dnsdumpster"
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/dogpile"
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/exalead"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/findsubdomains"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/hackertarget"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/ipv4info"
@@ -49,6 +51,7 @@ import (
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/threatminer"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/virustotal"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/waybackarchive"
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/yahoo"
 )
 
 //DomainList contain the list of domains
@@ -81,6 +84,9 @@ type Source struct {
 	Waybackarchive          bool
 	CertificateTransparency bool
 	Ipv4Info                bool
+	Yahoo                   bool
+	Dogpile                 bool
+	Exalead                 bool
 }
 
 func (s *Source) enableAll() {
@@ -108,6 +114,9 @@ func (s *Source) enableAll() {
 	s.Waybackarchive = true
 	s.CertificateTransparency = true
 	s.Ipv4Info = true
+	s.Yahoo = true
+	s.Dogpile = true
+	s.Exalead = true
 }
 
 func (s *Source) enable(dataSources []string) {
@@ -161,6 +170,12 @@ func (s *Source) enable(dataSources []string) {
 			s.CertificateTransparency = true
 		case "ipv4info":
 			s.Ipv4Info = true
+		case "yahoo":
+			s.Yahoo = true
+		case "dogpile":
+			s.Dogpile = true
+		case "exalead":
+			s.Exalead = true
 		}
 	}
 }
@@ -216,6 +231,12 @@ func (s *Source) disable(dataSources []string) {
 			s.CertificateTransparency = false
 		case "ipv4info":
 			s.Ipv4Info = false
+		case "yahoo":
+			s.Yahoo = false
+		case "dogpile":
+			s.Dogpile = false
+		case "exalead":
+			s.Dogpile = false
 		}
 	}
 }
@@ -292,6 +313,15 @@ func (s *Source) printSummary() {
 	}
 	if s.Ipv4Info {
 		fmt.Printf("\nRunning Source: %sIpv4Info%s\n", helper.Info, helper.Reset)
+	}
+	if s.Yahoo {
+		fmt.Printf("\nRunning Source: %sYahoo%s\n", helper.Info, helper.Reset)
+	}
+	if s.Dogpile {
+		fmt.Printf("\nRunning Source: %sDogpile%s\n", helper.Info, helper.Reset)
+	}
+	if s.Exalead {
+		fmt.Printf("\nRunning Source: %sExalead%s\n", helper.Info, helper.Reset)
 	}
 }
 
@@ -411,6 +441,15 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	}
 	if sourceConfig.Sitedossier == true {
 		go sitedossier.Query(domain, state, ch)
+	}
+	if sourceConfig.Yahoo == true {
+		go yahoo.Query(domain, state, ch)
+	}
+	if sourceConfig.Dogpile == true {
+		go dogpile.Query(domain, state, ch)
+	}
+	if sourceConfig.Exalead == true {
+		go exalead.Query(domain, state, ch)
 	}
 
 	// Recieve data from all goroutines running

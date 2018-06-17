@@ -66,7 +66,8 @@ type Setting struct {
 	AskPages     string // Ask search pages to check
 	BaiduPages   string // Ask search pages to check
 	BingPages    string // Ask search pages to check
-	DogpilePages string
+	DogpilePages string // Dogpile search pages to check
+	YahooPages   string // Yahoo search pages to check
 }
 
 func InitializeSettings() (setting *Setting) {
@@ -78,6 +79,7 @@ func InitializeSettings() (setting *Setting) {
 	settings.BaiduPages = "5"
 	settings.BingPages = "50"
 	settings.DogpilePages = "16"
+	settings.YahooPages = "10"
 	return &settings
 }
 
