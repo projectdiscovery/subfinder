@@ -44,6 +44,7 @@ import (
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/ptrarchive"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/riddler"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/securitytrails"
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/sitedossier"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/threatcrowd"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/threatminer"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/virustotal"
@@ -73,6 +74,7 @@ type Source struct {
 	Ptrarchive              bool
 	Riddler                 bool
 	Securitytrails          bool
+	Sitedossier             bool
 	Threatcrowd             bool
 	Threatminer             bool
 	Virustotal              bool
@@ -99,6 +101,7 @@ func (s *Source) enableAll() {
 	s.Ptrarchive = true
 	s.Riddler = true
 	s.Securitytrails = true
+	s.Sitedossier = true
 	s.Threatcrowd = true
 	s.Threatminer = true
 	s.Virustotal = true
@@ -144,6 +147,8 @@ func (s *Source) enable(dataSources []string) {
 			s.Riddler = true
 		case "securitytrails":
 			s.Securitytrails = true
+		case "sitedossier":
+			s.Sitedossier = true
 		case "threatcrowd":
 			s.Threatcrowd = true
 		case "threatminer":
@@ -197,6 +202,8 @@ func (s *Source) disable(dataSources []string) {
 			s.Riddler = false
 		case "securitytrails":
 			s.Securitytrails = false
+		case "sitedossier":
+			s.Sitedossier = false
 		case "threatcrowd":
 			s.Threatcrowd = false
 		case "threatminer":
@@ -264,6 +271,9 @@ func (s *Source) printSummary() {
 	}
 	if s.Securitytrails {
 		fmt.Printf("\nRunning Source: %sSecuritytrails%s", helper.Info, helper.Reset)
+	}
+	if s.Sitedossier {
+		fmt.Printf("\nRunning Source: %sSitedossier%s", helper.Info, helper.Reset)
 	}
 	if s.Threatcrowd {
 		fmt.Printf("\nRunning Source: %sThreatcrowd%s", helper.Info, helper.Reset)
@@ -398,6 +408,9 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	}
 	if sourceConfig.Archiveis == true {
 		go archiveis.Query(domain, state, ch)
+	}
+	if sourceConfig.Sitedossier == true {
+		go sitedossier.Query(domain, state, ch)
 	}
 
 	// Recieve data from all goroutines running
