@@ -18,10 +18,10 @@ This project began it's life as a Bug Bounty World slack channel discussion. We 
 - Simple and modular code base making it easy to contribute.
 - Fast And Powerful Bruteforcing Module 
 - Powerful Permutation generation engine. (In Development)
-- Many Passive Data Sources (24 At Present)
+- Many Passive Data Sources (27 At Present)
 - Multiple Output formats
 
-> Ask, Archive.is, Baidu, Bing, Censys, CertDB, CertSpotter, CrtSH, DnsDB, DNSDumpster, Entrust CT-Search, FindSubdomains, Hackertarget, IPv4Info, Netcraft, PassiveTotal, PTRArchive, Riddler, SecurityTrails, SiteDossier, ThreatCrowd, ThreatMiner, Virustotal, WaybackArchive
+> Ask, Archive.is, Baidu, Bing, Censys, CertDB, CertSpotter, CrtSH, DnsDB, DNSDumpster, Dogpile, Entrust CT-Search, Exalead, FindSubdomains, Hackertarget, IPv4Info, Netcraft, PassiveTotal, PTRArchive, Riddler, SecurityTrails, SiteDossier, ThreatCrowd, ThreatMiner, Virustotal, WaybackArchive, Yahoo
 
 # Usage
 
