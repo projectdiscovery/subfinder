@@ -44,8 +44,7 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 	// suppress all %xx sequences with a space
 	src := strings.Replace(string(body), "u003d", " ", -1)
 
-	re := helper.SubdomainRegex(domain)
-	match := re.FindAllString(src, -1)
+	match := helper.ExtractSubdomains(src, domain)
 
 	for _, subdomain := range match {
 		if sort.StringsAreSorted(subdomains) == false {
