@@ -48,8 +48,7 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 		reSub := regexp.MustCompile(`%.{2}`)
 		src := reSub.ReplaceAllLiteralString(string(body), " ")
 
-		re := helper.SubdomainRegex(domain)
-		match := re.FindAllString(src, -1)
+		match := helper.ExtractSubdomains(src, domain)
 
 		for _, subdomain := range match {
 			if state.Verbose == true {
