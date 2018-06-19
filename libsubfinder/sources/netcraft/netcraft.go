@@ -34,7 +34,8 @@ func enumerate(state *helper.State, baseUrl string) (err error) {
 	// Make a http request to Netcraft
 	resp, gCookies, err := helper.GetHTTPCookieResponse(baseUrl, gCookies, state.Timeout)
 	if err != nil {
-		return err
+		fmt.Printf("\nerror: %v\n", err)
+		return
 	}
 
 	// Check all cookies for netcraft_js_verification_challenge
@@ -62,7 +63,8 @@ func enumerate(state *helper.State, baseUrl string) (err error) {
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		fmt.Printf("\nerror: %v\n", err)
+		return
 	}
 
 	src := string(body)
@@ -101,9 +103,10 @@ func enumerate(state *helper.State, baseUrl string) (err error) {
 }
 
 // Query function returns all subdomains found using the service.
-func Query(domain string, state *helper.State, ch chan helper.Result) {
+func Query(args ...interface{}) interface{} {
 
-	var result helper.Result
+	domain := args[0].(string)
+	state := args[1].(*helper.State)
 
 	// Initialize global cookie holder
 	gCookies = nil
@@ -111,13 +114,9 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 	// Query using first page. Everything from there would be recursive
 	err := enumerate(state, "https://searchdns.netcraft.com/?restriction=site+ends+with&host="+domain+"&lookup=wait..&position=limited")
 	if err != nil {
-		result.Subdomains = globalSubdomains
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return globalSubdomains
 	}
 
-	result.Subdomains = globalSubdomains
-	result.Error = nil
-	ch <- result
+	return globalSubdomains
 }
