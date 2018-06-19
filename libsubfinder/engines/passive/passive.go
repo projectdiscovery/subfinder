@@ -433,26 +433,26 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	if sourceConfig.Ask {
 		domainDiscoverPool.Add(ask.Query, domain, state)
 	}
-	if sourceConfig.CertificateTransparency == true {
-		go certificatetransparency.Query(domain, state, ch)
+	if sourceConfig.CertificateTransparency {
+		domainDiscoverPool.Add(certificatetransparency.Query, domain, state)
 	}
-	if sourceConfig.Ipv4Info == true {
-		go ipv4info.Query(domain, state, ch)
+	if sourceConfig.Ipv4Info {
+		domainDiscoverPool.Add(ipv4info.Query, domain, state)
 	}
-	if sourceConfig.Archiveis == true {
-		go archiveis.Query(domain, state, ch)
+	if sourceConfig.Archiveis {
+		domainDiscoverPool.Add(archiveis.Query, domain, state)
 	}
-	if sourceConfig.Sitedossier == true {
-		go sitedossier.Query(domain, state, ch)
+	if sourceConfig.Sitedossier {
+		domainDiscoverPool.Add(sitedossier.Query, domain, state)
 	}
-	if sourceConfig.Yahoo == true {
-		go yahoo.Query(domain, state, ch)
+	if sourceConfig.Yahoo {
+		domainDiscoverPool.Add(yahoo.Query, domain, state)
 	}
-	if sourceConfig.Dogpile == true {
-		go dogpile.Query(domain, state, ch)
+	if sourceConfig.Dogpile {
+		domainDiscoverPool.Add(dogpile.Query, domain, state)
 	}
-	if sourceConfig.Exalead == true {
-		go exalead.Query(domain, state, ch)
+	if sourceConfig.Exalead {
+		domainDiscoverPool.Add(exalead.Query, domain, state)
 	}
 
 	domainDiscoverPool.Wait()

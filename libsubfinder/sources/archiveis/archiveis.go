@@ -62,19 +62,17 @@ func enumerate(state *helper.State, baseUrl string, domain string) (err error) {
 }
 
 // Query function returns all subdomains found using the service.
-func Query(domain string, state *helper.State, ch chan helper.Result) {
-	var result helper.Result
+func Query(args ...interface{}) (i interface{}) {
+
+	domain := args[0].(string)
+	state := args[1].(*helper.State)
 
 	// Query using first page. Everything from there would be recursive
 	err := enumerate(state, "http://archive.is/*."+domain, domain)
 	if err != nil {
-		result.Subdomains = globalSubdomains
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return globalSubdomains
 	}
 
-	result.Subdomains = globalSubdomains
-	result.Error = nil
-	ch <- result
+	return globalSubdomains
 }

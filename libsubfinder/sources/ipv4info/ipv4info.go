@@ -21,24 +21,22 @@ import (
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(domain string, state *helper.State, ch chan helper.Result) {
+func Query(args ...interface{}) interface{} {
 
-	var result helper.Result
-	result.Subdomains = subdomains
+	domain := args[0].(string)
+	state := args[1].(*helper.State)
 
 	resp, err := helper.GetHTTPResponse("http://ipv4info.com/search/"+domain, state.Timeout)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 	src := string(body)
 
@@ -47,26 +45,23 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 	matchTokens := regxTokens.FindAllString(src, -1)
 
 	if len(matchTokens) == 0 {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	token := matchTokens[0]
 
 	resp, err = helper.GetHTTPResponse("http://ipv4info.com"+token, state.Timeout)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	// Get the response body
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	src = string(body)
@@ -75,25 +70,22 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 	regxTokens = regexp.MustCompile("/dns/(.*?)/" + domain)
 	matchTokens = regxTokens.FindAllString(src, -1)
 	if len(matchTokens) == 0 {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	token = matchTokens[0]
 
 	resp, err = helper.GetHTTPResponse("http://ipv4info.com"+token, state.Timeout)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 	// Get the response body
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	src = string(body)
@@ -102,9 +94,8 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 	regxTokens = regexp.MustCompile("/subdomains/(.*?)/" + domain)
 	matchTokens = regxTokens.FindAllString(src, -1)
 	if len(matchTokens) == 0 {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	token = matchTokens[0]
@@ -112,16 +103,14 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 	// Get first subdomains page
 	resp, err = helper.GetHTTPResponse("http://ipv4info.com"+token, state.Timeout)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 	// Get the response body
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	src = string(body)
@@ -140,16 +129,14 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 		resp, err = helper.GetHTTPResponse("http://ipv4info.com"+token, state.Timeout)
 		if err != nil {
-			result.Error = err
-			ch <- result
-			return
+			fmt.Printf("\nerror: %v\n", err)
+			return subdomains
 		}
 		// Get the response body
 		body, err = ioutil.ReadAll(resp.Body)
 		if err != nil {
-			result.Error = err
-			ch <- result
-			return
+			fmt.Printf("\nerror: %v\n", err)
+			return subdomains
 		}
 		src = string(body)
 		additionalSubdomains := extractSubdomains(domain, src, state)
@@ -157,9 +144,7 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 		nextPage++
 	}
 
-	result.Subdomains = subdomains
-	result.Error = nil
-	ch <- result
+	return subdomains
 }
 
 func extractSubdomains(domain, text string, state *helper.State) (subdomains []string) {
