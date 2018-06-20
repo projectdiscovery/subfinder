@@ -22,10 +22,11 @@ import (
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(domain string, state *helper.State, ch chan helper.Result) {
+func Query(args ...interface{}) (i interface{}) {
 
-	var result helper.Result
-	result.Subdomains = subdomains
+	domain := args[0].(string)
+	state := args[1].(*helper.State)
+
 	min_iterations, _ := strconv.Atoi(state.CurrentSettings.AskPages)
 	max_iterations := 760
 	search_query := ""
@@ -43,17 +44,15 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 		resp, err := helper.GetHTTPResponse("http://www.ask.com/web?q="+search_query+"&page="+strconv.Itoa(current_page)+"&qid=8D6EE6BF52E0C04527E51F64F22C4534&o=0&l=dir&qsrc=998&qo=pagination", state.Timeout)
 		if err != nil {
-			result.Error = err
-			ch <- result
-			return
+			fmt.Printf("\nerror: %v\n", err)
+			return subdomains
 		}
 
 		// Get the response body
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			result.Error = err
-			ch <- result
-			return
+			fmt.Printf("\nerror: %v\n", err)
+			return subdomains
 		}
 		src := string(body)
 
@@ -88,7 +87,5 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 		current_page++
 	}
 
-	result.Subdomains = subdomains
-	result.Error = nil
-	ch <- result
+	return subdomains
 }

@@ -23,10 +23,11 @@ import (
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(domain string, state *helper.State, ch chan helper.Result) {
+func Query(args ...interface{}) interface{} {
 
-	var result helper.Result
-	result.Subdomains = subdomains
+	domain := args[0].(string)
+	state := args[1].(*helper.State)
+
 	min_iterations, _ := strconv.Atoi(state.CurrentSettings.BingPages)
 	max_iterations := 760
 	search_query := ""
@@ -44,17 +45,15 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 		resp, err := helper.GetHTTPResponse("https://www.bing.com/search?q="+search_query+"&go=Submit&first="+strconv.Itoa(current_page), state.Timeout)
 		if err != nil {
-			result.Error = err
-			ch <- result
-			return
+			fmt.Printf("\nerror: %v\n", err)
+			return subdomains
 		}
 
 		// Get the response body
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			result.Error = err
-			ch <- result
-			return
+			fmt.Printf("\nerror: %v\n", err)
+			return subdomains
 		}
 
 		// suppress all %xx sequences with a space
@@ -92,7 +91,5 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 		current_page++
 	}
 
-	result.Subdomains = subdomains
-	result.Error = nil
-	ch <- result
+	return subdomains
 }
