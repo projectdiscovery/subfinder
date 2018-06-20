@@ -41,10 +41,11 @@ func Query(args ...interface{}) interface{} {
 			fmt.Printf("\nerror: %v\n", err)
 			return subdomains
 		}
-		src := string(body)
 
-		re := regexp.MustCompile(`([a-z0-9]+\.)+` + domain)
-		match := re.FindAllString(src, -1)
+		reSub := regexp.MustCompile(`"`)
+		src := reSub.ReplaceAllLiteralString(string(body), " ")
+
+		match := helper.ExtractSubdomains(src, domain)
 
 		for _, subdomain := range match {
 			if state.Verbose == true {

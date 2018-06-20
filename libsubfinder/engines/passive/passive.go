@@ -84,11 +84,11 @@ type Source struct {
 	Virustotal              bool
 	Waybackarchive          bool
 	CertificateTransparency bool
-	Shodan                  bool
 	Ipv4Info                bool
 	Yahoo                   bool
 	Dogpile                 bool
 	Exalead                 bool
+	Shodan                  bool
 }
 
 func (s *Source) enableAll() {
@@ -115,11 +115,11 @@ func (s *Source) enableAll() {
 	s.Virustotal = true
 	s.Waybackarchive = true
 	s.CertificateTransparency = true
-	s.Shodan = true
 	s.Ipv4Info = true
 	s.Yahoo = true
 	s.Dogpile = true
 	s.Exalead = true
+	s.Shodan = true
 }
 
 func (s *Source) enable(dataSources []string) {
@@ -171,8 +171,6 @@ func (s *Source) enable(dataSources []string) {
 			s.Waybackarchive = true
 		case "certificatetransparency":
 			s.CertificateTransparency = true
-		case "shodan":
-			s.Shodan = true
 		case "ipv4info":
 			s.Ipv4Info = true
 		case "yahoo":
@@ -181,6 +179,8 @@ func (s *Source) enable(dataSources []string) {
 			s.Dogpile = true
 		case "exalead":
 			s.Exalead = true
+		case "shodan":
+			s.Shodan = true
 		}
 	}
 }
@@ -242,6 +242,8 @@ func (s *Source) disable(dataSources []string) {
 			s.Dogpile = false
 		case "exalead":
 			s.Dogpile = false
+		case "shodan":
+			s.Shodan = false
 		}
 	}
 }
