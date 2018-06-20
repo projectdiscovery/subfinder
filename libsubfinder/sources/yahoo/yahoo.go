@@ -51,15 +51,17 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 		match := helper.ExtractSubdomains(src, domain)
 
 		for _, subdomain := range match {
-			if state.Verbose == true {
-				if state.Color == true {
-					fmt.Printf("\n[%sYahoo%s] %s", helper.Red, helper.Reset, subdomain)
-				} else {
-					fmt.Printf("\n[Yahoo] %s", subdomain)
+			if helper.SubdomainExists(subdomain, subdomains) == false {
+				if state.Verbose == true {
+					if state.Color == true {
+						fmt.Printf("\n[%sYahoo%s] %s", helper.Red, helper.Reset, subdomain)
+					} else {
+						fmt.Printf("\n[Yahoo] %s", subdomain)
+					}
 				}
-			}
 
-			subdomains = append(subdomains, subdomain)
+				subdomains = append(subdomains, subdomain)
+			}
 		}
 		time.Sleep(time.Duration((3 + rand.Intn(5))) * time.Second)
 	}
