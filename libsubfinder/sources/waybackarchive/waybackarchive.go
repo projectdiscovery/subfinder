@@ -75,15 +75,17 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 	validSubdomains := helper.Unique(initialSubs)
 
 	for _, subdomain := range validSubdomains {
-		if state.Verbose == true {
-			if state.Color == true {
-				fmt.Printf("\n[%sWAYBACKARCHIVE%s] %s", helper.Red, helper.Reset, subdomain)
-			} else {
-				fmt.Printf("\n[WAYBACKARCHIVE] %s", subdomain)
+		if helper.SubdomainExists(subdomain, subdomains) == false {
+			if state.Verbose == true {
+				if state.Color == true {
+					fmt.Printf("\n[%sWAYBACKARCHIVE%s] %s", helper.Red, helper.Reset, subdomain)
+				} else {
+					fmt.Printf("\n[WAYBACKARCHIVE] %s", subdomain)
+				}
 			}
-		}
 
-		subdomains = append(subdomains, subdomain)
+			subdomains = append(subdomains, subdomain)
+		}
 	}
 
 	result.Subdomains = subdomains

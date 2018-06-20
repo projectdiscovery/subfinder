@@ -12,8 +12,9 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
-	"regexp"
 	"strings"
+
+	"github.com/Mzack9999/xurls"
 )
 
 // Current result structure
@@ -75,9 +76,10 @@ func SubdomainExists(key string, values []string) bool {
 	return false
 }
 
-func SubdomainRegex(domain string) *regexp.Regexp {
-	re := regexp.MustCompile(`(([a-zA-Z0-9]{1}|[a-zA-Z0-9]{1}[a-zA-Z0-9-]{0,61}[a-zA-Z0-9]{1})[.]{1})+` + domain)
-	return re
+func ExtractSubdomains(text, domain string) (urls []string) {
+	allUrls := xurls.ExtractSubdomains(text, domain)
+
+	return Validate(domain, allUrls)
 }
 
 //Validate returns valid subdomains found ending with target domain

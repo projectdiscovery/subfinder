@@ -59,8 +59,7 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 		}
 		src := string(body)
 
-		re := helper.SubdomainRegex(domain)
-		match := re.FindAllString(src, -1)
+		match := helper.ExtractSubdomains(src, domain)
 
 		new_subdomains_found := 0
 		for _, subdomain := range match {

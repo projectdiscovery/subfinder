@@ -33,11 +33,10 @@ func enumerate(state *helper.State, baseUrl string, domain string) (err error) {
 
 	src := string(body)
 
-	re := helper.SubdomainRegex(domain)
-	match := re.FindAllStringSubmatch(src, -1)
+	match := helper.ExtractSubdomains(src, domain)
 
 	for _, subdomain := range match {
-		finishedSub := subdomain[0]
+		finishedSub := subdomain
 
 		if helper.SubdomainExists(finishedSub, globalSubdomains) == false {
 			if state.Verbose == true {
