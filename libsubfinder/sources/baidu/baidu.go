@@ -13,7 +13,6 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/url"
-	"regexp"
 	"sort"
 	"strconv"
 	"time"
@@ -25,10 +24,11 @@ import (
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(domain string, state *helper.State, ch chan helper.Result) {
+func Query(args ...interface{}) interface{} {
 
-	var result helper.Result
-	result.Subdomains = subdomains
+	domain := args[0].(string)
+	state := args[1].(*helper.State)
+
 	min_iterations, _ := strconv.Atoi(state.CurrentSettings.BaiduPages)
 	max_iterations := 760
 	search_query := ""
@@ -46,22 +46,19 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 		resp, err := helper.GetHTTPResponse("https://www.baidu.com/s?rn=100&pn="+strconv.Itoa(current_page)+"&wd="+search_query+"&oq="+search_query, state.Timeout)
 		if err != nil {
-			result.Error = err
-			ch <- result
-			return
+			fmt.Printf("\nerror: %v\n", err)
+			return subdomains
 		}
 
 		// Get the response body
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			result.Error = err
-			ch <- result
-			return
+			fmt.Printf("\nerror: %v\n", err)
+			return subdomains
 		}
 		src := string(body)
 
-		re := regexp.MustCompile(`([a-z0-9]+\.)+` + domain)
-		match := re.FindAllString(src, -1)
+		match := helper.ExtractSubdomains(src, domain)
 
 		new_subdomains_found := 0
 		for _, subdomain := range match {
@@ -93,7 +90,5 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 		time.Sleep(time.Duration((3 + rand.Intn(5))) * time.Second)
 	}
 
-	result.Subdomains = subdomains
-	result.Error = nil
-	ch <- result
+	return subdomains
 }

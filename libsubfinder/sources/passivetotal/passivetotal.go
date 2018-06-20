@@ -28,9 +28,10 @@ var passivetotal_data passivetotal_object
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(domain string, state *helper.State, ch chan helper.Result) {
+func Query(args ...interface{}) interface{} {
 
-	var result helper.Result
+	domain := args[0].(string)
+	state := args[1].(*helper.State)
 
 	// We have recieved an API Key
 	// Now, we will use passiveTotal API key to fetch subdomain info
@@ -52,28 +53,22 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 		resp, err := client.Do(req)
 		if err != nil {
-			result.Subdomains = subdomains
-			result.Error = err
-			ch <- result
-			return
+			fmt.Printf("\nerror: %v\n", err)
+			return subdomains
 		}
 
 		// Get the response body
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			result.Subdomains = subdomains
-			result.Error = err
-			ch <- result
-			return
+			fmt.Printf("\nerror: %v\n", err)
+			return subdomains
 		}
 
 		// Decode the json format
 		err = json.Unmarshal([]byte(body), &passivetotal_data)
 		if err != nil {
-			result.Subdomains = subdomains
-			result.Error = err
-			ch <- result
-			return
+			fmt.Printf("\nerror: %v\n", err)
+			return subdomains
 		}
 
 		// Append each subdomain found to subdomains array
@@ -90,15 +85,7 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 			subdomains = append(subdomains, finalSubdomain)
 		}
-
-		result.Subdomains = subdomains
-		result.Error = nil
-		ch <- result
-		return
-	} else {
-		result.Subdomains = subdomains
-		result.Error = nil
-		ch <- result
-		return
 	}
+
+	return subdomains
 }

@@ -82,9 +82,12 @@ func queryVirustotalApi(domain string, state *helper.State) (subdomains []string
 }*/
 
 // Query function returns all subdomains found using the service.
-func Query(domain string, state *helper.State, ch chan helper.Result) {
+func Query(args ...interface{}) interface{} {
 
-	var result helper.Result
+	domain := args[0].(string)
+	state := args[1].(*helper.State)
+
+	var subdomains []string
 
 	// We have recieved an API Key
 	// Now, we will use Virustotal API key to fetch subdomain info
@@ -94,23 +97,10 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 		subdomains, err := queryVirustotalApi(domain, state)
 
 		if err != nil {
-			result.Subdomains = subdomains
-			result.Error = err
-			ch <- result
-			return
+			fmt.Printf("\nerror: %v\n", err)
+			return subdomains
 		}
-
-		result.Subdomains = subdomains
-		result.Error = nil
-		ch <- result
-		return
-	} else {
-		var subdomains []string
-		//subdomains, err := queryVirustotal(state)
-
-		result.Subdomains = subdomains
-		result.Error = nil
-		ch <- result
-		return
 	}
+
+	return subdomains
 }

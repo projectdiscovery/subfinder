@@ -1,18 +1,20 @@
 //
-// Written By : @Mzack9999 (Marco Rivoli)
+// Written By : @Mzack9999
 //
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
 
-// A golang client for Shodan.io
-package shodan
+// A golang client for Dogpile Subdomain Discovery
+package dogpile
 
 import (
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
@@ -25,11 +27,11 @@ func Query(args ...interface{}) interface{} {
 
 	domain := args[0].(string)
 	state := args[1].(*helper.State)
-
-	shodanAPIKey := state.ConfigState.ShodanAPIKey
-	maxPages, _ := strconv.Atoi(state.CurrentSettings.ShodanPages)
+	maxPages, _ := strconv.Atoi(state.CurrentSettings.DogpilePages)
 	for currentPage := 0; currentPage <= maxPages; currentPage++ {
-		resp, err := helper.GetHTTPResponse("https://api.shodan.io/shodan/host/search?query=hostname:"+domain+"&page="+strconv.Itoa(currentPage)+"&key="+shodanAPIKey, state.Timeout)
+		url := "http://www.dogpile.com/search/web?q=" + domain + "&qsi=" + strconv.Itoa(currentPage*15+1)
+
+		resp, err := helper.GetHTTPResponse(url, state.Timeout)
 		if err != nil {
 			fmt.Printf("\nerror: %v\n", err)
 			return subdomains
@@ -41,22 +43,24 @@ func Query(args ...interface{}) interface{} {
 			fmt.Printf("\nerror: %v\n", err)
 			return subdomains
 		}
-		src := string(body)
 
-		re := regexp.MustCompile(`([a-z0-9]+\.)+` + domain)
-		match := re.FindAllString(src, -1)
+		reSub := regexp.MustCompile(`%.{4}`)
+		src := reSub.ReplaceAllLiteralString(string(body), " ")
+
+		match := helper.ExtractSubdomains(src, domain)
 
 		for _, subdomain := range match {
 			if state.Verbose == true {
 				if state.Color == true {
-					fmt.Printf("\n[%sShodan%s] %s", helper.Red, helper.Reset, subdomain)
+					fmt.Printf("\n[%sDogpile%s] %s", helper.Red, helper.Reset, subdomain)
 				} else {
-					fmt.Printf("\n[Shodan] %s", subdomain)
+					fmt.Printf("\n[Dogpile] %s", subdomain)
 				}
 			}
 
 			subdomains = append(subdomains, subdomain)
 		}
+		time.Sleep(time.Duration((3 + rand.Intn(5))) * time.Second)
 	}
 
 	return subdomains

@@ -25,6 +25,7 @@ import (
 	"github.com/Ice3man543/subfinder/libsubfinder/output"
 
 	// Load different Passive data sources
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/archiveis"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/ask"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/baidu"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/bing"
@@ -35,18 +36,23 @@ import (
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/crtsh"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/dnsdb"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/dnsdumpster"
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/dogpile"
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/exalead"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/findsubdomains"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/hackertarget"
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/ipv4info"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/netcraft"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/passivetotal"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/ptrarchive"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/riddler"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/securitytrails"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/shodan"
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/sitedossier"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/threatcrowd"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/threatminer"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/virustotal"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/waybackarchive"
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/yahoo"
 )
 
 //DomainList contain the list of domains
@@ -56,6 +62,7 @@ var DomainList []string
 // to do passive subdomain discovery.
 type Source struct {
 	Ask                     bool
+	Archiveis               bool
 	Baidu                   bool
 	Bing                    bool
 	Censys                  bool
@@ -71,16 +78,22 @@ type Source struct {
 	Ptrarchive              bool
 	Riddler                 bool
 	Securitytrails          bool
+	Sitedossier             bool
 	Threatcrowd             bool
 	Threatminer             bool
 	Virustotal              bool
 	Waybackarchive          bool
 	CertificateTransparency bool
 	Shodan                  bool
+	Ipv4Info                bool
+	Yahoo                   bool
+	Dogpile                 bool
+	Exalead                 bool
 }
 
 func (s *Source) enableAll() {
 	s.Ask = true
+	s.Archiveis = true
 	s.Baidu = true
 	s.Bing = true
 	s.Censys = true
@@ -96,12 +109,17 @@ func (s *Source) enableAll() {
 	s.Ptrarchive = true
 	s.Riddler = true
 	s.Securitytrails = true
+	s.Sitedossier = true
 	s.Threatcrowd = true
 	s.Threatminer = true
 	s.Virustotal = true
 	s.Waybackarchive = true
 	s.CertificateTransparency = true
 	s.Shodan = true
+	s.Ipv4Info = true
+	s.Yahoo = true
+	s.Dogpile = true
+	s.Exalead = true
 }
 
 func (s *Source) enable(dataSources []string) {
@@ -109,6 +127,8 @@ func (s *Source) enable(dataSources []string) {
 		switch source {
 		case "ask":
 			s.Ask = true
+		case "archiveis":
+			s.Archiveis = true
 		case "baidu":
 			s.Baidu = true
 		case "bing":
@@ -139,6 +159,8 @@ func (s *Source) enable(dataSources []string) {
 			s.Riddler = true
 		case "securitytrails":
 			s.Securitytrails = true
+		case "sitedossier":
+			s.Sitedossier = true
 		case "threatcrowd":
 			s.Threatcrowd = true
 		case "threatminer":
@@ -151,6 +173,75 @@ func (s *Source) enable(dataSources []string) {
 			s.CertificateTransparency = true
 		case "shodan":
 			s.Shodan = true
+		case "ipv4info":
+			s.Ipv4Info = true
+		case "yahoo":
+			s.Yahoo = true
+		case "dogpile":
+			s.Dogpile = true
+		case "exalead":
+			s.Exalead = true
+		}
+	}
+}
+
+func (s *Source) disable(dataSources []string) {
+	for _, source := range dataSources {
+		switch source {
+		case "ask":
+			s.Ask = false
+		case "archiveis":
+			s.Archiveis = false
+		case "baidu":
+			s.Baidu = false
+		case "bing":
+			s.Bing = false
+		case "censys":
+			s.Censys = false
+		case "certdb":
+			s.Certdb = false
+		case "certspotter":
+			s.Certspotter = false
+		case "crtsh":
+			s.Crtsh = false
+		case "dnsdb":
+			s.Dnsdb = false
+		case "dnsdumpster":
+			s.Dnsdumpster = false
+		case "findsubdomains":
+			s.Findsubdomains = false
+		case "hackertarget":
+			s.Hackertarget = false
+		case "netcraft":
+			s.Netcraft = false
+		case "passivetotal":
+			s.Passivetotal = false
+		case "ptrarchive":
+			s.Ptrarchive = false
+		case "riddler":
+			s.Riddler = false
+		case "securitytrails":
+			s.Securitytrails = false
+		case "sitedossier":
+			s.Sitedossier = false
+		case "threatcrowd":
+			s.Threatcrowd = false
+		case "threatminer":
+			s.Threatminer = false
+		case "virustotal":
+			s.Virustotal = false
+		case "waybackarchive":
+			s.Waybackarchive = false
+		case "certificatetransparency":
+			s.CertificateTransparency = false
+		case "ipv4info":
+			s.Ipv4Info = false
+		case "yahoo":
+			s.Yahoo = false
+		case "dogpile":
+			s.Dogpile = false
+		case "exalead":
+			s.Dogpile = false
 		}
 	}
 }
@@ -158,6 +249,9 @@ func (s *Source) enable(dataSources []string) {
 func (s *Source) printSummary() {
 	if s.Ask {
 		fmt.Printf("\nRunning Source: %sAsk%s", helper.Info, helper.Reset)
+	}
+	if s.Archiveis {
+		fmt.Printf("\nRunning Source: %sArchive.is%s", helper.Info, helper.Reset)
 	}
 	if s.Baidu {
 		fmt.Printf("\nRunning Source: %sBaidu%s", helper.Info, helper.Reset)
@@ -204,6 +298,9 @@ func (s *Source) printSummary() {
 	if s.Securitytrails {
 		fmt.Printf("\nRunning Source: %sSecuritytrails%s", helper.Info, helper.Reset)
 	}
+	if s.Sitedossier {
+		fmt.Printf("\nRunning Source: %sSitedossier%s", helper.Info, helper.Reset)
+	}
 	if s.Threatcrowd {
 		fmt.Printf("\nRunning Source: %sThreatcrowd%s", helper.Info, helper.Reset)
 	}
@@ -214,10 +311,22 @@ func (s *Source) printSummary() {
 		fmt.Printf("\nRunning Source: %sVirustotal%s", helper.Info, helper.Reset)
 	}
 	if s.Waybackarchive {
-		fmt.Printf("\nRunning Source: %sWaybackArchive%s\n", helper.Info, helper.Reset)
+		fmt.Printf("\nRunning Source: %sWaybackArchive%s", helper.Info, helper.Reset)
 	}
 	if s.CertificateTransparency {
-		fmt.Printf("\nRunning Source: %sCertificateTransparency%s\n", helper.Info, helper.Reset)
+		fmt.Printf("\nRunning Source: %sCertificateTransparency%s", helper.Info, helper.Reset)
+	}
+	if s.Ipv4Info {
+		fmt.Printf("\nRunning Source: %sIpv4Info%s", helper.Info, helper.Reset)
+	}
+	if s.Yahoo {
+		fmt.Printf("\nRunning Source: %sYahoo%s", helper.Info, helper.Reset)
+	}
+	if s.Dogpile {
+		fmt.Printf("\nRunning Source: %sDogpile%s", helper.Info, helper.Reset)
+	}
+	if s.Exalead {
+		fmt.Printf("\nRunning Source: %sExalead%s\n", helper.Info, helper.Reset)
 	}
 	if s.Shodan {
 		fmt.Printf("\nRunning Source: %sShodan%s\n", helper.Info, helper.Reset)
@@ -260,7 +369,10 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 		}
 	}
 
-	ch := make(chan helper.Result, sourceConfig.nbrActive())
+	domainDiscoverPool := helper.NewPool(sourceConfig.nbrActive())
+	domainDiscoverPool.Run()
+
+	domainDiscoverPool.Wait()
 
 	if state.Silent != true {
 		fmt.Printf("\nRunning enumeration on %s", domain)
@@ -269,87 +381,108 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	// Create goroutines for added speed and recieve data via channels
 	// Check if we the user has specified custom sources and if yes, run them
 	// via if statements.
-	if sourceConfig.Crtsh == true {
-		go crtsh.Query(domain, state, ch)
+	if sourceConfig.Crtsh {
+		domainDiscoverPool.Add(crtsh.Query, domain, state)
 	}
-	if sourceConfig.Certdb == true {
-		go certdb.Query(domain, state, ch)
+	if sourceConfig.Certdb {
+		domainDiscoverPool.Add(certdb.Query, domain, state)
 	}
-	if sourceConfig.Certspotter == true {
-		go certspotter.Query(domain, state, ch)
+	if sourceConfig.Certspotter {
+		domainDiscoverPool.Add(certspotter.Query, domain, state)
 	}
-	if sourceConfig.Threatcrowd == true {
-		go threatcrowd.Query(domain, state, ch)
+	if sourceConfig.Threatcrowd {
+		domainDiscoverPool.Add(threatcrowd.Query, domain, state)
 	}
-	if sourceConfig.Findsubdomains == true {
-		go findsubdomains.Query(domain, state, ch)
+	if sourceConfig.Findsubdomains {
+		domainDiscoverPool.Add(findsubdomains.Query, domain, state)
 	}
-	if sourceConfig.Dnsdumpster == true {
-		go dnsdumpster.Query(domain, state, ch)
+	if sourceConfig.Dnsdumpster {
+		domainDiscoverPool.Add(dnsdumpster.Query, domain, state)
 	}
-	if sourceConfig.Passivetotal == true {
-		go passivetotal.Query(domain, state, ch)
+	if sourceConfig.Passivetotal {
+		domainDiscoverPool.Add(passivetotal.Query, domain, state)
 	}
-	if sourceConfig.Ptrarchive == true {
-		go ptrarchive.Query(domain, state, ch)
+	if sourceConfig.Ptrarchive {
+		domainDiscoverPool.Add(ptrarchive.Query, domain, state)
 	}
-	if sourceConfig.Hackertarget == true {
-		go hackertarget.Query(domain, state, ch)
+	if sourceConfig.Hackertarget {
+		domainDiscoverPool.Add(hackertarget.Query, domain, state)
 	}
-	if sourceConfig.Virustotal == true {
-		go virustotal.Query(domain, state, ch)
+	if sourceConfig.Virustotal {
+		domainDiscoverPool.Add(virustotal.Query, domain, state)
 	}
-	if sourceConfig.Securitytrails == true {
-		go securitytrails.Query(domain, state, ch)
+	if sourceConfig.Securitytrails {
+		domainDiscoverPool.Add(securitytrails.Query, domain, state)
 	}
-	if sourceConfig.Netcraft == true {
-		go netcraft.Query(domain, state, ch)
+	if sourceConfig.Netcraft {
+		domainDiscoverPool.Add(netcraft.Query, domain, state)
 	}
-	if sourceConfig.Waybackarchive == true {
-		go waybackarchive.Query(domain, state, ch)
+	if sourceConfig.Waybackarchive {
+		domainDiscoverPool.Add(waybackarchive.Query, domain, state)
 	}
-	if sourceConfig.Threatminer == true {
-		go threatminer.Query(domain, state, ch)
+	if sourceConfig.Threatminer {
+		domainDiscoverPool.Add(threatminer.Query, domain, state)
 	}
-	if sourceConfig.Riddler == true {
-		go riddler.Query(domain, state, ch)
+	if sourceConfig.Riddler {
+		domainDiscoverPool.Add(riddler.Query, domain, state)
 	}
-	if sourceConfig.Censys == true {
-		go censys.Query(domain, state, ch)
+	if sourceConfig.Censys {
+		domainDiscoverPool.Add(censys.Query, domain, state)
 	}
-	if sourceConfig.Dnsdb == true {
-		go dnsdb.Query(domain, state, ch)
+	if sourceConfig.Dnsdb {
+		domainDiscoverPool.Add(dnsdb.Query, domain, state)
 	}
-	if sourceConfig.Baidu == true {
-		go baidu.Query(domain, state, ch)
+	if sourceConfig.Baidu {
+		domainDiscoverPool.Add(baidu.Query, domain, state)
 	}
-	if sourceConfig.Bing == true {
-		go bing.Query(domain, state, ch)
+	if sourceConfig.Bing {
+		domainDiscoverPool.Add(bing.Query, domain, state)
 	}
-	if sourceConfig.Ask == true {
-		go ask.Query(domain, state, ch)
+	if sourceConfig.Ask {
+		domainDiscoverPool.Add(ask.Query, domain, state)
 	}
-	if sourceConfig.CertificateTransparency == true {
-		go certificatetransparency.Query(domain, state, ch)
+	if sourceConfig.CertificateTransparency {
+		domainDiscoverPool.Add(certificatetransparency.Query, domain, state)
 	}
-	if sourceConfig.Shodan == true {
-		go shodan.Query(domain, state, ch)
+	if sourceConfig.Ipv4Info {
+		domainDiscoverPool.Add(ipv4info.Query, domain, state)
+	}
+	if sourceConfig.Archiveis {
+		domainDiscoverPool.Add(archiveis.Query, domain, state)
+	}
+	if sourceConfig.Sitedossier {
+		domainDiscoverPool.Add(sitedossier.Query, domain, state)
+	}
+	if sourceConfig.Yahoo {
+		domainDiscoverPool.Add(yahoo.Query, domain, state)
+	}
+	if sourceConfig.Dogpile {
+		domainDiscoverPool.Add(dogpile.Query, domain, state)
+	}
+	if sourceConfig.Exalead {
+		domainDiscoverPool.Add(exalead.Query, domain, state)
+	}
+	if sourceConfig.Shodan {
+		domainDiscoverPool.Add(shodan.Query, domain, state)
 	}
 
-	// Recieve data from all goroutines running
-	for i := 0; i < sourceConfig.nbrActive(); i++ {
-		result := <-ch
+	domainDiscoverPool.Wait()
 
-		if result.Error != nil {
+	completedJobs := domainDiscoverPool.Results()
+	for _, job := range completedJobs {
+		if job.Err != nil {
 			// some error occured
-			if state.Silent != true {
-				fmt.Printf("\nerror: %v\n", result.Error)
+			if !state.Silent {
+				fmt.Printf("\nerror: %v\n", job.Err)
 			}
 		}
-		for _, subdomain := range result.Subdomains {
+		results := job.Result.([]string)
+		for _, subdomain := range results {
 			finalPassiveSubdomains = append(finalPassiveSubdomains, subdomain)
 		}
 	}
+
+	domainDiscoverPool.Stop()
 
 	// Now remove duplicate items from the slice
 	uniquePassiveSubdomains := helper.Unique(finalPassiveSubdomains)
@@ -442,12 +575,16 @@ func Enumerate(state *helper.State) []string {
 
 	fmt.Printf("\n")
 	if state.Sources == "all" {
-		// Search all data sources
 		sourceConfig.enableAll()
 	} else {
 		// Check data sources and create a source configuration structure
 		dataSources := strings.Split(state.Sources, ",")
 		sourceConfig.enable(dataSources)
+	}
+
+	if state.ExcludeSource != "" {
+		dataSources := strings.Split(state.ExcludeSource, ",")
+		sourceConfig.disable(dataSources)
 	}
 
 	if !state.Silent {

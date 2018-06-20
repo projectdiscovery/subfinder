@@ -11,7 +11,6 @@ package certificatetransparency
 import (
 	"fmt"
 	"io/ioutil"
-	"regexp"
 	"sort"
 	"strings"
 
@@ -22,31 +21,28 @@ import (
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(domain string, state *helper.State, ch chan helper.Result) {
+func Query(args ...interface{}) interface{} {
 
-	var result helper.Result
-	result.Subdomains = subdomains
+	domain := args[0].(string)
+	state := args[1].(*helper.State)
 
 	resp, err := helper.GetHTTPResponse("https://ctsearch.entrust.com/api/v1/certificates?fields=issuerCN,subjectO,issuerDN,issuerO,subjectDN,signAlg,san,publicKeyType,publicKeySize,validFrom,validTo,sn,ev,logEntries.logName,subjectCNReversed,cert&domain="+domain+"&includeExpired=true&exactMatch=false&limit=5000", state.Timeout)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	// suppress all %xx sequences with a space
 	src := strings.Replace(string(body), "u003d", " ", -1)
 
-	re := regexp.MustCompile(`([a-z0-9]+\.)+` + domain)
-	match := re.FindAllString(src, -1)
+	match := helper.ExtractSubdomains(src, domain)
 
 	for _, subdomain := range match {
 		if sort.StringsAreSorted(subdomains) == false {
@@ -69,7 +65,5 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 		subdomains = append(subdomains, subdomain)
 	}
 
-	result.Subdomains = subdomains
-	result.Error = nil
-	ch <- result
+	return subdomains
 }

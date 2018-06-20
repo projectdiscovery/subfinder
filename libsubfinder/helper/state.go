@@ -15,31 +15,32 @@ import (
 
 // Holds the State read in from the CLI
 type State struct {
-	Color        bool     // Whether to use color or not
-	Threads      int      // Number of threads to use
-	Timeout      int      // Timeout for requests to different passive sources
-	Verbose      bool     // Show verbose information
-	Domain       string   // Domain name to find subdomains for
-	Recursive    bool     // Whether perform recursive subdomain discovery or not
-	Output       string   // Name of output file
-	Alive        bool     // Get only alive subdomains (x - no wildcards :-))
-	IsJSON       bool     // Provide JSON output file
-	Wordlist     string   // Wordlist file for subdomains bruteforcing
-	Bruteforce   bool     // Flag to decide whether to bruteforce or not
-	WildcardIP   []string // Wildcard IP Structure
-	IsWildcard   bool     // Does the host has wildcard subdomains, if yes parse them carefully
-	Sources      string   // Comma separated list of sources to use
-	Silent       bool     // Show only silent output or not
-	FinalResults []string // Contains final bruteforcing results
-	SetConfig    string   // Used for changing the current configuration file details
-	SetSetting   string   // Used for passing custom configuration to the application
-	DomainList   string   // List of domains to find subdomains for
-	OutputDir    string   // Directory to output results to if domain list is used
-	LoadResolver []string // Slice of resolvers to use
-	ComResolver  string   // Comma-separated list of resolvers to use
-	ListResolver string   // File to load resolvers from
-	AquatoneJSON bool     // Use aquatone style json format
-	OutputHandle *os.File // Handle to the output file used for output buffering
+	Color         bool     // Whether to use color or not
+	Threads       int      // Number of threads to use
+	Timeout       int      // Timeout for requests to different passive sources
+	Verbose       bool     // Show verbose information
+	Domain        string   // Domain name to find subdomains for
+	Recursive     bool     // Whether perform recursive subdomain discovery or not
+	Output        string   // Name of output file
+	Alive         bool     // Get only alive subdomains (x - no wildcards :-))
+	IsJSON        bool     // Provide JSON output file
+	Wordlist      string   // Wordlist file for subdomains bruteforcing
+	Bruteforce    bool     // Flag to decide whether to bruteforce or not
+	WildcardIP    []string // Wildcard IP Structure
+	IsWildcard    bool     // Does the host has wildcard subdomains, if yes parse them carefully
+	Sources       string   // Comma separated list of sources to use
+	Silent        bool     // Show only silent output or not
+	FinalResults  []string // Contains final bruteforcing results
+	SetConfig     string   // Used for changing the current configuration file details
+	SetSetting    string   // Used for passing custom configuration to the application
+	DomainList    string   // List of domains to find subdomains for
+	OutputDir     string   // Directory to output results to if domain list is used
+	LoadResolver  []string // Slice of resolvers to use
+	ComResolver   string   // Comma-separated list of resolvers to use
+	ListResolver  string   // File to load resolvers from
+	AquatoneJSON  bool     // Use aquatone style json format
+	ExcludeSource string   // Sources to exclude
+	OutputHandle  *os.File // Handle to the output file used for output buffering
 
 	CurrentSettings Setting // Current application settings
 	ConfigState     Config  // Current configuration file state
@@ -63,11 +64,13 @@ type Config struct {
 }
 
 type Setting struct {
-	CensysPages string // Censys pages to check. For All, use "all"
-	AskPages    string // Ask search pages to check
-	BaiduPages  string // Baidu search pages to check
-	BingPages   string // Bing search pages to check
-	ShodanPages string // Shodan search pages to check
+	CensysPages  string // Censys pages to check. For All, use "all"
+	AskPages     string // Ask search pages to check
+	BaiduPages   string // Ask search pages to check
+	BingPages    string // Ask search pages to check
+	DogpilePages string // Dogpile search pages to check
+	YahooPages   string // Yahoo search pages to check
+	ShodanPages  string // Shodan search pages to check
 }
 
 func InitializeSettings() (setting *Setting) {
@@ -78,6 +81,8 @@ func InitializeSettings() (setting *Setting) {
 	settings.AskPages = "15"
 	settings.BaiduPages = "5"
 	settings.BingPages = "50"
+	settings.DogpilePages = "16"
+	settings.YahooPages = "10"
 	settings.ShodanPages = "10"
 	return &settings
 }
@@ -89,5 +94,5 @@ func InitState() (state State, err error) {
 
 	setting := InitializeSettings()
 
-	return State{true, 10, 180, false, "", false, "", false, false, "", false, []string{}, true, "", false, []string{}, "", "", "", "", []string{}, "", "", false, nil, *setting, *config}, nil
+	return State{true, 10, 180, false, "", false, "", false, false, "", false, []string{}, true, "", false, []string{}, "", "", "", "", []string{}, "", "", false, "", nil, *setting, *config}, nil
 }

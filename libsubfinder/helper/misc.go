@@ -13,6 +13,8 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"github.com/Mzack9999/xurls"
 )
 
 // Current result structure
@@ -63,6 +65,21 @@ func Unique(elements []string) []string {
 	}
 	// Return the new slice.
 	return result
+}
+
+func SubdomainExists(key string, values []string) bool {
+	for _, data := range values {
+		if key == data {
+			return true
+		}
+	}
+	return false
+}
+
+func ExtractSubdomains(text, domain string) (urls []string) {
+	allUrls := xurls.ExtractSubdomains(text, domain)
+
+	return Validate(domain, allUrls)
 }
 
 //Validate returns valid subdomains found ending with target domain

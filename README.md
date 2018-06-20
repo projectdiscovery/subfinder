@@ -18,10 +18,10 @@ This project began it's life as a Bug Bounty World slack channel discussion. We 
 - Simple and modular code base making it easy to contribute.
 - Fast And Powerful Bruteforcing Module 
 - Powerful Permutation generation engine. (In Development)
-- Many Passive Data Sources (21 At Present)
+- Many Passive Data Sources (27 At Present)
 - Multiple Output formats
 
-> Ask, Baidu, Bing, Censys, CertDB, CertSpotter, CrtSH, DnsDB, DNSDumpster, Entrust CT-Search, FindSubdomains, Hackertarget, Netcraft, PassiveTotal, PTRArchive, Riddler, SecurityTrails, ThreatCrowd, ThreatMiner, Virustotal, WaybackArchive
+> Ask, Archive.is, Baidu, Bing, Censys, CertDB, CertSpotter, CrtSH, DnsDB, DNSDumpster, Dogpile, Entrust CT-Search, Exalead, FindSubdomains, Hackertarget, IPv4Info, Netcraft, PassiveTotal, PTRArchive, Riddler, SecurityTrails, SiteDossier, ThreatCrowd, ThreatMiner, Virustotal, WaybackArchive, Yahoo
 
 # Usage
 
@@ -48,6 +48,7 @@ This will display help for the tool. Here are all the switches it supports.
 | --set-settings | Sets a setting option | ./subfinder --set-settings CensysPages=10 |
 | --silent | Show only the subdomains found    | ./subfinder --silent |
 | --sources | Comma separated list of sources to use (optional) | ./subfinder --sources threatcrowd,virustotal |
+| --exclude-sources | Comma separated list of sources not to use (optional) | ./subfinder --exclude-sources threatcrowd,virustotal |
 | -t   | Number of concurrent threads (Bruteforce) | ./subfinder -t 10 |
 | --timeout | Seconds to wait until quitting connection | ./subfinder --timeout 10 |
 | -v | Display verbose output  | ./subfinder -v |
@@ -185,13 +186,13 @@ For using bruteforcing capabilities, you can use -b flag with -w option to speci
 
 You can also write output in JSON format as used by Aquatone.
 ```bash
-./subfinder -d freelancer.com -o result_aquatone.json -oA -nW -v 
+./subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v 
 ```
 
 You can specify custom resolvers too.
 ```bash
-./subfinder -d freelancer.com -o result_aquatone.json -oA -nW -v -r 8.8.8.8,1.1.1.1
-./subfinder -d freelancer.com -o result_aquatone.json -oA -nW -v -rL resolvers.txt
+./subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v -r 8.8.8.8,1.1.1.1
+./subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v -rL resolvers.txt
 ```
 
 # Frequently Asked Questions (FAQ)

@@ -1,18 +1,17 @@
 //
-// Written By : @ice3man (Nizamul Rana)
+// Written By : @Mzack9999
 //
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
 
-// A golang based Hackertarget subdomains search client
-package hackertarget
+// A golang client for Exalead Subdomain Discovery
+package exalead
 
 import (
-	"bufio"
 	"fmt"
 	"io/ioutil"
-	"strings"
+	"regexp"
 
 	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
@@ -26,34 +25,35 @@ func Query(args ...interface{}) interface{} {
 	domain := args[0].(string)
 	state := args[1].(*helper.State)
 
-	var result helper.Result
-	result.Subdomains = subdomains
-
-	resp, err := helper.GetHTTPResponse("https://api.hackertarget.com/hostsearch/?q="+domain, state.Timeout)
+	url := "http://www.exalead.com/search/web/results/?q=site:" + domain + "+-www?elements_per_page=50"
+	resp, err := helper.GetHTTPResponse(url, state.Timeout)
 	if err != nil {
 		fmt.Printf("\nerror: %v\n", err)
 		return subdomains
 	}
 
 	// Get the response body
-	resp_body, err := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Printf("\nerror: %v\n", err)
 		return subdomains
 	}
 
-	scanner := bufio.NewScanner(strings.NewReader(string(resp_body)))
-	for scanner.Scan() {
-		subdomain := strings.Split(scanner.Text(), ",")[0]
-		subdomains = append(subdomains, subdomain)
+	reSub := regexp.MustCompile(`%.{2}`)
+	src := reSub.ReplaceAllLiteralString(string(body), " ")
 
+	match := helper.ExtractSubdomains(src, domain)
+
+	for _, subdomain := range match {
 		if state.Verbose == true {
 			if state.Color == true {
-				fmt.Printf("\n[%sHACKERTARGET%s] %s", helper.Red, helper.Reset, subdomain)
+				fmt.Printf("\n[%sExalead%s] %s", helper.Red, helper.Reset, subdomain)
 			} else {
-				fmt.Printf("\n[HACKERTARGET] %s", subdomain)
+				fmt.Printf("\n[Exalead] %s", subdomain)
 			}
 		}
+
+		subdomains = append(subdomains, subdomain)
 	}
 
 	return subdomains
