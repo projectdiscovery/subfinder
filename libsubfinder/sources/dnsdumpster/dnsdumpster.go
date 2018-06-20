@@ -25,28 +25,27 @@ var subdomains []string
 var gCookies []*http.Cookie
 
 // Query function returns all subdomains found using the service.
-func Query(domain string, state *helper.State, ch chan helper.Result) {
+func Query(args ...interface{}) interface{} {
+
+	domain := args[0].(string)
+	state := args[1].(*helper.State)
+
 	// CookieJar to hold csrf cookie
 	var curCookieJar *cookiejar.Jar
 	curCookieJar, _ = cookiejar.New(nil)
 
-	var result helper.Result
-	result.Subdomains = subdomains
-
 	// Make a http request to DNSDumpster
 	resp, gCookies, err := helper.GetHTTPCookieResponse("https://dnsdumpster.com", gCookies, state.Timeout)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	src := string(body)
@@ -80,9 +79,8 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 	// Get the response body
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	src = string(body)
@@ -112,7 +110,5 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 		subdomains = append(subdomains, subdomain)
 	}
 
-	result.Subdomains = subdomains
-	result.Error = nil
-	ch <- result
+	return subdomains
 }

@@ -21,23 +21,25 @@ import (
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(domain string, state *helper.State, ch chan helper.Result) {
+func Query(args ...interface{}) interface{} {
+
+	domain := args[0].(string)
+	state := args[1].(*helper.State)
+
 	var result helper.Result
 	result.Subdomains = subdomains
 
 	// Make a http request to DnsDB
 	resp, err := helper.GetHTTPResponse("http://www.dnsdb.org/f/"+domain+".dnsdb.org/", state.Timeout)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 	src := string(body)
 	re := regexp.MustCompile("<a[^>]*?[^>]*>(.*?)</a>")
@@ -57,7 +59,5 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 		subdomains = append(subdomains, finishedSub)
 	}
-	result.Subdomains = subdomains
-	result.Error = nil
-	ch <- result
+	return subdomains
 }

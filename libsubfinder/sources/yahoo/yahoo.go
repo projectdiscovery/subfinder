@@ -23,26 +23,25 @@ import (
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(domain string, state *helper.State, ch chan helper.Result) {
+func Query(args ...interface{}) interface{} {
 
-	var result helper.Result
-	result.Subdomains = subdomains
+	domain := args[0].(string)
+	state := args[1].(*helper.State)
+
 	maxPages, _ := strconv.Atoi(state.CurrentSettings.YahooPages)
 	for currentPage := 0; currentPage <= maxPages; currentPage++ {
 		url := "https://search.yahoo.com/search?p=site:" + domain + "&b=" + strconv.Itoa(currentPage*10) + "&pz=10&bct=0&xargs=0"
 		resp, err := helper.GetHTTPResponse(url, state.Timeout)
 		if err != nil {
-			result.Error = err
-			ch <- result
-			return
+			fmt.Printf("\nerror: %v\n", err)
+			return subdomains
 		}
 
 		// Get the response body
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			result.Error = err
-			ch <- result
-			return
+			fmt.Printf("\nerror: %v\n", err)
+			return subdomains
 		}
 
 		reSub := regexp.MustCompile(`%.{2}`)
@@ -66,7 +65,5 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 		time.Sleep(time.Duration((3 + rand.Intn(5))) * time.Second)
 	}
 
-	result.Subdomains = subdomains
-	result.Error = nil
-	ch <- result
+	return subdomains
 }

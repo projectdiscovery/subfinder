@@ -36,12 +36,14 @@ type response struct {
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(domain string, state *helper.State, ch chan helper.Result) {
+func Query(args ...interface{}) interface{} {
+
+	domain := args[0].(string)
+	state := args[1].(*helper.State)
 
 	var uniqueSubdomains []string
 	var initialSubdomains []string
 	var hostResponse response
-	var result helper.Result
 
 	// Default Censys Pages to process. I think 10 is a good value
 	//DefaultCensysPages := 10
@@ -71,27 +73,21 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 				resp, err := client.Do(req)
 				if err != nil {
-					result.Subdomains = subdomains
-					result.Error = err
-					ch <- result
-					return
+					fmt.Printf("\nerror: %v\n", err)
+					return subdomains
 				}
 
 				// Get the response body
 				body, err := ioutil.ReadAll(resp.Body)
 				if err != nil {
-					result.Subdomains = subdomains
-					result.Error = err
-					ch <- result
-					return
+					fmt.Printf("\nerror: %v\n", err)
+					return subdomains
 				}
 
 				err = json.Unmarshal([]byte(body), &hostResponse)
 				if err != nil {
-					result.Subdomains = subdomains
-					result.Error = err
-					ch <- result
-					return
+					fmt.Printf("\nerror: %v\n", err)
+					return subdomains
 				}
 
 				// Add all items found
@@ -140,27 +136,21 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 			resp, err := client.Do(req)
 			if err != nil {
-				result.Subdomains = subdomains
-				result.Error = err
-				ch <- result
-				return
+				fmt.Printf("\nerror: %v\n", err)
+				return subdomains
 			}
 
 			// Get the response body
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				result.Subdomains = subdomains
-				result.Error = err
-				ch <- result
-				return
+				fmt.Printf("\nerror: %v\n", err)
+				return subdomains
 			}
 
 			err = json.Unmarshal([]byte(body), &hostResponse)
 			if err != nil {
-				result.Subdomains = subdomains
-				result.Error = err
-				ch <- result
-				return
+				fmt.Printf("\nerror: %v\n", err)
+				return subdomains
 			}
 
 			// Add all items found
@@ -208,27 +198,20 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 
 				resp, err := client.Do(req)
 				if err != nil {
-					result.Subdomains = subdomains
-					result.Error = err
-					ch <- result
-					return
+					panic(err)
 				}
 
 				// Get the response body
 				body, err := ioutil.ReadAll(resp.Body)
 				if err != nil {
-					result.Subdomains = subdomains
-					result.Error = err
-					ch <- result
-					return
+					fmt.Printf("\nerror: %v\n", err)
+					return subdomains
 				}
 
 				err = json.Unmarshal([]byte(body), &hostResponse)
 				if err != nil {
-					result.Subdomains = subdomains
-					result.Error = err
-					ch <- result
-					return
+					fmt.Printf("\nerror: %v\n", err)
+					return subdomains
 				}
 
 				// Add all items found
@@ -264,15 +247,7 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 			}
 		}
 
-		result.Subdomains = subdomains
-		result.Error = nil
-		ch <- result
-		return
-
-	} else {
-		result.Subdomains = subdomains
-		result.Error = nil
-		ch <- result
-		return
 	}
+
+	return subdomains
 }

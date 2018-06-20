@@ -21,24 +21,22 @@ import (
 var subdomains []string
 
 // Query function returns all subdomains found using the service.
-func Query(domain string, state *helper.State, ch chan helper.Result) {
+func Query(args ...interface{}) interface{} {
 
-	var result helper.Result
-	result.Subdomains = subdomains
+	domain := args[0].(string)
+	state := args[1].(*helper.State)
 
 	resp, err := helper.GetHTTPResponse("https://ctsearch.entrust.com/api/v1/certificates?fields=issuerCN,subjectO,issuerDN,issuerO,subjectDN,signAlg,san,publicKeyType,publicKeySize,validFrom,validTo,sn,ev,logEntries.logName,subjectCNReversed,cert&domain="+domain+"&includeExpired=true&exactMatch=false&limit=5000", state.Timeout)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		result.Error = err
-		ch <- result
-		return
+		fmt.Printf("\nerror: %v\n", err)
+		return subdomains
 	}
 
 	// suppress all %xx sequences with a space
@@ -67,7 +65,5 @@ func Query(domain string, state *helper.State, ch chan helper.Result) {
 		subdomains = append(subdomains, subdomain)
 	}
 
-	result.Subdomains = subdomains
-	result.Error = nil
-	ch <- result
+	return subdomains
 }
