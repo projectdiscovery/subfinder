@@ -46,6 +46,7 @@ import (
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/ptrarchive"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/riddler"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/securitytrails"
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/shodan"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/sitedossier"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/threatcrowd"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/threatminer"
@@ -87,6 +88,7 @@ type Source struct {
 	Yahoo                   bool
 	Dogpile                 bool
 	Exalead                 bool
+	Shodan                  bool
 }
 
 func (s *Source) enableAll() {
@@ -117,6 +119,7 @@ func (s *Source) enableAll() {
 	s.Yahoo = true
 	s.Dogpile = true
 	s.Exalead = true
+	s.Shodan = true
 }
 
 func (s *Source) enable(dataSources []string) {
@@ -176,6 +179,8 @@ func (s *Source) enable(dataSources []string) {
 			s.Dogpile = true
 		case "exalead":
 			s.Exalead = true
+		case "shodan":
+			s.Shodan = true
 		}
 	}
 }
@@ -237,6 +242,8 @@ func (s *Source) disable(dataSources []string) {
 			s.Dogpile = false
 		case "exalead":
 			s.Dogpile = false
+		case "shodan":
+			s.Shodan = false
 		}
 	}
 }
@@ -322,6 +329,9 @@ func (s *Source) printSummary() {
 	}
 	if s.Exalead {
 		fmt.Printf("\nRunning Source: %sExalead%s\n", helper.Info, helper.Reset)
+	}
+	if s.Shodan {
+		fmt.Printf("\nRunning Source: %sShodan%s\n", helper.Info, helper.Reset)
 	}
 }
 
@@ -453,6 +463,9 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	}
 	if sourceConfig.Exalead {
 		domainDiscoverPool.Add(exalead.Query, domain, state)
+	}
+	if sourceConfig.Shodan {
+		domainDiscoverPool.Add(shodan.Query, domain, state)
 	}
 
 	domainDiscoverPool.Wait()
