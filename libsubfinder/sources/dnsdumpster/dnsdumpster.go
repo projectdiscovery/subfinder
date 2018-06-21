@@ -37,14 +37,14 @@ func Query(args ...interface{}) interface{} {
 	// Make a http request to DNSDumpster
 	resp, gCookies, err := helper.GetHTTPCookieResponse("https://dnsdumpster.com", gCookies, state.Timeout)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\ndnsdumpster: %v\n", err)
 		return subdomains
 	}
 
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\ndnsdumpster: %v\n", err)
 		return subdomains
 	}
 
@@ -79,7 +79,7 @@ func Query(args ...interface{}) interface{} {
 	// Get the response body
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\ndnsdumpster: %v\n", err)
 		return subdomains
 	}
 
