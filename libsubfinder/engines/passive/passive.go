@@ -48,6 +48,7 @@ import (
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/securitytrails"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/shodan"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/sitedossier"
+	"github.com/Ice3man543/subfinder/libsubfinder/sources/sslcertificates"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/threatcrowd"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/threatminer"
 	"github.com/Ice3man543/subfinder/libsubfinder/sources/virustotal"
@@ -78,6 +79,7 @@ type Source struct {
 	Ptrarchive              bool
 	Riddler                 bool
 	Securitytrails          bool
+	SSLCertificates         bool
 	Sitedossier             bool
 	Threatcrowd             bool
 	Threatminer             bool
@@ -109,6 +111,7 @@ func (s *Source) enableAll() {
 	s.Ptrarchive = true
 	s.Riddler = true
 	s.Securitytrails = true
+	s.SSLCertificates = true
 	s.Sitedossier = true
 	s.Threatcrowd = true
 	s.Threatminer = true
@@ -159,6 +162,8 @@ func (s *Source) enable(dataSources []string) {
 			s.Riddler = true
 		case "securitytrails":
 			s.Securitytrails = true
+		case "sslcertificates":
+			s.SSLCertificates = true
 		case "sitedossier":
 			s.Sitedossier = true
 		case "threatcrowd":
@@ -222,6 +227,8 @@ func (s *Source) disable(dataSources []string) {
 			s.Riddler = false
 		case "securitytrails":
 			s.Securitytrails = false
+		case "sslcertificates":
+			s.SSLCertificates = false
 		case "sitedossier":
 			s.Sitedossier = false
 		case "threatcrowd":
@@ -267,6 +274,9 @@ func (s *Source) printSummary() {
 	if s.Certdb {
 		fmt.Printf("\nRunning Source: %sCertDB%s", helper.Info, helper.Reset)
 	}
+	if s.CertificateTransparency {
+		fmt.Printf("\nRunning Source: %sCertificateTransparency%s", helper.Info, helper.Reset)
+	}
 	if s.Certspotter {
 		fmt.Printf("\nRunning Source: %sCertspotter%s", helper.Info, helper.Reset)
 	}
@@ -279,11 +289,20 @@ func (s *Source) printSummary() {
 	if s.Dnsdumpster {
 		fmt.Printf("\nRunning Source: %sDNSDumpster%s", helper.Info, helper.Reset)
 	}
+	if s.Dogpile {
+		fmt.Printf("\nRunning Source: %sDogpile%s", helper.Info, helper.Reset)
+	}
+	if s.Exalead {
+		fmt.Printf("\nRunning Source: %sExalead%s\n", helper.Info, helper.Reset)
+	}
 	if s.Findsubdomains {
 		fmt.Printf("\nRunning Source: %sFindsubdomains%s", helper.Info, helper.Reset)
 	}
 	if s.Hackertarget {
 		fmt.Printf("\nRunning Source: %sHackertarget%s", helper.Info, helper.Reset)
+	}
+	if s.Ipv4Info {
+		fmt.Printf("\nRunning Source: %sIpv4Info%s", helper.Info, helper.Reset)
 	}
 	if s.Netcraft {
 		fmt.Printf("\nRunning Source: %sNetcraft%s", helper.Info, helper.Reset)
@@ -300,6 +319,12 @@ func (s *Source) printSummary() {
 	if s.Securitytrails {
 		fmt.Printf("\nRunning Source: %sSecuritytrails%s", helper.Info, helper.Reset)
 	}
+	if s.SSLCertificates {
+		fmt.Printf("\nRunning Source: %sSSLCertificates%s", helper.Info, helper.Reset)
+	}
+	if s.Shodan {
+		fmt.Printf("\nRunning Source: %sShodan%s\n", helper.Info, helper.Reset)
+	}
 	if s.Sitedossier {
 		fmt.Printf("\nRunning Source: %sSitedossier%s", helper.Info, helper.Reset)
 	}
@@ -315,24 +340,10 @@ func (s *Source) printSummary() {
 	if s.Waybackarchive {
 		fmt.Printf("\nRunning Source: %sWaybackArchive%s", helper.Info, helper.Reset)
 	}
-	if s.CertificateTransparency {
-		fmt.Printf("\nRunning Source: %sCertificateTransparency%s", helper.Info, helper.Reset)
-	}
-	if s.Ipv4Info {
-		fmt.Printf("\nRunning Source: %sIpv4Info%s", helper.Info, helper.Reset)
-	}
 	if s.Yahoo {
 		fmt.Printf("\nRunning Source: %sYahoo%s", helper.Info, helper.Reset)
 	}
-	if s.Dogpile {
-		fmt.Printf("\nRunning Source: %sDogpile%s", helper.Info, helper.Reset)
-	}
-	if s.Exalead {
-		fmt.Printf("\nRunning Source: %sExalead%s\n", helper.Info, helper.Reset)
-	}
-	if s.Shodan {
-		fmt.Printf("\nRunning Source: %sShodan%s\n", helper.Info, helper.Reset)
-	}
+
 }
 
 //nbrActive ses reflection to get automatic active amount of searches
@@ -466,6 +477,9 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	}
 	if sourceConfig.Shodan {
 		domainDiscoverPool.Add(shodan.Query, domain, state)
+	}
+	if sourceConfig.SSLCertificates {
+		domainDiscoverPool.Add(sslcertificates.Query, domain, state)
 	}
 
 	domainDiscoverPool.Wait()
