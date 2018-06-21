@@ -31,14 +31,14 @@ func Query(args ...interface{}) interface{} {
 	for currentPage := 0; currentPage <= maxPages; currentPage++ {
 		resp, err := helper.GetHTTPResponse("https://api.shodan.io/shodan/host/search?query=hostname:"+domain+"&page="+strconv.Itoa(currentPage)+"&key="+shodanAPIKey, state.Timeout)
 		if err != nil {
-			fmt.Printf("\nerror: %v\n", err)
+			fmt.Printf("\nshodan: %v\n", err)
 			return subdomains
 		}
 
 		// Get the response body
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			fmt.Printf("\nerror: %v\n", err)
+			fmt.Printf("\nshodan: %v\n", err)
 			return subdomains
 		}
 

@@ -33,14 +33,14 @@ func Query(args ...interface{}) interface{} {
 		url := "https://search.yahoo.com/search?p=site:" + domain + "&b=" + strconv.Itoa(currentPage*10) + "&pz=10&bct=0&xargs=0"
 		resp, err := helper.GetHTTPResponse(url, state.Timeout)
 		if err != nil {
-			fmt.Printf("\nerror: %v\n", err)
+			fmt.Printf("\nyahoo: %v\n", err)
 			return subdomains
 		}
 
 		// Get the response body
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			fmt.Printf("\nerror: %v\n", err)
+			fmt.Printf("\nyahoo: %v\n", err)
 			return subdomains
 		}
 

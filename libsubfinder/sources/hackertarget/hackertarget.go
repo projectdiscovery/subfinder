@@ -31,14 +31,14 @@ func Query(args ...interface{}) interface{} {
 
 	resp, err := helper.GetHTTPResponse("https://api.hackertarget.com/hostsearch/?q="+domain, state.Timeout)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nhackertarget: %v\n", err)
 		return subdomains
 	}
 
 	// Get the response body
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nhackertarget: %v\n", err)
 		return subdomains
 	}
 

@@ -38,21 +38,21 @@ func Query(args ...interface{}) interface{} {
 	resp, err := helper.GetHTTPResponse("https://certspotter.com/api/v0/certs?domain="+domain, state.Timeout)
 	if err != nil {
 		// Set values and return
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\ncertspotter: %v\n", err)
 		return subdomains
 	}
 
 	// Get the response body
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\ncertspotter: %v\n", err)
 		return subdomains
 	}
 
 	// Decode the json format
 	err = json.Unmarshal([]byte(resp_body), &certspotter_data)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\ncertspotter: %v\n", err)
 		return subdomains
 	}
 

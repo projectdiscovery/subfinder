@@ -293,7 +293,7 @@ func (s *Source) printSummary() {
 		fmt.Printf("\nRunning Source: %sDogpile%s", helper.Info, helper.Reset)
 	}
 	if s.Exalead {
-		fmt.Printf("\nRunning Source: %sExalead%s\n", helper.Info, helper.Reset)
+		fmt.Printf("\nRunning Source: %sExalead%s", helper.Info, helper.Reset)
 	}
 	if s.Findsubdomains {
 		fmt.Printf("\nRunning Source: %sFindsubdomains%s", helper.Info, helper.Reset)
@@ -323,7 +323,7 @@ func (s *Source) printSummary() {
 		fmt.Printf("\nRunning Source: %sSSLCertificates%s", helper.Info, helper.Reset)
 	}
 	if s.Shodan {
-		fmt.Printf("\nRunning Source: %sShodan%s\n", helper.Info, helper.Reset)
+		fmt.Printf("\nRunning Source: %sShodan%s", helper.Info, helper.Reset)
 	}
 	if s.Sitedossier {
 		fmt.Printf("\nRunning Source: %sSitedossier%s", helper.Info, helper.Reset)
@@ -341,7 +341,7 @@ func (s *Source) printSummary() {
 		fmt.Printf("\nRunning Source: %sWaybackArchive%s", helper.Info, helper.Reset)
 	}
 	if s.Yahoo {
-		fmt.Printf("\nRunning Source: %sYahoo%s", helper.Info, helper.Reset)
+		fmt.Printf("\nRunning Source: %sYahoo%s\n", helper.Info, helper.Reset)
 	}
 
 }

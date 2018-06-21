@@ -29,14 +29,14 @@ func Query(args ...interface{}) interface{} {
 	// Make a http request to Netcraft
 	resp, err := helper.GetHTTPResponse("https://findsubdomains.com/subdomains-of/"+domain, state.Timeout)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nfindsubdomains: %v\n", err)
 		return subdomains
 	}
 
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nfindsubdomains: %v\n", err)
 		return subdomains
 	}
 

@@ -46,14 +46,14 @@ func Query(args ...interface{}) interface{} {
 
 		resp, err := helper.GetHTTPResponse("https://www.baidu.com/s?rn=100&pn="+strconv.Itoa(current_page)+"&wd="+search_query+"&oq="+search_query, state.Timeout)
 		if err != nil {
-			fmt.Printf("\nerror: %v\n", err)
+			fmt.Printf("\nbaidu: %v\n", err)
 			return subdomains
 		}
 
 		// Get the response body
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			fmt.Printf("\nerror: %v\n", err)
+			fmt.Printf("\nbaidu: %v\n", err)
 			return subdomains
 		}
 		src := string(body)

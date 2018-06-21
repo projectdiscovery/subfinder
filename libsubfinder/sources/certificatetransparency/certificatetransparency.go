@@ -28,14 +28,14 @@ func Query(args ...interface{}) interface{} {
 
 	resp, err := helper.GetHTTPResponse("https://ctsearch.entrust.com/api/v1/certificates?fields=issuerCN,subjectO,issuerDN,issuerO,subjectDN,signAlg,san,publicKeyType,publicKeySize,validFrom,validTo,sn,ev,logEntries.logName,subjectCNReversed,cert&domain="+domain+"&includeExpired=true&exactMatch=false&limit=5000", state.Timeout)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\ncertificatetransparency: %v\n", err)
 		return subdomains
 	}
 
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\ncertificatetransparency: %v\n", err)
 		return subdomains
 	}
 

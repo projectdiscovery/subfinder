@@ -40,21 +40,21 @@ func Query(args ...interface{}) interface{} {
 	// I Think 5 minutes would be more than enough for CRT.SH :-)
 	resp, err := helper.GetHTTPResponse("https://crt.sh/?q=%25."+domain+"&output=json", state.Timeout)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\ncrtsh: %v\n", err)
 		return subdomains
 	}
 
 	// Get the response body
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\ncrtsh: %v\n", err)
 		return subdomains
 	}
 
 	if strings.Contains(string(resp_body), "The requested URL / was not found on this server.") {
 		// crt.sh is not showing subdomains for some reason
 		// move back
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\ncrtsh: %v\n", err)
 		return subdomains
 	}
 
@@ -73,7 +73,7 @@ func Query(args ...interface{}) interface{} {
 	// Decode the json format
 	err = json.Unmarshal([]byte(json_output), &crtsh_data)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\ncrtsh: %v\n", err)
 		return subdomains
 	}
 

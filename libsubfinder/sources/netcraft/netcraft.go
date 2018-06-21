@@ -34,7 +34,7 @@ func enumerate(state *helper.State, baseUrl string) (err error) {
 	// Make a http request to Netcraft
 	resp, gCookies, err := helper.GetHTTPCookieResponse(baseUrl, gCookies, state.Timeout)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nnetcraft: %v\n", err)
 		return
 	}
 
@@ -63,7 +63,7 @@ func enumerate(state *helper.State, baseUrl string) (err error) {
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nnetcraft: %v\n", err)
 		return
 	}
 

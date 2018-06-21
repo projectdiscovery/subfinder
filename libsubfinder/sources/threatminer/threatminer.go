@@ -28,14 +28,14 @@ func Query(args ...interface{}) interface{} {
 	// Make a http request to CertDB
 	resp, err := helper.GetHTTPResponse("https://www.threatminer.org/getData.php?e=subdomains_container&q="+domain+"&t=0&rt=10&p=1", state.Timeout)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nthreatminer: %v\n", err)
 		return subdomains
 	}
 
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nthreatminer: %v\n", err)
 		return subdomains
 	}
 
