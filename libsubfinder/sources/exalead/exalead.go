@@ -28,14 +28,14 @@ func Query(args ...interface{}) interface{} {
 	url := "http://www.exalead.com/search/web/results/?q=site:" + domain + "+-www?elements_per_page=50"
 	resp, err := helper.GetHTTPResponse(url, state.Timeout)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nexalead: %v\n", err)
 		return subdomains
 	}
 
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nexalead: %v\n", err)
 		return subdomains
 	}
 
@@ -45,15 +45,18 @@ func Query(args ...interface{}) interface{} {
 	match := helper.ExtractSubdomains(src, domain)
 
 	for _, subdomain := range match {
-		if state.Verbose == true {
-			if state.Color == true {
-				fmt.Printf("\n[%sExalead%s] %s", helper.Red, helper.Reset, subdomain)
-			} else {
-				fmt.Printf("\n[Exalead] %s", subdomain)
+		if helper.SubdomainExists(subdomain, subdomains) == false {
+			if state.Verbose == true {
+				if state.Color == true {
+					fmt.Printf("\n[%sExalead%s] %s", helper.Red, helper.Reset, subdomain)
+				} else {
+					fmt.Printf("\n[Exalead] %s", subdomain)
+				}
 			}
-		}
 
-		subdomains = append(subdomains, subdomain)
+			subdomains = append(subdomains, subdomain)
+
+		}
 	}
 
 	return subdomains
