@@ -74,7 +74,7 @@ func Query(args ...interface{}) interface{} {
 	// Query using first page. Everything from there would be recursive
 	err := enumerate(state, "http://www.sitedossier.com/parentdomain/"+domain, domain)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nsitedossier: %v\n", err)
 		return globalSubdomains
 	}
 

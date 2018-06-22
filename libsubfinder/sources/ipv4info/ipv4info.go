@@ -28,14 +28,14 @@ func Query(args ...interface{}) interface{} {
 
 	resp, err := helper.GetHTTPResponse("http://ipv4info.com/search/"+domain, state.Timeout)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nipv4info: %v\n", err)
 		return subdomains
 	}
 
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nipv4info: %v\n", err)
 		return subdomains
 	}
 	src := string(body)
@@ -45,7 +45,7 @@ func Query(args ...interface{}) interface{} {
 	matchTokens := regxTokens.FindAllString(src, -1)
 
 	if len(matchTokens) == 0 {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nipv4info: %v\n", err)
 		return subdomains
 	}
 
@@ -53,14 +53,14 @@ func Query(args ...interface{}) interface{} {
 
 	resp, err = helper.GetHTTPResponse("http://ipv4info.com"+token, state.Timeout)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nipv4info: %v\n", err)
 		return subdomains
 	}
 
 	// Get the response body
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nipv4info: %v\n", err)
 		return subdomains
 	}
 
@@ -70,7 +70,7 @@ func Query(args ...interface{}) interface{} {
 	regxTokens = regexp.MustCompile("/dns/(.*?)/" + domain)
 	matchTokens = regxTokens.FindAllString(src, -1)
 	if len(matchTokens) == 0 {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nipv4info: %v\n", err)
 		return subdomains
 	}
 
@@ -78,13 +78,13 @@ func Query(args ...interface{}) interface{} {
 
 	resp, err = helper.GetHTTPResponse("http://ipv4info.com"+token, state.Timeout)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nipv4info: %v\n", err)
 		return subdomains
 	}
 	// Get the response body
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nipv4info: %v\n", err)
 		return subdomains
 	}
 
@@ -94,7 +94,7 @@ func Query(args ...interface{}) interface{} {
 	regxTokens = regexp.MustCompile("/subdomains/(.*?)/" + domain)
 	matchTokens = regxTokens.FindAllString(src, -1)
 	if len(matchTokens) == 0 {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nipv4info: %v\n", err)
 		return subdomains
 	}
 
@@ -103,13 +103,13 @@ func Query(args ...interface{}) interface{} {
 	// Get first subdomains page
 	resp, err = helper.GetHTTPResponse("http://ipv4info.com"+token, state.Timeout)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nipv4info: %v\n", err)
 		return subdomains
 	}
 	// Get the response body
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nipv4info: %v\n", err)
 		return subdomains
 	}
 
@@ -129,13 +129,13 @@ func Query(args ...interface{}) interface{} {
 
 		resp, err = helper.GetHTTPResponse("http://ipv4info.com"+token, state.Timeout)
 		if err != nil {
-			fmt.Printf("\nerror: %v\n", err)
+			fmt.Printf("\nipv4info: %v\n", err)
 			return subdomains
 		}
 		// Get the response body
 		body, err = ioutil.ReadAll(resp.Body)
 		if err != nil {
-			fmt.Printf("\nerror: %v\n", err)
+			fmt.Printf("\nipv4info: %v\n", err)
 			return subdomains
 		}
 		src = string(body)

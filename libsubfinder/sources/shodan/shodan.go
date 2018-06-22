@@ -1,20 +1,18 @@
 //
-// Written By : @Mzack9999
+// Written By : @Mzack9999 (Marco Rivoli)
 //
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
 //
 
-// A golang client for Dogpile Subdomain Discovery
-package dogpile
+// A golang client for Shodan.io
+package shodan
 
 import (
 	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"regexp"
 	"strconv"
-	"time"
 
 	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
@@ -27,24 +25,24 @@ func Query(args ...interface{}) interface{} {
 
 	domain := args[0].(string)
 	state := args[1].(*helper.State)
-	maxPages, _ := strconv.Atoi(state.CurrentSettings.DogpilePages)
-	for currentPage := 0; currentPage <= maxPages; currentPage++ {
-		url := "http://www.dogpile.com/search/web?q=" + domain + "&qsi=" + strconv.Itoa(currentPage*15+1)
 
-		resp, err := helper.GetHTTPResponse(url, state.Timeout)
+	shodanAPIKey := state.ConfigState.ShodanAPIKey
+	maxPages, _ := strconv.Atoi(state.CurrentSettings.ShodanPages)
+	for currentPage := 0; currentPage <= maxPages; currentPage++ {
+		resp, err := helper.GetHTTPResponse("https://api.shodan.io/shodan/host/search?query=hostname:"+domain+"&page="+strconv.Itoa(currentPage)+"&key="+shodanAPIKey, state.Timeout)
 		if err != nil {
-			fmt.Printf("\ndogpile: %v\n", err)
+			fmt.Printf("\nshodan: %v\n", err)
 			return subdomains
 		}
 
 		// Get the response body
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			fmt.Printf("\ndogpile: %v\n", err)
+			fmt.Printf("\nshodan: %v\n", err)
 			return subdomains
 		}
 
-		reSub := regexp.MustCompile(`%.{4}`)
+		reSub := regexp.MustCompile(`"`)
 		src := reSub.ReplaceAllLiteralString(string(body), " ")
 
 		match := helper.ExtractSubdomains(src, domain)
@@ -52,15 +50,14 @@ func Query(args ...interface{}) interface{} {
 		for _, subdomain := range match {
 			if state.Verbose == true {
 				if state.Color == true {
-					fmt.Printf("\n[%sDogpile%s] %s", helper.Red, helper.Reset, subdomain)
+					fmt.Printf("\n[%sShodan%s] %s", helper.Red, helper.Reset, subdomain)
 				} else {
-					fmt.Printf("\n[Dogpile] %s", subdomain)
+					fmt.Printf("\n[Shodan] %s", subdomain)
 				}
 			}
 
 			subdomains = append(subdomains, subdomain)
 		}
-		time.Sleep(time.Duration((3 + rand.Intn(5))) * time.Second)
 	}
 
 	return subdomains

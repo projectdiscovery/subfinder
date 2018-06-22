@@ -59,6 +59,8 @@ type Config struct {
 
 	CensysUsername string `json:"censysUsername"` // Censys Username
 	CensysSecret   string `json:"censysSecret"`   // Censys API Key
+
+	ShodanAPIKey string `json:"shodanApiKey"` // Shodan API Key
 }
 
 type Setting struct {
@@ -68,6 +70,7 @@ type Setting struct {
 	BingPages    string // Ask search pages to check
 	DogpilePages string // Dogpile search pages to check
 	YahooPages   string // Yahoo search pages to check
+	ShodanPages  string // Shodan search pages to check
 }
 
 func InitializeSettings() (setting *Setting) {
@@ -80,6 +83,7 @@ func InitializeSettings() (setting *Setting) {
 	settings.BingPages = "50"
 	settings.DogpilePages = "16"
 	settings.YahooPages = "10"
+	settings.ShodanPages = "10"
 	return &settings
 }
 

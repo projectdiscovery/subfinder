@@ -29,14 +29,14 @@ func Query(args ...interface{}) interface{} {
 	// Make a http request to Threatcrowd
 	resp, err := helper.GetHTTPResponse("http://web.archive.org/cdx/search/cdx?url=*."+domain+"/*&output=json&fl=original&collapse=urlkey", state.Timeout)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nwaybackarchive: %v\n", err)
 		return subdomains
 	}
 
 	// Get the response body
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nwaybackarchive: %v\n", err)
 		return subdomains
 	}
 
@@ -45,7 +45,7 @@ func Query(args ...interface{}) interface{} {
 	// Decode the json format
 	err = json.Unmarshal([]byte(resp_body), &urls)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		fmt.Printf("\nwaybackarchive: %v\n", err)
 		return subdomains
 	}
 

@@ -53,21 +53,21 @@ func Query(args ...interface{}) interface{} {
 
 		resp, err := client.Do(req)
 		if err != nil {
-			fmt.Printf("\nerror: %v\n", err)
+			fmt.Printf("\npassivetotal: %v\n", err)
 			return subdomains
 		}
 
 		// Get the response body
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			fmt.Printf("\nerror: %v\n", err)
+			fmt.Printf("\npassivetotal: %v\n", err)
 			return subdomains
 		}
 
 		// Decode the json format
 		err = json.Unmarshal([]byte(body), &passivetotal_data)
 		if err != nil {
-			fmt.Printf("\nerror: %v\n", err)
+			fmt.Printf("\npassivetotal: %v\n", err)
 			return subdomains
 		}
 

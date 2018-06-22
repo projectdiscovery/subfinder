@@ -106,6 +106,8 @@ func main() {
 				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("CensysUsername").SetString(object[1])
 			} else if strings.EqualFold(object[0], "censyssecret") == true {
 				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("CensysSecret").SetString(object[1])
+			} else if strings.EqualFold(object[0], "shodankey") == true {
+				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("ShodanAPIKey").SetString(object[1])
 			}
 
 			configJson, _ := json.MarshalIndent(state.ConfigState, "", "	")
@@ -117,8 +119,6 @@ func main() {
 
 			fmt.Printf("Successfully configured %s%s%s=>%s\n", helper.Info, object[0], helper.Reset, object[1])
 		}
-
-		os.Exit(0)
 	}
 
 	if state.SetSetting != "none" {
