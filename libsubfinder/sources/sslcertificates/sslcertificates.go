@@ -25,9 +25,11 @@ func Query(args ...interface{}) interface{} {
 
 	resp, err := helper.GetHTTPResponse("https://"+domain, state.Timeout)
 	if err != nil {
-		fmt.Printf("\nsslcertificates: %v\n", err)
-		return subdomains
+		if !state.Silent {
+			fmt.Printf("\nsslcertificates: %v\n", err)
+		}
 	}
+	return subdomains
 
 	for _, cert := range resp.TLS.PeerCertificates {
 		findSubdomains(cert.DNSNames, state)

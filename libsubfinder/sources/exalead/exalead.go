@@ -28,14 +28,18 @@ func Query(args ...interface{}) interface{} {
 	url := "http://www.exalead.com/search/web/results/?q=site:" + domain + "+-www?elements_per_page=50"
 	resp, err := helper.GetHTTPResponse(url, state.Timeout)
 	if err != nil {
-		fmt.Printf("\nexalead: %v\n", err)
+		if !state.Silent {
+			fmt.Printf("\nexalead: %v\n", err)
+		}
 		return subdomains
 	}
 
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nexalead: %v\n", err)
+		if !state.Silent {
+			fmt.Printf("\nexalead: %v\n", err)
+		}
 		return subdomains
 	}
 

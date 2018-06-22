@@ -33,14 +33,18 @@ func Query(args ...interface{}) interface{} {
 
 		resp, err := helper.GetHTTPResponse(url, state.Timeout)
 		if err != nil {
-			fmt.Printf("\ndogpile: %v\n", err)
+			if !state.Silent {
+				fmt.Printf("\ndogpile: %v\n", err)
+			}
 			return subdomains
 		}
 
 		// Get the response body
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			fmt.Printf("\ndogpile: %v\n", err)
+			if !state.Silent {
+				fmt.Printf("\ndogpile: %v\n", err)
+			}
 			return subdomains
 		}
 

@@ -37,22 +37,28 @@ func Query(args ...interface{}) interface{} {
 	// Make a http request to Threatcrowd
 	resp, err := helper.GetHTTPResponse("https://www.threatcrowd.org/searchApi/v2/domain/report/?domain="+domain, state.Timeout)
 	if err != nil {
-		fmt.Printf("\nthreatcrowd: %v\n", err)
+		if !state.Silent {
+			fmt.Printf("\nthreatcrowd: %v\n", err)
+		}
 		return subdomains
 	}
 
 	// Get the response body
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nthreatcrowd: %v\n", err)
+		if !state.Silent {
+			fmt.Printf("\nthreatcrowd: %v\n", err)
+		}
 		return subdomains
 	}
 
 	// Decode the json format
 	err = json.Unmarshal([]byte(resp_body), &threatcrowd_data)
 	if err != nil {
-		fmt.Printf("\nthreatcrowd: %v\n", err)
-		return subdomains
+		if !state.Silent {
+			fmt.Printf("\nthreatcrowd: %v\n", err)
+			return subdomains
+		}
 	}
 
 	// Append each subdomain found to subdomains array
