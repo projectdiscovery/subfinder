@@ -56,18 +56,24 @@ func Query(args ...interface{}) interface{} {
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nriddler: %v\n", err)
+		if !state.Silent {
+			fmt.Printf("\nriddler: %v\n", err)
+		}
 		return subdomains
 	}
 
 	err = json.Unmarshal([]byte(body), &auth)
 	if err != nil {
-		fmt.Printf("\nriddler: %v\n", err)
+		if !state.Silent {
+			fmt.Printf("\nriddler: %v\n", err)
+		}
 		return subdomains
 	}
 
 	if auth.Response.User.Authentication_token == "" {
-		fmt.Printf("\nriddler: %v\n", "failed to get authentication token")
+		if !state.Silent {
+			fmt.Printf("\nriddler: %v\n", "failed to get authentication token")
+		}
 		return subdomains
 	}
 
@@ -82,13 +88,17 @@ func Query(args ...interface{}) interface{} {
 	// Get the response body
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nriddler: %v\n", "failed to get authentication token")
+		if !state.Silent {
+			fmt.Printf("\nriddler: %v\n", "failed to get authentication token")
+		}
 		return subdomains
 	}
 
 	err = json.Unmarshal([]byte(body), &hostResponse)
 	if err != nil {
-		fmt.Printf("\nriddler: %v\n", err)
+		if !state.Silent {
+			fmt.Printf("\nriddler: %v\n", err)
+		}
 		return subdomains
 	}
 

@@ -32,13 +32,17 @@ func Query(args ...interface{}) interface{} {
 	// Make a http request to DnsDB
 	resp, err := helper.GetHTTPResponse("http://www.dnsdb.org/f/"+domain+".dnsdb.org/", state.Timeout)
 	if err != nil {
-		fmt.Printf("\ndnsdb: %v\n", err)
+		if !state.Silent {
+			fmt.Printf("\ndnsdb: %v\n", err)
+		}
 		return subdomains
 	}
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\ndnsdb: %v\n", err)
+		if !state.Silent {
+			fmt.Printf("\ndnsdb: %v\n", err)
+		}
 		return subdomains
 	}
 	src := string(body)

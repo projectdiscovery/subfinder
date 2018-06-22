@@ -28,14 +28,18 @@ func Query(args ...interface{}) interface{} {
 	// Make a http request to CertDB
 	resp, err := helper.GetHTTPResponse("http://ptrarchive.com/tools/search2.htm?label="+domain+"&date=ALL", state.Timeout)
 	if err != nil {
-		fmt.Printf("\nptrarchive: %v\n", err)
+		if !state.Silent {
+			fmt.Printf("\nptrarchive: %v\n", err)
+		}
 		return subdomains
 	}
 
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nptrarchive: %v\n", err)
+		if !state.Silent {
+			fmt.Printf("\nptrarchive: %v\n", err)
+		}
 		return subdomains
 	}
 

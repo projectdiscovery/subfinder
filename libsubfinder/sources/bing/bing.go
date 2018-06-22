@@ -45,7 +45,9 @@ func Query(args ...interface{}) interface{} {
 
 		resp, err := helper.GetHTTPResponse("https://www.bing.com/search?q="+search_query+"&go=Submit&first="+strconv.Itoa(current_page), state.Timeout)
 		if err != nil {
-			fmt.Printf("\nbing: %v\n", err)
+			if !state.Silent {
+				fmt.Printf("\nbing: %v\n", err)
+			}
 			return subdomains
 		}
 
@@ -53,8 +55,8 @@ func Query(args ...interface{}) interface{} {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			fmt.Printf("\nbing: %v\n", err)
-			return subdomains
 		}
+		return subdomains
 
 		// suppress all %xx sequences with a space
 		re_sub := regexp.MustCompile(`%.{2}`)
