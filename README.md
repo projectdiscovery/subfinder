@@ -101,6 +101,7 @@ Subfinder will work after using the installation instructions however to configu
 - [SecurityTrails](http://securitytrails.com/)
 - [Censys](https://censys.io)
 - [Riddler](https://riddler.io)
+- [Shodan](https://shodan.io)
 
 These are the configuration options you have to specify via the command line.
 ```bash
@@ -112,6 +113,7 @@ RiddlerEmail
 RiddlerPassword
 CensysUsername
 CensysSecret
+ShodanAPIKey
 ```
 
 Theses values are stored in the $HOME/.config/subfinder/config.json file which will be created when you run the tool for the first time. To configure the services to use an API key, you need to use the tool with --set-config option which will allow you to set a configuration option. For example:
