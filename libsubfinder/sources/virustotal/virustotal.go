@@ -97,7 +97,9 @@ func Query(args ...interface{}) interface{} {
 		subdomains, err := queryVirustotalApi(domain, state)
 
 		if err != nil {
-			fmt.Printf("\nvirustotal: %v\n", err)
+			if !state.Silent {
+				fmt.Printf("\nvirustotal: %v\n", err)
+			}
 			return subdomains
 		}
 	}

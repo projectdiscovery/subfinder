@@ -44,14 +44,18 @@ func Query(args ...interface{}) (i interface{}) {
 
 		resp, err := helper.GetHTTPResponse("http://www.ask.com/web?q="+search_query+"&page="+strconv.Itoa(current_page)+"&qid=8D6EE6BF52E0C04527E51F64F22C4534&o=0&l=dir&qsrc=998&qo=pagination", state.Timeout)
 		if err != nil {
-			fmt.Printf("\nask: %v\n", err)
+			if !state.Silent {
+				fmt.Printf("\nask: %v\n", err)
+			}
 			return subdomains
 		}
 
 		// Get the response body
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			fmt.Printf("\nask: %v\n", err)
+			if !state.Silent {
+				fmt.Printf("\nask: %v\n", err)
+			}
 			return subdomains
 		}
 		src := string(body)

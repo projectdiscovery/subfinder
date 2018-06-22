@@ -34,7 +34,9 @@ func enumerate(state *helper.State, baseUrl string) (err error) {
 	// Make a http request to Netcraft
 	resp, gCookies, err := helper.GetHTTPCookieResponse(baseUrl, gCookies, state.Timeout)
 	if err != nil {
-		fmt.Printf("\nnetcraft: %v\n", err)
+		if !state.Silent {
+			fmt.Printf("\nnetcraft: %v\n", err)
+		}
 		return
 	}
 
@@ -63,7 +65,9 @@ func enumerate(state *helper.State, baseUrl string) (err error) {
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("\nnetcraft: %v\n", err)
+		if !state.Silent {
+			fmt.Printf("\nnetcraft: %v\n", err)
+		}
 		return
 	}
 
@@ -114,7 +118,9 @@ func Query(args ...interface{}) interface{} {
 	// Query using first page. Everything from there would be recursive
 	err := enumerate(state, "https://searchdns.netcraft.com/?restriction=site+ends+with&host="+domain+"&lookup=wait..&position=limited")
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
+		if !state.Silent {
+			fmt.Printf("\nerror: %v\n", err)
+		}
 		return globalSubdomains
 	}
 
