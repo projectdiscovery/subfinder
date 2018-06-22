@@ -2,8 +2,7 @@
 [![License](https://img.shields.io/badge/license-MIT-_red.svg)](https://opensource.org/licenses/MIT)
 [![Twitter](https://img.shields.io/badge/twitter-@Ice3man543-blue.svg)](https://twitter.com/Ice3man543)
 [![Twitter](https://img.shields.io/badge/twitter-@codingo__-blue.svg)](https://twitter.com/codingo_)
-
-[![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
+[![Twitter](https://img.shields.io/badge/Twitter-Mzack9999-blue.svg)](https://twitter.com/Mzack9999)
 
 SubFinder is a subdomain discovery tool that uses various techniques to discover massive amounts of subdomains for any target. It has been aimed as a successor to the [sublist3r project](https://github.com/aboul3la/Sublist3r). SubFinder uses Passive Sources, Search Engines, Pastebins, Internet Archives, etc to find subdomains and then it uses a permutation module inspired by altdns to generate permutations and resolve them quickly using a powerful bruteforcing engine. It can also perform plain bruteforce if needed. The tool is highly customizable, and the code is built with a modular approach in mind making it easy to add functionalities and remove errors.
 
@@ -102,6 +101,7 @@ Subfinder will work after using the installation instructions however to configu
 - [SecurityTrails](http://securitytrails.com/)
 - [Censys](https://censys.io)
 - [Riddler](https://riddler.io)
+- [Shodan](https://shodan.io)
 
 These are the configuration options you have to specify via the command line.
 ```bash
@@ -113,6 +113,7 @@ RiddlerEmail
 RiddlerPassword
 CensysUsername
 CensysSecret
+ShodanAPIKey
 ```
 
 Theses values are stored in the $HOME/.config/subfinder/config.json file which will be created when you run the tool for the first time. To configure the services to use an API key, you need to use the tool with --set-config option which will allow you to set a configuration option. For example:
@@ -208,8 +209,3 @@ We're extremely open to pull requests, if you wish to have a feature feel free t
 ## Why is this a better tool than xyz tool?
 There are a number of subdomain tools, and we beleive you should try each of them to find the one that works well with how you like to approach subdomain discovery. We've developed subfinder to solve subdomain finding in a way that we felt worked best for the way we work, and was easily maintainable to allow us and others to add as many sources and features as possible.
 
-# Acknowledgements
-
-- @FranticFerret for his work on adding docker support.
-- @himanshudas for adding DnsDB support
-- @Mzack9999 for fixing and improving docker builds and adding Ask, Baidu, Bing Search Engine Support !
