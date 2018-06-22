@@ -11,7 +11,5 @@ ADD main.go ${SRC_DIR}/main.go
 # Build it:
 RUN cd $SRC_DIR; go get; go build -o main; cp main /app/
 
-COPY wordlists/ ./wordlists/
-
 ENTRYPOINT ["./main"]
 
