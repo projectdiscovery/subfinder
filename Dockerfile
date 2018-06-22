@@ -7,7 +7,6 @@ ENV SRC_DIR=/go/src/github.com/Ice3man543/subfinder/
 # Add the source code:
 ADD libsubfinder ${SRC_DIR}/libsubfinder
 ADD main.go ${SRC_DIR}/main.go
-ADD process.go ${SRC_DIR}/process.go
 
 # Build it:
 RUN cd $SRC_DIR; go get; go build -o main; cp main /app/
