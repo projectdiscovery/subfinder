@@ -110,8 +110,8 @@ func main() {
 				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("ShodanAPIKey").SetString(object[1])
 			}
 
-			configJson, _ := json.MarshalIndent(state.ConfigState, "", "	")
-			err = ioutil.WriteFile(path, configJson, 0644)
+			configJSON, _ := json.MarshalIndent(state.ConfigState, "", "	")
+			err = ioutil.WriteFile(path, configJSON, 0644)
 			if err != nil {
 				fmt.Printf("\n\n[!] Error : %v\n", err)
 				os.Exit(1)
