@@ -25,22 +25,22 @@ func consume(args ...interface{}) interface{} {
 	if len(ips) <= 0 {
 		// We didn't found any ips
 		return ""
-	} else {
-		if state.IsWildcard == true {
-			result := helper.CheckWildcard(state, ips)
-			if result == true {
-				// We have a wildcard ip
-				return ""
-			}
-		}
-
-		if !state.Silent {
-			if state.Verbose {
-				fmt.Printf("\n[%sRESOLVED%s] %s : %s", helper.Info, helper.Reset, target, ips[0])
-			}
-		}
-		return ips[0]
 	}
+
+	if state.IsWildcard == true {
+		result := helper.CheckWildcard(state, ips)
+		if result == true {
+			// We have a wildcard ip
+			return ""
+		}
+	}
+
+	if !state.Silent {
+		if state.Verbose {
+			fmt.Printf("\n[%sRESOLVED%s] %s : %s", helper.Info, helper.Reset, target, ips[0])
+		}
+	}
+	return ips[0]
 }
 
 // Resolve handle a list of subdomains to resolve

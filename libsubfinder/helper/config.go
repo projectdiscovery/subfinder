@@ -16,7 +16,7 @@ import (
 	"os/user"
 )
 
-// Gets current user directory
+// GetHomeDir ... Gets current user directory
 func GetHomeDir() string {
 	usr, err := user.Current()
 	if err != nil {
@@ -27,7 +27,7 @@ func GetHomeDir() string {
 	return usr.HomeDir
 }
 
-// exists returns whether the given file or directory exists or not
+// Exists ... exists returns whether the given file or directory exists or not
 func Exists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
@@ -39,7 +39,7 @@ func Exists(path string) (bool, error) {
 	return true, err
 }
 
-// Create config directory if it does not exists
+// CreateDirIfNotExist ... Create config directory if it does not exists
 func CreateDirIfNotExist(dir string) {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		err = os.MkdirAll(dir, 0755)
@@ -50,7 +50,7 @@ func CreateDirIfNotExist(dir string) {
 	}
 }
 
-// Reads a config file from disk and returns Configuration structure
+// ReadConfigFile ... Reads a config file from disk and returns Configuration structure
 // If not exists, create one and then return
 func ReadConfigFile() (configuration *Config, err error) {
 

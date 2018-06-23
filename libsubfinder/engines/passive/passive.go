@@ -7,6 +7,7 @@
 
 // Passive Subdomain Discovery Helper method
 // Calls all the functions and also manages error handling
+
 package passive
 
 import (
