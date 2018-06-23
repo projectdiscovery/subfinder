@@ -21,3 +21,4 @@ main
 
 # VIM swap files
 *.swp
+*.swo
