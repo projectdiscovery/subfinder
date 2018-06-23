@@ -32,7 +32,7 @@ var banner = `
 /____/\__,_/_.___/_/ /_/_/ /_/\__,_/\___/_/       
                              v0.2 - by @ice3man `
 
-// Parses command line arguments into a setting structure
+// ParseCmdLine ...  Parses command line arguments into a setting structure
 func ParseCmdLine() (state *helper.State, err error) {
 
 	// Initialize current state and read Config file
