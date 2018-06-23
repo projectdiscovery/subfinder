@@ -30,7 +30,7 @@ var banner = `
   / ___/ / / / __ \/ /_/ / __ \/ __  / _ \/ ___/
  (__  ) /_/ / /_/ / __/ / / / / /_/ /  __/ /    
 /____/\__,_/_.___/_/ /_/_/ /_/\__,_/\___/_/       
-                             v0.2 - by @ice3man `
+                             v1.0 - by @ice3man `
 
 // Parses command line arguments into a setting structure
 func ParseCmdLine() (state *helper.State, err error) {
