@@ -1,5 +1,5 @@
 //
-// Written By : @Mzack9999 (Marco Rivoli)
+// Written By : @Mzack9999
 //
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
@@ -9,13 +9,27 @@
 package shodan
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
+
+type ShodanResult struct {
+	Matches []shodanObject `json:"matches"`
+	Result  int            `json:"result"`
+	Error   string         `json:"error"`
+}
+
+// Structure of a single dictionary of output by crt.sh
+type shodanObject struct {
+	Hostnames []string `json:"hostnames"`
+}
+
+var shodanResult ShodanResult
 
 // all subdomains found
 var subdomains []string
@@ -38,7 +52,7 @@ func Query(args ...interface{}) interface{} {
 		}
 
 		// Get the response body
-		body, err := ioutil.ReadAll(resp.Body)
+		respBody, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			if !state.Silent {
 				fmt.Printf("\nshodan: %v\n", err)
@@ -46,21 +60,38 @@ func Query(args ...interface{}) interface{} {
 			return subdomains
 		}
 
-		reSub := regexp.MustCompile(`"`)
-		src := reSub.ReplaceAllLiteralString(string(body), " ")
-
-		match := helper.ExtractSubdomains(src, domain)
-
-		for _, subdomain := range match {
-			if state.Verbose == true {
-				if state.Color == true {
-					fmt.Printf("\n[%sShodan%s] %s", helper.Red, helper.Reset, subdomain)
-				} else {
-					fmt.Printf("\n[Shodan] %s", subdomain)
-				}
+		// Decode the json format
+		err = json.Unmarshal([]byte(respBody), &shodanResult)
+		if err != nil {
+			if !state.Silent {
+				fmt.Printf("\nshodan: %v\n", err)
 			}
+			return subdomains
+		}
 
-			subdomains = append(subdomains, subdomain)
+		if shodanResult.Error != "" {
+			return subdomains
+		}
+
+		// Append each subdomain found to subdomains array
+		for _, block := range shodanResult.Matches {
+			for _, hostname := range block.Hostnames {
+
+				// Fix Wildcard subdomains containg asterisk before them
+				if strings.Contains(hostname, "*.") {
+					hostname = strings.Split(hostname, "*.")[1]
+				}
+
+				if state.Verbose {
+					if state.Color {
+						fmt.Printf("\n[%sSHODAN%s] %s", helper.Red, helper.Reset, hostname)
+					} else {
+						fmt.Printf("\n[SHODAN] %s", hostname)
+					}
+				}
+
+				subdomains = append(subdomains, hostname)
+			}
 		}
 	}
 
