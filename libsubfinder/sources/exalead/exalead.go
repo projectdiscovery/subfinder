@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A golang client for Exalead Subdomain Discovery
+// Package exalead is a golang client for Exalead Subdomain Discovery
 package exalead
 
 import (

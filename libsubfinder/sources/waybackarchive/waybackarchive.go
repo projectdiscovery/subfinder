@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A Golang based client for Parsing Subdomains from Waybackarchive
+// Package waybackarchive is a Golang based client for Parsing Subdomains from Waybackarchive
 package waybackarchive
 
 import (
@@ -36,7 +36,7 @@ func Query(args ...interface{}) interface{} {
 	}
 
 	// Get the response body
-	resp_body, err := ioutil.ReadAll(resp.Body)
+	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		if !state.Silent {
 			fmt.Printf("\nwaybackarchive: %v\n", err)
@@ -47,7 +47,7 @@ func Query(args ...interface{}) interface{} {
 	var urls [][]string
 
 	// Decode the json format
-	err = json.Unmarshal([]byte(resp_body), &urls)
+	err = json.Unmarshal([]byte(respBody), &urls)
 	if err != nil {
 		if !state.Silent {
 			fmt.Printf("\nwaybackarchive: %v\n", err)

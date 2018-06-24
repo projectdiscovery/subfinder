@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A PTRArchive subdomain parser in golang
+// Package ptrarchive is a PTRArchive subdomain parser in golang
 package ptrarchive
 
 import (

@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A golang based Hackertarget subdomains search client
+// Package hackertarget is a golang based Hackertarget subdomains search client
 package hackertarget
 
 import (
@@ -38,7 +38,7 @@ func Query(args ...interface{}) interface{} {
 	}
 
 	// Get the response body
-	resp_body, err := ioutil.ReadAll(resp.Body)
+	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		if !state.Silent {
 			fmt.Printf("\nhackertarget: %v\n", err)
@@ -46,7 +46,7 @@ func Query(args ...interface{}) interface{} {
 		return subdomains
 	}
 
-	scanner := bufio.NewScanner(strings.NewReader(string(resp_body)))
+	scanner := bufio.NewScanner(strings.NewReader(string(respBody)))
 	for scanner.Scan() {
 		subdomain := strings.Split(scanner.Text(), ",")[0]
 		subdomains = append(subdomains, subdomain)

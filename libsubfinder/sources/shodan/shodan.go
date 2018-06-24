@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A golang client for Shodan.io
+// Package shodan is a golang client for Shodan.io
 package shodan
 
 import (

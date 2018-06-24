@@ -5,11 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// NOTE : We are using Virustotal API here Since we wanted to eliminate the
-// rate limiting performed by Virustotal on scraping.
-// Direct queries and parsing can be also done :-)
-
-// A Virustotal Client for Subdomain Enumeration
+// Package virustotal is a golang Client for Subdomain Enumeration
 package virustotal
 
 import (
@@ -21,15 +17,15 @@ import (
 	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
-type virustotalapi_object struct {
+type virustotalapiObject struct {
 	Subdomains []string `json:"subdomains"`
 }
 
-var virustotalapi_data virustotalapi_object
+var virustotalapiData virustotalapiObject
 
 // Local function to query virustotal API
 // Requires an API key
-func queryVirustotalApi(domain string, state *helper.State) (subdomains []string, err error) {
+func queryVirustotalAPI(domain string, state *helper.State) (subdomains []string, err error) {
 
 	// Make a search for a domain name and get HTTP Response
 	resp, err := helper.GetHTTPResponse("https://www.virustotal.com/vtapi/v2/domain/report?apikey="+state.ConfigState.VirustotalAPIKey+"&domain="+domain, state.Timeout)
@@ -38,19 +34,19 @@ func queryVirustotalApi(domain string, state *helper.State) (subdomains []string
 	}
 
 	// Get the response body
-	resp_body, err := ioutil.ReadAll(resp.Body)
+	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return subdomains, err
 	}
 
 	// Decode the json format
-	err = json.Unmarshal([]byte(resp_body), &virustotalapi_data)
+	err = json.Unmarshal([]byte(respBody), &virustotalapiData)
 	if err != nil {
 		return subdomains, err
 	}
 
 	// Append each subdomain found to subdomains array
-	for _, subdomain := range virustotalapi_data.Subdomains {
+	for _, subdomain := range virustotalapiData.Subdomains {
 
 		// Fix Wildcard subdomains containg asterisk before them
 		if strings.Contains(subdomain, "*.") {
@@ -84,7 +80,7 @@ func Query(args ...interface{}) interface{} {
 	if state.ConfigState.VirustotalAPIKey != "" {
 
 		// Get subdomains via API
-		subdomains, err := queryVirustotalApi(domain, state)
+		subdomains, err := queryVirustotalAPI(domain, state)
 
 		if err != nil {
 			if !state.Silent {

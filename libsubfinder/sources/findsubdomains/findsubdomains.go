@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// Golang driver from findsubdomains.com
+// Package findsubdomains is a Golang driver for findsubdomains.com
 package findsubdomains
 
 import (

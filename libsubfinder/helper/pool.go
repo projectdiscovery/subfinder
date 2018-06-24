@@ -22,8 +22,8 @@ type Job struct {
 	added  chan bool // used by Pool.Add to wait for the supervisor
 }
 
-// stats is a structure holding statistical data about the pool.
-type stats struct {
+// Stats is a structure holding statistical data about the pool.
+type Stats struct {
 	Submitted int
 	Running   int
 	Completed int
@@ -45,7 +45,7 @@ type Pool struct {
 	jobsCompleted      *list.List
 	interval           time.Duration // for sleeping, in ms
 	workingWantedPipe  chan chan bool
-	statsWantedPipe    chan chan stats
+	statsWantedPipe    chan chan Stats
 	workerKillPipe     chan bool
 	supervisorKillPipe chan bool
 	workerWg           sync.WaitGroup
@@ -87,7 +87,7 @@ WORKER_LOOP:
 	pool.workerWg.Done()
 }
 
-// New creates a new Pool.
+// NewPool creates a new Pool
 func NewPool(workers int) (pool *Pool) {
 	pool = new(Pool)
 	pool.numWorkers = workers
@@ -98,7 +98,7 @@ func NewPool(workers int) (pool *Pool) {
 	pool.jobsReadyToRun = list.New()
 	pool.jobsCompleted = list.New()
 	pool.workingWantedPipe = make(chan chan bool)
-	pool.statsWantedPipe = make(chan chan stats)
+	pool.statsWantedPipe = make(chan chan Stats)
 	pool.workerKillPipe = make(chan bool)
 	pool.supervisorKillPipe = make(chan bool)
 	pool.interval = 1
@@ -159,7 +159,7 @@ SUPERVISOR_LOOP:
 			workingPipe <- working
 		// stats
 		case statsPipe := <-pool.statsWantedPipe:
-			poolStats := stats{pool.numJobsSubmitted, pool.numJobsRunning, pool.numJobsCompleted}
+			poolStats := Stats{pool.numJobsSubmitted, pool.numJobsRunning, pool.numJobsCompleted}
 			statsPipe <- poolStats
 		// stopping
 		case <-pool.supervisorKillPipe:
@@ -276,12 +276,12 @@ func (pool *Pool) WaitForJob() *Job {
 }
 
 // Status returns a "stats" instance.
-func (pool *Pool) Status() stats {
-	statsPipe := make(chan stats)
+func (pool *Pool) Status() Stats {
+	statsPipe := make(chan Stats)
 	if pool.supervisorStarted {
 		pool.statsWantedPipe <- statsPipe
 		return <-statsPipe
 	}
 	// the supervisor wasn't started so we return a zeroed structure
-	return stats{}
+	return Stats{}
 }

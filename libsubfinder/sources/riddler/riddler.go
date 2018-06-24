@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A Parser for subdomains from Riddler
+// Package riddler is a Parser for subdomains from Riddler
 package riddler
 
 import (
@@ -21,7 +21,7 @@ import (
 type authentication struct {
 	Response struct {
 		User struct {
-			Authentication_token string `json:"authentication_token"`
+			AuthenticationToken string `json:"authentication_token"`
 		} `json:"user"`
 	} `json:"response"`
 }
@@ -70,7 +70,7 @@ func Query(args ...interface{}) interface{} {
 		return subdomains
 	}
 
-	if auth.Response.User.Authentication_token == "" {
+	if auth.Response.User.AuthenticationToken == "" {
 		if !state.Silent {
 			fmt.Printf("\nriddler: %v\n", "failed to get authentication token")
 		}
@@ -81,7 +81,7 @@ func Query(args ...interface{}) interface{} {
 
 	req, err = http.NewRequest("POST", "https://riddler.io/api/search", bytes.NewBuffer(data))
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authentication-Token", auth.Response.User.Authentication_token)
+	req.Header.Add("Authentication-Token", auth.Response.User.AuthenticationToken)
 
 	resp, err = hc.Do(req)
 

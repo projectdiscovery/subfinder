@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A golang client for Ipv4Info
+// Package ipv4info is a golang client for Ipv4Info
 package ipv4info
 
 import (
