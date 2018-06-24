@@ -87,7 +87,7 @@ func ExtractSubdomains(text, domain string) (urls []string) {
 //Validate returns valid subdomains found ending with target domain
 func Validate(domain string, strslice []string) (subdomains []string) {
 	for _, entry := range strslice {
-		if strings.HasSuffix(entry, "."+domain) {
+		if !strings.Contains(entry, "/") && strings.HasSuffix(entry, "."+domain) {
 			subdomains = append(subdomains, entry)
 		}
 	}
