@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// Contains different functions for reporting
+// Package output ... Output ... Contains different functions for reporting
 package output
 
 import (
@@ -17,7 +17,7 @@ import (
 	"github.com/Ice3man543/subfinder/libsubfinder/helper"
 )
 
-// Write output to a normal text file
+// WriteOutputText ... Write output to a normal text file
 func WriteOutputText(state *helper.State, subdomain string) error {
 	_, err := state.OutputHandle.WriteString(subdomain + "\n")
 	if err != nil {
@@ -27,6 +27,7 @@ func WriteOutputText(state *helper.State, subdomain string) error {
 	return nil
 }
 
+// WriteOutputTextArray ... Write output as a text array
 func WriteOutputTextArray(state *helper.State, subdomains []string) error {
 	for _, subdomain := range subdomains {
 		_, err := state.OutputHandle.WriteString(subdomain + "\n")
@@ -38,7 +39,7 @@ func WriteOutputTextArray(state *helper.State, subdomains []string) error {
 	return nil
 }
 
-// Writes subdomains output to a json file
+// WriteOutputJSON ... Writes subdomains output to a json file
 func WriteOutputJSON(state *helper.State, subdomains []string) error {
 	_, err := os.Create(state.Output)
 
@@ -57,7 +58,7 @@ func WriteOutputJSON(state *helper.State, subdomains []string) error {
 	return nil
 }
 
-// Writes subdomains output to a json file
+// WriteOutputAquatoneJSON ... Writes subdomains output to a json file
 func WriteOutputAquatoneJSON(state *helper.State, subdomains []helper.Domain) error {
 	m := make(map[string]string)
 	_, err := os.Create(state.Output)
@@ -82,6 +83,7 @@ func WriteOutputAquatoneJSON(state *helper.State, subdomains []helper.Domain) er
 	return nil
 }
 
+// WriteOutputToDir ... Write output state into a directory
 func WriteOutputToDir(state *helper.State, subdomains []string, domain string) (err error) {
 	if state.OutputDir != "" {
 		if state.IsJSON == false {
@@ -101,24 +103,24 @@ func WriteOutputToDir(state *helper.State, subdomains []string, domain string) (
 			file.Close()
 
 			return nil
-		} else {
-
-			_, err := os.Create(state.OutputDir + domain + "_hosts.json")
-
-			if err != nil {
-				return err
-			}
-
-			data, err := json.MarshalIndent(subdomains, "", "    ")
-			if err != nil {
-				return err
-			}
-
-			// Write the output to file
-			err = ioutil.WriteFile(state.OutputDir+domain+"_hosts.json", data, 0644)
-
-			return nil
 		}
+
+		_, err := os.Create(state.OutputDir + domain + "_hosts.json")
+
+		if err != nil {
+			return err
+		}
+
+		data, err := json.MarshalIndent(subdomains, "", "    ")
+		if err != nil {
+			return err
+		}
+
+		// Write the output to file
+		err = ioutil.WriteFile(state.OutputDir+domain+"_hosts.json", data, 0644)
+
+		return nil
+
 	}
 
 	return nil
