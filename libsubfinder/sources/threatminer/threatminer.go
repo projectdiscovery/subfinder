@@ -31,8 +31,8 @@ func Query(args ...interface{}) interface{} {
 		if !state.Silent {
 			fmt.Printf("\nthreatminer: %v\n", err)
 		}
+		return subdomains
 	}
-	return subdomains
 
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
@@ -40,8 +40,8 @@ func Query(args ...interface{}) interface{} {
 		if !state.Silent {
 			fmt.Printf("\nthreatminer: %v\n", err)
 		}
+		return subdomains
 	}
-	return subdomains
 
 	src := string(body)
 

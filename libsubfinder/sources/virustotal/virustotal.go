@@ -71,16 +71,6 @@ func queryVirustotalApi(domain string, state *helper.State) (subdomains []string
 	return subdomains, nil
 }
 
-/*func queryVirustotal(state *helper.State) (subdomains []string, err error) {
-
-	subdomainRegex, err := regexp.Compile("<a target=\"_blank\" href=\"/en/domain/.*\">
-      (.*)
-    </a>")
-	if err != nil {
-		return subdomains, err
-	}
-}*/
-
 // Query function returns all subdomains found using the service.
 func Query(args ...interface{}) interface{} {
 

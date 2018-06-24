@@ -28,8 +28,8 @@ func Query(args ...interface{}) interface{} {
 		if !state.Silent {
 			fmt.Printf("\nsslcertificates: %v\n", err)
 		}
+		return subdomains
 	}
-	return subdomains
 
 	for _, cert := range resp.TLS.PeerCertificates {
 		findSubdomains(cert.DNSNames, state)
