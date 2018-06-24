@@ -14,7 +14,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/Mzack9999/xurls"
+	"github.com/subfinder/xurls"
 )
 
 // Result is the Current result structure
