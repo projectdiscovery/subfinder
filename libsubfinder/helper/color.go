@@ -10,6 +10,7 @@ package helper
 
 // Usage:	fmt.Printf("[%sCRTSH%s] %s", r, rs, subdomain)
 
+// Different Colours for use
 var (
 	Red    = "\033[31;1;4m"
 	Cyan   = "\033[36;6;2m"

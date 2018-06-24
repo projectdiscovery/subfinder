@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// Package archiveis ... Archiveis Scraping Engine in Golang
+// Package archiveis is a Archiveis Scraping Engine in Golang
 package archiveis
 
 import (

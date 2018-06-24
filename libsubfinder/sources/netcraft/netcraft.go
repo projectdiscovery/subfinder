@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// Netcraft Scraping Engine in Golang
+// Package netcraft is a Netcraft Scraping Engine in Golang
 package netcraft
 
 import (
@@ -29,10 +29,10 @@ var gCookies []*http.Cookie
 
 // Local function to recursively enumerate subdomains until no subdomains
 // are left
-func enumerate(state *helper.State, baseUrl string) (err error) {
+func enumerate(state *helper.State, baseURL string) (err error) {
 
 	// Make a http request to Netcraft
-	resp, gCookies, err := helper.GetHTTPCookieResponse(baseUrl, gCookies, state.Timeout)
+	resp, gCookies, err := helper.GetHTTPCookieResponse(baseURL, gCookies, state.Timeout)
 	if err != nil {
 		if !state.Silent {
 			fmt.Printf("\nnetcraft: %v\n", err)
@@ -42,7 +42,7 @@ func enumerate(state *helper.State, baseUrl string) (err error) {
 
 	// Check all cookies for netcraft_js_verification_challenge
 	for i := 0; i < len(gCookies); i++ {
-		var curCookie *http.Cookie = gCookies[i]
+		var curCookie = gCookies[i]
 		if curCookie.Name == "netcraft_js_verification_challenge" {
 			// Get the current challenge string
 			challenge := url.QueryEscape(curCookie.Value)
@@ -94,8 +94,8 @@ func enumerate(state *helper.State, baseUrl string) (err error) {
 	// we have another page full of juicy subdomains
 	if strings.Contains(src, "Next page") {
 		// Checkout the link for the next page
-		re_next := regexp.MustCompile("<A href=\"(.*?)\"><b>Next page</b></a>")
-		match := re_next.FindStringSubmatch(src)
+		reNext := regexp.MustCompile("<A href=\"(.*?)\"><b>Next page</b></a>")
+		match := reNext.FindStringSubmatch(src)
 
 		// Replace spaces with + characters in URL Query since they don't allow request to happen
 		finalQuery := strings.Replace(match[1], " ", "+", -1)

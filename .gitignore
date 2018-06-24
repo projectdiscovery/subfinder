@@ -22,3 +22,6 @@ main
 # VIM swap files
 *.swp
 *.swo
+
+# VSCode
+.vscode/

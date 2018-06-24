@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// Package output ... Output ... Contains different functions for reporting
+// Package output Contains different functions for reporting
 package output
 
 import (
@@ -17,7 +17,7 @@ import (
 	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
-// WriteOutputText ... Write output to a normal text file
+// WriteOutputText writes a single subdomain output to a normal text file
 func WriteOutputText(state *helper.State, subdomain string) error {
 	_, err := state.OutputHandle.WriteString(subdomain + "\n")
 	if err != nil {
@@ -27,7 +27,7 @@ func WriteOutputText(state *helper.State, subdomain string) error {
 	return nil
 }
 
-// WriteOutputTextArray ... Write output as a text array
+// WriteOutputTextArray writes a list of subdomains output to a normal text file
 func WriteOutputTextArray(state *helper.State, subdomains []string) error {
 	for _, subdomain := range subdomains {
 		_, err := state.OutputHandle.WriteString(subdomain + "\n")
@@ -39,7 +39,7 @@ func WriteOutputTextArray(state *helper.State, subdomains []string) error {
 	return nil
 }
 
-// WriteOutputJSON ... Writes subdomains output to a json file
+// WriteOutputJSON writes subdomain output to a json file
 func WriteOutputJSON(state *helper.State, subdomains []string) error {
 	_, err := os.Create(state.Output)
 
@@ -58,7 +58,7 @@ func WriteOutputJSON(state *helper.State, subdomains []string) error {
 	return nil
 }
 
-// WriteOutputAquatoneJSON ... Writes subdomains output to a json file
+// WriteOutputAquatoneJSON writes aquatone-style subdomains output to a json file
 func WriteOutputAquatoneJSON(state *helper.State, subdomains []helper.Domain) error {
 	m := make(map[string]string)
 	_, err := os.Create(state.Output)
@@ -83,7 +83,7 @@ func WriteOutputAquatoneJSON(state *helper.State, subdomains []helper.Domain) er
 	return nil
 }
 
-// WriteOutputToDir ... Write output state into a directory
+// WriteOutputToDir writes output state into a directory
 func WriteOutputToDir(state *helper.State, subdomains []string, domain string) (err error) {
 	if state.OutputDir != "" {
 		if state.IsJSON == false {

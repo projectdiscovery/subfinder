@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// Package ask ... A golang client for Ask Subdomain Discovery
+// Package ask is a golang client for Ask Subdomain Discovery
 package ask
 
 import (
@@ -30,19 +30,19 @@ func Query(args ...interface{}) (i interface{}) {
 	minIterations, _ := strconv.Atoi(state.CurrentSettings.AskPages)
 	maxIterations := 760
 	searchQuery := ""
-	current_page := 0
-	for current_iteration := 0; current_iteration <= maxIterations; current_iteration++ {
-		new_searchQuery := "site:" + domain
+	currentPage := 0
+	for currentIteration := 0; currentIteration <= maxIterations; currentIteration++ {
+		newSearchQuery := "site:" + domain
 		if len(subdomains) > 0 {
-			new_searchQuery += " -www." + domain
+			newSearchQuery += " -www." + domain
 		}
-		new_searchQuery = url.QueryEscape(new_searchQuery)
-		if searchQuery != new_searchQuery {
-			current_page = 0
-			searchQuery = new_searchQuery
+		newSearchQuery = url.QueryEscape(newSearchQuery)
+		if searchQuery != newSearchQuery {
+			currentPage = 0
+			searchQuery = newSearchQuery
 		}
 
-		resp, err := helper.GetHTTPResponse("http://www.ask.com/web?q="+searchQuery+"&page="+strconv.Itoa(current_page)+"&qid=8D6EE6BF52E0C04527E51F64F22C4534&o=0&l=dir&qsrc=998&qo=pagination", state.Timeout)
+		resp, err := helper.GetHTTPResponse("http://www.ask.com/web?q="+searchQuery+"&page="+strconv.Itoa(currentPage)+"&qid=8D6EE6BF52E0C04527E51F64F22C4534&o=0&l=dir&qsrc=998&qo=pagination", state.Timeout)
 		if err != nil {
 			if !state.Silent {
 				fmt.Printf("\nask: %v\n", err)
@@ -62,14 +62,14 @@ func Query(args ...interface{}) (i interface{}) {
 
 		match := helper.ExtractSubdomains(src, domain)
 
-		new_subdomains_found := 0
+		newSubdomainsFound := 0
 		for _, subdomain := range match {
 			if sort.StringsAreSorted(subdomains) == false {
 				sort.Strings(subdomains)
 			}
 
-			insert_index := sort.SearchStrings(subdomains, subdomain)
-			if insert_index < len(subdomains) && subdomains[insert_index] == subdomain {
+			insertIndex := sort.SearchStrings(subdomains, subdomain)
+			if insertIndex < len(subdomains) && subdomains[insertIndex] == subdomain {
 				continue
 			}
 
@@ -82,13 +82,13 @@ func Query(args ...interface{}) (i interface{}) {
 			}
 
 			subdomains = append(subdomains, subdomain)
-			new_subdomains_found++
+			newSubdomainsFound++
 		}
 		// If no new subdomains are found exits after minIterations
-		if new_subdomains_found == 0 && current_iteration > minIterations {
+		if newSubdomainsFound == 0 && currentIteration > minIterations {
 			break
 		}
-		current_page++
+		currentPage++
 	}
 
 	return subdomains

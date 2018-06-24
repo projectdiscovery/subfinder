@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A golang client for Google Transparency Report
+// Package certificatetransparency is a golang client for Entrust Certificate Transparency
 package certificatetransparency
 
 import (

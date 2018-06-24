@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A golang client for Censys Subdomain Discovery
+// Package censys is a golang client for Censys Subdomain Discovery
 package censys
 
 import (
@@ -17,7 +17,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Ice3man543/subfinder/libsubfinder/helper"
+	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
 type resultsq struct {

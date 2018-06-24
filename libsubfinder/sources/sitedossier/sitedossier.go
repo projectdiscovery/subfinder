@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// Sitedossier Scraping Engine in Golang
+// Package sitedossier is a Sitedossier Scraping Engine in Golang
 package sitedossier
 
 import (
@@ -21,8 +21,8 @@ import (
 // Contains all subdomains found
 var globalSubdomains []string
 
-func enumerate(state *helper.State, baseUrl string, domain string) (err error) {
-	resp, err := helper.GetHTTPResponse(baseUrl, state.Timeout)
+func enumerate(state *helper.State, baseURL string, domain string) (err error) {
+	resp, err := helper.GetHTTPResponse(baseURL, state.Timeout)
 	if err != nil {
 		return err
 	}
@@ -55,8 +55,8 @@ func enumerate(state *helper.State, baseUrl string, domain string) (err error) {
 
 	time.Sleep(time.Duration((3 + rand.Intn(5))) * time.Second)
 
-	re_next := regexp.MustCompile("<a href=\"(.*)\"><b>.*</b></a><br>")
-	match1 := re_next.FindStringSubmatch(src)
+	reNext := regexp.MustCompile("<a href=\"(.*)\"><b>.*</b></a><br>")
+	match1 := reNext.FindStringSubmatch(src)
 
 	if len(match1) > 0 {
 		enumerate(state, "http://www.sitedossier.com"+match1[1], domain)

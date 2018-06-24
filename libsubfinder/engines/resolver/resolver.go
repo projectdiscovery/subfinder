@@ -1,11 +1,10 @@
 //
-// resolver.go : A Resolving package in golang
 // Written By : @ice3man (Nizamul Rana)
 //
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
-// All Rights Reserved
 
+// Package resolver is a fast dns resolver
 package resolver
 
 import (

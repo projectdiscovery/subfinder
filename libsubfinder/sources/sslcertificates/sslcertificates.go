@@ -5,7 +5,8 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A Golang based client
+// Package sslcertificates is a Golang based client for SAN discovery
+// TODO: Replace with a better one parsing SAN's from SSLMate or something else.
 package sslcertificates
 
 import (

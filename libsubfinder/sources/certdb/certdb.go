@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A CertDB Subdomain parser in golang
+// Package certdb is a CertDB Subdomain parser in golang
 package certdb
 
 import (

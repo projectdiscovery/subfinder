@@ -3,11 +3,8 @@
 //
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
-// All Rights Reserved
 
-// Passive Subdomain Discovery Helper method
-// Calls all the functions and also manages error handling
-
+// Package passive is the main core of the program
 package passive
 
 import (
@@ -389,7 +386,7 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	domainDiscoverPool.Wait()
 
 	if state.Silent != true {
-		fmt.Printf("\nRunning enumeration on %s", domain)
+		fmt.Printf("\nRunning enumeration on %s\n", domain)
 	}
 
 	// Create goroutines for added speed and recieve data via channels

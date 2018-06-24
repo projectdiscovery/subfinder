@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A ThreatMiner subdomain parser in golang
+// Package threatminer is a Threatminer subdomain parser in golang
 package threatminer
 
 import (
