@@ -31,7 +31,7 @@ var banner = `
 /____/\__,_/_.___/_/ /_/_/ /_/\__,_/\___/_/       
                              v0.2 - by @ice3man `
 
-// Parses command line arguments into a setting structure
+// ParseCmdLine ...  Parses command line arguments into a setting structure
 func ParseCmdLine() (state *helper.State, err error) {
 
 	// Initialize current state and read Config file
@@ -109,8 +109,8 @@ func main() {
 				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("ShodanAPIKey").SetString(object[1])
 			}
 
-			configJson, _ := json.MarshalIndent(state.ConfigState, "", "	")
-			err = ioutil.WriteFile(path, configJson, 0644)
+			configJSON, _ := json.MarshalIndent(state.ConfigState, "", "	")
+			err = ioutil.WriteFile(path, configJSON, 0644)
 			if err != nil {
 				fmt.Printf("\n\n[!] Error : %v\n", err)
 				os.Exit(1)

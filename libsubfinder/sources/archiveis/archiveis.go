@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// Archiveis Scraping Engine in Golang
+// Package archiveis ... Archiveis Scraping Engine in Golang
 package archiveis
 
 import (
@@ -19,8 +19,8 @@ import (
 // Contains all subdomains found
 var globalSubdomains []string
 
-func enumerate(state *helper.State, baseUrl string, domain string) (err error) {
-	resp, err := helper.GetHTTPResponse(baseUrl, state.Timeout)
+func enumerate(state *helper.State, baseURL string, domain string) (err error) {
+	resp, err := helper.GetHTTPResponse(baseURL, state.Timeout)
 	if err != nil {
 		return err
 	}
@@ -51,8 +51,8 @@ func enumerate(state *helper.State, baseUrl string, domain string) (err error) {
 		}
 	}
 
-	re_next := regexp.MustCompile("<a id=\"next\" style=\".*\" href=\"(.*)\">&rarr;</a>")
-	match1 := re_next.FindStringSubmatch(src)
+	reNext := regexp.MustCompile("<a id=\"next\" style=\".*\" href=\"(.*)\">&rarr;</a>")
+	match1 := reNext.FindStringSubmatch(src)
 
 	if len(match1) > 0 {
 		enumerate(state, match1[1], domain)

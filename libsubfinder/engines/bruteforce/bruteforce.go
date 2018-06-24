@@ -25,7 +25,7 @@ func consume(args ...interface{}) interface{} {
 	}
 
 	if len(ips) <= 0 {
-		// We didn't found any ips
+		// We didn't find any ips
 		return ""
 	} else {
 		if state.IsWildcard == true {
@@ -44,7 +44,7 @@ func consume(args ...interface{}) interface{} {
 	}
 }
 
-// Resolve handle a list of subdomains to resolve
+// Brute ... Resolve handle a list of subdomains to resolve
 func Brute(state *helper.State, list []string, domain string) (subdomains []helper.Domain) {
 
 	brutePool := helper.NewPool(state.Threads)
