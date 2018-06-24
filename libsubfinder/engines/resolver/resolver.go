@@ -11,7 +11,7 @@ package resolver
 import (
 	"fmt"
 
-	"github.com/Ice3man543/subfinder/libsubfinder/helper"
+	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
 func consume(args ...interface{}) interface{} {
