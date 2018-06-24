@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A golang client for Yahoo Subdomain Discovery
+// Package yahoo is a golang client for Yahoo Subdomain Discovery
 package yahoo
 
 import (
@@ -16,7 +16,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Ice3man543/subfinder/libsubfinder/helper"
+	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
 // all subdomains found

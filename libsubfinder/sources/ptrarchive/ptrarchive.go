@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A PTRArchive subdomain parser in golang
+// Package ptrarchive is a PTRArchive subdomain parser in golang
 package ptrarchive
 
 import (
@@ -13,7 +13,7 @@ import (
 	"io/ioutil"
 	"regexp"
 
-	"github.com/Ice3man543/subfinder/libsubfinder/helper"
+	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
 // all subdomains found

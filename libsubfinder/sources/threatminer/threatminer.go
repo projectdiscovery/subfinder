@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A ThreatMiner subdomain parser in golang
+// Package threatminer is a Threatminer subdomain parser in golang
 package threatminer
 
 import (
@@ -13,7 +13,7 @@ import (
 	"io/ioutil"
 	"regexp"
 
-	"github.com/Ice3man543/subfinder/libsubfinder/helper"
+	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
 // all subdomains found
@@ -31,8 +31,8 @@ func Query(args ...interface{}) interface{} {
 		if !state.Silent {
 			fmt.Printf("\nthreatminer: %v\n", err)
 		}
+		return subdomains
 	}
-	return subdomains
 
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
@@ -40,8 +40,8 @@ func Query(args ...interface{}) interface{} {
 		if !state.Silent {
 			fmt.Printf("\nthreatminer: %v\n", err)
 		}
+		return subdomains
 	}
-	return subdomains
 
 	src := string(body)
 

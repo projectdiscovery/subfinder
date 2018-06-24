@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A Golang based client for Threatcrowd API
+// Package threatcrowd is a Golang based client for Threatcrowd API
 package threatcrowd
 
 import (
@@ -14,16 +14,16 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/Ice3man543/subfinder/libsubfinder/helper"
+	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
 // Struct containing json data we actually need
-type threatcrowd_object struct {
+type threatcrowdObject struct {
 	Subdomains []string `json:"subdomains"`
 }
 
 // array of all results returned
-var threatcrowd_data threatcrowd_object
+var threatcrowdData threatcrowdObject
 
 // all subdomains found
 var subdomains []string
@@ -44,7 +44,7 @@ func Query(args ...interface{}) interface{} {
 	}
 
 	// Get the response body
-	resp_body, err := ioutil.ReadAll(resp.Body)
+	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		if !state.Silent {
 			fmt.Printf("\nthreatcrowd: %v\n", err)
@@ -53,7 +53,7 @@ func Query(args ...interface{}) interface{} {
 	}
 
 	// Decode the json format
-	err = json.Unmarshal([]byte(resp_body), &threatcrowd_data)
+	err = json.Unmarshal([]byte(respBody), &threatcrowdData)
 	if err != nil {
 		if !state.Silent {
 			fmt.Printf("\nthreatcrowd: %v\n", err)
@@ -62,7 +62,7 @@ func Query(args ...interface{}) interface{} {
 	}
 
 	// Append each subdomain found to subdomains array
-	for _, subdomain := range threatcrowd_data.Subdomains {
+	for _, subdomain := range threatcrowdData.Subdomains {
 
 		// Fix Wildcard subdomains containg asterisk before them
 		if strings.Contains(subdomain, "*.") {

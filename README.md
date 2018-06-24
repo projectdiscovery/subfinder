@@ -61,19 +61,19 @@ This will display help for the tool. Here are all the switches it supports.
 The installation is easy. Git clone the repo and run go build.
 
 ```bash
-go get github.com/Ice3man543/subfinder
+go get github.com/subfinder/subfinder
 ```
 
 ## Upgrading
 If you wish to upgrade the package you can use:
 ```bash
-go get -u github.com/Ice3man543/subfinder
+go get -u github.com/subfinder/subfinder
 ```
 ## Running in a Docker Container
 
 Git clone the repo, then build and run subfinder in a container with the following commands
 
-- Clone the repo using `git clone https://github.com/Ice3man543/subfinder.git`
+- Clone the repo using `git clone https://github.com/subfinder/subfinder.git`
 - Build your docker container
 ```bash
 docker build -t subfinder .

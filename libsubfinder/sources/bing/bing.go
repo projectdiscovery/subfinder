@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A golang client for Bing Subdomain Discovery
+// Package bing is a golang client for Bing Subdomain Discovery
 package bing
 
 import (
@@ -16,7 +16,7 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/Ice3man543/subfinder/libsubfinder/helper"
+	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
 // all subdomains found
@@ -28,22 +28,22 @@ func Query(args ...interface{}) interface{} {
 	domain := args[0].(string)
 	state := args[1].(*helper.State)
 
-	min_iterations, _ := strconv.Atoi(state.CurrentSettings.BingPages)
-	max_iterations := 760
-	search_query := ""
-	current_page := 0
-	for current_iteration := 0; current_iteration <= max_iterations; current_iteration++ {
-		new_search_query := "domain:" + domain
+	minIterations, _ := strconv.Atoi(state.CurrentSettings.BingPages)
+	maxIterations := 760
+	searchQuery := ""
+	currentPage := 0
+	for currentIteration := 0; currentIteration <= maxIterations; currentIteration++ {
+		newSearchQuery := "domain:" + domain
 		if len(subdomains) > 0 {
-			new_search_query += " -www." + domain
+			newSearchQuery += " -www." + domain
 		}
-		new_search_query = url.QueryEscape(new_search_query)
-		if search_query != new_search_query {
-			current_page = 0
-			search_query = new_search_query
+		newSearchQuery = url.QueryEscape(newSearchQuery)
+		if searchQuery != newSearchQuery {
+			currentPage = 0
+			searchQuery = newSearchQuery
 		}
 
-		resp, err := helper.GetHTTPResponse("https://www.bing.com/search?q="+search_query+"&go=Submit&first="+strconv.Itoa(current_page), state.Timeout)
+		resp, err := helper.GetHTTPResponse("https://www.bing.com/search?q="+searchQuery+"&go=Submit&first="+strconv.Itoa(currentPage), state.Timeout)
 		if err != nil {
 			if !state.Silent {
 				fmt.Printf("\nbing: %v\n", err)
@@ -55,23 +55,23 @@ func Query(args ...interface{}) interface{} {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			fmt.Printf("\nbing: %v\n", err)
+			return subdomains
 		}
-		return subdomains
 
 		// suppress all %xx sequences with a space
-		re_sub := regexp.MustCompile(`%.{2}`)
-		src := re_sub.ReplaceAllLiteralString(string(body), " ")
+		reSub := regexp.MustCompile(`%.{2}`)
+		src := reSub.ReplaceAllLiteralString(string(body), " ")
 
 		match := helper.ExtractSubdomains(src, domain)
 
-		new_subdomains_found := 0
+		newSubdomainsFound := 0
 		for _, subdomain := range match {
 			if sort.StringsAreSorted(subdomains) == false {
 				sort.Strings(subdomains)
 			}
 
-			insert_index := sort.SearchStrings(subdomains, subdomain)
-			if insert_index < len(subdomains) && subdomains[insert_index] == subdomain {
+			insertIndex := sort.SearchStrings(subdomains, subdomain)
+			if insertIndex < len(subdomains) && subdomains[insertIndex] == subdomain {
 				continue
 			}
 
@@ -84,13 +84,13 @@ func Query(args ...interface{}) interface{} {
 			}
 
 			subdomains = append(subdomains, subdomain)
-			new_subdomains_found++
+			newSubdomainsFound++
 		}
 		// If no new subdomains are found exits after min_iterations
-		if new_subdomains_found == 0 && current_iteration > min_iterations {
+		if newSubdomainsFound == 0 && currentIteration > minIterations {
 			break
 		}
-		current_page++
+		currentPage++
 	}
 
 	return subdomains

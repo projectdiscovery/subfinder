@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A golang client for Shodan.io
+// Package shodan is a golang client for Shodan.io
 package shodan
 
 import (
@@ -14,7 +14,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/Ice3man543/subfinder/libsubfinder/helper"
+	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
 // all subdomains found

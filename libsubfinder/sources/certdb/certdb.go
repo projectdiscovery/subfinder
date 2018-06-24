@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A CertDB Subdomain parser in golang
+// Package certdb is a CertDB Subdomain parser in golang
 package certdb
 
 import (
@@ -13,7 +13,7 @@ import (
 	"io/ioutil"
 	"regexp"
 
-	"github.com/Ice3man543/subfinder/libsubfinder/helper"
+	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
 // all subdomains found

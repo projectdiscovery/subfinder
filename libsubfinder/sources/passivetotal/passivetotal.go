@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A golang client for Passive total Subdomain Discovery
+// Package passivetotal is a golang client for Passive total Subdomain Discovery
 package passivetotal
 
 import (
@@ -15,14 +15,14 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/Ice3man543/subfinder/libsubfinder/helper"
+	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
-type passivetotal_object struct {
+type passivetotalObject struct {
 	Subdomains []string `json:"subdomains"`
 }
 
-var passivetotal_data passivetotal_object
+var passivetotalData passivetotalObject
 
 // all subdomains found
 var subdomains []string
@@ -69,7 +69,7 @@ func Query(args ...interface{}) interface{} {
 		}
 
 		// Decode the json format
-		err = json.Unmarshal([]byte(body), &passivetotal_data)
+		err = json.Unmarshal([]byte(body), &passivetotalData)
 		if err != nil {
 			if !state.Silent {
 				fmt.Printf("\npassivetotal: %v\n", err)
@@ -78,7 +78,7 @@ func Query(args ...interface{}) interface{} {
 		}
 
 		// Append each subdomain found to subdomains array
-		for _, subdomain := range passivetotal_data.Subdomains {
+		for _, subdomain := range passivetotalData.Subdomains {
 			finalSubdomain := subdomain + "." + domain
 
 			if state.Verbose == true {

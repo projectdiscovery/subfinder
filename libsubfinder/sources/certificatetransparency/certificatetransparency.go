@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A golang client for Google Transparency Report
+// Package certificatetransparency is a golang client for Entrust Certificate Transparency
 package certificatetransparency
 
 import (
@@ -14,7 +14,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Ice3man543/subfinder/libsubfinder/helper"
+	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
 // all subdomains found

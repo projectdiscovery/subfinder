@@ -5,14 +5,15 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A Golang based client
+// Package sslcertificates is a Golang based client for SAN discovery
+// TODO: Replace with a better one parsing SAN's from SSLMate or something else.
 package sslcertificates
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/Ice3man543/subfinder/libsubfinder/helper"
+	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
 // all subdomains found
@@ -28,8 +29,8 @@ func Query(args ...interface{}) interface{} {
 		if !state.Silent {
 			fmt.Printf("\nsslcertificates: %v\n", err)
 		}
+		return subdomains
 	}
-	return subdomains
 
 	for _, cert := range resp.TLS.PeerCertificates {
 		findSubdomains(cert.DNSNames, state)

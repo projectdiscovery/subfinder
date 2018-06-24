@@ -13,7 +13,7 @@ import (
 	"os"
 )
 
-// Holds the State read in from the CLI
+// State holds the State read in from the CLI
 type State struct {
 	Color         bool     // Whether to use color or not
 	Threads       int      // Number of threads to use
@@ -46,6 +46,7 @@ type State struct {
 	ConfigState     Config  // Current configuration file state
 }
 
+// Config contains api keys for different sources
 type Config struct {
 	VirustotalAPIKey string `json:"virustotalApikey"` // Virustotal API Key
 
@@ -63,6 +64,7 @@ type Config struct {
 	ShodanAPIKey string `json:"shodanApiKey"` // Shodan API Key
 }
 
+// Setting contains settings for sources
 type Setting struct {
 	CensysPages  string // Censys pages to check. For All, use "all"
 	AskPages     string // Ask search pages to check
@@ -73,6 +75,7 @@ type Setting struct {
 	ShodanPages  string // Shodan search pages to check
 }
 
+// InitializeSettings sets default settings value
 func InitializeSettings() (setting *Setting) {
 	var settings Setting
 
@@ -87,6 +90,7 @@ func InitializeSettings() (setting *Setting) {
 	return &settings
 }
 
+// InitState initializes the default state
 func InitState() (state State, err error) {
 
 	// Read the configuration file and ignore errors

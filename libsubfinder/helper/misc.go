@@ -17,13 +17,13 @@ import (
 	"github.com/Mzack9999/xurls"
 )
 
-// Current result structure
+// Result is the Current result structure
 type Result struct {
 	Subdomains []string // Subdomains found
 	Error      error    // Any error that has occured
 }
 
-//Domain structure
+// Domain structure
 type Domain struct {
 	IP   string
 	Fqdn string
@@ -46,7 +46,7 @@ func NewUUID() (string, error) {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
 }
 
-// Returns unique items in a slice
+// Unique Returns unique items in a slice
 // Adapted from http://www.golangprograms.com/remove-duplicate-values-from-slice.html
 func Unique(elements []string) []string {
 	// Use map to record duplicates as we find them.
@@ -67,6 +67,7 @@ func Unique(elements []string) []string {
 	return result
 }
 
+// SubdomainExists checks if a key exists in an array
 func SubdomainExists(key string, values []string) bool {
 	for _, data := range values {
 		if key == data {
@@ -76,6 +77,7 @@ func SubdomainExists(key string, values []string) bool {
 	return false
 }
 
+// ExtractSubdomains extracts a subdomain from a big blob of text
 func ExtractSubdomains(text, domain string) (urls []string) {
 	allUrls := xurls.ExtractSubdomains(text, domain)
 

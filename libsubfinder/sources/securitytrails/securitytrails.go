@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A golang SecurityTrails API client for subdomain discovery.
+// Package securitytrails is a golang SecurityTrails API client for subdomain discovery.
 package securitytrails
 
 import (
@@ -14,14 +14,14 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/Ice3man543/subfinder/libsubfinder/helper"
+	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
-type securitytrails_object struct {
+type securitytrailsObject struct {
 	Subdomains []string `json:"subdomains"`
 }
 
-var securitytrails_data securitytrails_object
+var securitytrailsData securitytrailsObject
 
 // all subdomains found
 var subdomains []string
@@ -61,7 +61,7 @@ func Query(args ...interface{}) interface{} {
 		}
 
 		// Decode the json format
-		err = json.Unmarshal([]byte(body), &securitytrails_data)
+		err = json.Unmarshal([]byte(body), &securitytrailsData)
 		if err != nil {
 			if !state.Silent {
 				fmt.Printf("\nsecuritytrails: %v\n", err)
@@ -70,7 +70,7 @@ func Query(args ...interface{}) interface{} {
 		}
 
 		// Append each subdomain found to subdomains array
-		for _, subdomain := range securitytrails_data.Subdomains {
+		for _, subdomain := range securitytrailsData.Subdomains {
 			finalSubdomain := subdomain + "." + domain
 
 			if state.Verbose == true {

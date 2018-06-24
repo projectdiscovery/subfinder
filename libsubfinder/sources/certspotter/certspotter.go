@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A Golang based client for Certspotter Parsing
+// Package certspotter is a Golang based client for Certspotter Parsing
 package certspotter
 
 import (
@@ -14,16 +14,16 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/Ice3man543/subfinder/libsubfinder/helper"
+	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
 // Structure of a single dictionary of output by crt.sh
-type certspotter_object struct {
-	Dns_names []string `json:"dns_names"`
+type certspotterObject struct {
+	DNSNames []string `json:"dns_names"`
 }
 
 // array of all results returned
-var certspotter_data []certspotter_object
+var certspotterData []certspotterObject
 
 // all subdomains found
 var subdomains []string
@@ -45,7 +45,7 @@ func Query(args ...interface{}) interface{} {
 	}
 
 	// Get the response body
-	resp_body, err := ioutil.ReadAll(resp.Body)
+	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		if !state.Silent {
 			fmt.Printf("\ncertspotter: %v\n", err)
@@ -54,7 +54,7 @@ func Query(args ...interface{}) interface{} {
 	}
 
 	// Decode the json format
-	err = json.Unmarshal([]byte(resp_body), &certspotter_data)
+	err = json.Unmarshal([]byte(respBody), &certspotterData)
 	if err != nil {
 		if !state.Silent {
 			fmt.Printf("\ncertspotter: %v\n", err)
@@ -63,23 +63,23 @@ func Query(args ...interface{}) interface{} {
 	}
 
 	// Append each subdomain found to subdomains array
-	for _, block := range certspotter_data {
-		for _, dns_name := range block.Dns_names {
+	for _, block := range certspotterData {
+		for _, dnsName := range block.DNSNames {
 
 			// Fix Wildcard subdomains containg asterisk before them
-			if strings.Contains(dns_name, "*.") {
-				dns_name = strings.Split(dns_name, "*.")[1]
+			if strings.Contains(dnsName, "*.") {
+				dnsName = strings.Split(dnsName, "*.")[1]
 			}
 
 			if state.Verbose == true {
 				if state.Color == true {
-					fmt.Printf("\n[%sCERTSPOTTER%s] %s", helper.Red, helper.Reset, dns_name)
+					fmt.Printf("\n[%sCERTSPOTTER%s] %s", helper.Red, helper.Reset, dnsName)
 				} else {
-					fmt.Printf("\n[CERTSPOTTER] %s", dns_name)
+					fmt.Printf("\n[CERTSPOTTER] %s", dnsName)
 				}
 			}
 
-			subdomains = append(subdomains, dns_name)
+			subdomains = append(subdomains, dnsName)
 		}
 	}
 

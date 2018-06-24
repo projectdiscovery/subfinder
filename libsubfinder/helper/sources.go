@@ -46,7 +46,7 @@ func GetHTTPResponse(url string, timeout int) (resp *http.Response, err error) {
 	return resp, nil
 }
 
-// GetHTTPResponse : Returns a HTTP Response object
+// GetHTTPCookieResponse returns a HTTP Response object
 // It needs URL To Visit and a cookie array to send with request.
 // Note, It needs full url with scheme and a timeout value.
 // It returns a HTTP Response object with a cookie array.

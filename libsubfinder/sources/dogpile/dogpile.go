@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A golang client for Dogpile Subdomain Discovery
+// Package dogpile is a golang client for Dogpile Subdomain Discovery
 package dogpile
 
 import (
@@ -16,7 +16,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Ice3man543/subfinder/libsubfinder/helper"
+	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
 // all subdomains found
@@ -54,15 +54,17 @@ func Query(args ...interface{}) interface{} {
 		match := helper.ExtractSubdomains(src, domain)
 
 		for _, subdomain := range match {
-			if state.Verbose == true {
-				if state.Color == true {
-					fmt.Printf("\n[%sDogpile%s] %s", helper.Red, helper.Reset, subdomain)
-				} else {
-					fmt.Printf("\n[Dogpile] %s", subdomain)
+			if helper.SubdomainExists(subdomain, subdomains) == false {
+				if state.Verbose == true {
+					if state.Color == true {
+						fmt.Printf("\n[%sDogpile%s] %s", helper.Red, helper.Reset, subdomain)
+					} else {
+						fmt.Printf("\n[Dogpile] %s", subdomain)
+					}
 				}
-			}
 
-			subdomains = append(subdomains, subdomain)
+				subdomains = append(subdomains, subdomain)
+			}
 		}
 		time.Sleep(time.Duration((3 + rand.Intn(5))) * time.Second)
 	}

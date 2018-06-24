@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// Golang driver from dnsdb.org
+// Package dnsdb is a Golang driver for dnsdb.org
 package dnsdb
 
 import (
@@ -14,7 +14,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Ice3man543/subfinder/libsubfinder/helper"
+	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
 // all subdomains found
@@ -50,8 +50,8 @@ func Query(args ...interface{}) interface{} {
 	match := re.FindAllStringSubmatch(src, -1)
 
 	for _, subdomain := range match {
-		string_split := strings.Split(subdomain[0], "\">")[1]
-		finishedSub := strings.TrimRight(string_split, "</a>")
+		stringSplit := strings.Split(subdomain[0], "\">")[1]
+		finishedSub := strings.TrimRight(stringSplit, "</a>")
 
 		if state.Verbose == true {
 			if state.Color == true {

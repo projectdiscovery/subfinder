@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A Golang based client for CRT.SH Parsing
+// Package crtsh is a Golang based client for CRT.SH Parsing
 package crtsh
 
 import (
@@ -14,17 +14,14 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/Ice3man543/subfinder/libsubfinder/helper"
+	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
-// Structure of a single dictionary of output by crt.sh
-// We only need name_value object hence this :-)
-type crtsh_object struct {
-	Name_value string `json:"name_value"`
+type crtshObject struct {
+	NameValue string `json:"name_value"`
 }
 
-// array of all results returned
-var crtsh_data []crtsh_object
+var crtshData []crtshObject
 
 // all subdomains found
 var subdomains []string
@@ -35,9 +32,6 @@ func Query(args ...interface{}) interface{} {
 	domain := args[0].(string)
 	state := args[1].(*helper.State)
 
-	// Make a http request to CRT.SH server and request output in JSON
-	// format.
-	// I Think 5 minutes would be more than enough for CRT.SH :-)
 	resp, err := helper.GetHTTPResponse("https://crt.sh/?q=%25."+domain+"&output=json", state.Timeout)
 	if err != nil {
 		if !state.Silent {
@@ -47,7 +41,7 @@ func Query(args ...interface{}) interface{} {
 	}
 
 	// Get the response body
-	resp_body, err := ioutil.ReadAll(resp.Body)
+	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		if !state.Silent {
 			fmt.Printf("\ncrtsh: %v\n", err)
@@ -55,9 +49,7 @@ func Query(args ...interface{}) interface{} {
 		return subdomains
 	}
 
-	if strings.Contains(string(resp_body), "The requested URL / was not found on this server.") {
-		// crt.sh is not showing subdomains for some reason
-		// move back
+	if strings.Contains(string(respBody), "The requested URL / was not found on this server.") {
 		if !state.Silent {
 			fmt.Printf("\ncrtsh: %v\n", err)
 		}
@@ -67,17 +59,17 @@ func Query(args ...interface{}) interface{} {
 	// Convert Response Body to string and then replace }{ to },{
 	// This is done in order to enable parsing of JSON format employed by
 	// crt.sh
-	correct_format := strings.Replace(string(resp_body), "}{", "},{", -1)
+	correctFormat := strings.Replace(string(respBody), "}{", "},{", -1)
 
 	// Now convert it into a json array like this
 	// [
 	// 		{abc},
 	//		{abc}
 	// ]
-	json_output := "[" + correct_format + "]"
+	jsonOutput := "[" + correctFormat + "]"
 
 	// Decode the json format
-	err = json.Unmarshal([]byte(json_output), &crtsh_data)
+	err = json.Unmarshal([]byte(jsonOutput), &crtshData)
 	if err != nil {
 		if !state.Silent {
 			fmt.Printf("\ncrtsh: %v\n", err)
@@ -86,22 +78,22 @@ func Query(args ...interface{}) interface{} {
 	}
 
 	// Append each subdomain found to subdomains array
-	for _, subdomain := range crtsh_data {
+	for _, subdomain := range crtshData {
 
 		// Fix Wildcard subdomains containg asterisk before them
-		if strings.Contains(subdomain.Name_value, "*.") {
-			subdomain.Name_value = strings.Split(subdomain.Name_value, "*.")[1]
+		if strings.Contains(subdomain.NameValue, "*.") {
+			subdomain.NameValue = strings.Split(subdomain.NameValue, "*.")[1]
 		}
 
 		if state.Verbose == true {
 			if state.Color == true {
-				fmt.Printf("\n[%sCRT.SH%s] %s", helper.Red, helper.Reset, subdomain.Name_value)
+				fmt.Printf("\n[%sCRT.SH%s] %s", helper.Red, helper.Reset, subdomain.NameValue)
 			} else {
-				fmt.Printf("\n[CRT.SH] %s", subdomain.Name_value)
+				fmt.Printf("\n[CRT.SH] %s", subdomain.NameValue)
 			}
 		}
 
-		subdomains = append(subdomains, subdomain.Name_value)
+		subdomains = append(subdomains, subdomain.NameValue)
 	}
 
 	return subdomains
