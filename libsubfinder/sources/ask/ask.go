@@ -5,7 +5,7 @@
 // Copyrights (C) 2018 Ice3man
 //
 
-// A golang client for Ask Subdomain Discovery
+// Package ask ... A golang client for Ask Subdomain Discovery
 package ask
 
 import (
@@ -27,22 +27,22 @@ func Query(args ...interface{}) (i interface{}) {
 	domain := args[0].(string)
 	state := args[1].(*helper.State)
 
-	min_iterations, _ := strconv.Atoi(state.CurrentSettings.AskPages)
-	max_iterations := 760
-	search_query := ""
+	minIterations, _ := strconv.Atoi(state.CurrentSettings.AskPages)
+	maxIterations := 760
+	searchQuery := ""
 	current_page := 0
-	for current_iteration := 0; current_iteration <= max_iterations; current_iteration++ {
-		new_search_query := "site:" + domain
+	for current_iteration := 0; current_iteration <= maxIterations; current_iteration++ {
+		new_searchQuery := "site:" + domain
 		if len(subdomains) > 0 {
-			new_search_query += " -www." + domain
+			new_searchQuery += " -www." + domain
 		}
-		new_search_query = url.QueryEscape(new_search_query)
-		if search_query != new_search_query {
+		new_searchQuery = url.QueryEscape(new_searchQuery)
+		if searchQuery != new_searchQuery {
 			current_page = 0
-			search_query = new_search_query
+			searchQuery = new_searchQuery
 		}
 
-		resp, err := helper.GetHTTPResponse("http://www.ask.com/web?q="+search_query+"&page="+strconv.Itoa(current_page)+"&qid=8D6EE6BF52E0C04527E51F64F22C4534&o=0&l=dir&qsrc=998&qo=pagination", state.Timeout)
+		resp, err := helper.GetHTTPResponse("http://www.ask.com/web?q="+searchQuery+"&page="+strconv.Itoa(current_page)+"&qid=8D6EE6BF52E0C04527E51F64F22C4534&o=0&l=dir&qsrc=998&qo=pagination", state.Timeout)
 		if err != nil {
 			if !state.Silent {
 				fmt.Printf("\nask: %v\n", err)
@@ -84,8 +84,8 @@ func Query(args ...interface{}) (i interface{}) {
 			subdomains = append(subdomains, subdomain)
 			new_subdomains_found++
 		}
-		// If no new subdomains are found exits after min_iterations
-		if new_subdomains_found == 0 && current_iteration > min_iterations {
+		// If no new subdomains are found exits after minIterations
+		if new_subdomains_found == 0 && current_iteration > minIterations {
 			break
 		}
 		current_page++
