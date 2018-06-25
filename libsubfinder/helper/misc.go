@@ -20,7 +20,7 @@ import (
 // Result is the Current result structure
 type Result struct {
 	Subdomains []string // Subdomains found
-	Error      error    // Any error that has occured
+	Error      error    // Any error that has occurred
 }
 
 // Domain structure
