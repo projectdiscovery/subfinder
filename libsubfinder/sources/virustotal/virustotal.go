@@ -48,7 +48,7 @@ func queryVirustotalAPI(domain string, state *helper.State) (subdomains []string
 	// Append each subdomain found to subdomains array
 	for _, subdomain := range virustotalapiData.Subdomains {
 
-		// Fix Wildcard subdomains containg asterisk before them
+		// Fix Wildcard subdomains containing asterisk before them
 		if strings.Contains(subdomain, "*.") {
 			subdomain = strings.Split(subdomain, "*.")[1]
 		}
@@ -75,7 +75,7 @@ func Query(args ...interface{}) interface{} {
 
 	var subdomains []string
 
-	// We have recieved an API Key
+	// Check if an API key is present
 	// Now, we will use Virustotal API key to fetch subdomain info
 	if state.ConfigState.VirustotalAPIKey != "" {
 

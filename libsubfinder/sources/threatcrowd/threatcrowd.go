@@ -64,7 +64,7 @@ func Query(args ...interface{}) interface{} {
 	// Append each subdomain found to subdomains array
 	for _, subdomain := range threatcrowdData.Subdomains {
 
-		// Fix Wildcard subdomains containg asterisk before them
+		// Fix Wildcard subdomains containing asterisk before them
 		if strings.Contains(subdomain, "*.") {
 			subdomain = strings.Split(subdomain, "*.")[1]
 		}

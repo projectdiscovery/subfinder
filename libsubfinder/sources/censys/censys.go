@@ -48,7 +48,7 @@ func Query(args ...interface{}) interface{} {
 	// Default Censys Pages to process. I think 10 is a good value
 	//DefaultCensysPages := 10
 
-	// We have recieved an API Key
+	// We have received an API Key
 	if state.ConfigState.CensysUsername != "" && state.ConfigState.CensysSecret != "" {
 
 		// Get credentials for performing HTTP Basic Auth
@@ -65,6 +65,13 @@ func Query(args ...interface{}) interface{} {
 
 				client := &http.Client{}
 				req, err := http.NewRequest("POST", "https://www.censys.io/api/v1/search/certificates", bytes.NewBuffer(request))
+				if err != nil {
+					if !state.Silent {
+						fmt.Printf("\ncensys: %v\n", err)
+					}
+					return subdomains
+				}
+
 				req.SetBasicAuth(username, key)
 
 				// Set content type as application/json
@@ -134,6 +141,13 @@ func Query(args ...interface{}) interface{} {
 
 			client := &http.Client{}
 			req, err := http.NewRequest("POST", "https://www.censys.io/api/v1/search/certificates", bytes.NewBuffer(request))
+			if err != nil {
+				if !state.Silent {
+					fmt.Printf("\ncensys: %v\n", err)
+				}
+				return subdomains
+			}
+
 			req.SetBasicAuth(username, key)
 
 			// Set content type as application/json
@@ -202,6 +216,13 @@ func Query(args ...interface{}) interface{} {
 
 				client := &http.Client{}
 				req, err := http.NewRequest("POST", "https://www.censys.io/api/v1/search/certificates", bytes.NewBuffer(request))
+				if err != nil {
+					if !state.Silent {
+						fmt.Printf("\ncensys: %v\n", err)
+					}
+					return subdomains
+				}
+
 				req.SetBasicAuth(username, key)
 
 				// Set content type as application/json

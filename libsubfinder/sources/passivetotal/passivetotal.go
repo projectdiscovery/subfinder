@@ -33,7 +33,7 @@ func Query(args ...interface{}) interface{} {
 	domain := args[0].(string)
 	state := args[1].(*helper.State)
 
-	// We have recieved an API Key
+	// Check if an API key is present
 	// Now, we will use passiveTotal API key to fetch subdomain info
 	if state.ConfigState.PassivetotalUsername != "" && state.ConfigState.PassivetotalKey != "" {
 
@@ -46,6 +46,13 @@ func Query(args ...interface{}) interface{} {
 
 		client := &http.Client{}
 		req, err := http.NewRequest("GET", "https://api.passivetotal.org/v2/enrichment/subdomains", bytes.NewBuffer(request))
+		if err != nil {
+			if !state.Silent {
+				fmt.Printf("\npassivetotal: %v\n", err)
+			}
+			return subdomains
+		}
+
 		req.SetBasicAuth(username, key)
 
 		// Set content type as application/json

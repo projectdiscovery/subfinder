@@ -49,9 +49,22 @@ func Query(args ...interface{}) interface{} {
 
 	// Create a post request to get subdomain data
 	req, err := http.NewRequest("POST", "https://riddler.io/auth/login", bytes.NewBuffer(data))
+	if err != nil {
+		if !state.Silent {
+			fmt.Printf("\nriddler: %v\n", err)
+		}
+		return subdomains
+	}
+
 	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := hc.Do(req)
+	if err != nil {
+		if !state.Silent {
+			fmt.Printf("\nriddler: %v\n", err)
+		}
+		return subdomains
+	}
 
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
@@ -80,10 +93,23 @@ func Query(args ...interface{}) interface{} {
 	data = []byte(`{"query":"pld:` + domain + `", "output":"host", "limit":500}`)
 
 	req, err = http.NewRequest("POST", "https://riddler.io/api/search", bytes.NewBuffer(data))
+	if err != nil {
+		if !state.Silent {
+			fmt.Printf("\nriddler: %v\n", err)
+		}
+		return subdomains
+	}
+
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authentication-Token", auth.Response.User.AuthenticationToken)
 
 	resp, err = hc.Do(req)
+	if err != nil {
+		if !state.Silent {
+			fmt.Printf("\nriddler: %v\n", err)
+		}
+		return subdomains
+	}
 
 	// Get the response body
 	body, err = ioutil.ReadAll(resp.Body)

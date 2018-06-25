@@ -32,7 +32,7 @@ func Query(args ...interface{}) interface{} {
 	domain := args[0].(string)
 	state := args[1].(*helper.State)
 
-	// We have recieved an API Key
+	// check if an api key is present
 	if state.ConfigState.SecurityTrailsKey != "" {
 
 		// Get credentials for performing HTTP Basic Auth
@@ -40,6 +40,12 @@ func Query(args ...interface{}) interface{} {
 
 		client := &http.Client{}
 		req, err := http.NewRequest("GET", "https://api.securitytrails.com/v1/domain/"+domain+"/subdomains", nil)
+		if err != nil {
+			if !state.Silent {
+				fmt.Printf("\npassivetotal: %v\n", err)
+			}
+			return subdomains
+		}
 
 		req.Header.Add("APIKEY", securitytrailsKey)
 

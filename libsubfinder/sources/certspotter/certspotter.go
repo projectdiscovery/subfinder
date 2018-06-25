@@ -66,7 +66,7 @@ func Query(args ...interface{}) interface{} {
 	for _, block := range certspotterData {
 		for _, dnsName := range block.DNSNames {
 
-			// Fix Wildcard subdomains containg asterisk before them
+			// Fix Wildcard subdomains containing asterisk before them
 			if strings.Contains(dnsName, "*.") {
 				dnsName = strings.Split(dnsName, "*.")[1]
 			}

@@ -56,7 +56,7 @@ func GetHTTPCookieResponse(urls string, cookies []*http.Cookie, timeout int) (re
 
 	curCookieJar, _ = cookiejar.New(nil)
 
-	// Add the cookies recieved via request params
+	// Add the cookies received via request params
 	u, _ := url.Parse(urls)
 	curCookieJar.SetCookies(u, cookies)
 
