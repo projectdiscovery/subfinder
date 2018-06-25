@@ -54,6 +54,9 @@ func WriteOutputJSON(state *helper.State, subdomains []string) error {
 
 	// Write the output to file
 	err = ioutil.WriteFile(state.Output, data, 0644)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -79,6 +82,9 @@ func WriteOutputAquatoneJSON(state *helper.State, subdomains []helper.Domain) er
 
 	// Write the output to file
 	err = ioutil.WriteFile(state.Output, data, 0644)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -118,6 +124,9 @@ func WriteOutputToDir(state *helper.State, subdomains []string, domain string) (
 
 		// Write the output to file
 		err = ioutil.WriteFile(state.OutputDir+domain+"_hosts.json", data, 0644)
+		if err != nil {
+			return err
+		}
 
 		return nil
 

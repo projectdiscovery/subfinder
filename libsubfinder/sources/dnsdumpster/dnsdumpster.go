@@ -72,6 +72,12 @@ func Query(args ...interface{}) interface{} {
 
 	// Create a post request to get subdomain data
 	req, err := http.NewRequest("POST", "https://dnsdumpster.com", strings.NewReader(form.Encode()))
+	if err != nil {
+		if !state.Silent {
+			fmt.Printf("\ndnsdumpster: %v\n", err)
+		}
+		return subdomains
+	}
 
 	req.PostForm = form
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
@@ -79,6 +85,12 @@ func Query(args ...interface{}) interface{} {
 	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1")
 
 	resp, err = hc.Do(req)
+	if err != nil {
+		if !state.Silent {
+			fmt.Printf("\ndnsdumpster: %v\n", err)
+		}
+		return subdomains
+	}
 
 	// Get the response body
 	body, err = ioutil.ReadAll(resp.Body)

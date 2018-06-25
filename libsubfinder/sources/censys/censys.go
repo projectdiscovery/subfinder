@@ -65,6 +65,13 @@ func Query(args ...interface{}) interface{} {
 
 				client := &http.Client{}
 				req, err := http.NewRequest("POST", "https://www.censys.io/api/v1/search/certificates", bytes.NewBuffer(request))
+				if err != nil {
+					if !state.Silent {
+						fmt.Printf("\ncensys: %v\n", err)
+					}
+					return subdomains
+				}
+
 				req.SetBasicAuth(username, key)
 
 				// Set content type as application/json
@@ -134,6 +141,13 @@ func Query(args ...interface{}) interface{} {
 
 			client := &http.Client{}
 			req, err := http.NewRequest("POST", "https://www.censys.io/api/v1/search/certificates", bytes.NewBuffer(request))
+			if err != nil {
+				if !state.Silent {
+					fmt.Printf("\ncensys: %v\n", err)
+				}
+				return subdomains
+			}
+
 			req.SetBasicAuth(username, key)
 
 			// Set content type as application/json
@@ -202,6 +216,13 @@ func Query(args ...interface{}) interface{} {
 
 				client := &http.Client{}
 				req, err := http.NewRequest("POST", "https://www.censys.io/api/v1/search/certificates", bytes.NewBuffer(request))
+				if err != nil {
+					if !state.Silent {
+						fmt.Printf("\ncensys: %v\n", err)
+					}
+					return subdomains
+				}
+
 				req.SetBasicAuth(username, key)
 
 				// Set content type as application/json
