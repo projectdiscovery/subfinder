@@ -80,7 +80,7 @@ func Query(args ...interface{}) interface{} {
 	// Append each subdomain found to subdomains array
 	for _, subdomain := range crtshData {
 
-		// Fix Wildcard subdomains containg asterisk before them
+		// Fix Wildcard subdomains containing asterisk before them
 		if strings.Contains(subdomain.NameValue, "*.") {
 			subdomain.NameValue = strings.Split(subdomain.NameValue, "*.")[1]
 		}

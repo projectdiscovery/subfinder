@@ -389,7 +389,7 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 		fmt.Printf("\nRunning enumeration on %s\n", domain)
 	}
 
-	// Create goroutines for added speed and recieve data via channels
+	// Create goroutines for added speed and receive data via channels
 	// Check if we the user has specified custom sources and if yes, run them
 	// via if statements.
 	if sourceConfig.Crtsh {
@@ -485,7 +485,7 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	completedJobs := domainDiscoverPool.Results()
 	for _, job := range completedJobs {
 		if job.Err != nil {
-			// some error occured
+			// an error occurred
 			if !state.Silent {
 				fmt.Printf("\nerror: %v\n", job.Err)
 			}

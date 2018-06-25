@@ -41,7 +41,7 @@ func Query(args ...interface{}) interface{} {
 
 func findSubdomains(list []string, state *helper.State) {
 	for _, altname := range list {
-		// Fix Wildcard subdomains containg asterisk before them
+		// Fix Wildcard subdomains containing asterisk before them
 		if strings.Contains(altname, "*.") {
 			altname = strings.Split(altname, "*.")[1]
 		}

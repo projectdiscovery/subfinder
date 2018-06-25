@@ -33,7 +33,7 @@ func Query(args ...interface{}) interface{} {
 	domain := args[0].(string)
 	state := args[1].(*helper.State)
 
-	// We have recieved an API Key
+	// Check if an API key is present
 	// Now, we will use passiveTotal API key to fetch subdomain info
 	if state.ConfigState.PassivetotalUsername != "" && state.ConfigState.PassivetotalKey != "" {
 

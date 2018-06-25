@@ -32,7 +32,7 @@ func Query(args ...interface{}) interface{} {
 	domain := args[0].(string)
 	state := args[1].(*helper.State)
 
-	// We have recieved an API Key
+	// check if an api key is present
 	if state.ConfigState.SecurityTrailsKey != "" {
 
 		// Get credentials for performing HTTP Basic Auth

@@ -48,7 +48,7 @@ func Query(args ...interface{}) interface{} {
 	// Default Censys Pages to process. I think 10 is a good value
 	//DefaultCensysPages := 10
 
-	// We have recieved an API Key
+	// We have received an API Key
 	if state.ConfigState.CensysUsername != "" && state.ConfigState.CensysSecret != "" {
 
 		// Get credentials for performing HTTP Basic Auth
