@@ -106,7 +106,8 @@ func Query(args ...interface{}) interface{} {
 		return subdomains
 	}
 
-	match := helper.ExtractSubdomains(string(respBody), domain)
+	subdomaianRegex := regexp.MustCompile(`,"*.` + domain + `",`)
+	match := subdomaianRegex.FindStringSubmatch(string(respBody))
 	printSubdomains(match, state)
 
 	Token := matches[1]
@@ -120,7 +121,7 @@ func Query(args ...interface{}) interface{} {
 			return subdomains
 		}
 
-		match := helper.ExtractSubdomains(string(respBody), domain)
+		match := subdomaianRegex.FindStringSubmatch(string(respBody))
 		printSubdomains(match, state)
 
 		metaRegex2 := regexp.MustCompile(`\["(.*)",".*",null,(.*),(.*)]`)
