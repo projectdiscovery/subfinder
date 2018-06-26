@@ -26,7 +26,7 @@ func Query(args ...interface{}) interface{} {
 	state := args[1].(*helper.State)
 
 	// Make a http request to CertDB
-	resp, err := helper.GetHTTPResponse("http://ptrarchive.com/tools/search2.htm?label="+domain+"&date=ALL", state.Timeout)
+	resp, err := helper.GetHTTPResponse("http://ptrarchive.com/tools/search3.htm?label="+domain+"&date=ALL", state.Timeout)
 	if err != nil {
 		if !state.Silent {
 			fmt.Printf("\nptrarchive: %v\n", err)
