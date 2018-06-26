@@ -23,14 +23,6 @@ import (
 	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
-var banner = `
-               __    _____           __         
-   _______  __/ /_  / __(_)___  ____/ /__  _____
-  / ___/ / / / __ \/ /_/ / __ \/ __  / _ \/ ___/
- (__  ) /_/ / /_/ / __/ / / / / /_/ /  __/ /    
-/____/\__,_/_.___/_/ /_/_/ /_/\__,_/\___/_/       
-                             v0.2 - by @ice3man `
-
 // ParseCmdLine ...  Parses command line arguments into a setting structure
 func ParseCmdLine() (state *helper.State, err error) {
 
@@ -75,7 +67,9 @@ func main() {
 	}
 
 	if state.Silent != true {
-		fmt.Println(banner)
+		fmt.Println("===============================================")
+		fmt.Printf("%s%s-=Subfinder%s v1.0 github.com/subfinder/subfinder\n", helper.Info, helper.Cyan, helper.Reset)
+		fmt.Println("===============================================")
 	}
 
 	if state.SetConfig != "none" {
