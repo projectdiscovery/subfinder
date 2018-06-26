@@ -9,10 +9,6 @@ SubFinder is a subdomain discovery tool that uses various techniques to discover
 
 [![asciicast](https://raw.githubusercontent.com/Ice3man543/ice3man543.github.io/master/assets/asciinema.png)](https://asciinema.org/a/177851)
 
-# Why?
-
-This project began it's life as a Bug Bounty World slack channel discussion. We were talking about how the cornerstone subdomain tool at the time, sublist3r, appeared to have been abandoned. The goal of this project was to make a low dependancy, manageable project in Go that would continue to be maintained over time. I decided to rewrite the sublist3r project and posted about it. @codingo offered to contribute to the project and subfinder was born. 
-
 # Features
 
 - Simple and modular code base making it easy to contribute.
