@@ -386,6 +386,31 @@ func (s *Source) printSummary() {
 
 }
 
+func (s *Source) parseAPIKeys(state *helper.State) {
+	if state.ConfigState.CensysUsername == "" && state.ConfigState.CensysSecret == "" {
+		s.Censys = false
+	}
+	if state.ConfigState.PassivetotalUsername == "" && state.ConfigState.PassivetotalKey == "" {
+		s.Passivetotal = false
+	}
+	if state.ConfigState.RiddlerEmail == "" && state.ConfigState.RiddlerPassword == "" {
+		s.Riddler = false
+	}
+	if state.ConfigState.SecurityTrailsKey == "" {
+		s.Securitytrails = false
+	}
+	if state.ConfigState.ShodanAPIKey == "" {
+		s.Shodan = false
+	}
+	if state.ConfigState.VirustotalAPIKey == "" {
+		s.Virustotal = false
+	}
+	if state.ConfigState.VirustotalAPIKey == "" {
+		s.Virustotal = false
+	}
+	return
+}
+
 //nbrActive ses reflection to get automatic active amount of searches
 func (s Source) nbrActive() int {
 	activeSearches := 0
@@ -650,6 +675,9 @@ func Enumerate(state *helper.State) []string {
 	if state.NoPassive {
 		sourceConfig.disable([]string{"all"})
 	}
+
+	// Remove sources having no API keys present for them
+	sourceConfig.parseAPIKeys(state)
 
 	if !state.Silent {
 		sourceConfig.printSummary()

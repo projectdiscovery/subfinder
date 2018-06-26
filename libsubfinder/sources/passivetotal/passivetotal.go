@@ -33,71 +33,66 @@ func Query(args ...interface{}) interface{} {
 	domain := args[0].(string)
 	state := args[1].(*helper.State)
 
-	// Check if an API key is present
-	// Now, we will use passiveTotal API key to fetch subdomain info
-	if state.ConfigState.PassivetotalUsername != "" && state.ConfigState.PassivetotalKey != "" {
+	// Get credentials for performing HTTP Basic Auth
+	username := state.ConfigState.PassivetotalUsername
+	key := state.ConfigState.PassivetotalKey
 
-		// Get credentials for performing HTTP Basic Auth
-		username := state.ConfigState.PassivetotalUsername
-		key := state.ConfigState.PassivetotalKey
+	// Create JSON Get body
+	var request = []byte(`{"query":"` + domain + `"}`)
 
-		// Create JSON Get body
-		var request = []byte(`{"query":"` + domain + `"}`)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://api.passivetotal.org/v2/enrichment/subdomains", bytes.NewBuffer(request))
+	if err != nil {
+		if !state.Silent {
+			fmt.Printf("\npassivetotal: %v\n", err)
+		}
+		return subdomains
+	}
 
-		client := &http.Client{}
-		req, err := http.NewRequest("GET", "https://api.passivetotal.org/v2/enrichment/subdomains", bytes.NewBuffer(request))
-		if err != nil {
-			if !state.Silent {
-				fmt.Printf("\npassivetotal: %v\n", err)
+	req.SetBasicAuth(username, key)
+
+	// Set content type as application/json
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		if !state.Silent {
+			fmt.Printf("\npassivetotal: %v\n", err)
+		}
+		return subdomains
+	}
+
+	// Get the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		if !state.Silent {
+			fmt.Printf("\npassivetotal: %v\n", err)
+		}
+		return subdomains
+	}
+
+	// Decode the json format
+	err = json.Unmarshal([]byte(body), &passivetotalData)
+	if err != nil {
+		if !state.Silent {
+			fmt.Printf("\npassivetotal: %v\n", err)
+		}
+		return subdomains
+	}
+
+	// Append each subdomain found to subdomains array
+	for _, subdomain := range passivetotalData.Subdomains {
+		finalSubdomain := subdomain + "." + domain
+
+		if state.Verbose == true {
+			if state.Color == true {
+				fmt.Printf("\n[%sPASSIVETOTAL%s] %s", helper.Red, helper.Reset, finalSubdomain)
+			} else {
+				fmt.Printf("\n[PASSIVETOTAL] %s", finalSubdomain)
 			}
-			return subdomains
 		}
 
-		req.SetBasicAuth(username, key)
-
-		// Set content type as application/json
-		req.Header.Set("Content-Type", "application/json")
-
-		resp, err := client.Do(req)
-		if err != nil {
-			if !state.Silent {
-				fmt.Printf("\npassivetotal: %v\n", err)
-			}
-			return subdomains
-		}
-
-		// Get the response body
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			if !state.Silent {
-				fmt.Printf("\npassivetotal: %v\n", err)
-			}
-			return subdomains
-		}
-
-		// Decode the json format
-		err = json.Unmarshal([]byte(body), &passivetotalData)
-		if err != nil {
-			if !state.Silent {
-				fmt.Printf("\npassivetotal: %v\n", err)
-			}
-			return subdomains
-		}
-
-		// Append each subdomain found to subdomains array
-		for _, subdomain := range passivetotalData.Subdomains {
-			finalSubdomain := subdomain + "." + domain
-
-			if state.Verbose == true {
-				if state.Color == true {
-					fmt.Printf("\n[%sPASSIVETOTAL%s] %s", helper.Red, helper.Reset, finalSubdomain)
-				} else {
-					fmt.Printf("\n[PASSIVETOTAL] %s", finalSubdomain)
-				}
-			}
-
-			subdomains = append(subdomains, finalSubdomain)
-		}
+		subdomains = append(subdomains, finalSubdomain)
 	}
 
 	return subdomains
