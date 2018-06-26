@@ -4,24 +4,37 @@
 [![Twitter](https://img.shields.io/badge/twitter-@codingo__-blue.svg)](https://twitter.com/codingo_)
 [![Twitter](https://img.shields.io/badge/Twitter-Mzack9999-blue.svg)](https://twitter.com/Mzack9999)
 [![Go Report Card](https://goreportcard.com/badge/github.com/subfinder/subfinder)](https://goreportcard.com/report/github.com/subfinder/subfinder) 
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/subfinder/subfinder/issues)
 
-SubFinder is a subdomain discovery tool that uses various techniques to discover massive amounts of subdomains for any target. It has been aimed as a successor to the [sublist3r project](https://github.com/aboul3la/Sublist3r). SubFinder uses Passive Sources, Search Engines, Pastebins, Internet Archives, etc to find subdomains and then it uses a permutation module inspired by altdns to generate permutations and resolve them quickly using a powerful bruteforcing engine. It can also perform plain bruteforce if needed. The tool is highly customizable, and the code is built with a modular approach in mind making it easy to add functionalities and remove errors.
+SubFinder is a subdomain discovery tool that discovers valid subdomains for websites by using passive online sources. It has a simple modular architecture and has been aimed as a successor to sublist3r project. SubFinder uses Passive Sources, Search Engines, Pastebins, Internet Archives, etc to find subdomains and then it uses a permutation module inspired by altdns to generate permutations and resolve them quickly using a powerful bruteforcing engine. It can also perform plain bruteforce if needed. The tool is highly customizable, and the code is built with a modular approach in mind making it easy to add functionalities and remove errors.
 
-[![asciicast](https://raw.githubusercontent.com/Ice3man543/ice3man543.github.io/master/assets/asciinema.png)](https://asciinema.org/a/177851)
+We have designed SubFinder to comply with all passive sources licenses, and usage restrictions, as well as maintained a consistently passive model to make it useful to both penetration testers and bug bounty hunters alike.
 
-# Why?
+-# Resources
++# Why?
+-- [Full Documentation](https://github.com/subfinder/documentation)
+-- [Features](#features)
+-- [Usage](#usage)
+-- [Installation Instuctions (direct)](#direct-installation)
+-- [Upgrading](#upgrading)
+-- [Running in a Docker Container](#running-in-a-docker-container)
+-- [Post Installation Instructions](#post-installation-instructions)
+-- [Running SubFinder](#running-subfinder)
 
-This project began it's life as a Bug Bounty World slack channel discussion. We were talking about how the cornerstone subdomain tool at the time, sublist3r, appeared to have been abandoned. The goal of this project was to make a low dependancy, manageable project in Go that would continue to be maintained over time. I decided to rewrite the sublist3r project and posted about it. @codingo offered to contribute to the project and subfinder was born. 
+[![asciicast](https://raw.githubusercontent.com/Ice3man543/ice3man543.github.io/master/assets/asciinema.png)](https://asciinema.org/a/az7rub4RzDMqjI9dcPJpxm7zf)
+ 
+ # Features
+ 
+ - Simple and modular code base making it easy to contribute.
+ - Fast And Powerful Bruteforcing Module 
+ - Powerful Permutation generation engine. (In Development)
+ - Many Passive Data Sources (30 At Present)
+ - Multiple Output formats
+ 
+ 
+> Ask, Archive.is, Baidu, Bing, Censys, CertDB, CertSpotter, CrtSH, DnsDB, DNSDumpster, Dogpile, Entrust CT-Search, Exalead, FindSubdomains, GoogleTER, Hackertarget, IPv4Info, Netcraft, PassiveTotal, PTRArchive, Riddler, SecurityTrails, SiteDossier, Shodan, SSL Certificates, ThreatCrowd, ThreatMiner, Virustotal, WaybackArchive, Yahoo
 
-# Features
-
-- Simple and modular code base making it easy to contribute.
-- Fast And Powerful Bruteforcing Module 
-- Powerful Permutation generation engine. (In Development)
-- Many Passive Data Sources (29 At Present)
-- Multiple Output formats
-
-> Ask, Archive.is, Baidu, Bing, Censys, CertDB, CertSpotter, CrtSH, DnsDB, DNSDumpster, Dogpile, Entrust CT-Search, Exalead, FindSubdomains, Hackertarget, IPv4Info, Netcraft, PassiveTotal, PTRArchive, Riddler, SecurityTrails, SiteDossier, Shodan, SSL Certificates, ThreatCrowd, ThreatMiner, Virustotal, WaybackArchive, Yahoo
+***We ensure that we abide by the terms and conditions of all sources that we query. For this reason we don't perform scraping on any site that doesn't allow it.***
 
 # Usage
 
@@ -137,7 +150,7 @@ sudo docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it subfinder
 ```
 Now, you can also pass --set-config inside the docker to change the configuration options.
 
-# Running the tool
+# Running Subfinder
 
 To run the tool on a target, just use the following command.
 ```bash
