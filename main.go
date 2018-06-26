@@ -68,7 +68,7 @@ func main() {
 
 	if state.Silent != true {
 		fmt.Println("===============================================")
-		fmt.Printf("%s%s-=Subfinder%s v1.0 github.com/subfinder/subfinder\n", helper.Info, helper.Cyan, helper.Reset)
+		fmt.Printf("%s%s-=Subfinder%s v1.1 github.com/subfinder/subfinder\n", helper.Info, helper.Cyan, helper.Reset)
 		fmt.Println("===============================================")
 	}
 
