@@ -25,3 +25,8 @@ main
 
 # VSCode
 .vscode/
+
+# Build Contents
+*.zip
+checksums.txt
+build/
