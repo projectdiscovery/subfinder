@@ -19,7 +19,7 @@ We have designed SubFinder to comply with all passive sources licenses, and usag
 - [Post Installation Instructions](#post-installation-instructions)
 - [Running SubFinder](#running-subfinder)
 
-[![asciicast](https://asciinema.org/a/az7rub4RzDMqjI9dcPJpxm7zf.png)](https://asciinema.org/a/az7rub4RzDMqjI9dcPJpxm7zf)
+[![asciicast](https://raw.githubusercontent.com/Ice3man543/ice3man543.github.io/master/assets/asciinema.png)](https://asciinema.org/a/az7rub4RzDMqjI9dcPJpxm7zf)
 
 # Features
 
