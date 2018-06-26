@@ -26,10 +26,10 @@ We have designed SubFinder to comply with all passive sources licenses, and usag
 - Simple and modular code base making it easy to contribute.
 - Fast And Powerful Bruteforcing Module 
 - Powerful Permutation generation engine. (In Development)
-- Many Passive Data Sources (29 At Present)
+- Many Passive Data Sources (30 At Present)
 - Multiple Output formats
 
-> Ask, Archive.is, Baidu, Bing, Censys, CertDB, CertSpotter, CrtSH, DnsDB, DNSDumpster, Dogpile, Entrust CT-Search, Exalead, FindSubdomains, Hackertarget, IPv4Info, Netcraft, PassiveTotal, PTRArchive, Riddler, SecurityTrails, SiteDossier, Shodan, SSL Certificates, ThreatCrowd, ThreatMiner, Virustotal, WaybackArchive, Yahoo
+> Ask, Archive.is, Baidu, Bing, Censys, CertDB, CertSpotter, CrtSH, DnsDB, DNSDumpster, Dogpile, Entrust CT-Search, Exalead, FindSubdomains, GoogleTER, Hackertarget, IPv4Info, Netcraft, PassiveTotal, PTRArchive, Riddler, SecurityTrails, SiteDossier, Shodan, SSL Certificates, ThreatCrowd, ThreatMiner, Virustotal, WaybackArchive, Yahoo
 
 # Usage
 
