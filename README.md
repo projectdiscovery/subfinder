@@ -10,16 +10,15 @@ SubFinder is a subdomain discovery tool that discovers valid subdomains for webs
 
 We have designed SubFinder to comply with all passive sources licenses, and usage restrictions, as well as maintained a consistently passive model to make it useful to both penetration testers and bug bounty hunters alike.
 
--# Resources
-+# Why?
--- [Full Documentation](https://github.com/subfinder/documentation)
--- [Features](#features)
--- [Usage](#usage)
--- [Installation Instuctions (direct)](#direct-installation)
--- [Upgrading](#upgrading)
--- [Running in a Docker Container](#running-in-a-docker-container)
--- [Post Installation Instructions](#post-installation-instructions)
--- [Running SubFinder](#running-subfinder)
+# Resources
+- [Full Documentation](https://github.com/subfinder/documentation)
+- [Features](#features)
+- [Usage](#usage)
+- [Installation Instuctions (direct)](#direct-installation)
+- [Upgrading](#upgrading)
+- [Running in a Docker Container](#running-in-a-docker-container)
+- [Post Installation Instructions](#post-installation-instructions)
+- [Running SubFinder](#running-subfinder)
 
 [![asciicast](https://raw.githubusercontent.com/Ice3man543/ice3man543.github.io/master/assets/asciinema.png)](https://asciinema.org/a/az7rub4RzDMqjI9dcPJpxm7zf)
  
