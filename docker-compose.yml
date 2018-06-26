@@ -1,0 +1,8 @@
+version: '3'
+services:
+  subfinder:
+    build: .
+    image: subfinder:latest
+    volumes:
+      - ${HOME}/.config/subfinder:/root/.config/subfinder
+      - ${PWD}/domains.txt:/app/domains.txt
