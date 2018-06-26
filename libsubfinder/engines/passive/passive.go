@@ -37,6 +37,7 @@ import (
 	"github.com/subfinder/subfinder/libsubfinder/sources/dogpile"
 	"github.com/subfinder/subfinder/libsubfinder/sources/exalead"
 	"github.com/subfinder/subfinder/libsubfinder/sources/findsubdomains"
+	"github.com/subfinder/subfinder/libsubfinder/sources/googleter"
 	"github.com/subfinder/subfinder/libsubfinder/sources/hackertarget"
 	"github.com/subfinder/subfinder/libsubfinder/sources/ipv4info"
 	"github.com/subfinder/subfinder/libsubfinder/sources/netcraft"
@@ -71,6 +72,7 @@ type Source struct {
 	Dnsdb                   bool
 	Dnsdumpster             bool
 	Findsubdomains          bool
+	Googleter               bool
 	Hackertarget            bool
 	Netcraft                bool
 	Passivetotal            bool
@@ -103,6 +105,7 @@ func (s *Source) enableAll() {
 	s.Dnsdb = true
 	s.Dnsdumpster = true
 	s.Findsubdomains = true
+	s.Googleter = true
 	s.Hackertarget = true
 	s.Netcraft = true
 	s.Passivetotal = true
@@ -148,6 +151,8 @@ func (s *Source) enable(dataSources []string) {
 			s.Dnsdumpster = true
 		case "findsubdomains":
 			s.Findsubdomains = true
+		case "googleter":
+			s.Googleter = true
 		case "hackertarget":
 			s.Hackertarget = true
 		case "netcraft":
@@ -213,6 +218,8 @@ func (s *Source) disable(dataSources []string) {
 			s.Dnsdumpster = false
 		case "findsubdomains":
 			s.Findsubdomains = false
+		case "googleter":
+			s.Googleter = false
 		case "hackertarget":
 			s.Hackertarget = false
 		case "netcraft":
@@ -295,6 +302,9 @@ func (s *Source) printSummary() {
 	}
 	if s.Findsubdomains {
 		fmt.Printf("\nRunning Source: %sFindsubdomains%s", helper.Info, helper.Reset)
+	}
+	if s.Googleter {
+		fmt.Printf("\nRunning Source: %sGoogleter%s", helper.Info, helper.Reset)
 	}
 	if s.Hackertarget {
 		fmt.Printf("\nRunning Source: %sHackertarget%s", helper.Info, helper.Reset)
@@ -478,6 +488,9 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	}
 	if sourceConfig.SSLCertificates {
 		domainDiscoverPool.Add(sslcertificates.Query, domain, state)
+	}
+	if sourceConfig.Googleter {
+		domainDiscoverPool.Add(googleter.Query, domain, state)
 	}
 
 	domainDiscoverPool.Wait()

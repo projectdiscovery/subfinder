@@ -66,13 +66,14 @@ type Config struct {
 
 // Setting contains settings for sources
 type Setting struct {
-	CensysPages  string // Censys pages to check. For All, use "all"
-	AskPages     string // Ask search pages to check
-	BaiduPages   string // Ask search pages to check
-	BingPages    string // Ask search pages to check
-	DogpilePages string // Dogpile search pages to check
-	YahooPages   string // Yahoo search pages to check
-	ShodanPages  string // Shodan search pages to check
+	CensysPages    string // Censys pages to check. For All, use "all"
+	AskPages       string // Ask search pages to check
+	BaiduPages     string // Ask search pages to check
+	BingPages      string // Ask search pages to check
+	DogpilePages   string // Dogpile search pages to check
+	YahooPages     string // Yahoo search pages to check
+	ShodanPages    string // Shodan search pages to check
+	GoogleterPages string // Googleter
 }
 
 // InitializeSettings sets default settings value
@@ -87,6 +88,7 @@ func InitializeSettings() (setting *Setting) {
 	settings.DogpilePages = "16"
 	settings.YahooPages = "10"
 	settings.ShodanPages = "10"
+	settings.GoogleterPages = "30"
 	return &settings
 }
 
