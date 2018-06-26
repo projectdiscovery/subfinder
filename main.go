@@ -188,7 +188,7 @@ func main() {
 
 	if state.Domain == "" && state.DomainList == "" {
 		if state.Silent != true {
-			fmt.Printf("\n\n%s-> Missing \"domain\" argument %s\nTry %s'./subfinder -h'%s for more information\n", helper.Bad, helper.Reset, helper.Info, helper.Reset)
+			fmt.Printf("%s-> Missing \"domain\" argument %s\nTry %s'./subfinder -h'%s for more information\n", helper.Bad, helper.Reset, helper.Info, helper.Reset)
 		}
 		os.Exit(1)
 	}
