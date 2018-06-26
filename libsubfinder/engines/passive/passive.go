@@ -387,13 +387,13 @@ func (s *Source) printSummary() {
 }
 
 func (s *Source) parseAPIKeys(state *helper.State) {
-	if state.ConfigState.CensysUsername == "" && state.ConfigState.CensysSecret == "" {
+	if state.ConfigState.CensysUsername == "" || state.ConfigState.CensysSecret == "" {
 		s.Censys = false
 	}
-	if state.ConfigState.PassivetotalUsername == "" && state.ConfigState.PassivetotalKey == "" {
+	if state.ConfigState.PassivetotalUsername == "" || state.ConfigState.PassivetotalKey == "" {
 		s.Passivetotal = false
 	}
-	if state.ConfigState.RiddlerEmail == "" && state.ConfigState.RiddlerPassword == "" {
+	if state.ConfigState.RiddlerEmail == "" || state.ConfigState.RiddlerPassword == "" {
 		s.Riddler = false
 	}
 	if state.ConfigState.SecurityTrailsKey == "" {
@@ -438,8 +438,8 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 
 	// Initialize Wildcard Subdomains
 	state.IsWildcard, state.WildcardIP = helper.InitWildcard(domain)
-	if state.IsWildcard == true {
-		if state.Silent != true {
+	if state.IsWildcard {
+		if !state.Silent {
 			fmt.Printf("\nFound Wildcard DNS at %s", domain)
 			for _, ip := range state.WildcardIP {
 				fmt.Printf("\n - %s", ip)
@@ -452,7 +452,7 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 
 	domainDiscoverPool.Wait()
 
-	if state.Silent != true {
+	if !state.Silent {
 		fmt.Printf("\nRunning enumeration on %s\n", domain)
 	}
 
@@ -576,7 +576,7 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	var words []string
 	var BruteforceSubdomainList []string
 	// Start the bruteforcing workflow if the user has asked for it
-	if state.Bruteforce == true && state.Wordlist != "" {
+	if state.Bruteforce && state.Wordlist != "" {
 		file, err := os.Open(state.Wordlist)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "\nerror: %v\n", err)
@@ -716,10 +716,10 @@ func Enumerate(state *helper.State) []string {
 		if job.Result != nil {
 			results := job.Result.([]string)
 			if state.Output != "" {
-				if state.IsJSON == true {
+				if state.IsJSON {
 					err := output.WriteOutputJSON(state, results)
 					if err != nil {
-						if state.Silent == true {
+						if state.Silent {
 							fmt.Printf("\n%s-> %v%s\n", helper.Bad, err, helper.Reset)
 						}
 					}

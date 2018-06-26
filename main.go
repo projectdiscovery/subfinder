@@ -67,11 +67,11 @@ func main() {
 		os.Exit(1)
 	}
 
- 	if state.Silent != true {
+	if state.Silent != true {
 		fmt.Println("===============================================")
 		fmt.Printf("%s%s-=Subfinder%s v1.1 github.com/subfinder/subfinder\n", helper.Info, helper.Cyan, helper.Reset)
 		fmt.Println("===============================================")
- 	}
+	}
 
 	if state.SetConfig != "none" {
 		setConfig := strings.Split(state.SetConfig, ",")
@@ -84,23 +84,23 @@ func main() {
 			object := strings.Split(config, "=")
 
 			// Change value dynamically using reflect package
-			if strings.EqualFold(object[0], "virustotalapikey") == true {
+			if strings.EqualFold(object[0], "virustotalapikey") {
 				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("VirustotalAPIKey").SetString(object[1])
-			} else if strings.EqualFold(object[0], "passivetotalusername") == true {
+			} else if strings.EqualFold(object[0], "passivetotalusername") {
 				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("PassivetotalUsername").SetString(object[1])
-			} else if strings.EqualFold(object[0], "passivetotalkey") == true {
+			} else if strings.EqualFold(object[0], "passivetotalkey") {
 				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("PassivetotalKey").SetString(object[1])
-			} else if strings.EqualFold(object[0], "securitytrailskey") == true {
+			} else if strings.EqualFold(object[0], "securitytrailskey") {
 				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("SecurityTrailsKey").SetString(object[1])
-			} else if strings.EqualFold(object[0], "riddleremail") == true {
+			} else if strings.EqualFold(object[0], "riddleremail") {
 				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("RiddlerEmail").SetString(object[1])
-			} else if strings.EqualFold(object[0], "riddlerpassword") == true {
+			} else if strings.EqualFold(object[0], "riddlerpassword") {
 				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("RiddlerPassword").SetString(object[1])
-			} else if strings.EqualFold(object[0], "censysusername") == true {
+			} else if strings.EqualFold(object[0], "censysusername") {
 				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("CensysUsername").SetString(object[1])
-			} else if strings.EqualFold(object[0], "censyssecret") == true {
+			} else if strings.EqualFold(object[0], "censyssecret") {
 				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("CensysSecret").SetString(object[1])
-			} else if strings.EqualFold(object[0], "shodankey") == true {
+			} else if strings.EqualFold(object[0], "shodankey") {
 				reflect.ValueOf(&state.ConfigState).Elem().FieldByName("ShodanAPIKey").SetString(object[1])
 			}
 
@@ -187,12 +187,12 @@ func main() {
 		}
 	}
 
- 	if state.Domain == "" && state.DomainList == "" {
- 		if state.Silent != true {
+	if state.Domain == "" && state.DomainList == "" {
+		if state.Silent != true {
 			fmt.Printf("%s-> Missing \"domain\" argument %s\nTry %s'./subfinder -h'%s for more information\n", helper.Bad, helper.Reset, helper.Info, helper.Reset)
- 		}
- 		os.Exit(1)
- 	}
+		}
+		os.Exit(1)
+	}
 
 	_ = passive.Enumerate(state)
 	fmt.Printf("\n")
