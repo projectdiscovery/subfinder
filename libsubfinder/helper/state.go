@@ -40,6 +40,7 @@ type State struct {
 	ListResolver  string   // File to load resolvers from
 	AquatoneJSON  bool     // Use aquatone style json format
 	ExcludeSource string   // Sources to exclude
+	NoPassive     bool     // Do not perform passive enumeration
 	OutputHandle  *os.File // Handle to the output file used for output buffering
 
 	CurrentSettings Setting // Current application settings
@@ -100,5 +101,5 @@ func InitState() (state State, err error) {
 
 	setting := InitializeSettings()
 
-	return State{true, 10, 180, false, "", false, "", false, false, "", false, []string{}, true, "", false, []string{}, "", "", "", "", []string{}, "", "", false, "", nil, *setting, *config}, nil
+	return State{true, 10, 180, false, "", false, "", false, false, "", false, []string{}, true, "", false, []string{}, "", "", "", "", []string{}, "", "", false, "", false, nil, *setting, *config}, nil
 }

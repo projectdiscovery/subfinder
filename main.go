@@ -23,6 +23,14 @@ import (
 	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
+var banner = `
+               __    _____           __         
+   _______  __/ /_  / __(_)___  ____/ /__  _____
+  / ___/ / / / __ \/ /_/ / __ \/ __  / _ \/ ___/
+ (__  ) /_/ / /_/ / __/ / / / / /_/ /  __/ /    
+/____/\__,_/_.___/_/ /_/_/ /_/\__,_/\___/_/       
+                             v0.2 - by @ice3man `
+
 // ParseCmdLine ...  Parses command line arguments into a setting structure
 func ParseCmdLine() (state *helper.State, err error) {
 
@@ -40,6 +48,7 @@ func ParseCmdLine() (state *helper.State, err error) {
 	flag.StringVar(&s.Output, "o", "", "Name of the output file (optional)")
 	flag.BoolVar(&s.IsJSON, "oJ", false, "Write output in JSON Format")
 	flag.BoolVar(&s.Alive, "nW", false, "Remove Wildcard Subdomains from output")
+	flag.BoolVar(&s.NoPassive, "no-passive", false, "Do not perform passive subdomain enumeration")
 	flag.BoolVar(&s.Silent, "silent", false, "Show only subdomains in output")
 	flag.BoolVar(&s.Recursive, "recursive", false, "Use recursion to find subdomains")
 	flag.StringVar(&s.Wordlist, "w", "", "Wordlist for doing subdomain bruteforcing")
@@ -67,9 +76,7 @@ func main() {
 	}
 
 	if state.Silent != true {
-		fmt.Println("===============================================")
-		fmt.Printf("%s%s-=Subfinder%s v1.1 github.com/subfinder/subfinder\n", helper.Info, helper.Cyan, helper.Reset)
-		fmt.Println("===============================================")
+		fmt.Println(banner)
 	}
 
 	if state.SetConfig != "none" {
@@ -188,7 +195,7 @@ func main() {
 
 	if state.Domain == "" && state.DomainList == "" {
 		if state.Silent != true {
-			fmt.Printf("%s-> Missing \"domain\" argument %s\nTry %s'./subfinder -h'%s for more information\n", helper.Bad, helper.Reset, helper.Info, helper.Reset)
+			fmt.Printf("\n\n%s-> Missing \"domain\" argument %s\nTry %s'./subfinder -h'%s for more information\n", helper.Bad, helper.Reset, helper.Info, helper.Reset)
 		}
 		os.Exit(1)
 	}

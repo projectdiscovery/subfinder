@@ -256,6 +256,38 @@ func (s *Source) disable(dataSources []string) {
 			s.Dogpile = false
 		case "shodan":
 			s.Shodan = false
+		case "all":
+			s.Ask = false
+			s.Archiveis = false
+			s.Baidu = false
+			s.Bing = false
+			s.Censys = false
+			s.Certdb = false
+			s.Certspotter = false
+			s.Crtsh = false
+			s.Dnsdb = false
+			s.Dnsdumpster = false
+			s.Findsubdomains = false
+			s.Googleter = false
+			s.Hackertarget = false
+			s.Netcraft = false
+			s.Passivetotal = false
+			s.Ptrarchive = false
+			s.Riddler = false
+			s.Securitytrails = false
+			s.SSLCertificates = false
+			s.Sitedossier = false
+			s.Threatcrowd = false
+			s.Threatminer = false
+			s.Virustotal = false
+			s.Waybackarchive = false
+			s.CertificateTransparency = false
+			s.Ipv4Info = false
+			s.Exalead = false
+			s.Yahoo = false
+			s.Dogpile = false
+			s.Dogpile = false
+			s.Shodan = false
 		}
 	}
 }
@@ -612,6 +644,11 @@ func Enumerate(state *helper.State) []string {
 	if state.ExcludeSource != "" {
 		dataSources := strings.Split(state.ExcludeSource, ",")
 		sourceConfig.disable(dataSources)
+	}
+
+	// Do not perform passive enumeration
+	if state.NoPassive {
+		sourceConfig.disable([]string{"all"})
 	}
 
 	if !state.Silent {
