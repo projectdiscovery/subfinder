@@ -1,14 +1,24 @@
 # SubFinder
+```SubFinder is a subdomain discovery tool that discovers valid subdomains for websites by using passive online sources. It has a simple modular architecture and has been aimed as a successor to sublist3r project. SubFinder uses Passive Sources, Search Engines, Pastebins, Internet Archives, etc to find subdomains and then it uses a permutation module inspired by altdns to generate permutations and resolve them quickly using a powerful bruteforcing engine. It can also perform plain bruteforce if needed. The tool is highly customizable, and the code is built with a modular approach in mind making it easy to add functionalities and remove errors.
+
+We have designed SubFinder to comply with all passive sources licenses, and usage restrictions, as well as maintained a consistently passive model to make it useful to both penetration testers and bug bounty hunters alike.
+```
+
 [![License](https://img.shields.io/badge/license-MIT-_red.svg)](https://opensource.org/licenses/MIT)
 [![Twitter](https://img.shields.io/badge/twitter-@Ice3man543-blue.svg)](https://twitter.com/Ice3man543)
 [![Twitter](https://img.shields.io/badge/twitter-@codingo__-blue.svg)](https://twitter.com/codingo_)
 [![Twitter](https://img.shields.io/badge/Twitter-Mzack9999-blue.svg)](https://twitter.com/Mzack9999)
 [![Go Report Card](https://goreportcard.com/badge/github.com/subfinder/subfinder)](https://goreportcard.com/report/github.com/subfinder/subfinder) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/subfinder/subfinder/issues)
-[Documentation](https://github.com/subfinder/documentation)
 
-SubFinder is a subdomain discovery tool that discovers valid subdomains for websites by using passive online sources. It has a simple modular architecture and has been aimed as a successor to sublist3r project. SubFinder uses Passive Sources, Search Engines, Pastebins, Internet Archives, etc to find subdomains and then it uses a permutation module inspired by altdns to generate permutations and resolve them quickly using a powerful bruteforcing engine. It can also perform plain bruteforce if needed. The tool is highly customizable, and the code is built with a modular approach in mind making it easy to add functionalities and remove errors.
-
-We have designed SubFinder to comply with all passive sources licenses, and usage restrictions, as well as maintained a consistently passive model to make it useful to both penetration testers and bug bounty hunters alike.
+# Resources
+- [Full Documentation](https://github.com/subfinder/documentation)
+- [Features](#features)
+- [Usage](#usage)
+- [Installation Instuctions (direct)](#direct-installation)
+- [Upgrading](#upgrading)
+- [Running in a Docker Container](#running-in-a-docker-container)
+- [Post Installation Instructions](#post-installation-instructions)
+- [Running SubFinder](#running-subfinder)
 
 [![asciicast](https://raw.githubusercontent.com/Ice3man543/ice3man543.github.io/master/assets/asciinema.png)](https://asciinema.org/a/177851)
 
@@ -135,7 +145,7 @@ sudo docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it subfinder
 ```
 Now, you can also pass --set-config inside the docker to change the configuration options.
 
-# Running the tool
+# Running SubFinder
 
 To run the tool on a target, just use the following command.
 ```bash
@@ -195,17 +205,3 @@ You can specify custom resolvers too.
 ./subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v -r 8.8.8.8,1.1.1.1
 ./subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v -rL resolvers.txt
 ```
-
-# Frequently Asked Questions (FAQ)
-## How do I move settings between machines?
-Configuration for subfinder is saved at ```~/.config/subfinder/config.json``` which can be copied between machines.
-
-## Do I need to use API keys?
-No. The majority of sources for subfinder don't require API keys, you just won't see as many results. Check the post installation instructions for which sources require API keys.
-
-## I wish SubFinder did x...
-We're extremely open to pull requests, if you wish to have a feature feel free to develop it and push it to here for review and inclusion in the main project. If you're unable to code something, please raise it as an issue and if we think it has benefit to the community we'll look into developing it for you.
-
-## Why is this a better tool than xyz tool?
-There are a number of subdomain tools, and we beleive you should try each of them to find the one that works well with how you like to approach subdomain discovery. We've developed subfinder to solve subdomain finding in a way that we felt worked best for the way we work, and was easily maintainable to allow us and others to add as many sources and features as possible.
-
