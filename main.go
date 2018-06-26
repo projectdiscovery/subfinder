@@ -23,14 +23,6 @@ import (
 	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
 
-var banner = `
-               __    _____           __         
-   _______  __/ /_  / __(_)___  ____/ /__  _____
-  / ___/ / / / __ \/ /_/ / __ \/ __  / _ \/ ___/
- (__  ) /_/ / /_/ / __/ / / / / /_/ /  __/ /    
-/____/\__,_/_.___/_/ /_/_/ /_/\__,_/\___/_/       
-                             v0.2 - by @ice3man `
-
 // ParseCmdLine ...  Parses command line arguments into a setting structure
 func ParseCmdLine() (state *helper.State, err error) {
 
@@ -75,9 +67,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	if state.Silent != true {
-		fmt.Println(banner)
-	}
+ 	if state.Silent != true {
+		fmt.Println("===============================================")
+		fmt.Printf("%s%s-=Subfinder%s v1.1 github.com/subfinder/subfinder\n", helper.Info, helper.Cyan, helper.Reset)
+		fmt.Println("===============================================")
+ 	}
 
 	if state.SetConfig != "none" {
 		setConfig := strings.Split(state.SetConfig, ",")
@@ -193,12 +187,12 @@ func main() {
 		}
 	}
 
-	if state.Domain == "" && state.DomainList == "" {
-		if state.Silent != true {
-			fmt.Printf("\n\n%s-> Missing \"domain\" argument %s\nTry %s'./subfinder -h'%s for more information\n", helper.Bad, helper.Reset, helper.Info, helper.Reset)
-		}
-		os.Exit(1)
-	}
+ 	if state.Domain == "" && state.DomainList == "" {
+ 		if state.Silent != true {
+			fmt.Printf("%s-> Missing \"domain\" argument %s\nTry %s'./subfinder -h'%s for more information\n", helper.Bad, helper.Reset, helper.Info, helper.Reset)
+ 		}
+ 		os.Exit(1)
+ 	}
 
 	_ = passive.Enumerate(state)
 	fmt.Printf("\n")
