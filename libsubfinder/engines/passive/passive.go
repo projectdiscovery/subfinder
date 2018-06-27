@@ -408,7 +408,6 @@ func (s *Source) parseAPIKeys(state *helper.State) {
 	if state.ConfigState.VirustotalAPIKey == "" {
 		s.Virustotal = false
 	}
-	return
 }
 
 //nbrActive ses reflection to get automatic active amount of searches
