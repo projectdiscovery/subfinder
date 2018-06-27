@@ -438,8 +438,8 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 
 	// Initialize Wildcard Subdomains
 	state.IsWildcard, state.WildcardIP = helper.InitWildcard(domain)
-	if state.IsWildcard == true {
-		if state.Silent != true {
+	if state.IsWildcard {
+		if !state.Silent {
 			fmt.Printf("\nFound Wildcard DNS at %s", domain)
 			for _, ip := range state.WildcardIP {
 				fmt.Printf("\n - %s", ip)
@@ -452,7 +452,7 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 
 	domainDiscoverPool.Wait()
 
-	if state.Silent != true {
+	if state.Silent {
 		fmt.Printf("\nRunning enumeration on %s\n", domain)
 	}
 
@@ -576,7 +576,7 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	var words []string
 	var BruteforceSubdomainList []string
 	// Start the bruteforcing workflow if the user has asked for it
-	if state.Bruteforce == true && state.Wordlist != "" {
+	if state.Bruteforce && state.Wordlist != "" {
 		file, err := os.Open(state.Wordlist)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "\nerror: %v\n", err)
@@ -592,7 +592,7 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 			words = append(words, scanner.Text())
 		}
 
-		if state.Silent != true {
+		if !state.Silent {
 			fmt.Printf("\n\nStarting Bruteforcing of %s%s%s with %s%d%s words", helper.Info, domain, helper.Reset, helper.Info, len(words), helper.Reset)
 		}
 
@@ -610,7 +610,7 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 
 	if state.Alive || state.AquatoneJSON {
 		// Nove remove all wildcard subdomains
-		if state.Silent != true {
+		if !state.Silent {
 			fmt.Printf("\n\nResolving %s%d%s Unique Hosts found", helper.Info, len(validPassiveSubdomains), helper.Reset)
 		}
 		passiveSubdomainsArray = resolver.Resolve(state, validPassiveSubdomains)
@@ -638,7 +638,7 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 
 	if state.Alive || state.AquatoneJSON {
 		for _, subdomain := range passiveSubdomainsArray {
-			if state.Silent != true {
+			if !state.Silent {
 				fmt.Printf("\n%s\t\t%s", subdomain.IP, subdomain.Fqdn)
 			} else {
 				fmt.Printf("\n%s", subdomain.Fqdn)
@@ -716,10 +716,10 @@ func Enumerate(state *helper.State) []string {
 		if job.Result != nil {
 			results := job.Result.([]string)
 			if state.Output != "" {
-				if state.IsJSON == true {
+				if state.IsJSON {
 					err := output.WriteOutputJSON(state, results)
 					if err != nil {
-						if state.Silent == true {
+						if state.Silent {
 							fmt.Printf("\n%s-> %v%s\n", helper.Bad, err, helper.Reset)
 						}
 					}

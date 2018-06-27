@@ -28,9 +28,9 @@ func consume(args ...interface{}) interface{} {
 		return ""
 	}
 
-	if state.IsWildcard == true {
+	if state.IsWildcard {
 		result := helper.CheckWildcard(state, ips)
-		if result == true {
+		if result {
 			// We have a wildcard ip
 			return ""
 		}
