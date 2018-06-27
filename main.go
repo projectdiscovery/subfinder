@@ -67,11 +67,11 @@ func main() {
 		os.Exit(1)
 	}
 
- 	if state.Silent != true {
+	if state.Silent != true {
 		fmt.Println("===============================================")
-		fmt.Printf("%s%s-=Subfinder%s v1.1 github.com/subfinder/subfinder\n", helper.Info, helper.Cyan, helper.Reset)
+		fmt.Printf("%s%s-=Subfinder%s v1.1.1 github.com/subfinder/subfinder\n", helper.Info, helper.Cyan, helper.Reset)
 		fmt.Println("===============================================")
- 	}
+	}
 
 	if state.SetConfig != "none" {
 		setConfig := strings.Split(state.SetConfig, ",")
@@ -187,12 +187,12 @@ func main() {
 		}
 	}
 
- 	if state.Domain == "" && state.DomainList == "" {
- 		if state.Silent != true {
+	if state.Domain == "" && state.DomainList == "" {
+		if state.Silent != true {
 			fmt.Printf("%s-> Missing \"domain\" argument %s\nTry %s'./subfinder -h'%s for more information\n", helper.Bad, helper.Reset, helper.Info, helper.Reset)
- 		}
- 		os.Exit(1)
- 	}
+		}
+		os.Exit(1)
+	}
 
 	_ = passive.Enumerate(state)
 	fmt.Printf("\n")
