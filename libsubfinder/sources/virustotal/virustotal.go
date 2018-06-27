@@ -75,19 +75,14 @@ func Query(args ...interface{}) interface{} {
 
 	var subdomains []string
 
-	// Check if an API key is present
-	// Now, we will use Virustotal API key to fetch subdomain info
-	if state.ConfigState.VirustotalAPIKey != "" {
+	// Get subdomains via API
+	subdomains, err := queryVirustotalAPI(domain, state)
 
-		// Get subdomains via API
-		subdomains, err := queryVirustotalAPI(domain, state)
-
-		if err != nil {
-			if !state.Silent {
-				fmt.Printf("\nvirustotal: %v\n", err)
-			}
-			return subdomains
+	if err != nil {
+		if !state.Silent {
+			fmt.Printf("\nvirustotal: %v\n", err)
 		}
+		return subdomains
 	}
 
 	return subdomains

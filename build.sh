@@ -1,6 +1,6 @@
 #!/bin/bash
 BUILD_FOLDER=build
-VERSION="0.2"
+VERSION="1.0"
 
 
 bin_dep() {

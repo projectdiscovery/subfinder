@@ -40,6 +40,7 @@ type State struct {
 	ListResolver  string   // File to load resolvers from
 	AquatoneJSON  bool     // Use aquatone style json format
 	ExcludeSource string   // Sources to exclude
+	NoPassive     bool     // Do not perform passive enumeration
 	OutputHandle  *os.File // Handle to the output file used for output buffering
 
 	CurrentSettings Setting // Current application settings
@@ -66,13 +67,14 @@ type Config struct {
 
 // Setting contains settings for sources
 type Setting struct {
-	CensysPages  string // Censys pages to check. For All, use "all"
-	AskPages     string // Ask search pages to check
-	BaiduPages   string // Ask search pages to check
-	BingPages    string // Ask search pages to check
-	DogpilePages string // Dogpile search pages to check
-	YahooPages   string // Yahoo search pages to check
-	ShodanPages  string // Shodan search pages to check
+	CensysPages    string // Censys pages to check. For All, use "all"
+	AskPages       string // Ask search pages to check
+	BaiduPages     string // Ask search pages to check
+	BingPages      string // Ask search pages to check
+	DogpilePages   string // Dogpile search pages to check
+	YahooPages     string // Yahoo search pages to check
+	ShodanPages    string // Shodan search pages to check
+	GoogleterPages string // Googleter
 }
 
 // InitializeSettings sets default settings value
@@ -87,6 +89,7 @@ func InitializeSettings() (setting *Setting) {
 	settings.DogpilePages = "16"
 	settings.YahooPages = "10"
 	settings.ShodanPages = "10"
+	settings.GoogleterPages = "30"
 	return &settings
 }
 
@@ -98,5 +101,5 @@ func InitState() (state State, err error) {
 
 	setting := InitializeSettings()
 
-	return State{true, 10, 180, false, "", false, "", false, false, "", false, []string{}, true, "", false, []string{}, "", "", "", "", []string{}, "", "", false, "", nil, *setting, *config}, nil
+	return State{true, 10, 180, false, "", false, "", false, false, "", false, []string{}, true, "", false, []string{}, "", "", "", "", []string{}, "", "", false, "", false, nil, *setting, *config}, nil
 }

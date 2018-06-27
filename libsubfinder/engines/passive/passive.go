@@ -37,6 +37,7 @@ import (
 	"github.com/subfinder/subfinder/libsubfinder/sources/dogpile"
 	"github.com/subfinder/subfinder/libsubfinder/sources/exalead"
 	"github.com/subfinder/subfinder/libsubfinder/sources/findsubdomains"
+	"github.com/subfinder/subfinder/libsubfinder/sources/googleter"
 	"github.com/subfinder/subfinder/libsubfinder/sources/hackertarget"
 	"github.com/subfinder/subfinder/libsubfinder/sources/ipv4info"
 	"github.com/subfinder/subfinder/libsubfinder/sources/netcraft"
@@ -71,6 +72,7 @@ type Source struct {
 	Dnsdb                   bool
 	Dnsdumpster             bool
 	Findsubdomains          bool
+	Googleter               bool
 	Hackertarget            bool
 	Netcraft                bool
 	Passivetotal            bool
@@ -103,6 +105,7 @@ func (s *Source) enableAll() {
 	s.Dnsdb = true
 	s.Dnsdumpster = true
 	s.Findsubdomains = true
+	s.Googleter = true
 	s.Hackertarget = true
 	s.Netcraft = true
 	s.Passivetotal = true
@@ -148,6 +151,8 @@ func (s *Source) enable(dataSources []string) {
 			s.Dnsdumpster = true
 		case "findsubdomains":
 			s.Findsubdomains = true
+		case "googleter":
+			s.Googleter = true
 		case "hackertarget":
 			s.Hackertarget = true
 		case "netcraft":
@@ -213,6 +218,8 @@ func (s *Source) disable(dataSources []string) {
 			s.Dnsdumpster = false
 		case "findsubdomains":
 			s.Findsubdomains = false
+		case "googleter":
+			s.Googleter = false
 		case "hackertarget":
 			s.Hackertarget = false
 		case "netcraft":
@@ -248,6 +255,38 @@ func (s *Source) disable(dataSources []string) {
 		case "exalead":
 			s.Dogpile = false
 		case "shodan":
+			s.Shodan = false
+		case "all":
+			s.Ask = false
+			s.Archiveis = false
+			s.Baidu = false
+			s.Bing = false
+			s.Censys = false
+			s.Certdb = false
+			s.Certspotter = false
+			s.Crtsh = false
+			s.Dnsdb = false
+			s.Dnsdumpster = false
+			s.Findsubdomains = false
+			s.Googleter = false
+			s.Hackertarget = false
+			s.Netcraft = false
+			s.Passivetotal = false
+			s.Ptrarchive = false
+			s.Riddler = false
+			s.Securitytrails = false
+			s.SSLCertificates = false
+			s.Sitedossier = false
+			s.Threatcrowd = false
+			s.Threatminer = false
+			s.Virustotal = false
+			s.Waybackarchive = false
+			s.CertificateTransparency = false
+			s.Ipv4Info = false
+			s.Exalead = false
+			s.Yahoo = false
+			s.Dogpile = false
+			s.Dogpile = false
 			s.Shodan = false
 		}
 	}
@@ -296,6 +335,9 @@ func (s *Source) printSummary() {
 	if s.Findsubdomains {
 		fmt.Printf("\nRunning Source: %sFindsubdomains%s", helper.Info, helper.Reset)
 	}
+	if s.Googleter {
+		fmt.Printf("\nRunning Source: %sGoogleter%s", helper.Info, helper.Reset)
+	}
 	if s.Hackertarget {
 		fmt.Printf("\nRunning Source: %sHackertarget%s", helper.Info, helper.Reset)
 	}
@@ -342,6 +384,31 @@ func (s *Source) printSummary() {
 		fmt.Printf("\nRunning Source: %sYahoo%s\n", helper.Info, helper.Reset)
 	}
 
+}
+
+func (s *Source) parseAPIKeys(state *helper.State) {
+	if state.ConfigState.CensysUsername == "" && state.ConfigState.CensysSecret == "" {
+		s.Censys = false
+	}
+	if state.ConfigState.PassivetotalUsername == "" && state.ConfigState.PassivetotalKey == "" {
+		s.Passivetotal = false
+	}
+	if state.ConfigState.RiddlerEmail == "" && state.ConfigState.RiddlerPassword == "" {
+		s.Riddler = false
+	}
+	if state.ConfigState.SecurityTrailsKey == "" {
+		s.Securitytrails = false
+	}
+	if state.ConfigState.ShodanAPIKey == "" {
+		s.Shodan = false
+	}
+	if state.ConfigState.VirustotalAPIKey == "" {
+		s.Virustotal = false
+	}
+	if state.ConfigState.VirustotalAPIKey == "" {
+		s.Virustotal = false
+	}
+	return
 }
 
 //nbrActive ses reflection to get automatic active amount of searches
@@ -479,6 +546,9 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	if sourceConfig.SSLCertificates {
 		domainDiscoverPool.Add(sslcertificates.Query, domain, state)
 	}
+	if sourceConfig.Googleter {
+		domainDiscoverPool.Add(googleter.Query, domain, state)
+	}
 
 	domainDiscoverPool.Wait()
 
@@ -600,6 +670,14 @@ func Enumerate(state *helper.State) []string {
 		dataSources := strings.Split(state.ExcludeSource, ",")
 		sourceConfig.disable(dataSources)
 	}
+
+	// Do not perform passive enumeration
+	if state.NoPassive {
+		sourceConfig.disable([]string{"all"})
+	}
+
+	// Remove sources having no API keys present for them
+	sourceConfig.parseAPIKeys(state)
 
 	if !state.Silent {
 		sourceConfig.printSummary()

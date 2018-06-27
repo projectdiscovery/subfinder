@@ -40,6 +40,7 @@ func ParseCmdLine() (state *helper.State, err error) {
 	flag.StringVar(&s.Output, "o", "", "Name of the output file (optional)")
 	flag.BoolVar(&s.IsJSON, "oJ", false, "Write output in JSON Format")
 	flag.BoolVar(&s.Alive, "nW", false, "Remove Wildcard Subdomains from output")
+	flag.BoolVar(&s.NoPassive, "no-passive", false, "Do not perform passive subdomain enumeration")
 	flag.BoolVar(&s.Silent, "silent", false, "Show only subdomains in output")
 	flag.BoolVar(&s.Recursive, "recursive", false, "Use recursion to find subdomains")
 	flag.StringVar(&s.Wordlist, "w", "", "Wordlist for doing subdomain bruteforcing")
@@ -66,11 +67,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	if state.Silent != true {
+ 	if state.Silent != true {
 		fmt.Println("===============================================")
-		fmt.Printf("%s%s-=Subfinder%s v1.0 github.com/subfinder/subfinder\n", helper.Info, helper.Cyan, helper.Reset)
+		fmt.Printf("%s%s-=Subfinder%s v1.1 github.com/subfinder/subfinder\n", helper.Info, helper.Cyan, helper.Reset)
 		fmt.Println("===============================================")
-	}
+ 	}
 
 	if state.SetConfig != "none" {
 		setConfig := strings.Split(state.SetConfig, ",")
@@ -186,12 +187,12 @@ func main() {
 		}
 	}
 
-	if state.Domain == "" && state.DomainList == "" {
-		if state.Silent != true {
-			fmt.Printf("\n\n%s-> Missing \"domain\" argument %s\nTry %s'./subfinder -h'%s for more information\n", helper.Bad, helper.Reset, helper.Info, helper.Reset)
-		}
-		os.Exit(1)
-	}
+ 	if state.Domain == "" && state.DomainList == "" {
+ 		if state.Silent != true {
+			fmt.Printf("%s-> Missing \"domain\" argument %s\nTry %s'./subfinder -h'%s for more information\n", helper.Bad, helper.Reset, helper.Info, helper.Reset)
+ 		}
+ 		os.Exit(1)
+ 	}
 
 	_ = passive.Enumerate(state)
 	fmt.Printf("\n")
