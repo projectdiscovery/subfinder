@@ -713,21 +713,19 @@ func Enumerate(state *helper.State) []string {
 
 	completedJobs := passivePool.Results()
 	for _, job := range completedJobs {
-		if job.Result != nil {
-			results := job.Result.([]string)
-			if state.Output != "" {
-				if state.IsJSON {
-					err := output.WriteOutputJSON(state, results)
-					if err != nil {
-						if state.Silent {
-							fmt.Printf("\n%s-> %v%s\n", helper.Bad, err, helper.Reset)
-						}
-					}
-				}
-			}
-
-			allSubdomains = append(allSubdomains, results...)
+		if job.Result == nil {
+			continue
 		}
+
+		results := job.Result.([]string)
+		if state.Output != "" && state.IsJSON {
+			err := output.WriteOutputJSON(state, results)
+			if err != nil && state.Silent {
+				fmt.Printf("\n%s-> %v%s\n", helper.Bad, err, helper.Reset)
+			}
+		}
+
+		allSubdomains = append(allSubdomains, results...)
 	}
 
 	passivePool.Stop()
