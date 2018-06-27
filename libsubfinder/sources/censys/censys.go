@@ -102,12 +102,8 @@ func Query(args ...interface{}) interface{} {
 
 			// Add all items found
 			for _, res := range hostResponse.Results {
-				for _, host := range res.Data {
-					initialSubdomains = append(initialSubdomains, host)
-				}
-				for _, host := range res.Data1 {
-					initialSubdomains = append(initialSubdomains, host)
-				}
+				initialSubdomains = append(initialSubdomains, res.Data...)
+				initialSubdomains = append(initialSubdomains, res.Data1...)
 			}
 
 			validSubdomains := helper.Validate(domain, initialSubdomains)
@@ -178,12 +174,8 @@ func Query(args ...interface{}) interface{} {
 
 		// Add all items found
 		for _, res := range hostResponse.Results {
-			for _, host := range res.Data {
-				initialSubdomains = append(initialSubdomains, host)
-			}
-			for _, host := range res.Data1 {
-				initialSubdomains = append(initialSubdomains, host)
-			}
+			initialSubdomains = append(initialSubdomains, res.Data...)
+			initialSubdomains = append(initialSubdomains, res.Data1...)
 		}
 
 		validSubdomains := helper.Validate(domain, initialSubdomains)
@@ -250,12 +242,8 @@ func Query(args ...interface{}) interface{} {
 
 			// Add all items found
 			for _, res := range hostResponse.Results {
-				for _, host := range res.Data {
-					initialSubdomains = append(initialSubdomains, host)
-				}
-				for _, host := range res.Data1 {
-					initialSubdomains = append(initialSubdomains, host)
-				}
+				initialSubdomains = append(initialSubdomains, res.Data...)
+				initialSubdomains = append(initialSubdomains, res.Data1...)
 			}
 
 			validSubdomains := helper.Validate(domain, initialSubdomains)

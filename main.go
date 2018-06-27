@@ -134,10 +134,7 @@ func main() {
 	if state.ComResolver != "" {
 		// Load the Resolvers from list
 		setResolvers := strings.Split(state.ComResolver, ",")
-
-		for _, resolver := range setResolvers {
-			state.LoadResolver = append(state.LoadResolver, resolver)
-		}
+		state.LoadResolver = append(state.LoadResolver, setResolvers...)
 	}
 
 	if state.ListResolver != "" {

@@ -560,9 +560,7 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 			}
 		}
 		results := job.Result.([]string)
-		for _, subdomain := range results {
-			finalPassiveSubdomains = append(finalPassiveSubdomains, subdomain)
-		}
+		finalPassiveSubdomains = append(finalPassiveSubdomains, results...)
 	}
 
 	domainDiscoverPool.Stop()
