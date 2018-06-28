@@ -108,9 +108,7 @@ func (s *Subfinder) parseComResolver() {
 
 	setResolvers := strings.Split(s.State.ComResolver, ",")
 
-	for _, resolver := range setResolvers {
-		s.State.LoadResolver = append(s.State.LoadResolver, resolver)
-	}
+	s.State.LoadResolver = append(s.State.LoadResolver, setResolvers...)
 }
 
 func (s *Subfinder) parseListResolver() {

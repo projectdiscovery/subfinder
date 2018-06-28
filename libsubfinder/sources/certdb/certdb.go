@@ -51,7 +51,6 @@ func findSubdomains(link string, state *helper.State, channel chan []string) {
 	}
 
 	channel <- subdomainsfound
-	return
 }
 
 // Query function returns all subdomains found using the service.

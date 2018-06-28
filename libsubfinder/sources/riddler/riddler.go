@@ -43,6 +43,10 @@ func Query(args ...interface{}) interface{} {
 	domain := args[0].(string)
 	state := args[1].(*helper.State)
 
+	if state.ConfigState.RiddlerEmail == "" || state.ConfigState.RiddlerPassword == "" {
+		return subdomains
+	}
+
 	hc := http.Client{}
 
 	var data = []byte(`{"email":"` + state.ConfigState.RiddlerEmail + `", "password":"` + state.ConfigState.RiddlerPassword + `"}`)

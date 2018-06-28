@@ -26,9 +26,9 @@ func consume(args ...interface{}) interface{} {
 		return ""
 	}
 
-	if state.IsWildcard == true {
+	if state.IsWildcard {
 		result := helper.CheckWildcard(state, ips)
-		if result == true {
+		if result {
 			// We have a wildcard ip
 			return ""
 		}
@@ -65,8 +65,8 @@ func Resolve(state *helper.State, list []string) (subdomains []helper.Domain) {
 			fqdn := job.Args[0].(string)
 			ip := job.Result.(string)
 			subdomain := helper.Domain{IP: ip, Fqdn: fqdn}
-			if state.Silent != true {
-				if state.Verbose == true {
+			if !state.Silent {
+				if state.Verbose {
 					fmt.Printf("\n[%sRESOLVED%s] %s : %s", helper.Info, helper.Reset, subdomain.Fqdn, subdomain.IP)
 				}
 			}

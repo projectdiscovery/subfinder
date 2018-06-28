@@ -84,8 +84,6 @@ func printSubdomains(match [][]string, state *helper.State) {
 			subdomains = append(subdomains, finalSubdomain)
 		}
 	}
-
-	return
 }
 
 // Query function returns all subdomains found using the service.
