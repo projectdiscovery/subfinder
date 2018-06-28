@@ -37,6 +37,10 @@ func Query(args ...interface{}) interface{} {
 	username := state.ConfigState.PassivetotalUsername
 	key := state.ConfigState.PassivetotalKey
 
+	if username == "" || key == "" {
+		return subdomains
+	}
+
 	// Create JSON Get body
 	var request = []byte(`{"query":"` + domain + `"}`)
 

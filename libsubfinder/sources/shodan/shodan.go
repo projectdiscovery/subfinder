@@ -41,6 +41,11 @@ func Query(args ...interface{}) interface{} {
 	state := args[1].(*helper.State)
 
 	shodanAPIKey := state.ConfigState.ShodanAPIKey
+
+	if shodanAPIKey == "" {
+		return subdomains
+	}
+
 	maxPages, _ := strconv.Atoi(state.CurrentSettings.ShodanPages)
 	for currentPage := 0; currentPage <= maxPages; currentPage++ {
 		resp, err := helper.GetHTTPResponse("https://api.shodan.io/shodan/host/search?query=hostname:"+domain+"&page="+strconv.Itoa(currentPage)+"&key="+shodanAPIKey, state.Timeout)

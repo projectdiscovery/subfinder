@@ -75,6 +75,10 @@ func Query(args ...interface{}) interface{} {
 
 	var subdomains []string
 
+	if state.ConfigState.VirustotalAPIKey == "" {
+		return subdomains
+	}
+
 	// Get subdomains via API
 	subdomains, err := queryVirustotalAPI(domain, state)
 
