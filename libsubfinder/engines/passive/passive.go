@@ -451,7 +451,7 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 
 	domainDiscoverPool.Wait()
 
-	if state.Silent {
+	if !state.Silent {
 		fmt.Printf("\nRunning enumeration on %s\n", domain)
 	}
 
