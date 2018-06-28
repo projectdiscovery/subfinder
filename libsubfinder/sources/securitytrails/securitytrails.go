@@ -35,6 +35,10 @@ func Query(args ...interface{}) interface{} {
 	// Get credentials for performing HTTP Basic Auth
 	securitytrailsKey := state.ConfigState.SecurityTrailsKey
 
+	if securitytrailsKey == "" {
+		return subdomains
+	}
+
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://api.securitytrails.com/v1/domain/"+domain+"/subdomains", nil)
 	if err != nil {

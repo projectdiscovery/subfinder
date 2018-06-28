@@ -387,13 +387,13 @@ func (s *Source) printSummary() {
 }
 
 func (s *Source) parseAPIKeys(state *helper.State) {
-	if state.ConfigState.CensysUsername == "" && state.ConfigState.CensysSecret == "" {
+	if state.ConfigState.CensysUsername == "" || state.ConfigState.CensysSecret == "" {
 		s.Censys = false
 	}
-	if state.ConfigState.PassivetotalUsername == "" && state.ConfigState.PassivetotalKey == "" {
+	if state.ConfigState.PassivetotalUsername == "" || state.ConfigState.PassivetotalKey == "" {
 		s.Passivetotal = false
 	}
-	if state.ConfigState.RiddlerEmail == "" && state.ConfigState.RiddlerPassword == "" {
+	if state.ConfigState.RiddlerEmail == "" || state.ConfigState.RiddlerPassword == "" {
 		s.Riddler = false
 	}
 	if state.ConfigState.SecurityTrailsKey == "" {
@@ -710,21 +710,19 @@ func Enumerate(state *helper.State) []string {
 
 	completedJobs := passivePool.Results()
 	for _, job := range completedJobs {
-		if job.Result != nil {
-			results := job.Result.([]string)
-			if state.Output != "" {
-				if state.IsJSON {
-					err := output.WriteOutputJSON(state, results)
-					if err != nil {
-						if state.Silent {
-							fmt.Printf("\n%s-> %v%s\n", helper.Bad, err, helper.Reset)
-						}
-					}
-				}
-			}
-
-			allSubdomains = append(allSubdomains, results...)
+		if job.Result == nil {
+			continue
 		}
+
+		results := job.Result.([]string)
+		if state.Output != "" && state.IsJSON {
+			err := output.WriteOutputJSON(state, results)
+			if err != nil && state.Silent {
+				fmt.Printf("\n%s-> %v%s\n", helper.Bad, err, helper.Reset)
+			}
+		}
+
+		allSubdomains = append(allSubdomains, results...)
 	}
 
 	passivePool.Stop()

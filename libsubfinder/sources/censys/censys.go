@@ -52,6 +52,10 @@ func Query(args ...interface{}) interface{} {
 	username := state.ConfigState.CensysUsername
 	key := state.ConfigState.CensysSecret
 
+	if username == "" || key == "" {
+		return subdomains
+	}
+
 	if state.CurrentSettings.CensysPages != "all" {
 
 		CensysPages, _ := strconv.Atoi(state.CurrentSettings.CensysPages)
