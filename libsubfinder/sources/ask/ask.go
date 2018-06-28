@@ -64,7 +64,7 @@ func Query(args ...interface{}) (i interface{}) {
 
 		newSubdomainsFound := 0
 		for _, subdomain := range match {
-			if sort.StringsAreSorted(subdomains) == false {
+			if !sort.StringsAreSorted(subdomains) {
 				sort.Strings(subdomains)
 			}
 
@@ -73,8 +73,8 @@ func Query(args ...interface{}) (i interface{}) {
 				continue
 			}
 
-			if state.Verbose == true {
-				if state.Color == true {
+			if state.Verbose {
+				if state.Color {
 					fmt.Printf("\n[%sAsk%s] %s", helper.Red, helper.Reset, subdomain)
 				} else {
 					fmt.Printf("\n[Ask] %s", subdomain)

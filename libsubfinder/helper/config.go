@@ -62,7 +62,7 @@ func ReadConfigFile() (configuration *Config, err error) {
 	path := home + "/.config/subfinder/config.json"
 	status, _ := Exists(path)
 
-	if status == true {
+	if status {
 		raw, err := ioutil.ReadFile(path)
 		if err != nil {
 			return &config, err

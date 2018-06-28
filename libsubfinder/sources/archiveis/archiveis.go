@@ -38,9 +38,9 @@ func enumerate(state *helper.State, baseURL string, domain string) (err error) {
 	for _, subdomain := range match {
 		finishedSub := subdomain
 
-		if helper.SubdomainExists(finishedSub, globalSubdomains) == false {
-			if state.Verbose == true {
-				if state.Color == true {
+		if !helper.SubdomainExists(finishedSub, globalSubdomains) {
+			if state.Verbose {
+				if state.Color {
 					fmt.Printf("\n[%sARCHIVE.IS%s] %s", helper.Red, helper.Reset, finishedSub)
 				} else {
 					fmt.Printf("\n[ARCHIVE.IS] %s", finishedSub)
