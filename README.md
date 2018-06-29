@@ -30,7 +30,8 @@ We have designed SubFinder to comply with all passive sources licenses, and usag
  - Powerful Permutation generation engine. (In Development)
  - Many Passive Data Sources (30 At Present)
  - Multiple Output formats
- 
+ - Embeddable Project
+ - Raspberry Pi Support
  
 > Ask, Archive.is, Baidu, Bing, Censys, CertDB, CertSpotter, CrtSH, DnsDB, DNSDumpster, Dogpile, Entrust CT-Search, Exalead, FindSubdomains, GoogleTER, Hackertarget, IPv4Info, Netcraft, PassiveTotal, PTRArchive, Riddler, SecurityTrails, SiteDossier, Shodan, SSL Certificates, ThreatCrowd, ThreatMiner, Virustotal, WaybackArchive, Yahoo
 
