@@ -28,15 +28,18 @@ func GetHomeDir() string {
 }
 
 // Exists returns whether the given file or directory exists or not
-func Exists(path string) (bool, error) {
+func Exists(path string) bool {
 	_, err := os.Stat(path)
+
 	if err == nil {
-		return true, nil
+		return true
 	}
+
 	if os.IsNotExist(err) {
-		return false, nil
+		return false
 	}
-	return true, err
+
+	return true
 }
 
 // CreateDirIfNotExist creates config directory if it does not exists
@@ -53,16 +56,14 @@ func CreateDirIfNotExist(dir string) {
 // ReadConfigFile Reads a config file from disk and returns Configuration structure
 // If not exists, create one and then return
 func ReadConfigFile() (configuration *Config, err error) {
-
 	var config Config
 
 	// Get current path
 	home := GetHomeDir()
 
 	path := home + "/.config/subfinder/config.json"
-	status, _ := Exists(path)
 
-	if status {
+	if Exists(path) {
 		raw, err := ioutil.ReadFile(path)
 		if err != nil {
 			return &config, err
@@ -85,5 +86,4 @@ func ReadConfigFile() (configuration *Config, err error) {
 
 	fmt.Printf("\n[NOTE] Edit %s with your options !", path)
 	return &config, nil
-
 }
