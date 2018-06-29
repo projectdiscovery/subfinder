@@ -94,12 +94,12 @@ func InitializeSettings() (setting *Setting) {
 }
 
 // InitState initializes the default state
-func InitState() (state State, err error) {
+func InitState() (state *State) {
 
 	// Read the configuration file and ignore errors
 	config, _ := ReadConfigFile()
 
 	setting := InitializeSettings()
 
-	return State{true, 10, 180, false, "", false, "", false, false, "", false, []string{}, true, "", false, []string{}, "", "", "", "", []string{}, "", "", false, "", false, nil, *setting, *config}, nil
+	return &State{true, 10, 180, false, "", false, "", false, false, "", false, []string{}, true, "", false, []string{}, "", "", "", "", []string{}, "", "", false, "", false, nil, *setting, *config}
 }

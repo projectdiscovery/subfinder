@@ -92,7 +92,7 @@ func WriteOutputAquatoneJSON(state *helper.State, subdomains []helper.Domain) er
 // WriteOutputToDir writes output state into a directory
 func WriteOutputToDir(state *helper.State, subdomains []string, domain string) (err error) {
 	if state.OutputDir != "" {
-		if state.IsJSON == false {
+		if !state.IsJSON {
 			file, err := os.Create(state.OutputDir + domain + "_hosts.txt")
 
 			if err != nil {
