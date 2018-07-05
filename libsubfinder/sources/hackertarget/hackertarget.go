@@ -36,6 +36,7 @@ func Query(args ...interface{}) interface{} {
 		}
 		return subdomains
 	}
+	defer resp.Body.Close()
 
 	// Get the response body
 	respBody, err := ioutil.ReadAll(resp.Body)
