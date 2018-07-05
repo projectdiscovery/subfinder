@@ -38,16 +38,8 @@ func Query(args ...interface{}) interface{} {
 	}
 	defer resp.Body.Close()
 
-	// Get the response body
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		if !state.Silent {
-			fmt.Printf("\nhackertarget: %v\n", err)
-		}
-		return subdomains
-	}
+	scanner := bufio.NewScanner(resp.Body)
 
-	scanner := bufio.NewScanner(strings.NewReader(string(respBody)))
 	for scanner.Scan() {
 		subdomain := strings.Split(scanner.Text(), ",")[0]
 		subdomains = append(subdomains, subdomain)
