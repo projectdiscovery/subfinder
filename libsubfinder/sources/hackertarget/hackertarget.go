@@ -11,7 +11,6 @@ package hackertarget
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"strings"
 
 	"github.com/subfinder/subfinder/libsubfinder/helper"
