@@ -47,7 +47,6 @@ import (
 	"github.com/subfinder/subfinder/libsubfinder/sources/securitytrails"
 	"github.com/subfinder/subfinder/libsubfinder/sources/shodan"
 	"github.com/subfinder/subfinder/libsubfinder/sources/sitedossier"
-	"github.com/subfinder/subfinder/libsubfinder/sources/sslcertificates"
 	"github.com/subfinder/subfinder/libsubfinder/sources/threatcrowd"
 	"github.com/subfinder/subfinder/libsubfinder/sources/threatminer"
 	"github.com/subfinder/subfinder/libsubfinder/sources/virustotal"
@@ -79,7 +78,6 @@ type Source struct {
 	Ptrarchive              bool
 	Riddler                 bool
 	Securitytrails          bool
-	SSLCertificates         bool
 	Sitedossier             bool
 	Threatcrowd             bool
 	Threatminer             bool
@@ -112,7 +110,6 @@ func (s *Source) enableAll() {
 	s.Ptrarchive = true
 	s.Riddler = true
 	s.Securitytrails = true
-	s.SSLCertificates = true
 	s.Sitedossier = true
 	s.Threatcrowd = true
 	s.Threatminer = true
@@ -165,8 +162,6 @@ func (s *Source) enable(dataSources []string) {
 			s.Riddler = true
 		case "securitytrails":
 			s.Securitytrails = true
-		case "sslcertificates":
-			s.SSLCertificates = true
 		case "sitedossier":
 			s.Sitedossier = true
 		case "threatcrowd":
@@ -232,8 +227,6 @@ func (s *Source) disable(dataSources []string) {
 			s.Riddler = false
 		case "securitytrails":
 			s.Securitytrails = false
-		case "sslcertificates":
-			s.SSLCertificates = false
 		case "sitedossier":
 			s.Sitedossier = false
 		case "threatcrowd":
@@ -275,7 +268,6 @@ func (s *Source) disable(dataSources []string) {
 			s.Ptrarchive = false
 			s.Riddler = false
 			s.Securitytrails = false
-			s.SSLCertificates = false
 			s.Sitedossier = false
 			s.Threatcrowd = false
 			s.Threatminer = false
@@ -358,9 +350,6 @@ func (s *Source) printSummary() {
 	}
 	if s.Securitytrails {
 		fmt.Printf("\nRunning Source: %sSecuritytrails%s", helper.Info, helper.Reset)
-	}
-	if s.SSLCertificates {
-		fmt.Printf("\nRunning Source: %sSSLCertificates%s", helper.Info, helper.Reset)
 	}
 	if s.Shodan {
 		fmt.Printf("\nRunning Source: %sShodan%s", helper.Info, helper.Reset)
@@ -541,9 +530,6 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	}
 	if sourceConfig.Shodan {
 		domainDiscoverPool.Add(shodan.Query, domain, state)
-	}
-	if sourceConfig.SSLCertificates {
-		domainDiscoverPool.Add(sslcertificates.Query, domain, state)
 	}
 	if sourceConfig.Googleter {
 		domainDiscoverPool.Add(googleter.Query, domain, state)

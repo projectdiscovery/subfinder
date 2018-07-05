@@ -14,7 +14,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/subfinder/xurls"
+	"github.com/subfinder/urlx"
 )
 
 // Result is the Current result structure
@@ -79,7 +79,7 @@ func SubdomainExists(key string, values []string) bool {
 
 // ExtractSubdomains extracts a subdomain from a big blob of text
 func ExtractSubdomains(text, domain string) (urls []string) {
-	allUrls := xurls.ExtractSubdomains(text, domain)
+	allUrls := urlx.ExtractSubdomains(text, domain)
 
 	return Validate(domain, allUrls)
 }
