@@ -1,5 +1,5 @@
 //
-// Written By : @ice3man (Nizamul Rana)
+// Written By : @ice3man (Nizamul Rana) and @picatz (Kent Gruber)
 //
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
