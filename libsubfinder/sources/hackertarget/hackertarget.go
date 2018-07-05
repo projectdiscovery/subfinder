@@ -44,8 +44,8 @@ func Query(args ...interface{}) interface{} {
 		subdomain := strings.Split(scanner.Text(), ",")[0]
 		subdomains = append(subdomains, subdomain)
 
-		if state.Verbose == true {
-			if state.Color == true {
+		if state.Verbose {
+			if state.Color {
 				fmt.Printf("\n[%sHACKERTARGET%s] %s", helper.Red, helper.Reset, subdomain)
 			} else {
 				fmt.Printf("\n[HACKERTARGET] %s", subdomain)
