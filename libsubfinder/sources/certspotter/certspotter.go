@@ -61,8 +61,8 @@ func Query(args ...interface{}) interface{} {
 				dnsName = strings.Split(dnsName, "*.")[1]
 			}
 
-			if state.Verbose == true {
-				if state.Color == true {
+			if state.Verbose {
+				if state.Color {
 					fmt.Printf("\n[%sCERTSPOTTER%s] %s", helper.Red, helper.Reset, dnsName)
 				} else {
 					fmt.Printf("\n[CERTSPOTTER] %s", dnsName)
