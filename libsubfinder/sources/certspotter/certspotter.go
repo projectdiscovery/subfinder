@@ -11,7 +11,6 @@ package certspotter
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"strings"
 
 	"github.com/subfinder/subfinder/libsubfinder/helper"
