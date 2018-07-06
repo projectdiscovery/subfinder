@@ -43,17 +43,8 @@ func Query(args ...interface{}) interface{} {
 		return subdomains
 	}
 
-	// Get the response body
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		if !state.Silent {
-			fmt.Printf("\ncertspotter: %v\n", err)
-		}
-		return subdomains
-	}
-
-	// Decode the json format
-	err = json.Unmarshal([]byte(respBody), &certspotterData)
+	// Decode as json format
+	err = json.NewDecoder(resp.Body).Decode(&certspotterData)
 	if err != nil {
 		if !state.Silent {
 			fmt.Printf("\ncertspotter: %v\n", err)
