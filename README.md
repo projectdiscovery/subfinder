@@ -1,9 +1,5 @@
 # SubFinder
 [![License](https://img.shields.io/badge/license-MIT-_red.svg)](https://opensource.org/licenses/MIT)
-[![Twitter](https://img.shields.io/badge/twitter-@Ice3man543-blue.svg)](https://twitter.com/Ice3man543)
-[![Twitter](https://img.shields.io/badge/twitter-@codingo__-blue.svg)](https://twitter.com/codingo_)
-[![Twitter](https://img.shields.io/badge/Twitter-@Mzack9999-blue.svg)](https://twitter.com/Mzack9999)
-[![Twitter](https://img.shields.io/badge/Twitter-@KentGruber-blue.svg)](https://twitter.com/KentGruber)
 [![Build Status](https://travis-ci.org/subfinder/subfinder.svg?branch=master)](https://travis-ci.org/subfinder/subfinder)
 [![Go Report Card](https://goreportcard.com/badge/github.com/subfinder/subfinder)](https://goreportcard.com/report/github.com/subfinder/subfinder) 
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/subfinder/subfinder/issues)
@@ -217,3 +213,8 @@ If you want to do bruteforce only and do not want to run the passive subdomain d
 ```bash
 ./subfinder -d freelancer.com --no-passive -v -b -w ~/dnslist.txt
 ```
+
+# License
+
+SubFinder is made with 🖤 by the [dev](https://github.com/orgs/subfinder/people) team.
+See the **License** file for more details.
