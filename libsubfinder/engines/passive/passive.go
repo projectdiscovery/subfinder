@@ -31,6 +31,7 @@ import (
 	"github.com/subfinder/subfinder/libsubfinder/sources/certdb"
 	"github.com/subfinder/subfinder/libsubfinder/sources/certificatetransparency"
 	"github.com/subfinder/subfinder/libsubfinder/sources/certspotter"
+	"github.com/subfinder/subfinder/libsubfinder/sources/commoncrawl"
 	"github.com/subfinder/subfinder/libsubfinder/sources/crtsh"
 	"github.com/subfinder/subfinder/libsubfinder/sources/dnsdb"
 	"github.com/subfinder/subfinder/libsubfinder/sources/dnsdumpster"
@@ -66,6 +67,7 @@ type Source struct {
 	Bing                    bool
 	Censys                  bool
 	Certdb                  bool
+	Commoncrawl             bool
 	Crtsh                   bool
 	Certspotter             bool
 	Dnsdb                   bool
@@ -99,6 +101,7 @@ func (s *Source) enableAll() {
 	s.Censys = true
 	s.Certdb = true
 	s.Certspotter = true
+	s.Commoncrawl = true
 	s.Crtsh = true
 	s.Dnsdb = true
 	s.Dnsdumpster = true
@@ -140,6 +143,8 @@ func (s *Source) enable(dataSources []string) {
 			s.Certdb = true
 		case "certspotter":
 			s.Certspotter = true
+		case "commoncrawl":
+			s.Commoncrawl = true
 		case "crtsh":
 			s.Crtsh = true
 		case "dnsdb":
@@ -205,6 +210,8 @@ func (s *Source) disable(dataSources []string) {
 			s.Certdb = false
 		case "certspotter":
 			s.Certspotter = false
+		case "commoncrawl":
+			s.Commoncrawl = false
 		case "crtsh":
 			s.Crtsh = false
 		case "dnsdb":
@@ -257,6 +264,7 @@ func (s *Source) disable(dataSources []string) {
 			s.Censys = false
 			s.Certdb = false
 			s.Certspotter = false
+			s.Commoncrawl = false
 			s.Crtsh = false
 			s.Dnsdb = false
 			s.Dnsdumpster = false
@@ -308,6 +316,9 @@ func (s *Source) printSummary() {
 	}
 	if s.Certspotter {
 		fmt.Printf("\nRunning Source: %sCertspotter%s", helper.Info, helper.Reset)
+	}
+	if s.Commoncrawl {
+		fmt.Printf("\nRunning Source: %sCommoncrawl%s", helper.Info, helper.Reset)
 	}
 	if s.Crtsh {
 		fmt.Printf("\nRunning Source: %sCrt.sh%s", helper.Info, helper.Reset)
@@ -533,6 +544,9 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	}
 	if sourceConfig.Googleter {
 		domainDiscoverPool.Add(googleter.Query, domain, state)
+	}
+	if sourceConfig.Commoncrawl {
+		domainDiscoverPool.Add(commoncrawl.Query, domain, state)
 	}
 
 	domainDiscoverPool.Wait()
