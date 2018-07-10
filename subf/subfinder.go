@@ -134,18 +134,19 @@ func (s *Subfinder) parseListResolver() {
 }
 
 func (s *Subfinder) parseBruteForce() {
-	if s.State.Bruteforce == true && s.State.Wordlist == "" {
-		if !s.State.Silent {
+	if s.State.Bruteforce == true {
+		if s.State.Wordlist == "" {
+		    if !s.State.Silent {
 			fmt.Printf("%s-> Must provide a wordlist when bruteforce is enabled.%s\nTry %s'./subfinder -h'%s for more information\n", helper.Bad, helper.Reset, helper.Info, helper.Reset)
+		    }
+		    os.Exit(1)
 		}
-		os.Exit(1)
-	}
-
-	if !helper.Exists(s.State.Wordlist) {
-		if !s.State.Silent {
+		if !helper.Exists(s.State.Wordlist) {
+		    if !s.State.Silent {
 			fmt.Printf("%s-> The wordlist file '%s' does not exist.%s\n", helper.Bad, s.State.Wordlist, helper.Reset)
+		    }
+		    os.Exit(1)
 		}
-		os.Exit(1)
 	}
 }
 
