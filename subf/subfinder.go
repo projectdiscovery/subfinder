@@ -32,6 +32,7 @@ func (s *Subfinder) Init() {
 	s.parseSetting()
 	s.parseComResolver()
 	s.parseListResolver()
+	s.parseBruteForce()
 	s.setCommonResolver()
 	s.setOutput()
 	s.setDomain()
@@ -132,6 +133,22 @@ func (s *Subfinder) parseListResolver() {
 	}
 }
 
+func (s *Subfinder) parseBruteForce() {
+	if s.State.Bruteforce == true && s.State.Wordlist == "" {
+		if !s.State.Silent {
+			fmt.Printf("%s-> Must provide a wordlist when bruteforce is enabled.%s\nTry %s'./subfinder -h'%s for more information\n", helper.Bad, helper.Reset, helper.Info, helper.Reset)
+		}
+		os.Exit(1)
+	}
+
+	if !helper.Exists(s.State.Wordlist) {
+		if !s.State.Silent {
+			fmt.Printf("%s-> The wordlist file '%s' does not exist.%s\n", helper.Bad, s.State.Wordlist, helper.Reset)
+		}
+		os.Exit(1)
+	}
+}
+
 func (s *Subfinder) setCommonResolver() {
 	// Use the default resolvers
 	if s.State.ComResolver != "" && s.State.ListResolver != "" {
@@ -169,6 +186,13 @@ func (s *Subfinder) setDomain() {
 	if s.State.Domain == "" && s.State.DomainList == "" {
 		if !s.State.Silent {
 			fmt.Printf("%s-> Missing \"domain\" argument %s\nTry %s'./subfinder -h'%s for more information\n", helper.Bad, helper.Reset, helper.Info, helper.Reset)
+		}
+		os.Exit(1)
+	}
+
+	if s.State.DomainList != "" && !helper.Exists(s.State.DomainList) {
+		if !s.State.Silent {
+			fmt.Printf("%s-> The domainlist file '%s' does not exist.%s\n", helper.Bad, s.State.DomainList, helper.Reset)
 		}
 		os.Exit(1)
 	}
