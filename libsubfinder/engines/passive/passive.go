@@ -433,7 +433,19 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	}
 
 	// Now, perform checks for wildcard ip
-	helper.Resolver = dns_resolver.New(state.LoadResolver)
+
+	// Must make a copy of state.LoadResolver to pass to dns_resolver.New because
+	// dns_resolver.New modifies the list of servers passed to it, which modifies
+	// state.LoadResolver. When using -dL the call to dns_resolver.New is made
+	// multiple times and each time state.LoadResolver is modified resulting in
+	// the following resolver lists:
+	// First call:  [1.1.1.1:53 8.8.8.8:53 8.8.4.4:53].
+	// Second call: [[1.1.1.1:53]:53 [8.8.8.8:53]:53 [8.8.4.4:53]:53].
+	// Third call:  [[[1.1.1.1:53]:53]:53 [[8.8.8.8:53]:53]:53 [[8.8.4.4:53]:53]:53]
+	var resolvers []string
+	resolvers = append(resolvers, state.LoadResolver...)
+
+	helper.Resolver = dns_resolver.New(resolvers)
 
 	// Initialize Wildcard Subdomains
 	state.IsWildcard, state.WildcardIP = helper.InitWildcard(domain)
