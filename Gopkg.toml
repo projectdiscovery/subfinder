@@ -1,0 +1,15 @@
+[[constraint]]
+  branch = "master"
+  name = "github.com/bogdanovich/dns_resolver"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/subfinder/subfinder"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/subfinder/urlx"
+
+[prune]
+  go-tests = true
+  unused-packages = true
