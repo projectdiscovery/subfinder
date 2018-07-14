@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
-fv
 	"github.com/subfinder/subfinder/libsubfinder/engines/passive"
 	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
