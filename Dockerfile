@@ -1,15 +1,20 @@
-# iron/go:dev is the alpine image with the go tools added
-FROM golang
-WORKDIR /app
+# Build Container
+FROM golang:1.9.4-alpine3.7 AS build-env
+RUN apk add --no-cache --upgrade git openssh-client ca-certificates
+RUN go get -u github.com/golang/dep/cmd/dep
+WORKDIR /go/src/app
 
-# Set an env var that matches your github repo name
-ENV SRC_DIR=/go/src/github.com/Ice3man543/subfinder/
+# Cache the dependencies early
+COPY Gopkg.toml Gopkg.lock ./
+RUN dep ensure -vendor-only -v
 
-# Add the source code:
-ADD . $SRC_DIR
+# Build
+COPY main.go ./
+RUN go build -o ./subfinder *.go
 
-# Build it:
-RUN cd $SRC_DIR; go get; go build -o main; cp main /app/
+# Final Container
+FROM alpine:3.7
+COPY --from=build-env /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=build-env /go/src/app/subfinder /usr/bin/subfinder
 
-ENTRYPOINT ["./main"]
-CMD ["-h"]
+ENTRYPOINT ["/usr/bin/subfinder"]
