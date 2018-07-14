@@ -11,7 +11,6 @@ package certspotter
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"strings"
 
 	"github.com/subfinder/subfinder/libsubfinder/helper"
@@ -44,17 +43,8 @@ func Query(args ...interface{}) interface{} {
 		return subdomains
 	}
 
-	// Get the response body
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		if !state.Silent {
-			fmt.Printf("\ncertspotter: %v\n", err)
-		}
-		return subdomains
-	}
-
-	// Decode the json format
-	err = json.Unmarshal([]byte(respBody), &certspotterData)
+	// Decode as json format
+	err = json.NewDecoder(resp.Body).Decode(&certspotterData)
 	if err != nil {
 		if !state.Silent {
 			fmt.Printf("\ncertspotter: %v\n", err)
@@ -71,8 +61,8 @@ func Query(args ...interface{}) interface{} {
 				dnsName = strings.Split(dnsName, "*.")[1]
 			}
 
-			if state.Verbose == true {
-				if state.Color == true {
+			if state.Verbose {
+				if state.Color {
 					fmt.Printf("\n[%sCERTSPOTTER%s] %s", helper.Red, helper.Reset, dnsName)
 				} else {
 					fmt.Printf("\n[CERTSPOTTER] %s", dnsName)

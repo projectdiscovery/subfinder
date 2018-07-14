@@ -1,5 +1,5 @@
 //
-// Written By : @ice3man (Nizamul Rana)
+// Written By : @ice3man (Nizamul Rana) and @picatz (Kent Gruber)
 //
 // Distributed Under MIT License
 // Copyrights (C) 2018 Ice3man
@@ -11,7 +11,6 @@ package hackertarget
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"strings"
 
 	"github.com/subfinder/subfinder/libsubfinder/helper"
@@ -36,23 +35,16 @@ func Query(args ...interface{}) interface{} {
 		}
 		return subdomains
 	}
+	defer resp.Body.Close()
 
-	// Get the response body
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		if !state.Silent {
-			fmt.Printf("\nhackertarget: %v\n", err)
-		}
-		return subdomains
-	}
+	scanner := bufio.NewScanner(resp.Body)
 
-	scanner := bufio.NewScanner(strings.NewReader(string(respBody)))
 	for scanner.Scan() {
 		subdomain := strings.Split(scanner.Text(), ",")[0]
 		subdomains = append(subdomains, subdomain)
 
-		if state.Verbose == true {
-			if state.Color == true {
+		if state.Verbose {
+			if state.Color {
 				fmt.Printf("\n[%sHACKERTARGET%s] %s", helper.Red, helper.Reset, subdomain)
 			} else {
 				fmt.Printf("\n[HACKERTARGET] %s", subdomain)
