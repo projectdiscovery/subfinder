@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
-
+fv
 	"github.com/subfinder/subfinder/libsubfinder/engines/passive"
 	"github.com/subfinder/subfinder/libsubfinder/helper"
 )
@@ -69,7 +69,7 @@ func (s *Subfinder) parseConfig() {
 			reflect.ValueOf(&s.State.ConfigState).Elem().FieldByName("CensysUsername").SetString(object[1])
 		} else if strings.EqualFold(object[0], "censyssecret") {
 			reflect.ValueOf(&s.State.ConfigState).Elem().FieldByName("CensysSecret").SetString(object[1])
-		} else if strings.EqualFold(object[0], "shodanapikey") 
+		} else if strings.EqualFold(object[0], "shodanapikey") {
 			reflect.ValueOf(&s.State.ConfigState).Elem().FieldByName("ShodanAPIKey").SetString(object[1])
 		}
 
