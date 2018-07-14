@@ -1,0 +1,2 @@
+domain1.blabla
+domain2.blabla
