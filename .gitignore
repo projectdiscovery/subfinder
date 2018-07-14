@@ -30,3 +30,5 @@ main
 *.zip
 checksums.txt
 build/
+
+vendor/
