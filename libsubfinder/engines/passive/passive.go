@@ -41,7 +41,6 @@ import (
 	"github.com/subfinder/subfinder/libsubfinder/sources/googleter"
 	"github.com/subfinder/subfinder/libsubfinder/sources/hackertarget"
 	"github.com/subfinder/subfinder/libsubfinder/sources/ipv4info"
-	"github.com/subfinder/subfinder/libsubfinder/sources/netcraft"
 	"github.com/subfinder/subfinder/libsubfinder/sources/passivetotal"
 	"github.com/subfinder/subfinder/libsubfinder/sources/ptrarchive"
 	"github.com/subfinder/subfinder/libsubfinder/sources/riddler"
@@ -75,7 +74,6 @@ type Source struct {
 	Findsubdomains          bool
 	Googleter               bool
 	Hackertarget            bool
-	Netcraft                bool
 	Passivetotal            bool
 	Ptrarchive              bool
 	Riddler                 bool
@@ -108,7 +106,6 @@ func (s *Source) enableAll() {
 	s.Findsubdomains = true
 	s.Googleter = true
 	s.Hackertarget = true
-	s.Netcraft = true
 	s.Passivetotal = true
 	s.Ptrarchive = true
 	s.Riddler = true
@@ -157,8 +154,6 @@ func (s *Source) enable(dataSources []string) {
 			s.Googleter = true
 		case "hackertarget":
 			s.Hackertarget = true
-		case "netcraft":
-			s.Netcraft = true
 		case "passivetotal":
 			s.Passivetotal = true
 		case "ptrarchive":
@@ -224,8 +219,6 @@ func (s *Source) disable(dataSources []string) {
 			s.Googleter = false
 		case "hackertarget":
 			s.Hackertarget = false
-		case "netcraft":
-			s.Netcraft = false
 		case "passivetotal":
 			s.Passivetotal = false
 		case "ptrarchive":
@@ -271,7 +264,6 @@ func (s *Source) disable(dataSources []string) {
 			s.Findsubdomains = false
 			s.Googleter = false
 			s.Hackertarget = false
-			s.Netcraft = false
 			s.Passivetotal = false
 			s.Ptrarchive = false
 			s.Riddler = false
@@ -346,9 +338,6 @@ func (s *Source) printSummary() {
 	}
 	if s.Ipv4Info {
 		fmt.Printf("\nRunning Source: %sIpv4Info%s", helper.Info, helper.Reset)
-	}
-	if s.Netcraft {
-		fmt.Printf("\nRunning Source: %sNetcraft%s", helper.Info, helper.Reset)
 	}
 	if s.Passivetotal {
 		fmt.Printf("\nRunning Source: %sPassiveTotal%s", helper.Info, helper.Reset)
@@ -502,9 +491,6 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	}
 	if sourceConfig.Securitytrails {
 		domainDiscoverPool.Add(securitytrails.Query, domain, state)
-	}
-	if sourceConfig.Netcraft {
-		domainDiscoverPool.Add(netcraft.Query, domain, state)
 	}
 	if sourceConfig.Waybackarchive {
 		domainDiscoverPool.Add(waybackarchive.Query, domain, state)
