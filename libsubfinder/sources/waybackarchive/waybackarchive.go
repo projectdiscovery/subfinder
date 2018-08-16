@@ -42,7 +42,6 @@ func Query(args ...interface{}) interface{} {
 		return subdomains
 	}
 
-	fmt.Printf("%s", string(b))
 	numPages, err := strconv.Atoi(strings.Split(string(b), "\n")[0])
 	if err != nil {
 		if !state.Silent {
@@ -51,7 +50,6 @@ func Query(args ...interface{}) interface{} {
 		return subdomains
 	}
 
-	fmt.Printf("%d", numPages)
 	for i := 0; i <= numPages; i++ {
 		resp, err := helper.GetHTTPResponse("http://web.archive.org/cdx/search/cdx?url=*."+domain+"/*&output=json&fl=original&collapse=urlkey&page="+string(i), state.Timeout)
 		if err != nil {
