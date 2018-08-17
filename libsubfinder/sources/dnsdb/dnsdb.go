@@ -22,7 +22,6 @@ var subdomains []string
 
 // Query function returns all subdomains found using the service.
 func Query(args ...interface{}) interface{} {
-
 	domain := args[0].(string)
 	state := args[1].(*helper.State)
 
@@ -32,6 +31,13 @@ func Query(args ...interface{}) interface{} {
 	// Make a http request to DnsDB
 	resp, err := helper.GetHTTPResponse("http://www.dnsdb.org/f/"+domain+".dnsdb.org/", state.Timeout)
 	if err != nil {
+		if !state.Silent {
+			fmt.Printf("\ndnsdb: %v\n", err)
+		}
+		return subdomains
+	}
+	if resp.StatusCode != 200 {
+		err := fmt.Sprintf("Unexpected return status %d", resp.StatusCode)
 		if !state.Silent {
 			fmt.Printf("\ndnsdb: %v\n", err)
 		}
