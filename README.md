@@ -1,7 +1,8 @@
 # SubFinder
 [![License](https://img.shields.io/badge/license-MIT-_red.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://travis-ci.org/subfinder/subfinder.svg?branch=master)](https://travis-ci.org/subfinder/subfinder)
-[![Go Report Card](https://goreportcard.com/badge/github.com/subfinder/subfinder)](https://goreportcard.com/report/github.com/subfinder/subfinder) 
+[![Go Report Card](https://goreportcard.com/badge/github.com/subfinder/subfinder)](https://goreportcard.com/report/github.com/subfinder/subfinder) [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fsubfinder%2Fsubfinder.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fsubfinder%2Fsubfinder?ref=badge_shield)
+
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/subfinder/subfinder/issues)
 
 SubFinder is a subdomain discovery tool that discovers valid subdomains for websites by using passive online sources. It has a simple modular architecture and has been aimed as a successor to sublist3r project. SubFinder uses Passive Sources, Search Engines, Pastebins, Internet Archives, etc to find subdomains and then it uses a permutation module inspired by altdns to generate permutations and resolve them quickly using a powerful bruteforcing engine. It can also perform plain bruteforce if needed. The tool is highly customizable, and the code is built with a modular approach in mind making it easy to add functionalities and remove errors.
@@ -218,3 +219,6 @@ If you want to do bruteforce only and do not want to run the passive subdomain d
 
 SubFinder is made with 🖤 by the [dev](https://github.com/orgs/subfinder/people) team.
 See the **License** file for more details.
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fsubfinder%2Fsubfinder.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fsubfinder%2Fsubfinder?ref=badge_large)
