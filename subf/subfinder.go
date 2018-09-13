@@ -151,7 +151,7 @@ func (s *Subfinder) parseBruteForce() {
 
 func (s *Subfinder) setCommonResolver() {
 	// Use the default resolvers
-	if s.State.ComResolver != "" && s.State.ListResolver != "" {
+	if s.State.ComResolver != "" || s.State.ListResolver != "" {
 		return
 	}
 
