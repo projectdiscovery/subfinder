@@ -1,7 +1,7 @@
 # SubFinder
 [![License](https://img.shields.io/badge/license-MIT-_red.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://travis-ci.org/subfinder/subfinder.svg?branch=master)](https://travis-ci.org/subfinder/subfinder)
-[![Go Report Card](https://goreportcard.com/badge/github.com/subfinder/subfinder)](https://goreportcard.com/report/github.com/subfinder/subfinder) 
+[![Go Report Card](https://goreportcard.com/badge/github.com/subfinder/subfinder)](https://goreportcard.com/report/github.com/subfinder/subfinder)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/subfinder/subfinder/issues)
 
 SubFinder is a subdomain discovery tool that discovers valid subdomains for websites by using passive online sources. It has a simple modular architecture and has been aimed as a successor to sublist3r project. SubFinder uses Passive Sources, Search Engines, Pastebins, Internet Archives, etc to find subdomains and then it uses a permutation module inspired by altdns to generate permutations and resolve them quickly using a powerful bruteforcing engine. It can also perform plain bruteforce if needed. The tool is highly customizable, and the code is built with a modular approach in mind making it easy to add functionalities and remove errors.
@@ -19,17 +19,17 @@ We have designed SubFinder to comply with all passive sources licenses, and usag
 - [Running SubFinder](#running-subfinder)
 
 [![asciicast](https://raw.githubusercontent.com/Ice3man543/ice3man543.github.io/master/assets/asciinema.png)](https://asciinema.org/a/az7rub4RzDMqjI9dcPJpxm7zf)
- 
+
  # Features
- 
+
  - Simple and modular code base making it easy to contribute.
- - Fast And Powerful Bruteforcing Module 
+ - Fast And Powerful Bruteforcing Module
  - Powerful Permutation generation engine. (In Development)
  - Many Passive Data Sources (31 At Present)
  - Multiple Output formats
  - Embeddable Project
  - Raspberry Pi Support
- 
+
 > Ask, Archive.is, Baidu, Bing, Censys, CertDB, CertSpotter, Commoncrawl, CrtSH, DnsDB, DNSDumpster, Dogpile, Entrust CT-Search, Exalead, FindSubdomains, GoogleTER, Hackertarget, IPv4Info, Netcraft, PassiveTotal, PTRArchive, Riddler, SecurityTrails, SiteDossier, Shodan, ThreatCrowd, ThreatMiner, Virustotal, WaybackArchive, Yahoo
 
 ***We ensure that we abide by the terms and conditions of all sources that we query. For this reason we don't perform scraping on any site that doesn't allow it.***
@@ -37,7 +37,7 @@ We have designed SubFinder to comply with all passive sources licenses, and usag
 # Usage
 
 ```bash
-./subfinder -h 
+./subfinder -h
 ```
 This will display help for the tool. Here are all the switches it supports.
 
@@ -46,12 +46,12 @@ This will display help for the tool. Here are all the switches it supports.
 | -b   | Use bruteforcing to find subdomains | ./subfinder -d example.com -b |
 | -c   | Don't show colored output            | ./subfinder -c |
 | -d   | Domain to find subdomains for        | ./subfinder -d example.com |
-| -dL  | List of domains to find subdomains for | ./subfinder -dl hosts.txt | 
-| -nW  | Remove wildcard subdomains           | ./subfinder -nw |
-| -o   | Name of the output file (Optional)   | ./subfinder -o output.txt | 
-| -oT  | Write output in Aquatone style JSON format (Required -nW)  | ./subfinder -o output.txt -nw -oA | 
+| -dL  | List of domains to find subdomains for | ./subfinder -dL hosts.txt |
+| -nW  | Remove wildcard subdomains           | ./subfinder -nW |
+| -o   | Name of the output file (Optional)   | ./subfinder -o output.txt |
+| -oT  | Write output in Aquatone style JSON format (Required -nW)  | ./subfinder -o output.txt -nW -oT |
 | -oJ  | Write output in JSON format          | ./subfinder -o output.json -oJ |
-| -oD  | Output to directory (When using multiple hosts) | ./subfinder -od ~/misc/out/ |
+| -oD  | Output to directory (When using multiple hosts) | ./subfinder -oD ~/misc/out/ |
 | -r  | Comma-separated list of resolvers to use | ./subfinder -r 8.8.8.8,1.1.1.1 |
 | -rL  | File containing list of resolvers to use | ./subfinder -rL resolvers.txt |
 | --recursive  | Use recursive subdomain finding (default: true) | ./subfinder --recursive |
@@ -61,10 +61,10 @@ This will display help for the tool. Here are all the switches it supports.
 | --silent | Show only the subdomains found    | ./subfinder --silent |
 | --sources | Comma separated list of sources to use (optional) | ./subfinder --sources threatcrowd,virustotal |
 | --exclude-sources | Comma separated list of sources not to use (optional) | ./subfinder --exclude-sources threatcrowd,virustotal |
-| -t   | Number of concurrent threads (Bruteforce) | ./subfinder -t 10 |
+| -t   | Number of concurrent threads (Bruteforce) | ./subfinder -b -t 10 -w words.txt |
 | --timeout | Seconds to wait until quitting connection | ./subfinder --timeout 10 |
 | -v | Display verbose output  | ./subfinder -v |
-| -w | Wordlist for doing bruteforcing and permutation | ./subfinder -w words.txt | 
+| -w | Wordlist for doing bruteforcing and permutation | ./subfinder -w words.txt |
 
 # Installation Instructions
 ## Direct Installation
@@ -109,7 +109,7 @@ docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it subfinder -d u
 
 Subfinder will work after using the installation instructions however to configure Subfinder to work with certain services, you will need to have setup API keys. These following services do not work without an API key:
 
-- [Virustotal](https://www.virustotal.com/) 
+- [Virustotal](https://www.virustotal.com/)
 - [Passivetotal](http://passivetotal.org/)
 - [SecurityTrails](http://securitytrails.com/)
 - [Censys](https://censys.io)
@@ -118,8 +118,8 @@ Subfinder will work after using the installation instructions however to configu
 
 These are the configuration options you have to specify via the command line.
 ```bash
-VirustotalAPIKey 
-PassivetotalUsername 
+VirustotalAPIKey
+PassivetotalUsername
 PassivetotalKey
 SecurityTrailsKey
 RiddlerEmail
@@ -181,11 +181,11 @@ The --set-config switch can be used to set the value of any configuration option
 You can also pass some special settings for the tool through the command line by using --set-setting flag.
 For example, you can pass the number of Censys pages to check using the following command.
 ```bash
-./subfinder -d freelancer.com --sources censys --set-settings CensysPages=2 -v 
+./subfinder -d freelancer.com --sources censys --set-settings CensysPages=2 -v
 ```
 For checking all pages returned by censys, you can use "all" option. Note, It is a string.
 
-These are the settings currently supported 
+These are the settings currently supported
 ```bash
 CensysPages
 AskPages
@@ -195,12 +195,12 @@ BingPages
 
 For using bruteforcing capabilities, you can use -b flag with -w option to specify a wordlist.
 ```bash
-./subfinder -d freelancer.com -b -w jhaddix_all.txt -t 100 --sources censys --set-settings CensysPages=2 -v 
+./subfinder -d freelancer.com -b -w jhaddix_all.txt -t 100 --sources censys --set-settings CensysPages=2 -v
 ```
 
 You can also write output in JSON format as used by Aquatone.
 ```bash
-./subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v 
+./subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v
 ```
 
 You can specify custom resolvers too.
