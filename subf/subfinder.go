@@ -161,8 +161,6 @@ func (s *Subfinder) setCommonResolver() {
 	s.State.LoadResolver = append(s.State.LoadResolver, "8.8.4.4")
 	s.State.LoadResolver = append(s.State.LoadResolver, "9.9.9.9")
 	s.State.LoadResolver = append(s.State.LoadResolver, "9.9.9.10")
-	s.State.LoadResolver = append(s.State.LoadResolver, "209.244.0.3")
-	s.State.LoadResolver = append(s.State.LoadResolver, "209.244.0.4")
 	s.State.LoadResolver = append(s.State.LoadResolver, "208.67.222.222")
 	s.State.LoadResolver = append(s.State.LoadResolver, "208.67.220.220")
 }
