@@ -35,6 +35,7 @@ import (
 	"github.com/subfinder/subfinder/libsubfinder/sources/crtsh"
 	"github.com/subfinder/subfinder/libsubfinder/sources/dnsdb"
 	"github.com/subfinder/subfinder/libsubfinder/sources/dnsdumpster"
+	"github.com/subfinder/subfinder/libsubfinder/sources/dnstable"
 	"github.com/subfinder/subfinder/libsubfinder/sources/dogpile"
 	"github.com/subfinder/subfinder/libsubfinder/sources/exalead"
 	"github.com/subfinder/subfinder/libsubfinder/sources/findsubdomains"
@@ -70,6 +71,7 @@ type Source struct {
 	Crtsh                   bool
 	Certspotter             bool
 	Dnsdb                   bool
+	Dnstable                bool
 	Dnsdumpster             bool
 	Findsubdomains          bool
 	Googleter               bool
@@ -103,6 +105,7 @@ func (s *Source) enableAll() {
 	s.Crtsh = true
 	s.Dnsdb = true
 	s.Dnsdumpster = true
+	s.Dnstable = true
 	s.Findsubdomains = true
 	s.Googleter = true
 	s.Hackertarget = true
@@ -148,6 +151,8 @@ func (s *Source) enable(dataSources []string) {
 			s.Dnsdb = true
 		case "dnsdumpster":
 			s.Dnsdumpster = true
+		case "dnstable":
+			s.Dnstable = true
 		case "findsubdomains":
 			s.Findsubdomains = true
 		case "googleter":
@@ -213,6 +218,8 @@ func (s *Source) disable(dataSources []string) {
 			s.Dnsdb = false
 		case "dnsdumpster":
 			s.Dnsdumpster = false
+		case "dnstable":
+			s.Dnstable = false
 		case "findsubdomains":
 			s.Findsubdomains = false
 		case "googleter":
@@ -261,6 +268,7 @@ func (s *Source) disable(dataSources []string) {
 			s.Crtsh = false
 			s.Dnsdb = false
 			s.Dnsdumpster = false
+			s.Dnstable = false
 			s.Findsubdomains = false
 			s.Googleter = false
 			s.Hackertarget = false
@@ -320,6 +328,9 @@ func (s *Source) printSummary() {
 	}
 	if s.Dnsdumpster {
 		fmt.Printf("\nRunning Source: %sDNSDumpster%s", helper.Info, helper.Reset)
+	}
+	if s.Dnstable {
+		fmt.Printf("\nRunning Source: %sDNSTable%s", helper.Info, helper.Reset)
 	}
 	if s.Dogpile {
 		fmt.Printf("\nRunning Source: %sDogpile%s", helper.Info, helper.Reset)
@@ -467,6 +478,9 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	}
 	if sourceConfig.Certspotter {
 		domainDiscoverPool.Add(certspotter.Query, domain, state)
+	}
+	if sourceConfig.Dnstable {
+		domainDiscoverPool.Add(dnstable.Query, domain, state)
 	}
 	if sourceConfig.Threatcrowd {
 		domainDiscoverPool.Add(threatcrowd.Query, domain, state)
