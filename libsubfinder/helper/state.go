@@ -63,6 +63,8 @@ type Config struct {
 	CensysSecret   string `json:"censysSecret"`   // Censys API Key
 
 	ShodanAPIKey string `json:"shodanApiKey"` // Shodan API Key
+
+	UrlscanAPIKey string `json:"urlscanApiKey"` // Urlscan API Key
 }
 
 // Setting contains settings for sources

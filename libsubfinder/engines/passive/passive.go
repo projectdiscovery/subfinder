@@ -53,6 +53,7 @@ import (
 	"github.com/subfinder/subfinder/libsubfinder/sources/virustotal"
 	"github.com/subfinder/subfinder/libsubfinder/sources/waybackarchive"
 	"github.com/subfinder/subfinder/libsubfinder/sources/yahoo"
+	"github.com/subfinder/subfinder/libsubfinder/sources/urlscan"
 )
 
 //DomainList contain the list of domains
@@ -91,6 +92,7 @@ type Source struct {
 	Dogpile                 bool
 	Exalead                 bool
 	Shodan                  bool
+	Urlscan                 bool
 }
 
 func (s *Source) enableAll() {
@@ -124,6 +126,7 @@ func (s *Source) enableAll() {
 	s.Dogpile = true
 	s.Exalead = true
 	s.Shodan = true
+	s.Urlscan = true
 }
 
 func (s *Source) enable(dataSources []string) {
@@ -189,6 +192,8 @@ func (s *Source) enable(dataSources []string) {
 			s.Exalead = true
 		case "shodan":
 			s.Shodan = true
+		case "urlscan":
+			s.Urlscan = true
 		}
 	}
 }
@@ -256,6 +261,8 @@ func (s *Source) disable(dataSources []string) {
 			s.Dogpile = false
 		case "shodan":
 			s.Shodan = false
+		case "urlscan":
+			s.Urlscan = false
 		case "all":
 			s.Ask = false
 			s.Archiveis = false
@@ -288,6 +295,7 @@ func (s *Source) disable(dataSources []string) {
 			s.Dogpile = false
 			s.Dogpile = false
 			s.Shodan = false
+			s.Urlscan = false
 		}
 	}
 }
@@ -382,6 +390,9 @@ func (s *Source) printSummary() {
 	}
 	if s.Yahoo {
 		fmt.Printf("\nRunning Source: %sYahoo%s\n", helper.Info, helper.Reset)
+	}
+	if s.Urlscan {
+		fmt.Printf("\nRunning Source: %sUrlscan%s\n", helper.Info, helper.Reset)
 	}
 
 }
@@ -547,6 +558,9 @@ func discover(state *helper.State, domain string, sourceConfig *Source) (subdoma
 	}
 	if sourceConfig.Commoncrawl {
 		domainDiscoverPool.Add(commoncrawl.Query, domain, state)
+	}
+	if sourceConfig.Urlscan {
+		domainDiscoverPool.Add(urlscan.Query, domain, state)
 	}
 
 	domainDiscoverPool.Wait()
