@@ -54,7 +54,7 @@ This will display help for the tool. Here are all the switches it supports.
 | -oD  | Output to directory (When using multiple hosts) | ./subfinder -oD ~/misc/out/ |
 | -r  | Comma-separated list of resolvers to use | ./subfinder -r 8.8.8.8,1.1.1.1 |
 | -rL  | File containing list of resolvers to use | ./subfinder -rL resolvers.txt |
-| --recursive  | Use recursive subdomain finding (default: true) | ./subfinder --recursive |
+| --recursive  | Use recursive subdomain finding (default: false) | ./subfinder --recursive |
 | --set-config | Sets a configuration option | ./subfinder --set-config example=something |
 | --set-settings | Sets a setting option | ./subfinder --set-settings CensysPages=10 |
 | --no-passive  | Do not perform passive subdomain enumeration | ./subfinder -d freelancer.com --no-passive |
