@@ -56,20 +56,8 @@ func Query(args ...interface{}) interface{} {
 		return subdomains
 	}
 
-	// Convert Response Body to string and then replace }{ to },{
-	// This is done in order to enable parsing of JSON format employed by
-	// crt.sh
-	correctFormat := strings.Replace(string(respBody), "}{", "},{", -1)
-
-	// Now convert it into a json array like this
-	// [
-	// 		{abc},
-	//		{abc}
-	// ]
-	jsonOutput := "[" + correctFormat + "]"
-
 	// Decode the json format
-	err = json.Unmarshal([]byte(jsonOutput), &crtshData)
+	err = json.Unmarshal([]byte(respBody), &crtshData)
 	if err != nil {
 		if !state.Silent {
 			fmt.Printf("\ncrtsh: %v\n", err)
