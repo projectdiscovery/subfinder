@@ -97,8 +97,8 @@ ShodanAPIKey
 Theses values are stored in the $HOME/.config/subfinder/config.json file which will be created when you run the tool for the first time. To configure the services to use an API key, you need to use the tool with --set-config option which will allow you to set a configuration option. For example:
 
 ```bash
-./subfinder --set-config VirustotalAPIKey=0x41414141
-./subfinder --set-config PassivetotalUsername=hacker,PassivetotalKey=supersecret
+~/go/bin/./subfinder --set-config VirustotalAPIKey=0x41414141
+~/go/bin/./subfinder --set-config PassivetotalUsername=hacker,PassivetotalKey=supersecret
 ```
 
 If you are using docker, you need to first create your directory structure holding subfinder configuration file. You can either run the binary in your host system and let it create the directory structure of files, after which you can use --set-config flag to set the api values like before. Or you can run:
