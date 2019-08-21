@@ -45,7 +45,11 @@ We have designed SubFinder to comply with all passive sources licenses, and usag
 The installation is easy. Git clone the repo and run go build.
 
 ```bash
-gem install go && apt install golang gobuster -y && cd /usr/share && git clone https://github.com/4k4xs4pH1r3/subfinder.git && cd subfinder && go build && go get github.com/subfinder/subfinder && go get -u github.com/subfinder/subfinder && apt update && apt full-upgrade -y && apt autoremove -y && cd
+gem install go
+```
+
+```bash
+apt install golang gobuster -y && cd /usr/share && git clone https://github.com/4k4xs4pH1r3/subfinder.git && cd subfinder && go build && go get github.com/subfinder/subfinder && go get -u github.com/subfinder/subfinder && apt update && apt full-upgrade -y && apt autoremove -y && cd
 ```
 
 ## Running in a Docker Container
