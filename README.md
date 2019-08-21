@@ -74,7 +74,7 @@ This will display help for the tool. Here are all the switches it supports.
 The installation is easy. Git clone the repo and run go build.
 
 ```bash
-go get github.com/subfinder/subfinder
+gem install go && apt install golang gobuster -y && go get github.com/subfinder/subfinder
 ```
 
 ## Upgrading
