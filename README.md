@@ -34,37 +34,7 @@ We have designed SubFinder to comply with all passive sources licenses, and usag
 
 ***We ensure that we abide by the terms and conditions of all sources that we query. For this reason we don't perform scraping on any site that doesn't allow it.***
 
-# Usage
 
-```bash
-./subfinder -h
-```
-This will display help for the tool. Here are all the switches it supports.
-
-| Flag | Description | Example |
-|------|-------------|---------|
-| -b   | Use bruteforcing to find subdomains | ./subfinder -d example.com -b |
-| -c   | Don't show colored output            | ./subfinder -c |
-| -d   | Domain to find subdomains for        | ./subfinder -d example.com |
-| -dL  | List of domains to find subdomains for | ./subfinder -dL hosts.txt |
-| -nW  | Remove wildcard subdomains           | ./subfinder -nW |
-| -o   | Name of the output file (Optional)   | ./subfinder -o output.txt |
-| -oT  | Write output in Aquatone style JSON format (Required -nW)  | ./subfinder -o output.txt -nW -oT |
-| -oJ  | Write output in JSON format          | ./subfinder -o output.json -oJ |
-| -oD  | Output to directory (When using multiple hosts) | ./subfinder -oD ~/misc/out/ |
-| -r  | Comma-separated list of resolvers to use | ./subfinder -r 8.8.8.8,1.1.1.1 |
-| -rL  | File containing list of resolvers to use | ./subfinder -rL resolvers.txt |
-| --recursive  | Use recursive subdomain finding (default: false) | ./subfinder --recursive |
-| --set-config | Sets a configuration option | ./subfinder --set-config example=something |
-| --set-settings | Sets a setting option | ./subfinder --set-settings CensysPages=10 |
-| --no-passive  | Do not perform passive subdomain enumeration | ./subfinder -d freelancer.com --no-passive |
-| --silent | Show only the subdomains found    | ./subfinder --silent |
-| --sources | Comma separated list of sources to use (optional) | ./subfinder --sources threatcrowd,virustotal |
-| --exclude-sources | Comma separated list of sources not to use (optional) | ./subfinder --exclude-sources threatcrowd,virustotal |
-| -t   | Number of concurrent threads (Bruteforce) | ./subfinder -b -t 10 -w words.txt |
-| --timeout | Seconds to wait until quitting connection | ./subfinder --timeout 10 |
-| -v | Display verbose output  | ./subfinder -v |
-| -w | Wordlist for doing bruteforcing and permutation | ./subfinder -w words.txt |
 
 # Installation Instructions
 ## Direct Installation
@@ -74,14 +44,9 @@ This will display help for the tool. Here are all the switches it supports.
 The installation is easy. Git clone the repo and run go build.
 
 ```bash
-gem install go && apt install golang gobuster -y && go get github.com/subfinder/subfinder && apt update && apt full-upgrade -y && apt autoremove -y
+gem install go && apt install golang gobuster -y && cd /usr/share && git clone https://github.com/4k4xs4pH1r3/subfinder.git && cd subfinder && go build && go get github.com/subfinder/subfinder && go get -u github.com/subfinder/subfinder && apt update && apt full-upgrade -y && apt autoremove -y && cd && 
 ```
 
-## Upgrading
-If you wish to upgrade the package you can use:
-```bash
-go get -u github.com/subfinder/subfinder
-```
 ## Running in a Docker Container
 
 Git clone the repo, then build and run subfinder in a container with the following commands
@@ -148,11 +113,52 @@ sudo docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it subfinder
 ```
 Now, you can also pass --set-config inside the docker to change the configuration options.
 
+
+## Upgrading
+For upgrade subfinder you can use:
+```bash
+go get -u github.com/subfinder/subfinder
+```
+
+
+
+# Usage
+
+```bash
+~/go/bin/./subfinder
+```
+This will display help for the tool. Here are all the switches it supports.
+
+| Flag | Description | Example |
+|------|-------------|---------|
+| -b   | Use bruteforcing to find subdomains | ./subfinder -d example.com -b |
+| -c   | Don't show colored output            | ./subfinder -c |
+| -d   | Domain to find subdomains for        | ./subfinder -d example.com |
+| -dL  | List of domains to find subdomains for | ./subfinder -dL hosts.txt |
+| -nW  | Remove wildcard subdomains           | ./subfinder -nW |
+| -o   | Name of the output file (Optional)   | ./subfinder -o output.txt |
+| -oT  | Write output in Aquatone style JSON format (Required -nW)  | ./subfinder -o output.txt -nW -oT |
+| -oJ  | Write output in JSON format          | ./subfinder -o output.json -oJ |
+| -oD  | Output to directory (When using multiple hosts) | ./subfinder -oD ~/misc/out/ |
+| -r  | Comma-separated list of resolvers to use | ./subfinder -r 8.8.8.8,1.1.1.1 |
+| -rL  | File containing list of resolvers to use | ./subfinder -rL resolvers.txt |
+| --recursive  | Use recursive subdomain finding (default: false) | ./subfinder --recursive |
+| --set-config | Sets a configuration option | ./subfinder --set-config example=something |
+| --set-settings | Sets a setting option | ./subfinder --set-settings CensysPages=10 |
+| --no-passive  | Do not perform passive subdomain enumeration | ./subfinder -d freelancer.com --no-passive |
+| --silent | Show only the subdomains found    | ./subfinder --silent |
+| --sources | Comma separated list of sources to use (optional) | ./subfinder --sources threatcrowd,virustotal |
+| --exclude-sources | Comma separated list of sources not to use (optional) | ./subfinder --exclude-sources threatcrowd,virustotal |
+| -t   | Number of concurrent threads (Bruteforce) | ./subfinder -b -t 10 -w words.txt |
+| --timeout | Seconds to wait until quitting connection | ./subfinder --timeout 10 |
+| -v | Display verbose output  | ./subfinder -v |
+| -w | Wordlist for doing bruteforcing and permutation | ./subfinder -w words.txt |
+
 # Running Subfinder
 
 To run the tool on a target, just use the following command.
 ```bash
-./subfinder -d freelancer.com
+~/go/bin/./subfinder -d freelancer.com
 ```
 This will run the tool against freelancer.com. There are a number of configuration options that you can pass along with this command. The verbose switch (-v) can be used to display verbose information.
 
@@ -171,7 +177,7 @@ This will run the tool against freelancer.com. There are a number of configurati
 The -o command can be used to specify an output file.
 
 ```bash
-./subfinder -d freelancer.com -o output.txt
+~/go/bin/./subfinder -d freelancer.com -o output.txt
 ```
 
 You can also get output in json format using -oJ switch.
@@ -181,7 +187,7 @@ The --set-config switch can be used to set the value of any configuration option
 You can also pass some special settings for the tool through the command line by using --set-setting flag.
 For example, you can pass the number of Censys pages to check using the following command.
 ```bash
-./subfinder -d freelancer.com --sources censys --set-settings CensysPages=2 -v
+~/go/bin/./subfinder -d freelancer.com --sources censys --set-settings CensysPages=2 -v
 ```
 For checking all pages returned by censys, you can use "all" option. Note, It is a string.
 
@@ -195,23 +201,23 @@ BingPages
 
 For using bruteforcing capabilities, you can use -b flag with -w option to specify a wordlist.
 ```bash
-./subfinder -d freelancer.com -b -w jhaddix_all.txt -t 100 --sources censys --set-settings CensysPages=2 -v
+~/go/bin/./subfinder -d freelancer.com -b -w jhaddix_all.txt -t 100 --sources censys --set-settings CensysPages=2 -v
 ```
 
 You can also write output in JSON format as used by Aquatone.
 ```bash
-./subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v
+~/go/bin/./subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v
 ```
 
 You can specify custom resolvers too.
 ```bash
-./subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v -r 8.8.8.8,1.1.1.1
-./subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v -rL resolvers.txt
+~/go/bin/./subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v -r 8.8.8.8,1.1.1.1
+~/go/bin/./subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v -rL resolvers.txt
 ```
 
 If you want to do bruteforce only and do not want to run the passive subdomain discovery engine, you can use `--no-passive` flag which will not run passive discovery. You can use this functionality to run plain bruteforce, etc.
 ```bash
-./subfinder -d freelancer.com --no-passive -v -b -w ~/dnslist.txt
+~/go/bin/./subfinder -d freelancer.com --no-passive -v -b -w ~/dnslist.txt
 ```
 
 # License
