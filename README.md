@@ -1,4 +1,5 @@
-# SubFinder
+# subfinder
+
 [![License](https://img.shields.io/badge/license-MIT-_red.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://travis-ci.org/subfinder/subfinder.svg?branch=master)](https://travis-ci.org/subfinder/subfinder)
 [![Go Report Card](https://goreportcard.com/badge/github.com/subfinder/subfinder)](https://goreportcard.com/report/github.com/subfinder/subfinder)
@@ -222,7 +223,7 @@ If you want to do bruteforce only and do not want to run the passive subdomain d
 
 Ninja Mode
 ```bash
-~/go/bin/./subfinder --recursive -d freelancer.com -b -t 37 -w /usr/share/wordlists/*.* -o att.json -oT -nW -v
+~/go/bin/./subfinder --recursive -d freelancer.com -b -t 37 -w /usr/share/wordlists/dnsmap.txt -o /root/go/bin/freelancer.json -oT -nW -v
 ```
 
 # License
