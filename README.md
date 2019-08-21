@@ -220,6 +220,11 @@ If you want to do bruteforce only and do not want to run the passive subdomain d
 ~/go/bin/./subfinder -d freelancer.com --no-passive -v -b -w ~/dnslist.txt
 ```
 
+Ninja Mode
+```bash
+~/go/bin/./subfinder --recursive -d freelancer.com -b -t 37 -w /usr/share/wordlists/*.* -o att.json -oT -nW -v
+```
+
 # License
 
 SubFinder is made with 🖤 by the [dev](https://github.com/orgs/subfinder/people) team.
