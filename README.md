@@ -227,7 +227,7 @@ If you want to do bruteforce only and do not want to run the passive subdomain d
 
 Ninja Mode
 ```bash
-~/go/bin/./subfinder --recursive -d freelancer.com -b -t 37 -w /usr/share/wordlists/dnsmap.txt -o /root/go/bin/freelancer.txt -nW -oT -v
+~/go/bin/./subfinder --recursive -d freelancer.com -b -t 37 -w /usr/share/wordlists/dnsmap.txt -o /root/go/bin/freelancer.json -nW -oT -v
 ```
 
 # License
