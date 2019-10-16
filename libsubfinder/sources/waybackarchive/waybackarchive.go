@@ -51,7 +51,7 @@ func Query(args ...interface{}) interface{} {
 	}
 
 	for i := 0; i <= numPages; i++ {
-		resp, err := helper.GetHTTPResponse("http://web.archive.org/cdx/search/cdx?url=*."+domain+"/*&output=json&fl=original&collapse=urlkey&page="+string(i), state.Timeout)
+		resp, err := helper.GetHTTPResponse("http://web.archive.org/cdx/search/cdx?url=*."+domain+"/*&output=json&fl=original&collapse=urlkey&page="+strconv.Itoa(i), state.Timeout)
 		if err != nil {
 			if !state.Silent {
 				fmt.Printf("\nwaybackarchive: %v\n", err)
