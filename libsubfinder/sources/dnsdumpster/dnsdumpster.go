@@ -53,7 +53,7 @@ func Query(args ...interface{}) interface{} {
 	}
 	src := string(body)
 
-	re := regexp.MustCompile("<input type=\"hidden\" name=\"csrfmiddlewaretoken\" value=\"(.*)\">")
+	re := regexp.MustCompile(`<input type="hidden" name="csrfmiddlewaretoken" value="(.*)">`)
 	match := re.FindAllStringSubmatch(src, -1)
 	// CSRF Middleware token for POST Request
 	csrfmiddlewaretoken := match[0]
