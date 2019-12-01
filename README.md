@@ -106,6 +106,12 @@ Theses values are stored in the $HOME/.config/subfinder/config.json file which w
 ~/go/bin/./subfinder --set-config PassivetotalUsername=hacker,PassivetotalKey=supersecret
 ```
 
+## Upgrading
+For upgrade subfinder you can use:
+```bash
+go get -u github.com/subfinder/subfinder
+```
+
 If you are using docker, you need to first create your directory structure holding subfinder configuration file. You can either run the binary in your host system and let it create the directory structure of files, after which you can use --set-config flag to set the api values like before. Or you can run:
 ```bash
 mkdir $HOME/.config/subfinder
@@ -119,14 +125,8 @@ sudo docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it subfinder
 Now, you can also pass --set-config inside the docker to change the configuration options.
 
 
-## Upgrading
-For upgrade subfinder you can use:
-```bash
-go get -u github.com/subfinder/subfinder
-```
-
-
-
+#
+#
 # Usage
 
 ```bash
