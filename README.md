@@ -52,6 +52,12 @@ gem install go
 apt install golang gobuster -y && cd /usr/share && git clone https://github.com/4k4xs4pH1r3/subfinder.git && cd subfinder && go build && go get github.com/subfinder/subfinder && go get -u github.com/subfinder/subfinder && apt update && apt full-upgrade -y && apt autoremove -y && cd
 ```
 
+## Upgrading
+For upgrade subfinder you can use:
+```bash
+go get -u github.com/subfinder/subfinder
+```
+
 ## Running in a Docker Container
 
 Git clone the repo, then build and run subfinder in a container with the following commands
@@ -106,11 +112,7 @@ Theses values are stored in the $HOME/.config/subfinder/config.json file which w
 ~/go/bin/./subfinder --set-config PassivetotalUsername=hacker,PassivetotalKey=supersecret
 ```
 
-## Upgrading
-For upgrade subfinder you can use:
-```bash
-go get -u github.com/subfinder/subfinder
-```
+## For use in Docker
 
 If you are using docker, you need to first create your directory structure holding subfinder configuration file. You can either run the binary in your host system and let it create the directory structure of files, after which you can use --set-config flag to set the api values like before. Or you can run:
 ```bash
