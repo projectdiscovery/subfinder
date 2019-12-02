@@ -14,9 +14,9 @@ type Level int
 
 // Available logging levels
 const (
-	Silent Level = iota
+	Fatal Level = iota
+	Silent
 	Error
-	Fatal
 	Info
 	Warning
 	Verbose
