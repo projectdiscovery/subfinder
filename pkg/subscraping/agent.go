@@ -53,3 +53,32 @@ func (s *Session) NormalGet(url string) (*http.Response, error) {
 
 	return resp, nil
 }
+
+// Get makes a GET request to a URL
+func (s *Session) Get(url string, cookies string, headers map[string]string) (*http.Response, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36")
+	req.Header.Set("Accept", "*/*")
+	req.Header.Set("Accept-Language", "en")
+
+	if cookies != "" {
+		req.Header.Set("Cookie", cookies)
+	}
+
+	if headers != nil {
+		for key, value := range headers {
+			req.Header.Set(key, value)
+		}
+	}
+
+	resp, err := s.Client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
