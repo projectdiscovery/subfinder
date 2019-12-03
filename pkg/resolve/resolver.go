@@ -27,8 +27,8 @@ type Resolver struct {
 	rand      *rand.Rand
 }
 
-// NewResolver creates a new resolver struct with the default resolvers
-func NewResolver() *Resolver {
+// New creates a new resolver struct with the default resolvers
+func New() *Resolver {
 	return &Resolver{
 		resolvers: []string{},
 		rand:      rand.New(rand.NewSource(time.Now().UnixNano())),
