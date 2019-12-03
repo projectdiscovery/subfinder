@@ -18,7 +18,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
-		resp, err := Session.NormalGet("http://ipv4info.com/search/" + domain)
+		resp, err := session.NormalGet("http://ipv4info.com/search/" + domain)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			close(results)
@@ -44,7 +44,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 		token := matchTokens[0]
 
-		resp, err = Session.NormalGet("http://ipv4info.com" + token)
+		resp, err = session.NormalGet("http://ipv4info.com" + token)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			close(results)
@@ -69,7 +69,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 		token = matchTokens[0]
 
-		resp, err = Session.NormalGet("http://ipv4info.com" + token)
+		resp, err = session.NormalGet("http://ipv4info.com" + token)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			close(results)
@@ -94,7 +94,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 		token = matchTokens[0]
 
-		resp, err = Session.NormalGet("http://ipv4info.com" + token)
+		resp, err = session.NormalGet("http://ipv4info.com" + token)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			close(results)
@@ -145,7 +145,7 @@ func (s *Source) getSubdomains(ctx context.Context, domain string, nextPage *int
 			}
 			token := matchTokens[0]
 
-			resp, err := Session.NormalGet("http://ipv4info.com" + token)
+			resp, err := session.NormalGet("http://ipv4info.com" + token)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				return false
