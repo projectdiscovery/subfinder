@@ -39,7 +39,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		req.SetBasicAuth(session.Keys.PassiveTotalUsername, session.Keys.PassiveTotalPassword)
 		req.Header.Set("Content-Type", "application/json")
 
-		resp, err := session.Client.Client.Do(req)
+		resp, err := session.Client.Do(req)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			close(results)

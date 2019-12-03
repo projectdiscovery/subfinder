@@ -29,7 +29,7 @@ func (a *agent) makeRequest(token string, domain string) (string, error) {
 		requestURI = "https://www.google.com/transparencyreport/api/v3/httpsreport/ct/certsearch/page?domain=" + url.QueryEscape(domain) + "&include_expired=true&include_subdomains=true&p=" + url.QueryEscape(token)
 	}
 
-	resp, err := a.session.Client.Get(requestURI, "", map[string]string{
+	resp, err := a.session.Get(requestURI, "", map[string]string{
 		"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
 		"Referer":    "https://transparencyreport.google.com/https/certificates",
 	})

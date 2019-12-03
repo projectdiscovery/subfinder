@@ -27,7 +27,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		resp, err := session.Client.Get(fmt.Sprintf("https://api.binaryedge.io/v2/query/domains/subdomain/%s", domain), "", map[string]string{"X-Key": session.Keys.Binaryedge})
+		resp, err := session.Get(fmt.Sprintf("https://api.binaryedge.io/v2/query/domains/subdomain/%s", domain), "", map[string]string{"X-Key": session.Keys.Binaryedge})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			close(results)
@@ -75,7 +75,7 @@ func (s *Source) getSubdomains(ctx context.Context, domain string, remaining, cu
 		case <-ctx.Done():
 			return false
 		default:
-			resp, err := session.Client.Get(fmt.Sprintf("https://api.binaryedge.io/v2/query/domains/subdomain/%s?page=%d", domain, *currentPage), "", map[string]string{"X-Key": session.Keys.Binaryedge})
+			resp, err := session.Get(fmt.Sprintf("https://api.binaryedge.io/v2/query/domains/subdomain/%s?page=%d", domain, *currentPage), "", map[string]string{"X-Key": session.Keys.Binaryedge})
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				return false

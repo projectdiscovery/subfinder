@@ -24,7 +24,7 @@ func (a *agent) enumerate(ctx context.Context, baseURL string) error {
 		case <-ctx.Done():
 			return nil
 		default:
-			resp, err := a.Session.NormalGet(baseURL)
+			resp, err := a.session.NormalGet(baseURL)
 			if err != nil {
 				a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
 				close(a.results)

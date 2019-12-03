@@ -26,7 +26,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
-		resp, err := session.Client.Get(fmt.Sprintf("https://ssltools.digicert.com/chainTester/webservice/ctsearch/search?keyword=%s", domain), "", nil)
+		resp, err := session.Get(fmt.Sprintf("https://ssltools.digicert.com/chainTester/webservice/ctsearch/search?keyword=%s", domain), "", nil)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			close(results)
@@ -38,8 +38,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			close(results)
+			resp.Body.Close()
 			return
 		}
+		resp.Body.Close()
 
 		for _, cert := range response.Data.CertificateDetail {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: strings.TrimPrefix(strings.ToLower(cert.CommonName), "*.")}
