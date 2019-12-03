@@ -1,6 +1,9 @@
 package runner
 
-import "github.com/subfinder/subfinder/pkg/log"
+import (
+	"github.com/subfinder/subfinder/pkg/log"
+	"github.com/subfinder/subfinder/pkg/resolve"
+)
 
 const banner = `
         _     __ _         _         
@@ -39,12 +42,16 @@ func (options *Options) firstRunTasks() {
 
 	// Create the configuration file and display information
 	// about it to the user.
-	config := ConfigFile{}
+	config := ConfigFile{
+		// Use the default list of resolvers by marshalling it to the config
+		Resolvers: resolve.DefaultResolvers,
+	}
 
 	err := config.MarshalWrite(options.ConfigFile)
 	if err != nil {
 		log.Fatalf("Could not write configuration file to %s: %s\n", options.ConfigFile, err)
 	}
+	options.YAMLConfig = config
 
 	log.Infof("Configuration file saved to %s\n", options.ConfigFile)
 }

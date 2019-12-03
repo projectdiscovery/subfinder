@@ -11,28 +11,25 @@ import (
 // Options contains the configuration options for tuning
 // the subdomain enumeration process.
 type Options struct {
-	Verbose             bool     // Verbose flag indicates whether to show verbose output or not
-	NoColor             bool     // No-Color disables the colored output
-	Threads             int      // Thread controls the number of threads to use for active enumerations
-	Timeout             int      // Timeout is the seconds to wait for sources to respond
-	Domain              string   // Domain is the domain to find subdomains for
-	DomainsFile         string   // DomainsFile is the file containing list of domains to find subdomains for
-	Output              string   // Output is the file to write found subdomains to.
-	OutputDirectory     string   // OutputDirectory is the directory to write results to in case list of domains is given
-	JSON                bool     // JSON specifies whether to use json for output format or text file
-	HostIP              bool     // HostIP specifies whether to write subdomains in host:ip format
-	Silent              bool     // Silent suppresses any extra text and only writes subdomains to screen
-	Sources             string   // Sources contains a comma-separated list of sources to use for enumeration
-	sourcesSlice        []string // unmarshaled list of sources
-	ExcludeSources      string   // ExcludeSources contains the comma-separated sources to not include in the enumeration process
-	excludeSourcesSlice []string // unmarshaled list of excluded sources
-	Resolvers           string   // Resolvers is the comma-separated resolvers to use for enumeration
-	resolversSlice      []string // unmarshaled list of resolvers
-	ResolverList        string   // ResolverList is a text file containing list of resolvers to use for enumeration
-	RemoveWildcard      bool     // RemoveWildcard specifies whether to remove potential wildcard or dead subdomains from the results.
-	UnauthenticatedOnly bool     // UnauthenticatedOnly specifies to run enumeration using only sources that do not require an API key
-	ConfigFile          string   // ConfigFile contains the location of the config file
-	Stdin               bool     // Stdin specifies whether stdin input was given to the process
+	Verbose             bool   // Verbose flag indicates whether to show verbose output or not
+	NoColor             bool   // No-Color disables the colored output
+	Threads             int    // Thread controls the number of threads to use for active enumerations
+	Timeout             int    // Timeout is the seconds to wait for sources to respond
+	Domain              string // Domain is the domain to find subdomains for
+	DomainsFile         string // DomainsFile is the file containing list of domains to find subdomains for
+	Output              string // Output is the file to write found subdomains to.
+	OutputDirectory     string // OutputDirectory is the directory to write results to in case list of domains is given
+	JSON                bool   // JSON specifies whether to use json for output format or text file
+	HostIP              bool   // HostIP specifies whether to write subdomains in host:ip format
+	Silent              bool   // Silent suppresses any extra text and only writes subdomains to screen
+	Sources             string // Sources contains a comma-separated list of sources to use for enumeration
+	ExcludeSources      string // ExcludeSources contains the comma-separated sources to not include in the enumeration process
+	Resolvers           string // Resolvers is the comma-separated resolvers to use for enumeration
+	ResolverList        string // ResolverList is a text file containing list of resolvers to use for enumeration
+	RemoveWildcard      bool   // RemoveWildcard specifies whether to remove potential wildcard or dead subdomains from the results.
+	UnauthenticatedOnly bool   // UnauthenticatedOnly specifies to run enumeration using only sources that do not require an API key
+	ConfigFile          string // ConfigFile contains the location of the config file
+	Stdin               bool   // Stdin specifies whether stdin input was given to the process
 
 	YAMLConfig ConfigFile // YAMLConfig contains the unmarshalled yaml config file
 }
@@ -83,6 +80,13 @@ func ParseOptions() *Options {
 		options.firstRunTasks()
 	} else {
 		options.normalRunTasks()
+	}
+
+	// Validate the options passed by the user and if any
+	// invalid options have been used, exit.
+	err = options.validateOptions()
+	if err != nil {
+		log.Fatalf("Program exiting: %s\n", err)
 	}
 
 	return options
