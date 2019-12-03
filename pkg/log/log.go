@@ -14,8 +14,11 @@ type Level int
 
 // Available logging levels
 const (
-	Fatal Level = iota
+	Null Level = iota
+	Fatal
 	Silent
+	Label
+	Misc
 	Error
 	Info
 	Warning
@@ -33,6 +36,7 @@ var (
 	labels = map[Level]string{
 		Warning: "WRN",
 		Error:   "ERR",
+		Label:   "WRN",
 		Fatal:   "FTL",
 		Info:    "INF",
 	}
@@ -59,7 +63,7 @@ func wrap(label string, level Level) string {
 		return aurora.Bold(aurora.Red(label)).String()
 	case Error:
 		return aurora.Red(label).String()
-	case Warning:
+	case Warning, Label:
 		return aurora.Yellow(label).String()
 	default:
 		return label
@@ -70,9 +74,9 @@ func wrap(label string, level Level) string {
 // and the label passed.
 func getLabel(level Level, label string, sb *strings.Builder) {
 	switch level {
-	case Silent:
+	case Silent, Misc:
 		return
-	case Error, Fatal, Info, Warning:
+	case Error, Fatal, Info, Warning, Label:
 		sb.WriteString("[")
 		sb.WriteString(wrap(labels[level], level))
 		sb.WriteString("]")
@@ -91,6 +95,11 @@ func getLabel(level Level, label string, sb *strings.Builder) {
 
 // log logs the actual message to the screen
 func log(level Level, label string, format string, args ...interface{}) {
+	// Don't log if the level is null
+	if level == Null {
+		return
+	}
+
 	if level <= MaxLevel {
 		// Build the log message using the string builder pool
 		sb := stringBuilderPool.Get().(*strings.Builder)
@@ -146,4 +155,14 @@ func Silentf(format string, args ...interface{}) {
 func Fatalf(format string, args ...interface{}) {
 	log(Fatal, "", format, args...)
 	os.Exit(1)
+}
+
+// Printf prints a string on screen without any extra stuff
+func Printf(format string, args ...interface{}) {
+	log(Misc, "", format, args...)
+}
+
+// Labelf prints a string on screen with a label interface
+func Labelf(format string, args ...interface{}) {
+	log(Label, "", format, args...)
 }

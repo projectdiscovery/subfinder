@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/logrusorgru/aurora"
 )
 
@@ -27,8 +28,7 @@ func TestGetLabel(t *testing.T) {
 		sb.Reset()
 		getLabel(test.level, test.label, sb)
 		data := sb.String()
-		if !strings.EqualFold(data, test.expected) {
-			t.Fatalf("Expected %s got %s\n", test.expected, data)
-		}
+
+		assert.Equal(t, data, test.expected, "Expected message and generate message don't match")
 	}
 }
