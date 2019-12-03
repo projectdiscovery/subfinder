@@ -2,6 +2,7 @@ package runner
 
 import (
 	"github.com/subfinder/subfinder/pkg/log"
+	"github.com/subfinder/subfinder/pkg/passive"
 	"github.com/subfinder/subfinder/pkg/resolve"
 )
 
@@ -45,6 +46,8 @@ func (options *Options) firstRunTasks() {
 	config := ConfigFile{
 		// Use the default list of resolvers by marshalling it to the config
 		Resolvers: resolve.DefaultResolvers,
+		// Use the default list of passive sources
+		Sources: passive.DefaultSources,
 	}
 
 	err := config.MarshalWrite(options.ConfigFile)

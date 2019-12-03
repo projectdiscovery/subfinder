@@ -45,7 +45,7 @@ func ParseOptions() *Options {
 	}
 
 	flag.BoolVar(&options.Verbose, "v", false, "Show Verbose output")
-	flag.BoolVar(&options.NoColor, "nC", true, "Don't Use colors in output")
+	flag.BoolVar(&options.NoColor, "nC", false, "Don't Use colors in output")
 	flag.IntVar(&options.Threads, "t", 10, "Number of concurrent threads for active enumeration")
 	flag.IntVar(&options.Timeout, "timeout", 30, "Seconds to wait before timing out")
 	flag.StringVar(&options.Domain, "d", "", "Domain to find subdomains for")

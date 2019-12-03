@@ -3,7 +3,7 @@ package runner
 import (
 	"os"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // ConfigFile contains the fields stored in the configuration file
@@ -50,11 +50,15 @@ func CheckConfigExists(configPath string) bool {
 
 // MarshalWrite writes the marshalled yaml config to disk
 func (c ConfigFile) MarshalWrite(file string) error {
-	f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE, 0755)
 	if err != nil {
 		return err
 	}
-	err = yaml.NewEncoder(f).Encode(&c)
+
+	// Indent the spaces too
+	enc := yaml.NewEncoder(f)
+	enc.SetIndent(4)
+	err = enc.Encode(&c)
 	f.Close()
 	return err
 }
