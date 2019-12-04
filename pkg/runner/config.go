@@ -1,8 +1,12 @@
 package runner
 
 import (
+	"math/rand"
 	"os"
+	"strings"
+	"time"
 
+	"github.com/subfinder/subfinder/pkg/subscraping"
 	"gopkg.in/yaml.v3"
 )
 
@@ -20,11 +24,15 @@ type ConfigFile struct {
 	Facebook       []string `yaml:"facebook"`
 	PassiveTotal   []string `yaml:"passivetotal"`
 	SecurityTrails []string `yaml:"securitytrails"`
+	URLScan        []string `yaml:"urlscan"`
 	Virustotal     []string `yaml:"virustotal"`
 }
 
 // GetConfigDirectory gets the subfinder config directory for a user
 func GetConfigDirectory() (string, error) {
+	// Seed the random number generator
+	rand.Seed(time.Now().UnixNano())
+
 	var config string
 
 	directory, err := os.UserHomeDir()
@@ -72,4 +80,33 @@ func (c ConfigFile) UnmarshalRead(file string) error {
 	err = yaml.NewDecoder(f).Decode(&c)
 	f.Close()
 	return err
+}
+
+// GetKeys gets the API keys from config file and creates a Keys struct
+// We use random selection of api keys from the list of keys supplied.
+// Keys that require 2 options are separated by colon (:).
+func (c ConfigFile) GetKeys() subscraping.Keys {
+	keys := subscraping.Keys{}
+
+	keys.Binaryedge = c.Binaryedge[rand.Intn(len(c.Binaryedge))]
+	keys.Certspotter = c.Certspotter[rand.Intn(len(c.Certspotter))]
+
+	facebookKeys := c.Facebook[rand.Intn(len(c.Facebook))]
+	parts := strings.Split(facebookKeys, ":")
+	if len(parts) == 2 {
+		keys.FacebookAppID = parts[0]
+		keys.FacebookAppSecret = parts[1]
+	}
+
+	passiveTotalKeys := c.PassiveTotal[rand.Intn(len(c.PassiveTotal))]
+	parts = strings.Split(passiveTotalKeys, ":")
+	if len(parts) == 2 {
+		keys.PassiveTotalUsername = parts[0]
+		keys.PassiveTotalPassword = parts[1]
+	}
+
+	keys.Securitytrails = c.SecurityTrails[rand.Intn(len(c.SecurityTrails))]
+	keys.URLScan = c.URLScan[rand.Intn(len(c.URLScan))]
+	keys.Virustotal = c.Virustotal[rand.Intn(len(c.Virustotal))]
+	return keys
 }
