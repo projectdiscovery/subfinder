@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"strings"
 	"sync"
 	"time"
 
@@ -114,18 +115,24 @@ func (r *Runner) EnumerateSingleDomain(domain, output string) error {
 			case subscraping.Error:
 				log.Warningf("Could not run source %s: %s\n", result.Source, result.Error)
 			case subscraping.Subdomain:
-				// Check if the subdomain is a duplicate. If not,
-				// send the subdomain for resolution.
-				if _, ok := uniqueMap[result.Value]; ok {
+				// Validate the subdomain found and remove wildcards from
+				if !strings.HasSuffix(result.Value, "."+domain) {
 					continue
 				}
-				uniqueMap[result.Value] = struct{}{}
+				subdomain := strings.ReplaceAll(strings.ToLower(result.Value), "*.", "")
+
+				// Check if the subdomain is a duplicate. If not,
+				// send the subdomain for resolution.
+				if _, ok := uniqueMap[subdomain]; ok {
+					continue
+				}
+				uniqueMap[subdomain] = struct{}{}
 
 				// Log the verbose message about the found subdomain and send the
 				// host for resolution to the resolution pool
-				log.Verbosef("%s\n", result.Source, result.Value)
+				log.Verbosef("%s\n", result.Source, subdomain)
 
-				resolutionPool.Tasks <- result.Value
+				resolutionPool.Tasks <- subdomain
 			}
 		}
 		close(resolutionPool.Tasks)
