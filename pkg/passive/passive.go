@@ -10,7 +10,7 @@ import (
 )
 
 // EnumerateSubdomains enumerates all the subdomains for a given domain
-func (a *Agent) EnumerateSubdomains(domain string, keys subscraping.Keys, timeout, maxEnumTime int) chan subscraping.Result {
+func (a *Agent) EnumerateSubdomains(domain string, keys subscraping.Keys, timeout int, maxEnumTime time.Duration) chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
@@ -19,19 +19,20 @@ func (a *Agent) EnumerateSubdomains(domain string, keys subscraping.Keys, timeou
 			results <- subscraping.Result{Type: subscraping.Error, Error: fmt.Errorf("could not init passive session for %s: %s", domain, err)}
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(maxEnumTime)*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), maxEnumTime)
 
 		wg := &sync.WaitGroup{}
 		// Run each source in parallel on the target domain
-		for _, runner := range a.sources {
+		for source, runner := range a.sources {
 			wg.Add(1)
 
-			go func(runner subscraping.Source) {
+			go func(source string, runner subscraping.Source) {
 				for resp := range runner.Run(ctx, domain, session) {
 					results <- resp
 				}
+				fmt.Printf("%v source done\n", source)
 				wg.Done()
-			}(runner)
+			}(source, runner)
 		}
 		wg.Wait()
 

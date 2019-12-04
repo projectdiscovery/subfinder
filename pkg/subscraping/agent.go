@@ -15,9 +15,6 @@ func NewSession(domain string, keys Keys, timeout int) (*Session, error) {
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: true,
 			},
-			TLSHandshakeTimeout:   10 * time.Second,
-			ResponseHeaderTimeout: 10 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
 		},
 		Timeout: time.Duration(timeout) * time.Second,
 	}
