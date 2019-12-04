@@ -17,6 +17,7 @@ import (
 	"github.com/subfinder/subfinder/pkg/subscraping/sources/ipv4info"
 	"github.com/subfinder/subfinder/pkg/subscraping/sources/passivetotal"
 	"github.com/subfinder/subfinder/pkg/subscraping/sources/securitytrails"
+	"github.com/subfinder/subfinder/pkg/subscraping/sources/shodan"
 	"github.com/subfinder/subfinder/pkg/subscraping/sources/sitedossier"
 	"github.com/subfinder/subfinder/pkg/subscraping/sources/threatcrowd"
 	"github.com/subfinder/subfinder/pkg/subscraping/sources/threatminer"
@@ -42,6 +43,7 @@ var DefaultSources = []string{
 	"ipv4info",
 	"passivetotal",
 	"securitytrails",
+	"shodan",
 	"sitedossier",
 	"threatcrowd",
 	"threatminer",
@@ -102,6 +104,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &passivetotal.Source{}
 		case "securitytrails":
 			a.sources[source] = &securitytrails.Source{}
+		case "shodan":
+			a.sources[source] = &shodan.Source{}
 		case "sitedossier":
 			a.sources[source] = &sitedossier.Source{}
 		case "threatcrowd":

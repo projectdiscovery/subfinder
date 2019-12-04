@@ -24,6 +24,7 @@ type ConfigFile struct {
 	Facebook       []string `yaml:"facebook"`
 	PassiveTotal   []string `yaml:"passivetotal"`
 	SecurityTrails []string `yaml:"securitytrails"`
+	Shodan         []string `yaml:"shodan"`
 	URLScan        []string `yaml:"urlscan"`
 	Virustotal     []string `yaml:"virustotal"`
 }
@@ -116,6 +117,9 @@ func (c ConfigFile) GetKeys() subscraping.Keys {
 
 	if len(c.SecurityTrails) > 0 {
 		keys.Securitytrails = c.SecurityTrails[rand.Intn(len(c.SecurityTrails))]
+	}
+	if len(c.Shodan) > 0 {
+		keys.Shodan = c.Shodan[rand.Intn(len(c.Shodan))]
 	}
 	if len(c.URLScan) > 0 {
 		keys.URLScan = c.URLScan[rand.Intn(len(c.URLScan))]

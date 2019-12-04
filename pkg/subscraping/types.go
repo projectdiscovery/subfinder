@@ -36,6 +36,7 @@ type Keys struct {
 	PassiveTotalUsername string `json:"passivetotal_username"`
 	PassiveTotalPassword string `json:"passivetotal_password"`
 	Securitytrails       string `json:"securitytrails"`
+	Shodan               string `json:"shodan"`
 	URLScan              string `json:"urlscan"`
 	Virustotal           string `json:"virustotal"`
 }
