@@ -54,7 +54,7 @@ func ParseOptions() *Options {
 	flag.StringVar(&options.Output, "o", "", "File to write output to (optional)")
 	flag.StringVar(&options.OutputDirectory, "oD", "", "Directory to write enumeration results to (optional)")
 	flag.BoolVar(&options.JSON, "oJ", false, "Write output in JSON lines Format")
-	flag.BoolVar(&options.HostIP, "oI", false, "Write output in Host:IP format")
+	flag.BoolVar(&options.HostIP, "oI", false, "Write output in Host,IP format")
 	flag.BoolVar(&options.Silent, "silent", false, "Show only subdomains in output")
 	flag.StringVar(&options.Sources, "sources", "", "Comma separated list of sources to use")
 	flag.StringVar(&options.ExcludeSources, "exclude-sources", "", "List of sources to exclude from enumeration")

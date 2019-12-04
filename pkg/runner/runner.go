@@ -75,7 +75,7 @@ func (r *Runner) EnumerateMultipleDomains(reader io.Reader) error {
 			continue
 		}
 
-		outputFile := path.Join(r.options.OutputDirectory, domain+".txt")
+		outputFile := path.Join(r.options.OutputDirectory, domain)
 		err := r.EnumerateSingleDomain(domain, outputFile)
 		if err != nil {
 			return err
@@ -155,6 +155,14 @@ func (r *Runner) EnumerateSingleDomain(domain, output string) error {
 	// In case the user has given an output file, write all the found
 	// subdomains to the output file.
 	if output != "" {
+		// If the output format is json, append .json
+		// else append .txt
+		if r.options.JSON {
+			output = output + ".json"
+		} else {
+			output = output + ".txt"
+		}
+
 		file, err := os.Create(output)
 		if err != nil {
 			log.Errorf("Could not create file %s for %s: %s\n", output, domain, err)

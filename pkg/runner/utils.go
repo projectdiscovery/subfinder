@@ -58,7 +58,7 @@ func WriteHostIPOutput(results map[string]string, writer io.Writer) error {
 
 	for host, ip := range results {
 		sb.WriteString(host)
-		sb.WriteString(":")
+		sb.WriteString(",")
 		sb.WriteString(ip)
 		sb.WriteString("\n")
 
