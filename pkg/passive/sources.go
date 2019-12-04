@@ -57,63 +57,63 @@ type Agent struct {
 	sources map[string]subscraping.Source
 }
 
-// NewAgent creates a new agent for passive subdomain discovery
-func New(sources []string, exclusions []string) *Agent { 
+// New creates a new agent for passive subdomain discovery
+func New(sources []string, exclusions []string) *Agent {
 	// Create the agent, insert the sources and remove the excluded sources
 	agent := &Agent{sources: make(map[string]subscraping.Source)}
 
-	agent.insertSources(sources)
+	agent.addSources(sources)
 	agent.removeSources(exclusions)
 
 	return agent
-}	
+}
 
 // addSources adds the given list of sources to the source array
 func (a *Agent) addSources(sources []string) {
 	for _, source := range sources {
 		switch source {
-		case "archiveis":      
-			a.sources[source] = &archiveis.Source{},
-		case "binaryedge":     
-			a.sources[source] = &binaryedge.Source{},
-		case "bufferover":     
-			a.sources[source] = &bufferover.Source{},
-		case "certspotter":    
-			a.sources[source] = &certspotter.Source{},
-		case "certspotterold": 
-			a.sources[source] = &certspotterold.Source{},
-		case "commoncrawl":    
-			a.sources[source] = &commoncrawl.Source{},
-		case "crtsh":          
-			a.sources[source] = &crtsh.Source{},
-		case "digicert":       
-			a.sources[source] = &digicert.Source{},
-		case "dnsdumpster":    
-			a.sources[source] = &dnsdumpster.Source{},
-		case "entrust":        
-			a.sources[source] = &entrust.Source{},
-		case "googleter":      
-			a.sources[source] = &googleter.Source{},
-		case "hackertarget":   
-			a.sources[source] = &hackertarget.Source{},
-		case "ipv4info":       
-			a.sources[source] = &ipv4info.Source{},
-		case "passivetotal":   
-			a.sources[source] = &passivetotal.Source{},
-		case "securitytrails": 
-			a.sources[source] = &securitytrails.Source{},
-		case "sitedossier":    
-			a.sources[source] = &sitedossier.Source{},
-		case "threatcrowd":    
-			a.sources[source] = &threatcrowd.Source{},
-		case "threatminer":    
-			a.sources[source] = &threatminer.Source{},
-		case "urlscan":        
-			a.sources[source] = &urlscan.Source{},
-		case "virustotal":     
-			a.sources[source] = &virustotal.Source{},
-		case "waybackarchive": 
-			a.sources[source] = &waybackarchive.Source{},
+		case "archiveis":
+			a.sources[source] = &archiveis.Source{}
+		case "binaryedge":
+			a.sources[source] = &binaryedge.Source{}
+		case "bufferover":
+			a.sources[source] = &bufferover.Source{}
+		case "certspotter":
+			a.sources[source] = &certspotter.Source{}
+		case "certspotterold":
+			a.sources[source] = &certspotterold.Source{}
+		case "commoncrawl":
+			a.sources[source] = &commoncrawl.Source{}
+		case "crtsh":
+			a.sources[source] = &crtsh.Source{}
+		case "digicert":
+			a.sources[source] = &digicert.Source{}
+		case "dnsdumpster":
+			a.sources[source] = &dnsdumpster.Source{}
+		case "entrust":
+			a.sources[source] = &entrust.Source{}
+		case "googleter":
+			a.sources[source] = &googleter.Source{}
+		case "hackertarget":
+			a.sources[source] = &hackertarget.Source{}
+		case "ipv4info":
+			a.sources[source] = &ipv4info.Source{}
+		case "passivetotal":
+			a.sources[source] = &passivetotal.Source{}
+		case "securitytrails":
+			a.sources[source] = &securitytrails.Source{}
+		case "sitedossier":
+			a.sources[source] = &sitedossier.Source{}
+		case "threatcrowd":
+			a.sources[source] = &threatcrowd.Source{}
+		case "threatminer":
+			a.sources[source] = &threatminer.Source{}
+		case "urlscan":
+			a.sources[source] = &urlscan.Source{}
+		case "virustotal":
+			a.sources[source] = &virustotal.Source{}
+		case "waybackarchive":
+			a.sources[source] = &waybackarchive.Source{}
 		}
 	}
 }
