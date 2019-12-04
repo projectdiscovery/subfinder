@@ -16,9 +16,10 @@ const (
 // for a given host.
 type ResolutionPool struct {
 	*Resolver
-	Tasks   chan string
-	Results chan Result
-	wg      *sync.WaitGroup
+	Tasks          chan string
+	Results        chan Result
+	wg             *sync.WaitGroup
+	removeWildcard bool
 
 	wildcardIPs map[string]struct{}
 }
@@ -41,13 +42,14 @@ const (
 )
 
 // NewResolutionPool creates a pool of resolvers for resolving subdomains of a given domain
-func (r *Resolver) NewResolutionPool(workers int) *ResolutionPool {
+func (r *Resolver) NewResolutionPool(workers int, removeWildcard bool) *ResolutionPool {
 	resolutionPool := &ResolutionPool{
-		Resolver:    r,
-		Tasks:       make(chan string),
-		Results:     make(chan Result),
-		wg:          &sync.WaitGroup{},
-		wildcardIPs: make(map[string]struct{}),
+		Resolver:       r,
+		Tasks:          make(chan string),
+		Results:        make(chan Result),
+		wg:             &sync.WaitGroup{},
+		removeWildcard: removeWildcard,
+		wildcardIPs:    make(map[string]struct{}),
 	}
 
 	go func() {
@@ -82,9 +84,18 @@ func (r *ResolutionPool) InitWildcards(domain string) error {
 
 func (r *ResolutionPool) resolveWorker() {
 	for task := range r.Tasks {
+		if !r.removeWildcard {
+			r.Results <- Result{Type: Subdomain, Host: task, IP: ""}
+			continue
+		}
+
 		hosts, err := r.getARecords(task)
 		if err != nil {
 			r.Results <- Result{Type: Error, Error: err}
+			continue
+		}
+
+		if len(hosts) == 0 {
 			continue
 		}
 
@@ -115,7 +126,7 @@ func (r *ResolutionPool) getARecords(host string) ([]string, error) {
 	}
 exchange:
 	iteration++
-	in, err := dns.Exchange(m, r.resolvers[r.rand.Intn(len(r.resolvers))])
+	in, err := dns.Exchange(m, r.resolvers[r.rand.Intn(len(r.resolvers))]+":53")
 	if err != nil {
 		// Retry in case of I/O error
 		if iteration <= maxResolveRetries {
@@ -133,11 +144,6 @@ exchange:
 		if t, ok := record.(*dns.A); ok {
 			hosts = append(hosts, t.A.String())
 		}
-	}
-
-	// If no hosts are found, return blank array
-	if len(hosts) == 0 {
-		return nil, nil
 	}
 
 	return hosts, nil
