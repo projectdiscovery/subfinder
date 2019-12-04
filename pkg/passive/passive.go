@@ -30,7 +30,6 @@ func (a *Agent) EnumerateSubdomains(domain string, keys subscraping.Keys, timeou
 				for resp := range runner.Run(ctx, domain, session) {
 					results <- resp
 				}
-				fmt.Printf("%v source done\n", source)
 				wg.Done()
 			}(source, runner)
 		}

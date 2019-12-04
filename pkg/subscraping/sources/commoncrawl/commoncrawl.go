@@ -2,6 +2,7 @@ package commoncrawl
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"strings"
@@ -30,6 +31,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		resp, err := session.NormalGet(indexURL)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			close(results)
+			return
+		}
+
+		if resp.StatusCode == 500 {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: errors.New("internal server error")}
 			close(results)
 			return
 		}

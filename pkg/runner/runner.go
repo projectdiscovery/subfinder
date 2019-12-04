@@ -75,7 +75,7 @@ func (r *Runner) EnumerateMultipleDomains(reader io.Reader) error {
 			continue
 		}
 
-		outputFile := path.Join(r.options.OutputDirectory, domain)
+		outputFile := path.Join(r.options.OutputDirectory, domain+".txt")
 		err := r.EnumerateSingleDomain(domain, outputFile)
 		if err != nil {
 			return err
@@ -86,6 +86,8 @@ func (r *Runner) EnumerateMultipleDomains(reader io.Reader) error {
 
 // EnumerateSingleDomain performs subdomain enumeration against a single domain
 func (r *Runner) EnumerateSingleDomain(domain, output string) error {
+	log.Infof("Enumerating subdomains for %s\n", domain)
+
 	// Get the API keys for sources from the configuration
 	// and also create the active resolving engine for the domain.
 	keys := r.options.YAMLConfig.GetKeys()

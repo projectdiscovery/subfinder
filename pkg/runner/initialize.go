@@ -11,13 +11,19 @@ import (
 func (r *Runner) initializePassiveEngine() {
 	var sources, exclusions []string
 
-	// Append all the sources from YAML and CLI flag
-	sources = append(sources, r.options.YAMLConfig.Sources...)
-	sources = append(sources, strings.Split(r.options.Sources, ",")...)
+	// If there are any sources from CLI, only use them
+	// Otherwise, use the yaml file sources
+	if r.options.Sources != "" {
+		sources = append(sources, strings.Split(r.options.Sources, ",")...)
+	} else {
+		sources = append(sources, r.options.YAMLConfig.Sources...)
+	}
 
-	// Append all excluded sources from YAML and CLI flag
-	exclusions = append(exclusions, r.options.YAMLConfig.ExcludeSources...)
-	exclusions = append(exclusions, strings.Split(r.options.ExcludeSources, ",")...)
+	if r.options.ExcludeSources != "" {
+		exclusions = append(exclusions, strings.Split(r.options.ExcludeSources, ",")...)
+	} else {
+		exclusions = append(exclusions, r.options.YAMLConfig.ExcludeSources...)
+	}
 
 	r.passiveAgent = passive.New(sources, exclusions)
 }
@@ -35,9 +41,12 @@ func (r *Runner) initializeActiveEngine() error {
 	}
 
 	var resolvers []string
-	// Append all the resolvers read from the config as well as the CLI
-	resolvers = append(resolvers, strings.Split(r.options.Resolvers, ",")...)
-	resolvers = append(resolvers, r.options.YAMLConfig.Resolvers...)
+
+	if r.options.Resolvers != "" {
+		resolvers = append(resolvers, strings.Split(r.options.Resolvers, ",")...)
+	} else {
+		resolvers = append(resolvers, r.options.YAMLConfig.Resolvers...)
+	}
 	r.resolverClient.AppendResolversFromSlice(resolvers)
 	return nil
 }
