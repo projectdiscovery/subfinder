@@ -157,10 +157,12 @@ func (r *Runner) EnumerateSingleDomain(domain, output string) error {
 	if output != "" {
 		// If the output format is json, append .json
 		// else append .txt
-		if r.options.JSON {
-			output = output + ".json"
-		} else {
-			output = output + ".txt"
+		if r.options.OutputDirectory != "" {
+			if r.options.JSON {
+				output = output + ".json"
+			} else {
+				output = output + ".txt"
+			}
 		}
 
 		file, err := os.Create(output)
