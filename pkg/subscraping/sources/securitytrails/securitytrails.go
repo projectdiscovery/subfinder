@@ -48,7 +48,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			} else {
 				subdomain = subdomain + "." + domain
 			}
-			subdomain := strings.TrimPrefix(strings.ToLower(subdomain), "*.")
 
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 		}

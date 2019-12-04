@@ -3,7 +3,6 @@ package certspotter
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/subfinder/subfinder/pkg/subscraping"
@@ -45,8 +44,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		for _, cert := range response {
 			for _, subdomain := range cert.DNSNames {
-				subdomain := strings.TrimPrefix(strings.ToLower(subdomain), "*.")
-
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 			}
 		}
@@ -77,8 +74,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			for _, cert := range response {
 				for _, subdomain := range cert.DNSNames {
-					subdomain := strings.TrimPrefix(strings.ToLower(subdomain), "*.")
-
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 				}
 			}

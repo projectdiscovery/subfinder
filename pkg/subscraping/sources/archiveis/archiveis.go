@@ -13,6 +13,8 @@ import (
 type ArchiveIs struct {
 	Results chan subscraping.Result
 	Session *subscraping.Session
+
+	closed bool
 }
 
 var reNext = regexp.MustCompile("<a id=\"next\" style=\".*\" href=\"(.*)\">&rarr;</a>")
@@ -50,7 +52,12 @@ func (a *ArchiveIs) enumerate(ctx context.Context, baseURL string) {
 			if len(match1) > 0 {
 				a.enumerate(ctx, match1[1])
 			}
-			close(a.Results)
+
+			// Guard channel closing during recursion
+			if !a.closed {
+				close(a.Results)
+				a.closed = true
+			}
 			return
 		}
 	}

@@ -2,20 +2,24 @@ package shodan
 
 import (
 	"context"
+	"fmt"
 	"strconv"
+	"strings"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/subfinder/subfinder/pkg/subscraping"
 )
 
-type shodanResult struct {
-	Matches []shodanObject `json:"matches"`
-	Result  int            `json:"result"`
-	Error   string         `json:"error"`
+type resultsq struct {
+	Data  []string `json:"parsed.extensions.subject_alt_name.dns_names"`
+	Data1 []string `json:"parsed.names"`
 }
 
-type shodanObject struct {
-	Hostnames []string `json:"hostnames"`
+type response struct {
+	Results  []resultsq `json:"results"`
+	Metadata struct {
+		Pages int `json:"pages"`
+	} `json:"metadata"`
 }
 
 // Source is the passive scraping agent
@@ -26,7 +30,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
-		if session.Keys.Shodan == "" {
+		if session.Keys.Censys == "" {
 			close(results)
 			return
 		}
@@ -48,6 +52,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 			resp.Body.Close()
 
+			fmt.Printf("%v\n")
 			if response.Error != "" {
 				close(results)
 				return
@@ -55,6 +60,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			for _, block := range response.Matches {
 				for _, hostname := range block.Hostnames {
+
+					if strings.Contains(hostname, "*.") {
+						hostname = strings.Split(hostname, "*.")[1]
+					}
+
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: hostname}
 				}
 			}

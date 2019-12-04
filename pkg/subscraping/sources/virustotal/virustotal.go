@@ -3,7 +3,6 @@ package virustotal
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/subfinder/subfinder/pkg/subscraping"
@@ -43,7 +42,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		resp.Body.Close()
 
 		for _, subdomain := range data.Subdomains {
-			subdomain = strings.TrimPrefix(strings.ToLower(subdomain), "*.")
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 		}
 		close(results)
