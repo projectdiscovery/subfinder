@@ -3,23 +3,14 @@ package digicert
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"strings"
 
-	jsoniter "github.com/json-iterator/go"
 	"github.com/subfinder/subfinder/pkg/subscraping"
 )
 
 // Source is the passive scraping agent
 type Source struct{}
-
-type responseData struct {
-	Data struct {
-		CertificateDetail []struct {
-			CommonName      string   `json:"string"`
-			SubjectAltNames []string `json:"subjectAlternativeNames"`
-		} `json:"certificateDetail"`
-	} `json:"data"`
-}
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
@@ -33,24 +24,20 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		response := responseData{}
-		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
+		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			close(results)
-			resp.Body.Close()
 			return
 		}
 		resp.Body.Close()
 
-		for _, cert := range response.Data.CertificateDetail {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: strings.TrimPrefix(strings.ToLower(cert.CommonName), "*.")}
+		src := string(body)
 
-			for _, subdomain := range cert.SubjectAltNames {
-				subdomain := strings.TrimPrefix(strings.ToLower(subdomain), "*.")
+		for _, subdomain := range session.Extractor.FindAllString(src, -1) {
+			subdomain := strings.TrimPrefix(strings.ToLower(subdomain), "*.")
 
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-			}
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 		}
 
 		close(results)
