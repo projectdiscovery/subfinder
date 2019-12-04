@@ -1,7 +1,10 @@
 package runner
 
 import (
+	"bufio"
+	"io"
 	"os"
+	"path"
 	"sync"
 	"time"
 
@@ -46,7 +49,37 @@ func (r *Runner) RunEnumeration() error {
 
 	// If we have multiple domains as input,
 	if r.options.DomainsFile != "" {
+		f, err := os.Open(r.options.DomainsFile)
+		if err != nil {
+			return err
+		}
+		err = r.EnumerateMultipleDomains(f)
+		f.Close()
+		return err
+	}
 
+	// If we have STDIN input, treat it as multiple domains
+	if r.options.Stdin {
+		return r.EnumerateMultipleDomains(os.Stdin)
+	}
+	return nil
+}
+
+// EnumerateMultipleDomains enumerates subdomains for multiple domains
+// We keep enumerating subdomains for a given domain until we reach an error
+func (r *Runner) EnumerateMultipleDomains(reader io.Reader) error {
+	scanner := bufio.NewScanner(reader)
+	for scanner.Scan() {
+		domain := scanner.Text()
+		if domain == "" {
+			continue
+		}
+
+		outputFile := path.Join(r.options.OutputDirectory, domain)
+		err := r.EnumerateSingleDomain(domain, outputFile)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
