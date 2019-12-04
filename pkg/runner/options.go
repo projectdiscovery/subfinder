@@ -15,6 +15,7 @@ type Options struct {
 	NoColor             bool   // No-Color disables the colored output
 	Threads             int    // Thread controls the number of threads to use for active enumerations
 	Timeout             int    // Timeout is the seconds to wait for sources to respond
+	MaxEnumerationTime  int    // MaxEnumerationTime is the maximum amount of time in mins to wait for enumeration
 	Domain              string // Domain is the domain to find subdomains for
 	DomainsFile         string // DomainsFile is the file containing list of domains to find subdomains for
 	Output              string // Output is the file to write found subdomains to.
@@ -48,11 +49,12 @@ func ParseOptions() *Options {
 	flag.BoolVar(&options.NoColor, "nC", false, "Don't Use colors in output")
 	flag.IntVar(&options.Threads, "t", 10, "Number of concurrent threads for active enumeration")
 	flag.IntVar(&options.Timeout, "timeout", 30, "Seconds to wait before timing out")
+	flag.IntVar(&options.MaxEnumerationTime, "max-time", 10, "Minutes to wait for enumeration results")
 	flag.StringVar(&options.Domain, "d", "", "Domain to find subdomains for")
 	flag.StringVar(&options.DomainsFile, "dL", "", "File containing list of domains to enumerate")
 	flag.StringVar(&options.Output, "o", "", "File to write output to (optional)")
 	flag.StringVar(&options.OutputDirectory, "oD", "", "Directory to write enumeration results to (optional)")
-	flag.BoolVar(&options.JSON, "oJ", false, "Write output in JSON Format")
+	flag.BoolVar(&options.JSON, "oJ", false, "Write output in JSON lines Format")
 	flag.BoolVar(&options.HostIP, "oI", false, "Write output in Host:IP format")
 	flag.BoolVar(&options.Silent, "silent", false, "Show only subdomains in output")
 	flag.StringVar(&options.Sources, "sources", "", "Comma separated list of sources to use")

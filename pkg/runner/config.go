@@ -72,14 +72,16 @@ func (c ConfigFile) MarshalWrite(file string) error {
 }
 
 // UnmarshalRead reads the unmarshalled config yaml file from disk
-func (c ConfigFile) UnmarshalRead(file string) error {
+func UnmarshalRead(file string) (ConfigFile, error) {
+	config := ConfigFile{}
+
 	f, err := os.Open(file)
 	if err != nil {
-		return err
+		return config, err
 	}
-	err = yaml.NewDecoder(f).Decode(&c)
+	err = yaml.NewDecoder(f).Decode(&config)
 	f.Close()
-	return err
+	return config, err
 }
 
 // GetKeys gets the API keys from config file and creates a Keys struct
@@ -88,25 +90,38 @@ func (c ConfigFile) UnmarshalRead(file string) error {
 func (c ConfigFile) GetKeys() subscraping.Keys {
 	keys := subscraping.Keys{}
 
-	keys.Binaryedge = c.Binaryedge[rand.Intn(len(c.Binaryedge))]
-	keys.Certspotter = c.Certspotter[rand.Intn(len(c.Certspotter))]
-
-	facebookKeys := c.Facebook[rand.Intn(len(c.Facebook))]
-	parts := strings.Split(facebookKeys, ":")
-	if len(parts) == 2 {
-		keys.FacebookAppID = parts[0]
-		keys.FacebookAppSecret = parts[1]
+	if len(c.Binaryedge) > 0 {
+		keys.Binaryedge = c.Binaryedge[rand.Intn(len(c.Binaryedge))]
+	}
+	if len(c.Certspotter) > 0 {
+		keys.Certspotter = c.Certspotter[rand.Intn(len(c.Certspotter))]
 	}
 
-	passiveTotalKeys := c.PassiveTotal[rand.Intn(len(c.PassiveTotal))]
-	parts = strings.Split(passiveTotalKeys, ":")
-	if len(parts) == 2 {
-		keys.PassiveTotalUsername = parts[0]
-		keys.PassiveTotalPassword = parts[1]
+	if len(c.Facebook) > 0 {
+		facebookKeys := c.Facebook[rand.Intn(len(c.Facebook))]
+		parts := strings.Split(facebookKeys, ":")
+		if len(parts) == 2 {
+			keys.FacebookAppID = parts[0]
+			keys.FacebookAppSecret = parts[1]
+		}
+	}
+	if len(c.PassiveTotal) > 0 {
+		passiveTotalKeys := c.PassiveTotal[rand.Intn(len(c.PassiveTotal))]
+		parts := strings.Split(passiveTotalKeys, ":")
+		if len(parts) == 2 {
+			keys.PassiveTotalUsername = parts[0]
+			keys.PassiveTotalPassword = parts[1]
+		}
 	}
 
-	keys.Securitytrails = c.SecurityTrails[rand.Intn(len(c.SecurityTrails))]
-	keys.URLScan = c.URLScan[rand.Intn(len(c.URLScan))]
-	keys.Virustotal = c.Virustotal[rand.Intn(len(c.Virustotal))]
+	if len(c.SecurityTrails) > 0 {
+		keys.Securitytrails = c.SecurityTrails[rand.Intn(len(c.SecurityTrails))]
+	}
+	if len(c.URLScan) > 0 {
+		keys.URLScan = c.URLScan[rand.Intn(len(c.URLScan))]
+	}
+	if len(c.Virustotal) > 0 {
+		keys.Virustotal = c.Virustotal[rand.Intn(len(c.Virustotal))]
+	}
 	return keys
 }

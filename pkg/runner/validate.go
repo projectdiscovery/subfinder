@@ -31,6 +31,15 @@ func (options *Options) validateOptions() error {
 	if options.JSON && options.HostIP {
 		return errors.New("hostip flag cannot be used with json flag")
 	}
+
+	// Always remove wildcard with hostip and json
+	if options.HostIP && !options.RemoveWildcard {
+		return errors.New("hostip flag must be used with RemoveWildcard option")
+	}
+	if options.JSON && !options.RemoveWildcard {
+		return errors.New("JSON flag must be used with RemoveWildcard option")
+	}
+
 	return nil
 }
 
