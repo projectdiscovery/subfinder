@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/subfinder/subfinder/pkg/subscraping"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
 // Source is the passive scraping agent

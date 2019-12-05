@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/subfinder/subfinder/pkg/subscraping"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
 // Source is the passive scraping agent

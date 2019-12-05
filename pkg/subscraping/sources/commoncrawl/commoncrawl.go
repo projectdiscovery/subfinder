@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	jsoniter "github.com/json-iterator/go"
-	"github.com/subfinder/subfinder/pkg/subscraping"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
 const indexURL = "https://index.commoncrawl.org/collinfo.json"

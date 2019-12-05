@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/subfinder/subfinder/pkg/subscraping"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
 var re = regexp.MustCompile("<input type=\"hidden\" name=\"csrfmiddlewaretoken\" value=\"(.*)\">")

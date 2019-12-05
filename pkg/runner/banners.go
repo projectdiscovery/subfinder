@@ -1,9 +1,9 @@
 package runner
 
 import (
-	"github.com/subfinder/subfinder/pkg/log"
-	"github.com/subfinder/subfinder/pkg/passive"
-	"github.com/subfinder/subfinder/pkg/resolve"
+	"github.com/projectdiscovery/subfinder/pkg/log"
+	"github.com/projectdiscovery/subfinder/pkg/passive"
+	"github.com/projectdiscovery/subfinder/pkg/resolve"
 )
 
 const banner = `

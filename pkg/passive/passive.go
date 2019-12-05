@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/subfinder/subfinder/pkg/subscraping"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
 // EnumerateSubdomains enumerates all the subdomains for a given domain

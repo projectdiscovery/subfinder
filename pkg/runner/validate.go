@@ -3,7 +3,7 @@ package runner
 import (
 	"errors"
 
-	"github.com/subfinder/subfinder/pkg/log"
+	"github.com/projectdiscovery/subfinder/pkg/log"
 )
 
 // validateOptions validates the configuration options passed

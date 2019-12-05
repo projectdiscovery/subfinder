@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"regexp"
 
-	"github.com/subfinder/subfinder/pkg/subscraping"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
 // ArchiveIs is a struct for archiveurlsagent

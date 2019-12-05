@@ -3,8 +3,8 @@ package runner
 import (
 	"strings"
 
-	"github.com/subfinder/subfinder/pkg/passive"
-	"github.com/subfinder/subfinder/pkg/resolve"
+	"github.com/projectdiscovery/subfinder/pkg/passive"
+	"github.com/projectdiscovery/subfinder/pkg/resolve"
 )
 
 // initializePassiveEngine creates the passive engine and loads sources etc

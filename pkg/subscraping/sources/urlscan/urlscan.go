@@ -6,7 +6,7 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/m-mizutani/urlscan-go/urlscan"
-	"github.com/subfinder/subfinder/pkg/subscraping"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
 // Source is the passive scraping agent

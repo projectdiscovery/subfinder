@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/subfinder/subfinder/pkg/log"
+	"github.com/projectdiscovery/subfinder/pkg/log"
 )
 
 // Options contains the configuration options for tuning

@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/subfinder/subfinder/pkg/subscraping"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
 var reNext = regexp.MustCompile("<a href=\"([A-Za-z0-9\\/.]+)\"><b>")

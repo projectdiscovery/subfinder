@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/subfinder/subfinder/pkg/log"
-	"github.com/subfinder/subfinder/pkg/runner"
+	"github.com/projectdiscovery/subfinder/pkg/log"
+	"github.com/projectdiscovery/subfinder/pkg/runner"
 )
 
 func main() {
