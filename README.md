@@ -1,5 +1,5 @@
 <h1 align="left">
-  <img src="static/subfinder-logo.png" alt="subfinder" width="150px"></a>
+  <img src="static/subfinder-logo.png" alt="subfinder" width="170px"></a>
   <br>
 </h1>
 
