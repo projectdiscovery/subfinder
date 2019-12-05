@@ -1,11 +1,18 @@
-# subfinder
+<h1 align="left">
+  <img src="static/subfinder-logo.png" alt="subfinder" width="150px"></a>
+  <br>
+</h1>
+
+
 [![License](https://img.shields.io/badge/license-MIT-_red.svg)](https://opensource.org/licenses/MIT)
 [![Go Report Card](https://goreportcard.com/badge/github.com/projectdiscovery/subfinder)](https://goreportcard.com/report/github.com/projectdiscovery/subfinder)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/projectdiscovery/subfinder/issues)
 
+
 subfinder is a subdomain discovery tool that discovers valid subdomains for websites by using passive online sources. It has a simple modular architecture and is optimized for speed. subfinder is built for doing one thing only - passive subdomain enumeration, and it does that very well.
 
 We have designed subfinder to comply with all passive sources licenses, and usage restrictions, as well as maintained a consistently passive model to make it useful to both penetration testers and bug bounty hunters alike.
+
 
 # Resources
 - [Features](#features)
@@ -17,6 +24,12 @@ We have designed subfinder to comply with all passive sources licenses, and usag
 - [Running subfinder](#running-subfinder)
 
  # Features
+
+<h1 align="left">
+  <img src="static/subfinder-run.png" alt="subfinder" width="700px"></a>
+  <br>
+</h1>
+
 
  - Simple and modular code base making it easy to contribute.
  - Fast And Powerful Resolution and wildcard elimination module
