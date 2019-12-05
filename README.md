@@ -20,10 +20,10 @@ We have designed SubFinder to comply with all passive sources licenses, and usag
 
  - Simple and modular code base making it easy to contribute.
  - Fast And Powerful Resolution and wildcard elimination module
- - Curated passive sources to maximize results (26 Sources as of now)
+ - **Curated** passive sources to maximize results (26 Sources as of now)
  - Multiple Output formats supported (Json, File, Stdout)
- - Optimized for speed, very fast and lightweight on resources
- - Stdin and stdout support for integrating in workflows
+ - Optimized for speed, very fast and **lightweight** on resources
+ - **Stdin** and **stdout** support for integrating in workflows
 
 # Usage
 
@@ -149,6 +149,7 @@ To run the tool on a target, just use the following command.
 ```bash
 ./subfinder -d freelancer.com
 ```
+
 This will run the tool against freelancer.com. There are a number of configuration options that you can pass along with this command. The verbose switch (-v) can be used to display verbose information.
 
 ```bash
@@ -166,7 +167,19 @@ This will run the tool against freelancer.com. There are a number of configurati
 The -o command can be used to specify an output file.
 
 ```bash
-./subfinder -d freelancer.com -o output.txt
+> subfinder -d freelancer.com -o output.txt
+```
+
+To run the tool on a list of domains, `-dL` option can be used. This requires a directory to write the output files. Subdomains for each domain from the list are written in a text file in the directory specified by the `-oD` flag with their name being the domain name.
+
+```bash
+> cat domains.txt
+hackerone.com
+google.com
+> subfinder -dL domains.txt -oD ~/path/to/output
+> ls ~/path/to/output
+hackerone.com.txt
+google.com.txt
 ```
 
 You can also get output in json format using -oJ switch. This switch saves the output in the JSON lines format. 
@@ -187,11 +200,29 @@ The --set-config switch can be used to set the value of any configuration option
 
 You can specify custom resolvers too.
 ```bash
-./subfinder -d freelancer.com -o result_aquatone.json -nW -v -r 8.8.8.8,1.1.1.1
-./subfinder -d freelancer.com -o result_aquatone.json -nW -v -rL resolvers.txt
+./subfinder -d freelancer.com -o result.txt -nW -v -r 8.8.8.8,1.1.1.1
+./subfinder -d freelancer.com -o result.txt -nW -v -rL resolvers.txt
+```
+
+The new highlight of this release is the addition of stdin/stdout features. Now, domains can be piped to subfinder and enumeration can be ran on them. For example - 
+
+```
+echo "hackerone.com" | ./subfinder -v 
+cat targets.txt | ./subfinder -v 
+```
+
+The subdomains discovered can be piped to other tools too. For example, you can pipe the subdomains discovered by subfinder to the awesome [httprobe](https://github.com/tomnomnom/httprobe) tool by @tomnomnom which will then find running http servers on the host.
+
+```
+echo "hackerone.com" | ./subfinder -silent | httprobe 
+http://hackerone.com
+http://www.hackerone.com
+http://docs.hackerone.com
+http://api.hackerone.com
+https://docs.hackerone.com
+http://mta-sts.managed.hackerone.com
 ```
 
 # License
 
-subfinder is made with 🖤 by the projectdiscovery team.
-See the **[Thanks.md](https://github.com/projectdiscovery/subfinder/blob/master/THANKS.md)** file for more details.
+subfinder is made with 🖤 by the [projectdiscovery](https://projectdiscovery.io) team. Community contributions have made the project what it is. See the **[Thanks.md](https://github.com/projectdiscovery/subfinder/blob/master/THANKS.md)** file for more details.
