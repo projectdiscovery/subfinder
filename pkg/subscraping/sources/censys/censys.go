@@ -1,14 +1,17 @@
-package shodan
+package censys
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"net/http"
 	"strconv"
-	"strings"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/subfinder/subfinder/pkg/subscraping"
 )
+
+const maxCensysPages = 10
 
 type resultsq struct {
 	Data  []string `json:"parsed.extensions.subject_alt_name.dns_names"`
@@ -30,20 +33,34 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
-		if session.Keys.Censys == "" {
+		if session.Keys.CensysToken == "" || session.Keys.CensysSecret == "" {
 			close(results)
 			return
 		}
+		var response response
 
-		for currentPage := 0; currentPage <= 10; currentPage++ {
-			resp, err := session.NormalGet("https://api.shodan.io/shodan/host/search?query=hostname:" + domain + "&page=" + strconv.Itoa(currentPage) + "&key=" + session.Keys.Shodan)
+		currentPage := 1
+		for {
+			var request = []byte(`{"query":"` + domain + `", "page":` + strconv.Itoa(currentPage) + `, "fields":["parsed.names","parsed.extensions.subject_alt_name.dns_names"], "flatten":true}`)
+
+			req, err := http.NewRequest("POST", "https://www.censys.io/api/v1/search/certificates", bytes.NewReader(request))
+			if err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				close(results)
+				return
+			}
+			fmt.Printf("%s %s\n", session.Keys.CensysToken, session.Keys.CensysSecret)
+			req.SetBasicAuth(session.Keys.CensysToken, session.Keys.CensysSecret)
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
+
+			resp, err := session.Client.Do(req)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				close(results)
 				return
 			}
 
-			var response shodanResult
 			err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -52,22 +69,21 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 			resp.Body.Close()
 
-			fmt.Printf("%v\n")
-			if response.Error != "" {
-				close(results)
-				return
+			// Exit the censys enumeration if max pages is reached
+			if currentPage >= response.Metadata.Pages || currentPage >= maxCensysPages {
+				break
 			}
 
-			for _, block := range response.Matches {
-				for _, hostname := range block.Hostnames {
-
-					if strings.Contains(hostname, "*.") {
-						hostname = strings.Split(hostname, "*.")[1]
-					}
-
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: hostname}
+			for _, res := range response.Results {
+				for _, part := range res.Data {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: part}
+				}
+				for _, part := range res.Data1 {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: part}
 				}
 			}
+
+			currentPage++
 		}
 		close(results)
 	}()
@@ -77,5 +93,5 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 // Name returns the name of the source
 func (s *Source) Name() string {
-	return "shodan"
+	return "censys"
 }
