@@ -1,8 +1,7 @@
 # SubFinder
 [![License](https://img.shields.io/badge/license-MIT-_red.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://travis-ci.org/subfinder/subfinder.svg?branch=master)](https://travis-ci.org/subfinder/subfinder)
-[![Go Report Card](https://goreportcard.com/badge/github.com/subfinder/subfinder)](https://goreportcard.com/report/github.com/subfinder/subfinder)
-[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/subfinder/subfinder/issues)
+[![Go Report Card](https://goreportcard.com/badge/github.com/projectdiscovery/subfinder)](https://goreportcard.com/report/github.com/projectdiscovery/subfinder)
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/projectdiscovery/subfinder/issues)
 
 SubFinder is a subdomain discovery tool that discovers valid subdomains for websites by using passive online sources. It has a simple modular architecture and has been aimed as a successor to sublist3r project. SubFinder uses Passive Sources, Search Engines, Pastebins, Internet Archives, etc to find subdomains and then it uses a permutation module inspired by altdns to generate permutations and resolve them quickly using a powerful bruteforcing engine. It can also perform plain bruteforce if needed. The tool is highly customizable, and the code is built with a modular approach in mind making it easy to add functionalities and remove errors.
 
@@ -74,19 +73,19 @@ This will display help for the tool. Here are all the switches it supports.
 The installation is easy. Git clone the repo and run go build.
 
 ```bash
-go get github.com/subfinder/subfinder
+go get github.com/projectdiscovery/subfinder
 ```
 
 ## Upgrading
 If you wish to upgrade the package you can use:
 ```bash
-go get -u github.com/subfinder/subfinder
+go get -u github.com/projectdiscovery/subfinder
 ```
 ## Running in a Docker Container
 
 Git clone the repo, then build and run subfinder in a container with the following commands
 
-- Clone the repo using `git clone https://github.com/subfinder/subfinder.git`
+- Clone the repo using `git clone https://github.com/projectdiscovery/subfinder.git`
 - Build your docker container
 ```bash
 docker build -t subfinder .

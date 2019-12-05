@@ -9,6 +9,6 @@ COPY Gopkg.toml Gopkg.lock ./
 RUN dep ensure -vendor-only -v
 
 # Install
-RUN go get -u github.com/subfinder/subfinder
+RUN go get -u github.com/projectdiscovery/subfinder
 
 ENTRYPOINT ["subfinder"]
