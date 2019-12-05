@@ -3,9 +3,9 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/projectdiscovery/subfinder)](https://goreportcard.com/report/github.com/projectdiscovery/subfinder)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/projectdiscovery/subfinder/issues)
 
-Subfinder is a subdomain discovery tool that discovers valid subdomains for websites by using passive online sources. It has a simple modular architecture and is optimized for speed. Subfinder is built for doing one thing only - passive subdomain enumeration, and it does that very well.
+subfinder is a subdomain discovery tool that discovers valid subdomains for websites by using passive online sources. It has a simple modular architecture and is optimized for speed. subfinder is built for doing one thing only - passive subdomain enumeration, and it does that very well.
 
-We have designed SubFinder to comply with all passive sources licenses, and usage restrictions, as well as maintained a consistently passive model to make it useful to both penetration testers and bug bounty hunters alike.
+We have designed subfinder to comply with all passive sources licenses, and usage restrictions, as well as maintained a consistently passive model to make it useful to both penetration testers and bug bounty hunters alike.
 
 # Resources
 - [Features](#features)
@@ -14,7 +14,7 @@ We have designed SubFinder to comply with all passive sources licenses, and usag
 - [Upgrading](#upgrading)
 - [Running in a Docker Container](#running-in-a-docker-container)
 - [Post Installation Instructions](#post-installation-instructions)
-- [Running SubFinder](#running-subfinder)
+- [Running subfinder](#running-subfinder)
 
  # Features
 
@@ -57,7 +57,7 @@ This will display help for the tool. Here are all the switches it supports.
 # Installation Instructions
 ## Direct Installation
 
-#### SubFinder requires go1.12+ to install successfully !
+#### subfinder requires go1.13+ to install successfully !
 
 The installation is easy. Go get the repo
 
@@ -131,23 +131,24 @@ securitytrails: []
 shodan: []
 ```
 
-If you are using docker, you need to first create your directory structure holding subfinder configuration file. You can either run the binary in your host system and let it create the directory structure of files, after which you can use --set-config flag to set the api values like before. Or you can run:
+If you are using docker, you need to first create your directory structure holding subfinder configuration file. After modifying the default config.yaml file, you can run:
+
 ```bash
-mkdir $HOME/.config/subfinder
-cp config.json $HOME/.config/subfinder/config.yaml
-nano $HOME/.config/subfinder/config.yaml
+> mkdir $HOME/.config/subfinder
+> cp config.yaml $HOME/.config/subfinder/config.yaml
+> nano $HOME/.config/subfinder/config.yaml
 ```
+
 After that, you can pass it as a volume using the following sample command.
 ```bash
-sudo docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it subfinder -d freelancer.com
+> docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it subfinder -d freelancer.com
 ```
-Now, you can also pass --set-config inside the docker to change the configuration options.
 
 # Running Subfinder
 
 To run the tool on a target, just use the following command.
 ```bash
-./subfinder -d freelancer.com
+> subfinder -d freelancer.com
 ```
 
 This will run the tool against freelancer.com. There are a number of configuration options that you can pass along with this command. The verbose switch (-v) can be used to display verbose information.
@@ -176,8 +177,10 @@ To run the tool on a list of domains, `-dL` option can be used. This requires a 
 > cat domains.txt
 hackerone.com
 google.com
+
 > subfinder -dL domains.txt -oD ~/path/to/output
 > ls ~/path/to/output
+
 hackerone.com.txt
 google.com.txt
 ```
@@ -187,8 +190,9 @@ You can also get output in json format using -oJ switch. This switch saves the o
 If you use the JSON format, or the Host:IP format, then it becomes mandatory for you to use the **-nW** format as resolving is essential for these output format. By default, resolving the found subdomains is disabled.
 
 ```bash
-> ./subfinder -d hackerone.com -o output.json -oJ -nW
+> subfinder -d hackerone.com -o output.json -oJ -nW
 > cat output.json
+
 {"host":"www.hackerone.com","ip":"104.16.99.52"}
 {"host":"mta-sts.hackerone.com","ip":"185.199.108.153"}
 {"host":"hackerone.com","ip":"104.16.100.52"}
@@ -196,25 +200,25 @@ If you use the JSON format, or the Host:IP format, then it becomes mandatory for
 ```
 
 The --silent switch can be used to show only subdomains found without any other info.
-The --set-config switch can be used to set the value of any configuration option as explained above in the readme.
 
 You can specify custom resolvers too.
 ```bash
-./subfinder -d freelancer.com -o result.txt -nW -v -r 8.8.8.8,1.1.1.1
-./subfinder -d freelancer.com -o result.txt -nW -v -rL resolvers.txt
+> subfinder -d freelancer.com -o result.txt -nW -v -r 8.8.8.8,1.1.1.1
+> subfinder -d freelancer.com -o result.txt -nW -v -rL resolvers.txt
 ```
 
-The new highlight of this release is the addition of stdin/stdout features. Now, domains can be piped to subfinder and enumeration can be ran on them. For example - 
+**The new highlight of this release is the addition of stdin/stdout features.** Now, domains can be piped to subfinder and enumeration can be ran on them. For example - 
 
 ```
-echo "hackerone.com" | ./subfinder -v 
-cat targets.txt | ./subfinder -v 
+> echo "hackerone.com" | subfinder -v 
+> cat targets.txt | subfinder -v 
 ```
 
 The subdomains discovered can be piped to other tools too. For example, you can pipe the subdomains discovered by subfinder to the awesome [httprobe](https://github.com/tomnomnom/httprobe) tool by @tomnomnom which will then find running http servers on the host.
 
 ```
-echo "hackerone.com" | ./subfinder -silent | httprobe 
+> echo "hackerone.com" | subfinder -silent | httprobe 
+
 http://hackerone.com
 http://www.hackerone.com
 http://docs.hackerone.com
