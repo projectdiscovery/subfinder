@@ -99,8 +99,8 @@ func (c ConfigFile) GetKeys() subscraping.Keys {
 		censysKeys := c.Censys[rand.Intn(len(c.Censys))]
 		parts := strings.Split(censysKeys, ":")
 		if len(parts) == 2 {
-			keys.CensysUsername = parts[0]
-			keys.CensysPassword = parts[1]
+			keys.CensysToken = parts[0]
+			keys.CensysSecret = parts[1]
 		}
 	}
 
