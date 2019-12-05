@@ -48,7 +48,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 			resp.Body.Close()
 
-			if response.Error != "" {
+			if response.Error != "" || len(response.Matches) == 0 {
 				close(results)
 				return
 			}
