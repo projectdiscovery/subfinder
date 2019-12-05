@@ -243,3 +243,5 @@ http://mta-sts.managed.hackerone.com
 # License
 
 subfinder is made with 🖤 by the [projectdiscovery](https://projectdiscovery.io) team. Community contributions have made the project what it is. See the **[Thanks.md](https://github.com/projectdiscovery/subfinder/blob/master/THANKS.md)** file for more details.
+
+Read the disclaimer for usage at **[DISCLAIMER.md](https://github.com/projectdiscovery/subfinder/blob/master/DISCLAIMER.md)**
