@@ -20,8 +20,8 @@ type ConfigFile struct {
 	ExcludeSources []string `yaml:"exclude-sources,omitempty"`
 	// API keys for different sources
 	Binaryedge     []string `yaml:"binaryedge"`
+	Censys         []string `yaml:"censys"`
 	Certspotter    []string `yaml:"certspotter"`
-	Facebook       []string `yaml:"facebook"`
 	PassiveTotal   []string `yaml:"passivetotal"`
 	SecurityTrails []string `yaml:"securitytrails"`
 	Shodan         []string `yaml:"shodan"`
@@ -94,18 +94,20 @@ func (c ConfigFile) GetKeys() subscraping.Keys {
 	if len(c.Binaryedge) > 0 {
 		keys.Binaryedge = c.Binaryedge[rand.Intn(len(c.Binaryedge))]
 	}
+
+	if len(c.Censys) > 0 {
+		censysKeys := c.Censys[rand.Intn(len(c.Censys))]
+		parts := strings.Split(censysKeys, ":")
+		if len(parts) == 2 {
+			keys.CensysUsername = parts[0]
+			keys.CensysPassword = parts[1]
+		}
+	}
+
 	if len(c.Certspotter) > 0 {
 		keys.Certspotter = c.Certspotter[rand.Intn(len(c.Certspotter))]
 	}
 
-	if len(c.Facebook) > 0 {
-		facebookKeys := c.Facebook[rand.Intn(len(c.Facebook))]
-		parts := strings.Split(facebookKeys, ":")
-		if len(parts) == 2 {
-			keys.FacebookAppID = parts[0]
-			keys.FacebookAppSecret = parts[1]
-		}
-	}
 	if len(c.PassiveTotal) > 0 {
 		passiveTotalKeys := c.PassiveTotal[rand.Intn(len(c.PassiveTotal))]
 		parts := strings.Split(passiveTotalKeys, ":")

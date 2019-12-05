@@ -30,9 +30,9 @@ type Session struct {
 // Keys contains the current API Keys we have in store
 type Keys struct {
 	Binaryedge           string `json:"binaryedge"`
+	CensysToken          string `json:"censysUsername"`
+	CensysSecret         string `json:"censysPassword"`
 	Certspotter          string `json:"certspotter"`
-	FacebookAppID        string `json:"facebook_appid"`
-	FacebookAppSecret    string `json:"facebook_appsecret"`
 	PassiveTotalUsername string `json:"passivetotal_username"`
 	PassiveTotalPassword string `json:"passivetotal_password"`
 	Securitytrails       string `json:"securitytrails"`

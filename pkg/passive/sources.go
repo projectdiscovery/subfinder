@@ -5,6 +5,7 @@ import (
 	"github.com/subfinder/subfinder/pkg/subscraping/sources/archiveis"
 	"github.com/subfinder/subfinder/pkg/subscraping/sources/binaryedge"
 	"github.com/subfinder/subfinder/pkg/subscraping/sources/bufferover"
+	"github.com/subfinder/subfinder/pkg/subscraping/sources/censys"
 	"github.com/subfinder/subfinder/pkg/subscraping/sources/certspotter"
 	"github.com/subfinder/subfinder/pkg/subscraping/sources/certspotterold"
 	"github.com/subfinder/subfinder/pkg/subscraping/sources/commoncrawl"
@@ -31,6 +32,7 @@ var DefaultSources = []string{
 	"archiveis",
 	"binaryedge",
 	"bufferover",
+	"censys",
 	"certspotter",
 	"certspotterold",
 	"commoncrawl",
@@ -80,6 +82,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &binaryedge.Source{}
 		case "bufferover":
 			a.sources[source] = &bufferover.Source{}
+		case "censys":
+			a.sources[source] = &censys.Source{}
 		case "certspotter":
 			a.sources[source] = &certspotter.Source{}
 		case "certspotterold":
