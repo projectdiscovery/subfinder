@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"strings"
 
@@ -37,6 +38,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		if resp.StatusCode == 500 {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: errors.New("internal server error")}
+			io.Copy(ioutil.Discard, resp.Body)
+			resp.Body.Close()
 			close(results)
 			return
 		}
@@ -45,6 +48,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		err = jsoniter.NewDecoder(resp.Body).Decode(&indexes)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			resp.Body.Close()
 			close(results)
 			return
 		}
@@ -94,6 +98,7 @@ func (s *Source) getSubdomains(ctx context.Context, url string, domain string, s
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				resp.Body.Close()
 				return false
 			}
 			resp.Body.Close()

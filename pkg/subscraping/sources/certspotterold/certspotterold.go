@@ -26,6 +26,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			resp.Body.Close()
 			close(results)
 			return
 		}
