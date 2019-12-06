@@ -38,6 +38,7 @@ func (a *agent) makeRequest(token string, domain string) (string, error) {
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		resp.Body.Close()
 		return "", err
 	}
 	resp.Body.Close()

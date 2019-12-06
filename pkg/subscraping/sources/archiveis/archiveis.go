@@ -37,6 +37,7 @@ func (a *ArchiveIs) enumerate(ctx context.Context, baseURL string) {
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				a.Results <- subscraping.Result{Source: "archiveis", Type: subscraping.Error, Error: err}
+				resp.Body.Close()
 				close(a.Results)
 				return
 			}

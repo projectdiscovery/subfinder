@@ -37,6 +37,7 @@ func (s *Source) getData(URL string, session *subscraping.Session, results chan 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		resp.Body.Close()
 		return
 	}
 	resp.Body.Close()

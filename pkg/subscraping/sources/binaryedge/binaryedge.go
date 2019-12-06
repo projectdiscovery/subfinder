@@ -37,6 +37,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			resp.Body.Close()
 			close(results)
 			return
 		}
@@ -82,6 +83,7 @@ func (s *Source) getSubdomains(ctx context.Context, domain string, remaining, cu
 			err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				resp.Body.Close()
 				return false
 			}
 			resp.Body.Close()

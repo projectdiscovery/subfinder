@@ -36,6 +36,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		err = jsoniter.NewDecoder(resp.Body).Decode(&data)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			resp.Body.Close()
 			close(results)
 			return
 		}
