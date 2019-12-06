@@ -27,6 +27,12 @@ type Session struct {
 	Client *http.Client
 }
 
+// GetExtractor returns the regex for subdomains created for each domain.
+// TODO: the prefix Get is compromised rather than desired, it should be changed to Extractor after refactoring.
+func (s Session) GetExtractor() *regexp.Regexp {
+	return s.Extractor
+}
+
 // Keys contains the current API Keys we have in store
 type Keys struct {
 	Binaryedge           string `json:"binaryedge"`
