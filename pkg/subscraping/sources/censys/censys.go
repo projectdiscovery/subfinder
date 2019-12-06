@@ -49,7 +49,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				close(results)
 				return
 			}
-			fmt.Printf("%s %s\n", session.Keys.CensysToken, session.Keys.CensysSecret)
 			req.SetBasicAuth(session.Keys.CensysToken, session.Keys.CensysSecret)
 			req.Header.Set("Content-Type", "application/json")
 			req.Header.Set("Accept", "application/json")
