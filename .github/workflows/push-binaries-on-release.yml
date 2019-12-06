@@ -3,7 +3,7 @@
 name: Cross compile binaries and attach to release
 on: 
   release:
-    types: [created]
+    types: [published]
 jobs:
   build:
     runs-on: ubuntu-latest

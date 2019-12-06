@@ -3,7 +3,7 @@
 name: Publish to Dockerhub on creation of a new release
 on: 
   release:
-    types: [created]
+    types: [published]
 jobs:
   build:
     runs-on: ubuntu-latest
