@@ -3,7 +3,6 @@ package censys
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 
