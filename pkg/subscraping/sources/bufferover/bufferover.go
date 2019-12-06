@@ -31,14 +31,12 @@ func (s *Source) getData(URL string, session *subscraping.Session, results chan 
 	resp, err := session.NormalGet(URL)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-		close(results)
 		return
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-		close(results)
 		return
 	}
 	resp.Body.Close()
