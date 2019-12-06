@@ -36,12 +36,13 @@ func (s *Source) getData(URL string, session Session, results chan subscraping.R
 		return
 	}
 
+	defer resp.Body.Close()
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		return
 	}
-	resp.Body.Close()
 
 	src := string(body)
 
