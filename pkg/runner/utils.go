@@ -15,7 +15,7 @@ type JSONResult struct {
 }
 
 // WriteHostOutput writes the output list of subdomain to an io.Writer
-func WriteHostOutput(results map[string]string, writer io.Writer) error {
+func WriteHostOutput(results map[string]struct{}, writer io.Writer) error {
 	bufwriter := bufio.NewWriter(writer)
 	sb := &strings.Builder{}
 
