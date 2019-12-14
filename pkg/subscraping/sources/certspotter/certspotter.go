@@ -49,6 +49,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 		}
 
+		// if the number of responses is zero, close the channel and return.
+		if len(response) == 0 {
+			close(results)
+			return
+		}
+
 		id := response[len(response)-1].ID
 		for {
 			reqURL := fmt.Sprintf("https://api.certspotter.com/v1/issuances?domain=%s&include_subdomains=true&expand=dns_names&after=%s", domain, id)
