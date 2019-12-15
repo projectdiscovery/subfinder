@@ -103,8 +103,14 @@ func (r *Runner) EnumerateSingleDomain(domain, output string) error {
 	// If verbose mode was used, then now print all the
 	// found subdomains on the screen together.
 	if r.options.Verbose {
-		for result := range foundResults {
-			log.Silentf("%s\n", result)
+		if r.options.RemoveWildcard {
+			for result := range foundResults {
+				log.Silentf("%s\n", result)
+			}
+		} else {
+			for result := range uniqueMap {
+				log.Silentf("%s\n", result)
+			}
 		}
 	}
 
