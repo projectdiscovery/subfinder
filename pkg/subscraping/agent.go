@@ -3,6 +3,7 @@ package subscraping
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -48,6 +49,9 @@ func (s *Session) NormalGetWithContext(ctx context.Context, url string) (*http.R
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode >= 400 {
+		return resp, fmt.Errorf("subscraping.NormalGetWithContext - %s returned status code %v", url, resp.StatusCode)
+	}
 
 	return resp, nil
 }
@@ -76,6 +80,9 @@ func (s *Session) Get(ctx context.Context, url string, cookies string, headers m
 	resp, err := s.Client.Do(req)
 	if err != nil {
 		return nil, err
+	}
+	if resp.StatusCode >= 400 {
+		return resp, fmt.Errorf("subscraping.Get - %s returned status code %v", url, resp.StatusCode)
 	}
 
 	return resp, nil

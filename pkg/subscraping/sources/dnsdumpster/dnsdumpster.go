@@ -2,6 +2,7 @@ package dnsdumpster
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -62,6 +63,9 @@ func postForm(token, domain string) (string, error) {
 	// Now, grab the entire page
 	in, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		return string(in), fmt.Errorf("dnsdumpster.postForm - got status code %v", resp.StatusCode)
+	}
 	return string(in), err
 }
 
