@@ -9,6 +9,8 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
+const maxRetries = 4
+
 // Source is the passive scraping agent
 type Source struct{}
 
@@ -17,7 +19,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
-		pagesResp, err := session.NormalGetWithContext(ctx, fmt.Sprintf("http://web.archive.org/cdx/search/cdx?url=*.%s/*&output=json&fl=original&collapse=urlkey", domain))
+		pagesResp, err := session.NormalGetWithRetriesWithContext(ctx, fmt.Sprintf("http://web.archive.org/cdx/search/cdx?url=*.%s/*&output=json&fl=original&collapse=urlkey", domain), maxRetries)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			close(results)

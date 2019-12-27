@@ -56,6 +56,22 @@ func (s *Session) NormalGetWithContext(ctx context.Context, url string) (*http.R
 	return resp, nil
 }
 
+// NormalGetWithRetriesWithContext makes a normal GET request to a URL, with the specified number of retries
+func (s *Session) NormalGetWithRetriesWithContext(ctx context.Context, url string, maxRetries int) (*http.Response, error) {
+	var resp *http.Response
+	var err error
+	for i := 0; i <= maxRetries; i++ {
+		if i > 0 {
+			time.Sleep(2 * time.Second)
+		}
+		resp, err = s.NormalGetWithContext(ctx, url)
+		if err == nil {
+			return resp, err
+		}
+	}
+	return nil, err
+}
+
 // Get makes a GET request to a URL
 func (s *Session) Get(ctx context.Context, url string, cookies string, headers map[string]string) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
