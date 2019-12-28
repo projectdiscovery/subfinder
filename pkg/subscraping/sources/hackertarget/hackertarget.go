@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"strings"
 
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
@@ -33,6 +34,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 		resp.Body.Close()
 		src := string(body)
+
+		if strings.Contains(src, "API count exceeded") {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("API count exceeded")}
+			close(results)
+			return
+		}
 
 		for _, match := range session.Extractor.FindAllString(src, -1) {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: match}

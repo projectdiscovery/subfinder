@@ -101,6 +101,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
+		if strings.Contains(data, "Too many requests") {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("Too many requests from your IP address")}
+			close(results)
+			return
+		}
+
 		for _, subdomain := range session.Extractor.FindAllString(data, -1) {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 		}
