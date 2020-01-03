@@ -12,7 +12,7 @@ import (
 )
 
 // EnumerateSingleDomain performs subdomain enumeration against a single domain
-func (r *Runner) EnumerateSingleDomain(domain, output string) error {
+func (r *Runner) EnumerateSingleDomain(domain, output string, overwrite bool) error {
 	log.Infof("Enumerating subdomains for %s\n", domain)
 
 	// Get the API keys for sources from the configuration
@@ -127,7 +127,15 @@ func (r *Runner) EnumerateSingleDomain(domain, output string) error {
 			}
 		}
 
-		file, err := os.Create(output)
+		var file *os.File
+		var err error
+
+		if overwrite {
+			file, err = os.Create(output)
+		} else {
+			file, err = os.OpenFile(output, os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
+		}
+
 		if err != nil {
 			log.Errorf("Could not create file %s for %s: %s\n", output, domain, err)
 			return err

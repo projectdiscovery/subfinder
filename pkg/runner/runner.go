@@ -40,7 +40,7 @@ func NewRunner(options *Options) (*Runner, error) {
 func (r *Runner) RunEnumeration() error {
 	// Check if only a single domain is sent as input. Process the domain now.
 	if r.options.Domain != "" {
-		return r.EnumerateSingleDomain(r.options.Domain, r.options.Output)
+		return r.EnumerateSingleDomain(r.options.Domain, r.options.Output, true)
 	}
 
 	// If we have multiple domains as input,
@@ -72,7 +72,7 @@ func (r *Runner) EnumerateMultipleDomains(reader io.Reader) error {
 		}
 
 		outputFile := path.Join(r.options.OutputDirectory, domain)
-		err := r.EnumerateSingleDomain(domain, outputFile)
+		err := r.EnumerateSingleDomain(domain, outputFile, true)
 		if err != nil {
 			return err
 		}
