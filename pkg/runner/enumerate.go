@@ -132,13 +132,16 @@ func (r *Runner) EnumerateSingleDomain(domain, output string, overwrite bool) er
 
 		if overwrite {
 			file, err = os.Create(output)
+			if err != nil {
+				log.Errorf("Could not create file %s for %s: %s\n", output, domain, err)
+				return err
+			}
 		} else {
 			file, err = os.OpenFile(output, os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
-		}
-
-		if err != nil {
-			log.Errorf("Could not create file %s for %s: %s\n", output, domain, err)
-			return err
+			if err != nil {
+				log.Errorf("Could not open file %s for %s: %s\n", output, domain, err)
+				return err
+			}
 		}
 
 		// Write the output to the file depending upon user requirement
