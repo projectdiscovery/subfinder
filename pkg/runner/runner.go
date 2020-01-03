@@ -65,7 +65,10 @@ func (r *Runner) RunEnumeration() error {
 // We keep enumerating subdomains for a given domain until we reach an error
 func (r *Runner) EnumerateMultipleDomains(reader io.Reader) error {
 	scanner := bufio.NewScanner(reader)
+	var scanned int = 0
 	for scanner.Scan() {
+		var isFirstRun bool = (scanned == 0)
+
 		domain := scanner.Text()
 		if domain == "" {
 			continue
@@ -75,10 +78,14 @@ func (r *Runner) EnumerateMultipleDomains(reader io.Reader) error {
 		if r.options.Output != "" {
 			outputFile = path.Join(r.options.OutputDirectory, r.options.Output)
 		}
-		err := r.EnumerateSingleDomain(domain, outputFile, false)
+
+		// the first enumeration will overwrite the output file,
+		// successive enumerations will append the results.
+		err := r.EnumerateSingleDomain(domain, outputFile, isFirstRun)
 		if err != nil {
 			return err
 		}
+		scanned++
 	}
 	return nil
 }
