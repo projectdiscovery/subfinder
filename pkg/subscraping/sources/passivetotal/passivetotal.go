@@ -29,7 +29,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		// Create JSON Get body
 		var request = []byte(`{"query":"` + domain + `"}`)
 
-		req, err := http.NewRequest("GET", "https://api.passivetotal.org/v2/enrichment/subdomains", bytes.NewBuffer(request))
+		req, err := http.NewRequestWithContext(ctx, "GET", "https://api.passivetotal.org/v2/enrichment/subdomains", bytes.NewBuffer(request))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			close(results)

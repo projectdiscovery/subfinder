@@ -42,7 +42,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		for {
 			var request = []byte(`{"query":"` + domain + `", "page":` + strconv.Itoa(currentPage) + `, "fields":["parsed.names","parsed.extensions.subject_alt_name.dns_names"], "flatten":true}`)
 
-			req, err := http.NewRequest("POST", "https://www.censys.io/api/v1/search/certificates", bytes.NewReader(request))
+			req, err := http.NewRequestWithContext(ctx, "POST", "https://www.censys.io/api/v1/search/certificates", bytes.NewReader(request))
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				close(results)

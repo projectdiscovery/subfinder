@@ -1,6 +1,7 @@
 package subscraping
 
 import (
+	"context"
 	"crypto/tls"
 	"net/http"
 	"time"
@@ -31,9 +32,9 @@ func NewSession(domain string, keys Keys, timeout int) (*Session, error) {
 	return session, err
 }
 
-// NormalGet makes a normal GET request to a URL
-func (s *Session) NormalGet(url string) (*http.Response, error) {
-	req, err := http.NewRequest("GET", url, nil)
+// NormalGetWithContext makes a normal GET request to a URL with context
+func (s *Session) NormalGetWithContext(ctx context.Context, url string) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -52,8 +53,8 @@ func (s *Session) NormalGet(url string) (*http.Response, error) {
 }
 
 // Get makes a GET request to a URL
-func (s *Session) Get(url string, cookies string, headers map[string]string) (*http.Response, error) {
-	req, err := http.NewRequest("GET", url, nil)
+func (s *Session) Get(ctx context.Context, url string, cookies string, headers map[string]string) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}

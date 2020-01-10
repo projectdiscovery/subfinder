@@ -20,7 +20,7 @@ type agent struct {
 	session    *subscraping.Session
 }
 
-func (a *agent) makeRequest(token string, domain string) (string, error) {
+func (a *agent) makeRequest(ctx context.Context, token string, domain string) (string, error) {
 	requestURI := ""
 
 	if token == "" {
@@ -29,7 +29,7 @@ func (a *agent) makeRequest(token string, domain string) (string, error) {
 		requestURI = "https://www.google.com/transparencyreport/api/v3/httpsreport/ct/certsearch/page?domain=" + url.QueryEscape(domain) + "&include_expired=true&include_subdomains=true&p=" + url.QueryEscape(token)
 	}
 
-	resp, err := a.session.Get(requestURI, "", map[string]string{
+	resp, err := a.session.Get(ctx, requestURI, "", map[string]string{
 		"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
 		"Referer":    "https://transparencyreport.google.com/https/certificates",
 	})
@@ -59,7 +59,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	}
 
 	go func() {
-		respBody, err := a.makeRequest("", domain)
+		respBody, err := a.makeRequest(ctx, "", domain)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			close(results)
@@ -98,7 +98,7 @@ func (s *Source) Name() string {
 }
 
 func (a *agent) getSubdomains(ctx context.Context, Token *string, domain string, session *subscraping.Session, s *Source, results chan subscraping.Result) bool {
-	respBody, err := a.makeRequest(*Token, domain)
+	respBody, err := a.makeRequest(ctx, *Token, domain)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		return false
