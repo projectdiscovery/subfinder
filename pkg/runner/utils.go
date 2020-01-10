@@ -33,6 +33,25 @@ func WriteHostOutput(results map[string]struct{}, writer io.Writer) error {
 	return bufwriter.Flush()
 }
 
+// WriteHostOutputNoWildcard writes the output list of subdomain with nW flag to an io.Writer
+func WriteHostOutputNoWildcard(results map[string]string, writer io.Writer) error {
+	bufwriter := bufio.NewWriter(writer)
+	sb := &strings.Builder{}
+
+	for host := range results {
+		sb.WriteString(host)
+		sb.WriteString("\n")
+
+		_, err := bufwriter.WriteString(sb.String())
+		if err != nil {
+			bufwriter.Flush()
+			return err
+		}
+		sb.Reset()
+	}
+	return bufwriter.Flush()
+}
+
 // WriteJSONOutput writes the output list of subdomain in JSON to an io.Writer
 func WriteJSONOutput(results map[string]string, writer io.Writer) error {
 	encoder := jsoniter.NewEncoder(writer)
