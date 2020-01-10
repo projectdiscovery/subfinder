@@ -139,7 +139,11 @@ func (r *Runner) EnumerateSingleDomain(domain, output string) error {
 		} else if r.options.JSON {
 			err = WriteJSONOutput(foundResults, file)
 		} else {
-			err = WriteHostOutput(uniqueMap, file)
+			if r.options.RemoveWildcard {
+				err = WriteHostOutputNoWildcard(foundResults, file)
+			} else {
+				err = WriteHostOutput(uniqueMap, file)
+			}
 		}
 		if err != nil {
 			log.Errorf("Could not write results to file %s for %s: %s\n", output, domain, err)
