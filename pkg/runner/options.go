@@ -30,6 +30,7 @@ type Options struct {
 	RemoveWildcard     bool   // RemoveWildcard specifies whether to remove potential wildcard or dead subdomains from the results.
 	ConfigFile         string // ConfigFile contains the location of the config file
 	Stdin              bool   // Stdin specifies whether stdin input was given to the process
+	Version            bool   // Version specifies if we should just show version and exit
 
 	YAMLConfig ConfigFile // YAMLConfig contains the unmarshalled yaml config file
 }
@@ -62,6 +63,7 @@ func ParseOptions() *Options {
 	flag.StringVar(&options.ResolverList, "rL", "", "Text file containing list of resolvers to use")
 	flag.BoolVar(&options.RemoveWildcard, "nW", false, "Remove Wildcard & Dead Subdomains from output")
 	flag.StringVar(&options.ConfigFile, "config", path.Join(config, "config.yaml"), "Configuration file for API Keys, etc")
+	flag.BoolVar(&options.Version, "version", false, "Show version of subfinder")
 	flag.Parse()
 
 	// Check if stdin pipe was given
@@ -72,6 +74,11 @@ func ParseOptions() *Options {
 
 	// Show the user the banner
 	showBanner()
+
+	if options.Version {
+		log.Infof("Current Version: %s\n", Version)
+		os.Exit(0)
+	}
 
 	// Check if the config file exists. If not, it means this is the
 	// first run of the program. Show the first run notices and initialize the config file.

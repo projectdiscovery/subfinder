@@ -13,6 +13,9 @@ ____  _| |__ / _(_)_ _  __| |___ _ _
 /__/\_,_|_.__/_| |_|_||_\__,_\___|_| v2
 `
 
+// Version is the current version of subfinder
+const Version = `2.2.5`
+
 // showBanner is used to show the banner to the user
 func showBanner() {
 	log.Printf("%s\n", banner)
