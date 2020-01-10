@@ -65,6 +65,7 @@ This will display help for the tool. Here are all the switches it supports.
 | -t | Number of concurrent goroutines for resolving (default 10) | subfinder -t 100 | 
 | -timeout | Seconds to wait before timing out (default 30) | subfinder -timeout 30 | 
 | -v | 	Show Verbose output | subfinder -v | 
+| -version | Show current program version | subfinder -version | 
   
 
 # Installation Instructions
