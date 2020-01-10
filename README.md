@@ -214,6 +214,20 @@ hackerone.com.txt
 google.com.txt
 ```
 
+If you want to save results to a single file while using a domain list, specify the -o flag with the name of the output file.
+
+
+```bash
+> cat domains.txt
+hackerone.com
+google.com
+
+> subfinder -dL domains.txt -o ~/path/to/output.txt
+> ls ~/path/to/
+
+output.txt
+```
+
 You can also get output in json format using -oJ switch. This switch saves the output in the JSON lines format. 
 
 If you use the JSON format, or the Host:IP format, then it becomes mandatory for you to use the **-nW** format as resolving is essential for these output format. By default, resolving the found subdomains is disabled.
