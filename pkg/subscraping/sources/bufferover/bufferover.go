@@ -18,8 +18,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 	go func() {
 		// Run enumeration on subdomain dataset for historical SONAR datasets
-		s.getData(fmt.Sprintf("https://dns.bufferover.run/dns?q=.%s", domain), session, results)
-		s.getData(fmt.Sprintf("https://tls.bufferover.run/dns?q=.%s", domain), session, results)
+		s.getData(ctx, fmt.Sprintf("https://dns.bufferover.run/dns?q=.%s", domain), session, results)
+		s.getData(ctx, fmt.Sprintf("https://tls.bufferover.run/dns?q=.%s", domain), session, results)
 
 		close(results)
 	}()
@@ -27,8 +27,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	return results
 }
 
-func (s *Source) getData(URL string, session *subscraping.Session, results chan subscraping.Result) {
-	resp, err := session.NormalGet(URL)
+func (s *Source) getData(ctx context.Context, URL string, session *subscraping.Session, results chan subscraping.Result) {
+	resp, err := session.NormalGetWithContext(ctx, URL)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		return

@@ -2,7 +2,6 @@ package ipv4info
 
 import (
 	"context"
-	"errors"
 	"io/ioutil"
 	"regexp"
 	"strconv"
@@ -18,7 +17,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
-		resp, err := session.NormalGet("http://ipv4info.com/search/" + domain)
+		resp, err := session.NormalGetWithContext(ctx, "http://ipv4info.com/search/"+domain)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			close(results)
@@ -39,13 +38,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		matchTokens := regxTokens.FindAllString(src, -1)
 
 		if len(matchTokens) <= 0 {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: errors.New("Could not get ip tokens")}
 			close(results)
 			return
 		}
 		token := matchTokens[0]
 
-		resp, err = session.NormalGet("http://ipv4info.com" + token)
+		resp, err = session.NormalGetWithContext(ctx, "http://ipv4info.com"+token)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			close(results)
@@ -65,13 +63,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		regxTokens = regexp.MustCompile("/dns/(.*?)/" + domain)
 		matchTokens = regxTokens.FindAllString(src, -1)
 		if len(matchTokens) <= 0 {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: errors.New("Could not get ip tokens")}
 			close(results)
 			return
 		}
 		token = matchTokens[0]
 
-		resp, err = session.NormalGet("http://ipv4info.com" + token)
+		resp, err = session.NormalGetWithContext(ctx, "http://ipv4info.com"+token)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			close(results)
@@ -91,13 +88,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		regxTokens = regexp.MustCompile("/subdomains/(.*?)/" + domain)
 		matchTokens = regxTokens.FindAllString(src, -1)
 		if len(matchTokens) <= 0 {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: errors.New("Could not get ip tokens")}
 			close(results)
 			return
 		}
 		token = matchTokens[0]
 
-		resp, err = session.NormalGet("http://ipv4info.com" + token)
+		resp, err = session.NormalGetWithContext(ctx, "http://ipv4info.com"+token)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			close(results)
@@ -149,7 +145,7 @@ func (s *Source) getSubdomains(ctx context.Context, domain string, nextPage *int
 			}
 			token := matchTokens[0]
 
-			resp, err := session.NormalGet("http://ipv4info.com" + token)
+			resp, err := session.NormalGetWithContext(ctx, "http://ipv4info.com"+token)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				return false
