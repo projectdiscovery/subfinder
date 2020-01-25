@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"strings"
 
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
@@ -32,7 +33,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 		resp.Body.Close()
 
-		src := string(body)
+		// Also replace all newlines
+		src := strings.Replace(string(body), "\n", "", -1)
 
 		for _, subdomain := range session.Extractor.FindAllString(src, -1) {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
