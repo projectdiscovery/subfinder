@@ -77,9 +77,11 @@ func (r *Runner) EnumerateMultipleDomains(reader io.Reader) error {
 		// for each domain in the directory.
 		if r.options.Output != "" {
 			err = r.EnumerateSingleDomain(domain, r.options.Output, true)
-		} else {
+		} else if r.options.OutputDirectory != "" {
 			outputFile := path.Join(r.options.OutputDirectory, domain)
 			err = r.EnumerateSingleDomain(domain, outputFile, false)
+		} else {
+			err = r.EnumerateSingleDomain(domain, "", true)
 		}
 		if err != nil {
 			return err
