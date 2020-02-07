@@ -40,9 +40,11 @@ We have designed SubFinder to comply with all passive sources licenses, and usag
 # Installation Instructions
 ## Direct Installation
 
-#### SubFinder requires go1.10+ to install successfully !
+SubFinder requires go1.10+ to install successfully !
 
-The installation is easy. Git clone the repo and run go build.
+```bash
+gem install go
+```
 
 The installation is easy. You can download the pre-built binaries for different platforms from the [Releases page](https://github.com/projectdiscovery/subfinder/releases/). Extract them using tar, move it to your $PATH and you're ready to go:
 
