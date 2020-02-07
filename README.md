@@ -229,7 +229,7 @@ subfinder -d freelancer.com --no-passive -v -b -w ~/dnslist.txt
 
 Ninja Mode
 ```bash
-subfinder -dL ad_ips -t 37 -o f.json -nW -v
+subfinder -dL ad_ips -t 37 -oJ f.json -nW -v
 ```
 
 # License
