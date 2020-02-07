@@ -229,7 +229,7 @@ subfinder -d freelancer.com --no-passive -v -b -w ~/dnslist.txt
 
 Ninja Mode
 ```bash
-subfinder --recursive -d freelancer.com -b -t 37 -w /usr/share/wordlists/dnsmap.txt -o /root/go/bin/freelancer.json -nW -oT -v
+subfinder -dL ad_ips -t 37 -o f.json -nW -v
 ```
 
 # License
