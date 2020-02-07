@@ -103,11 +103,11 @@ CensysSecret
 ShodanAPIKey
 ```
 
-Theses values are stored in the $HOME/.config/subfinder/config.json file which will be created when you run the tool for the first time. To configure the services to use an API key, you need to use the tool with --set-config option which will allow you to set a configuration option. For example:
+Theses values are stored in the $HOME/.config/subfinder/config.json file which will be created when you run the tool for the first time. To configure the services to use an API key, you need to use the tool with -config option which will allow you to set a configuration option. For example:
 
 ```bash
-~/go/bin/./subfinder --set-config VirustotalAPIKey=0x41414141
-~/go/bin/./subfinder --set-config PassivetotalUsername=hacker,PassivetotalKey=supersecret
+subfinder -config VirustotalAPIKey=0x41414141
+subfinder -config PassivetotalUsername=hacker,PassivetotalKey=supersecret
 ```
 
 ## For use in Docker
@@ -130,7 +130,7 @@ Now, you can also pass --set-config inside the docker to change the configuratio
 # Usage
 
 ```bash
-~/go/bin/./subfinder
+subfinder
 ```
 This will display help for the tool. Here are all the switches it supports.
 
@@ -163,7 +163,7 @@ This will display help for the tool. Here are all the switches it supports.
 
 To run the tool on a target, just use the following command.
 ```bash
-~/go/bin/./subfinder -d freelancer.com
+subfinder -d freelancer.com
 ```
 This will run the tool against freelancer.com. There are a number of configuration options that you can pass along with this command. The verbose switch (-v) can be used to display verbose information.
 
@@ -182,7 +182,7 @@ This will run the tool against freelancer.com. There are a number of configurati
 The -o command can be used to specify an output file.
 
 ```bash
-~/go/bin/./subfinder -d freelancer.com -o output.txt
+subfinder -d freelancer.com -o output.txt
 ```
 
 You can also get output in json format using -oJ switch.
@@ -192,7 +192,7 @@ The --set-config switch can be used to set the value of any configuration option
 You can also pass some special settings for the tool through the command line by using --set-setting flag.
 For example, you can pass the number of Censys pages to check using the following command.
 ```bash
-~/go/bin/./subfinder -d freelancer.com --sources censys --set-settings CensysPages=2 -v
+subfinder -d freelancer.com --sources censys --set-settings CensysPages=2 -v
 ```
 For checking all pages returned by censys, you can use "all" option. Note, It is a string.
 
@@ -206,28 +206,28 @@ BingPages
 
 For using bruteforcing capabilities, you can use -b flag with -w option to specify a wordlist.
 ```bash
-~/go/bin/./subfinder -d freelancer.com -b -w jhaddix_all.txt -t 100 --sources censys --set-settings CensysPages=2 -v
+subfinder -d freelancer.com -b -w jhaddix_all.txt -t 100 --sources censys --set-settings CensysPages=2 -v
 ```
 
 You can also write output in JSON format as used by Aquatone.
 ```bash
-~/go/bin/./subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v
+subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v
 ```
 
 You can specify custom resolvers too.
 ```bash
-~/go/bin/./subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v -r 8.8.8.8,1.1.1.1
-~/go/bin/./subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v -rL resolvers.txt
+subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v -r 8.8.8.8,1.1.1.1
+subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v -rL resolvers.txt
 ```
 
 If you want to do bruteforce only and do not want to run the passive subdomain discovery engine, you can use `--no-passive` flag which will not run passive discovery. You can use this functionality to run plain bruteforce, etc.
 ```bash
-~/go/bin/./subfinder -d freelancer.com --no-passive -v -b -w ~/dnslist.txt
+subfinder -d freelancer.com --no-passive -v -b -w ~/dnslist.txt
 ```
 
 Ninja Mode
 ```bash
-~/go/bin/./subfinder --recursive -d freelancer.com -b -t 37 -w /usr/share/wordlists/dnsmap.txt -o /root/go/bin/freelancer.json -nW -oT -v
+subfinder --recursive -d freelancer.com -b -t 37 -w /usr/share/wordlists/dnsmap.txt -o /root/go/bin/freelancer.json -nW -oT -v
 ```
 
 # License
