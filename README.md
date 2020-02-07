@@ -44,12 +44,10 @@ We have designed SubFinder to comply with all passive sources licenses, and usag
 
 The installation is easy. Git clone the repo and run go build.
 
-```bash
-gem install go
-```
+The installation is easy. You can download the pre-built binaries for different platforms from the [Releases page](https://github.com/projectdiscovery/subfinder/releases/). Extract them using tar, move it to your $PATH and you're ready to go:
 
 ```bash
-apt install golang gobuster -y && cd /usr/share && git clone https://github.com/4k4xs4pH1r3/subfinder.git && cd subfinder && go build && go get github.com/subfinder/subfinder && go get -u github.com/subfinder/subfinder && apt update && apt full-upgrade -y && apt autoremove -y && cd
+tar -xzvf subfinder-linux-amd64.tar && && mv subfinder-linux-amd64 /usr/bin/subfinder && subfinder
 ```
 
 ## Upgrading
