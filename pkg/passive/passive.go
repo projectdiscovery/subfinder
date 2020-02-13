@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/projectdiscovery/subfinder/pkg/log"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
@@ -21,19 +22,33 @@ func (a *Agent) EnumerateSubdomains(domain string, keys subscraping.Keys, timeou
 
 		ctx, cancel := context.WithTimeout(context.Background(), maxEnumTime)
 
+		timeTaken := make(map[string]string)
+		timeTakenMutex := &sync.Mutex{}
+
 		wg := &sync.WaitGroup{}
 		// Run each source in parallel on the target domain
 		for source, runner := range a.sources {
 			wg.Add(1)
 
+			now := time.Now()
 			go func(source string, runner subscraping.Source) {
 				for resp := range runner.Run(ctx, domain, session) {
 					results <- resp
 				}
+
+				duration := time.Now().Sub(now)
+				timeTakenMutex.Lock()
+				timeTaken[source] = fmt.Sprintf("Source took %s for enumeration\n", duration)
+				timeTakenMutex.Unlock()
+
 				wg.Done()
 			}(source, runner)
 		}
 		wg.Wait()
+
+		for source, data := range timeTaken {
+			log.Verbosef(data, source)
+		}
 
 		close(results)
 		cancel()
