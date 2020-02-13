@@ -13,54 +13,40 @@ import (
 type ArchiveIs struct {
 	Results chan subscraping.Result
 	Session *subscraping.Session
-
-	closed bool
 }
 
 var reNext = regexp.MustCompile("<a id=\"next\" style=\".*\" href=\"(.*)\">&rarr;</a>")
 
 func (a *ArchiveIs) enumerate(ctx context.Context, baseURL string) {
-	for {
-		select {
-		case <-ctx.Done():
-			close(a.Results)
-			return
-		default:
-			resp, err := a.Session.NormalGetWithContext(ctx, baseURL)
-			if err != nil {
-				a.Results <- subscraping.Result{Source: "archiveis", Type: subscraping.Error, Error: err}
-				close(a.Results)
-				return
-			}
+	select {
+	case <-ctx.Done():
+		return
+	default:
+	}
 
-			// Get the response body
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				a.Results <- subscraping.Result{Source: "archiveis", Type: subscraping.Error, Error: err}
-				resp.Body.Close()
-				close(a.Results)
-				return
-			}
-			resp.Body.Close()
+	resp, err := a.Session.NormalGetWithContext(ctx, baseURL)
+	if err != nil {
+		a.Results <- subscraping.Result{Source: "archiveis", Type: subscraping.Error, Error: err}
+		return
+	}
 
-			src := string(body)
+	// Get the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		a.Results <- subscraping.Result{Source: "archiveis", Type: subscraping.Error, Error: err}
+		return
+	}
 
-			for _, subdomain := range a.Session.Extractor.FindAllString(src, -1) {
-				a.Results <- subscraping.Result{Source: "archiveis", Type: subscraping.Subdomain, Value: subdomain}
-			}
+	src := string(body)
 
-			match1 := reNext.FindStringSubmatch(src)
-			if len(match1) > 0 {
-				a.enumerate(ctx, match1[1])
-			}
+	for _, subdomain := range a.Session.Extractor.FindAllString(src, -1) {
+		a.Results <- subscraping.Result{Source: "archiveis", Type: subscraping.Subdomain, Value: subdomain}
+	}
 
-			// Guard channel closing during recursion
-			if !a.closed {
-				close(a.Results)
-				a.closed = true
-			}
-			return
-		}
+	match1 := reNext.FindStringSubmatch(src)
+	if len(match1) > 0 {
+		a.enumerate(ctx, match1[1])
 	}
 }
 
@@ -76,7 +62,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		Results: results,
 	}
 
-	go aInstance.enumerate(ctx, "http://archive.is/*."+domain)
+	go func() {
+		aInstance.enumerate(ctx, "http://archive.is/*."+domain)
+		close(aInstance.Results)
+	}()
 
 	return aInstance.Results
 }
