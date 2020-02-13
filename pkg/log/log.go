@@ -40,6 +40,9 @@ var (
 		Fatal:   "FTL",
 		Info:    "INF",
 	}
+
+	// mutex protects the current logger
+	mutex = &sync.Mutex{}
 )
 
 var stringBuilderPool = &sync.Pool{New: func() interface{} {
@@ -114,12 +117,14 @@ func log(level Level, label string, format string, args ...interface{}) {
 			sb.WriteString("\n")
 		}
 
+		mutex.Lock()
 		switch level {
 		case Silent:
 			fmt.Fprintf(os.Stdout, sb.String())
 		default:
 			fmt.Fprintf(os.Stderr, sb.String())
 		}
+		mutex.Unlock()
 
 		sb.Reset()
 		stringBuilderPool.Put(sb)
