@@ -2,10 +2,13 @@ package crtsh
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"io/ioutil"
 	"strings"
 
+	// postgres driver
+	_ "github.com/lib/pq"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
@@ -17,32 +20,70 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
-		resp, err := session.NormalGetWithContext(ctx, fmt.Sprintf("https://crt.sh/?q=%%25.%s&output=json", domain))
-		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		found := s.getSubdomainsFromSQL(ctx, domain, session, results)
+		if found {
 			close(results)
 			return
 		}
-
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			resp.Body.Close()
-			close(results)
-			return
-		}
-		resp.Body.Close()
-
-		// Also replace all newlines
-		src := strings.Replace(string(body), "\\n", " ", -1)
-
-		for _, subdomain := range session.Extractor.FindAllString(src, -1) {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-		}
+		_ = s.getSubdomainsFromHTTP(ctx, domain, session, results)
 		close(results)
 	}()
 
 	return results
+}
+
+func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, session *subscraping.Session, results chan subscraping.Result) bool {
+	db, err := sql.Open("postgres", "host=crt.sh user=guest dbname=certwatch sslmode=disable")
+	if err != nil {
+		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		return false
+	}
+
+	pattern := "%." + domain
+	rows, err := db.Query(`SELECT DISTINCT ci.NAME_VALUE as domain
+	FROM certificate_identity ci
+	WHERE reverse(lower(ci.NAME_VALUE)) LIKE reverse(lower($1))
+	ORDER BY ci.NAME_VALUE`, pattern)
+	if err != nil {
+		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		return false
+	}
+
+	var data string
+	// Parse all the rows getting subdomains
+	for rows.Next() {
+		err := rows.Scan(&data)
+		if err != nil {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			return false
+		}
+		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: data}
+	}
+	return true
+}
+
+func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, session *subscraping.Session, results chan subscraping.Result) bool {
+	resp, err := session.NormalGetWithContext(ctx, fmt.Sprintf("https://crt.sh/?q=%%25.%s&output=json", domain))
+	if err != nil {
+		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		return false
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		resp.Body.Close()
+		return false
+	}
+	resp.Body.Close()
+
+	// Also replace all newlines
+	src := strings.Replace(string(body), "\\n", " ", -1)
+
+	for _, subdomain := range session.Extractor.FindAllString(src, -1) {
+		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+	}
+	return true
 }
 
 // Name returns the name of the source
