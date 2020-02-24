@@ -49,7 +49,7 @@ This will display help for the tool. Here are all the switches it supports.
 |------|-------------|---------|
 | -config string | Configuration file for API Keys, etc  | subfinder -config config.yaml | 
 | -d | Domain to find subdomains for | subfinder -d uber.com | 
-| -dL  | File containing list of domains to enumerate | subfinder -d hackerone-hosts.txt | 
+| -dL  | File containing list of domains to enumerate | subfinder -dL hackerone-hosts.txt | 
 | -exclude-sources | List of sources to exclude from enumeration | subfinder -exclude-sources archiveis | 
 | -max-time | Minutes to wait for enumeration results (default 10) | subfinder -max-time 1 | 
 | -nC | Don't Use colors in output | subfinder -nC | 
