@@ -6,14 +6,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/projectdiscovery/subfinder/pkg/log"
+	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/pkg/resolve"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
 // EnumerateSingleDomain performs subdomain enumeration against a single domain
 func (r *Runner) EnumerateSingleDomain(domain, output string, append bool) error {
-	log.Infof("Enumerating subdomains for %s\n", domain)
+	gologger.Infof("Enumerating subdomains for %s\n", domain)
 
 	// Get the API keys for sources from the configuration
 	// and also create the active resolving engine for the domain.
@@ -27,7 +27,7 @@ func (r *Runner) EnumerateSingleDomain(domain, output string, append bool) error
 		err := resolutionPool.InitWildcards(domain)
 		if err != nil {
 			// Log the error but don't quit.
-			log.Warningf("Could not get wildcards for domain %s: %s\n", domain, err)
+			gologger.Warningf("Could not get wildcards for domain %s: %s\n", domain, err)
 		}
 	}
 
@@ -43,7 +43,7 @@ func (r *Runner) EnumerateSingleDomain(domain, output string, append bool) error
 		for result := range passiveResults {
 			switch result.Type {
 			case subscraping.Error:
-				log.Warningf("Could not run source %s: %s\n", result.Source, result.Error)
+				gologger.Warningf("Could not run source %s: %s\n", result.Source, result.Error)
 			case subscraping.Subdomain:
 				// Validate the subdomain found and remove wildcards from
 				if !strings.HasSuffix(result.Value, "."+domain) {
@@ -60,7 +60,7 @@ func (r *Runner) EnumerateSingleDomain(domain, output string, append bool) error
 
 				// Log the verbose message about the found subdomain and send the
 				// host for resolution to the resolution pool
-				log.Verbosef("%s\n", result.Source, subdomain)
+				gologger.Verbosef("%s\n", result.Source, subdomain)
 
 				// If the user asked to remove wildcard then send on the resolve
 				// queue. Otherwise, if mode is not verbose print the results on
@@ -70,7 +70,7 @@ func (r *Runner) EnumerateSingleDomain(domain, output string, append bool) error
 				}
 
 				if !r.options.Verbose {
-					log.Silentf("%s\n", subdomain)
+					gologger.Silentf("%s\n", subdomain)
 				}
 			}
 		}
@@ -89,7 +89,7 @@ func (r *Runner) EnumerateSingleDomain(domain, output string, append bool) error
 		for result := range resolutionPool.Results {
 			switch result.Type {
 			case resolve.Error:
-				log.Warningf("Could not resolve host: %s\n", result.Error)
+				gologger.Warningf("Could not resolve host: %s\n", result.Error)
 			case resolve.Subdomain:
 				// Add the found subdomain to a map.
 				if _, ok := foundResults[result.Host]; !ok {
@@ -105,11 +105,11 @@ func (r *Runner) EnumerateSingleDomain(domain, output string, append bool) error
 	if r.options.Verbose {
 		if r.options.RemoveWildcard {
 			for result := range foundResults {
-				log.Silentf("%s\n", result)
+				gologger.Silentf("%s\n", result)
 			}
 		} else {
 			for result := range uniqueMap {
-				log.Silentf("%s\n", result)
+				gologger.Silentf("%s\n", result)
 			}
 		}
 	}
@@ -135,7 +135,7 @@ func (r *Runner) EnumerateSingleDomain(domain, output string, append bool) error
 			file, err = os.Create(output)
 		}
 		if err != nil {
-			log.Errorf("Could not create file %s for %s: %s\n", output, domain, err)
+			gologger.Errorf("Could not create file %s for %s: %s\n", output, domain, err)
 			return err
 		}
 
@@ -152,7 +152,7 @@ func (r *Runner) EnumerateSingleDomain(domain, output string, append bool) error
 			}
 		}
 		if err != nil {
-			log.Errorf("Could not write results to file %s for %s: %s\n", output, domain, err)
+			gologger.Errorf("Could not write results to file %s for %s: %s\n", output, domain, err)
 		}
 		file.Close()
 		return err

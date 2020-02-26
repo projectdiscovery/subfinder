@@ -3,7 +3,7 @@ package runner
 import (
 	"errors"
 
-	"github.com/projectdiscovery/subfinder/pkg/log"
+	"github.com/projectdiscovery/gologger"
 )
 
 // validateOptions validates the configuration options passed
@@ -47,12 +47,12 @@ func (options *Options) validateOptions() error {
 func (options *Options) configureOutput() {
 	// If the user desires verbose output, show verbose output
 	if options.Verbose {
-		log.MaxLevel = log.Verbose
+		gologger.MaxLevel = gologger.Verbose
 	}
 	if options.NoColor {
-		log.UseColors = false
+		gologger.UseColors = false
 	}
 	if options.Silent {
-		log.MaxLevel = log.Silent
+		gologger.MaxLevel = gologger.Silent
 	}
 }

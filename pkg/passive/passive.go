@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/projectdiscovery/subfinder/pkg/log"
+	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
@@ -47,7 +47,7 @@ func (a *Agent) EnumerateSubdomains(domain string, keys subscraping.Keys, timeou
 		wg.Wait()
 
 		for source, data := range timeTaken {
-			log.Verbosef(data, source)
+			gologger.Verbosef(data, source)
 		}
 
 		close(results)

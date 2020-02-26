@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/projectdiscovery/subfinder/pkg/log"
+	"github.com/projectdiscovery/gologger"
 )
 
 // Options contains the configuration options for tuning
@@ -42,7 +42,7 @@ func ParseOptions() *Options {
 	config, err := GetConfigDirectory()
 	if err != nil {
 		// This should never be reached
-		log.Fatalf("Could not get user home: %s\n", err)
+		gologger.Fatalf("Could not get user home: %s\n", err)
 	}
 
 	flag.BoolVar(&options.Verbose, "v", false, "Show Verbose output")
@@ -76,7 +76,7 @@ func ParseOptions() *Options {
 	showBanner()
 
 	if options.Version {
-		log.Infof("Current Version: %s\n", Version)
+		gologger.Infof("Current Version: %s\n", Version)
 		os.Exit(0)
 	}
 
@@ -93,7 +93,7 @@ func ParseOptions() *Options {
 	// invalid options have been used, exit.
 	err = options.validateOptions()
 	if err != nil {
-		log.Fatalf("Program exiting: %s\n", err)
+		gologger.Fatalf("Program exiting: %s\n", err)
 	}
 
 	return options

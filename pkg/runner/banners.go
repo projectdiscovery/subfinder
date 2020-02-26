@@ -1,7 +1,7 @@
 package runner
 
 import (
-	"github.com/projectdiscovery/subfinder/pkg/log"
+	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/pkg/passive"
 	"github.com/projectdiscovery/subfinder/pkg/resolve"
 )
@@ -18,19 +18,19 @@ const Version = `2.3.2`
 
 // showBanner is used to show the banner to the user
 func showBanner() {
-	log.Printf("%s\n", banner)
-	log.Printf("\t\tprojectdiscovery.io\n\n")
+	gologger.Printf("%s\n", banner)
+	gologger.Printf("\t\tprojectdiscovery.io\n\n")
 
-	log.Labelf("Use with caution. You are responsible for your actions\n")
-	log.Labelf("Developers assume no liability and are not responsible for any misuse or damage.\n")
-	log.Labelf("By using subfinder, you also agree to the terms of the APIs used.\n\n")
+	gologger.Labelf("Use with caution. You are responsible for your actions\n")
+	gologger.Labelf("Developers assume no liability and are not responsible for any misuse or damage.\n")
+	gologger.Labelf("By using subfinder, you also agree to the terms of the APIs used.\n\n")
 }
 
 // normalRunTasks runs the normal startup tasks
 func (options *Options) normalRunTasks() {
 	configFile, err := UnmarshalRead(options.ConfigFile)
 	if err != nil {
-		log.Fatalf("Could not read configuration file %s: %s\n", options.ConfigFile, err)
+		gologger.Fatalf("Could not read configuration file %s: %s\n", options.ConfigFile, err)
 	}
 	options.YAMLConfig = configFile
 }
@@ -49,9 +49,9 @@ func (options *Options) firstRunTasks() {
 
 	err := config.MarshalWrite(options.ConfigFile)
 	if err != nil {
-		log.Fatalf("Could not write configuration file to %s: %s\n", options.ConfigFile, err)
+		gologger.Fatalf("Could not write configuration file to %s: %s\n", options.ConfigFile, err)
 	}
 	options.YAMLConfig = config
 
-	log.Infof("Configuration file saved to %s\n", options.ConfigFile)
+	gologger.Infof("Configuration file saved to %s\n", options.ConfigFile)
 }

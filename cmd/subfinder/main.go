@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/projectdiscovery/subfinder/pkg/log"
+	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/pkg/runner"
 )
 
@@ -11,11 +11,11 @@ func main() {
 
 	runner, err := runner.NewRunner(options)
 	if err != nil {
-		log.Fatalf("Could not create runner: %s\n", err)
+		gologger.Fatalf("Could not create runner: %s\n", err)
 	}
 
 	err = runner.RunEnumeration()
 	if err != nil {
-		log.Fatalf("Could not run enumeration: %s\n", err)
+		gologger.Fatalf("Could not run enumeration: %s\n", err)
 	}
 }
