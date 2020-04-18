@@ -164,7 +164,7 @@ shodan: []
 If you are using docker, you need to first create your directory structure holding subfinder configuration file. After modifying the default config.yaml file, you can run:
 
 ```bash
-> mkdir $HOME/.config/subfinder
+> mkdir -p $HOME/.config/subfinder
 > cp config.yaml $HOME/.config/subfinder/config.yaml
 > nano $HOME/.config/subfinder/config.yaml
 ```
