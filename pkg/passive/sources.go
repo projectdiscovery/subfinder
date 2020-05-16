@@ -2,6 +2,7 @@ package passive
 
 import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/alienvault"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/archiveis"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/binaryedge"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/bufferover"
@@ -11,6 +12,7 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/commoncrawl"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/crtsh"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/digicert"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/dnsdb"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/dnsdumpster"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/entrust"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/hackertarget"
@@ -20,15 +22,18 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/sitedossier"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/sublist3r"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/threatcrowd"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/threatminer"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/urlscan"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/waybackarchive"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/zoomeye"
 )
 
 // DefaultSources contains the list of sources used by default
 var DefaultSources = []string{
+	"alienvault",
 	"archiveis",
 	"binaryedge",
 	"bufferover",
@@ -39,6 +44,7 @@ var DefaultSources = []string{
 	"crtsh",
 	"digicert",
 	"dnsdumpster",
+	"dnsdb",
 	"entrust",
 	"hackertarget",
 	"ipv4info",
@@ -47,11 +53,13 @@ var DefaultSources = []string{
 	"securitytrails",
 	"shodan",
 	"sitedossier",
+	"sublist3r",
 	"threatcrowd",
 	"threatminer",
 	"urlscan",
 	"virustotal",
 	"waybackarchive",
+	"zoomeye",
 }
 
 // Agent is a struct for running passive subdomain enumeration
@@ -76,6 +84,8 @@ func New(sources []string, exclusions []string) *Agent {
 func (a *Agent) addSources(sources []string) {
 	for _, source := range sources {
 		switch source {
+		case "alienvault":
+			a.sources[source] = &alienvault.Source{}
 		case "archiveis":
 			a.sources[source] = &archiveis.Source{}
 		case "binaryedge":
@@ -96,6 +106,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &digicert.Source{}
 		case "dnsdumpster":
 			a.sources[source] = &dnsdumpster.Source{}
+		case "dnsdb":
+			a.sources[source] = &dnsdb.Source{}
 		case "entrust":
 			a.sources[source] = &entrust.Source{}
 		case "hackertarget":
@@ -112,6 +124,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &shodan.Source{}
 		case "sitedossier":
 			a.sources[source] = &sitedossier.Source{}
+		case "sublist3r":
+			a.sources[source] = &sublist3r.Source{}
 		case "threatcrowd":
 			a.sources[source] = &threatcrowd.Source{}
 		case "threatminer":
@@ -122,6 +136,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &virustotal.Source{}
 		case "waybackarchive":
 			a.sources[source] = &waybackarchive.Source{}
+		case "zoomeye":
+			a.sources[source] = &zoomeye.Source{}
 		}
 	}
 }

@@ -10,6 +10,7 @@ resolvers:
   - 208.67.222.222
   - 208.67.220.220
 sources:
+  - alienvault
   - archiveis
   - binaryedge
   - bufferover
@@ -20,6 +21,7 @@ sources:
   - crtsh
   - digicert
   - dnsdumpster
+  - dnsdb
   - entrust
   - googleter
   - hackertarget
@@ -29,16 +31,20 @@ sources:
   - securitytrails
   - shodan
   - sitedossier
+  - sublist3r
   - threatcrowd
   - threatminer
   - urlscan
   - virustotal
   - waybackarchive
+  - zoomeye
 binaryedge: []
 censys: []
 certspotter: []
+dnsdb: []
 passivetotal: []
 securitytrails: []
 shodan: []
 urlscan: []
 virustotal: []
+zoomeye: []

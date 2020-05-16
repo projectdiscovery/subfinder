@@ -33,12 +33,15 @@ type Keys struct {
 	CensysToken          string `json:"censysUsername"`
 	CensysSecret         string `json:"censysPassword"`
 	Certspotter          string `json:"certspotter"`
+	DNSDB                string `json:"dnsdb"`
 	PassiveTotalUsername string `json:"passivetotal_username"`
 	PassiveTotalPassword string `json:"passivetotal_password"`
 	Securitytrails       string `json:"securitytrails"`
 	Shodan               string `json:"shodan"`
 	URLScan              string `json:"urlscan"`
 	Virustotal           string `json:"virustotal"`
+	ZoomEyeUsername      string `json:"zoomeye_username"`
+	ZoomEyePassword      string `json:"zoomeye_password"`
 }
 
 // Result is a result structure returned by a source

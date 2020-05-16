@@ -22,11 +22,13 @@ type ConfigFile struct {
 	Binaryedge     []string `yaml:"binaryedge"`
 	Censys         []string `yaml:"censys"`
 	Certspotter    []string `yaml:"certspotter"`
+	DNSDB          []string `yaml:"dnsdb"`
 	PassiveTotal   []string `yaml:"passivetotal"`
 	SecurityTrails []string `yaml:"securitytrails"`
 	Shodan         []string `yaml:"shodan"`
 	URLScan        []string `yaml:"urlscan"`
 	Virustotal     []string `yaml:"virustotal"`
+	ZoomEye        []string `yaml:"zoomeye"`
 }
 
 // GetConfigDirectory gets the subfinder config directory for a user
@@ -108,6 +110,10 @@ func (c ConfigFile) GetKeys() subscraping.Keys {
 		keys.Certspotter = c.Certspotter[rand.Intn(len(c.Certspotter))]
 	}
 
+	if (len(c.DNSDB)) > 0 {
+		keys.DNSDB = c.DNSDB[rand.Intn(len(c.DNSDB))]
+	}
+
 	if len(c.PassiveTotal) > 0 {
 		passiveTotalKeys := c.PassiveTotal[rand.Intn(len(c.PassiveTotal))]
 		parts := strings.Split(passiveTotalKeys, ":")
@@ -129,5 +135,14 @@ func (c ConfigFile) GetKeys() subscraping.Keys {
 	if len(c.Virustotal) > 0 {
 		keys.Virustotal = c.Virustotal[rand.Intn(len(c.Virustotal))]
 	}
+	if len(c.ZoomEye) > 0 {
+		zoomEyeKeys := c.ZoomEye[rand.Intn(len(c.ZoomEye))]
+		parts := strings.Split(zoomEyeKeys, ":")
+		if len(parts) == 2 {
+			keys.ZoomEyeUsername = parts[0]
+			keys.ZoomEyePassword = parts[1]
+		}
+	}
+
 	return keys
 }
