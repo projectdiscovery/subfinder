@@ -11,6 +11,7 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/commoncrawl"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/crtsh"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/digicert"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/dnsdb"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/dnsdumpster"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/entrust"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/hackertarget"
@@ -19,6 +20,7 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/sitedossier"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/sublist3r"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/threatcrowd"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/threatminer"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/urlscan"
@@ -38,6 +40,7 @@ var DefaultSources = []string{
 	"crtsh",
 	"digicert",
 	"dnsdumpster",
+	"dnsdb",
 	"entrust",
 	"hackertarget",
 	"ipv4info",
@@ -45,6 +48,7 @@ var DefaultSources = []string{
 	"securitytrails",
 	"shodan",
 	"sitedossier",
+	"sublist3r",
 	"threatcrowd",
 	"threatminer",
 	"urlscan",
@@ -94,6 +98,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &digicert.Source{}
 		case "dnsdumpster":
 			a.sources[source] = &dnsdumpster.Source{}
+		case "dnsdb":
+			a.sources[source] = &dnsdb.Source{}
 		case "entrust":
 			a.sources[source] = &entrust.Source{}
 		case "hackertarget":
@@ -108,6 +114,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &shodan.Source{}
 		case "sitedossier":
 			a.sources[source] = &sitedossier.Source{}
+		case "sublist3r":
+			a.sources[source] = &sublist3r.Source{}
 		case "threatcrowd":
 			a.sources[source] = &threatcrowd.Source{}
 		case "threatminer":

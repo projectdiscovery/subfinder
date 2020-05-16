@@ -22,6 +22,7 @@ type ConfigFile struct {
 	Binaryedge     []string `yaml:"binaryedge"`
 	Censys         []string `yaml:"censys"`
 	Certspotter    []string `yaml:"certspotter"`
+	DNSDB          []string `yaml:"dnsdb"`
 	PassiveTotal   []string `yaml:"passivetotal"`
 	SecurityTrails []string `yaml:"securitytrails"`
 	Shodan         []string `yaml:"shodan"`
@@ -106,6 +107,10 @@ func (c ConfigFile) GetKeys() subscraping.Keys {
 
 	if len(c.Certspotter) > 0 {
 		keys.Certspotter = c.Certspotter[rand.Intn(len(c.Certspotter))]
+	}
+
+	if (len(c.DNSDB)) > 0 {
+		keys.DNSDB = c.DNSDB[rand.Intn(len(c.DNSDB))]
 	}
 
 	if len(c.PassiveTotal) > 0 {

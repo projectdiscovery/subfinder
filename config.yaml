@@ -20,6 +20,7 @@ sources:
   - crtsh
   - digicert
   - dnsdumpster
+  - dnsdb
   - entrust
   - googleter
   - hackertarget
@@ -28,6 +29,7 @@ sources:
   - securitytrails
   - shodan
   - sitedossier
+  - sublist3r
   - threatcrowd
   - threatminer
   - urlscan
@@ -36,6 +38,7 @@ sources:
 binaryedge: []
 censys: []
 certspotter: []
+dnsdb: []
 passivetotal: []
 securitytrails: []
 shodan: []

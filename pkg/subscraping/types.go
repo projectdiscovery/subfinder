@@ -33,6 +33,7 @@ type Keys struct {
 	CensysToken          string `json:"censysUsername"`
 	CensysSecret         string `json:"censysPassword"`
 	Certspotter          string `json:"certspotter"`
+	DNSDB                string `json:"dnsdb"`
 	PassiveTotalUsername string `json:"passivetotal_username"`
 	PassiveTotalPassword string `json:"passivetotal_password"`
 	Securitytrails       string `json:"securitytrails"`
