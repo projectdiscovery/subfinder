@@ -37,7 +37,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 			return
 		}
-		defer resp.Body.Close()
 		otxResp := &alienvaultResponse{}
 		// Get the response body and decode
 		err = json.NewDecoder(resp.Body).Decode(&otxResp)
@@ -47,7 +46,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 			return
 		}
-
+		resp.Body.Close()
 		for _, record := range otxResp.PassiveDNS {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Hostname}
 		}
