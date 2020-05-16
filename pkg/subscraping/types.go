@@ -40,6 +40,8 @@ type Keys struct {
 	Shodan               string `json:"shodan"`
 	URLScan              string `json:"urlscan"`
 	Virustotal           string `json:"virustotal"`
+	ZoomEyeUsername      string `json:"zoomeye_username"`
+	ZoomEyePassword      string `json:"zoomeye_password"`
 }
 
 // Result is a result structure returned by a source

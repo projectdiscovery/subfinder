@@ -36,6 +36,7 @@ sources:
   - urlscan
   - virustotal
   - waybackarchive
+  - zoomeye
 binaryedge: []
 censys: []
 certspotter: []
@@ -45,3 +46,4 @@ securitytrails: []
 shodan: []
 urlscan: []
 virustotal: []
+zoomeye: []

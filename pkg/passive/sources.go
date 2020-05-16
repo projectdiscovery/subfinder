@@ -27,6 +27,7 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/urlscan"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/waybackarchive"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/zoomeye"
 )
 
 // DefaultSources contains the list of sources used by default
@@ -56,6 +57,7 @@ var DefaultSources = []string{
 	"urlscan",
 	"virustotal",
 	"waybackarchive",
+	"zoomeye",
 }
 
 // Agent is a struct for running passive subdomain enumeration
@@ -130,6 +132,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &virustotal.Source{}
 		case "waybackarchive":
 			a.sources[source] = &waybackarchive.Source{}
+		case "zoomeye":
+			a.sources[source] = &zoomeye.Source{}
 		}
 	}
 }

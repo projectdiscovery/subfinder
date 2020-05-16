@@ -28,6 +28,7 @@ type ConfigFile struct {
 	Shodan         []string `yaml:"shodan"`
 	URLScan        []string `yaml:"urlscan"`
 	Virustotal     []string `yaml:"virustotal"`
+	ZoomEye        []string `yaml:"zoomeye"`
 }
 
 // GetConfigDirectory gets the subfinder config directory for a user
@@ -134,5 +135,14 @@ func (c ConfigFile) GetKeys() subscraping.Keys {
 	if len(c.Virustotal) > 0 {
 		keys.Virustotal = c.Virustotal[rand.Intn(len(c.Virustotal))]
 	}
+	if len(c.ZoomEye) > 0 {
+		zoomEyeKeys := c.ZoomEye[rand.Intn(len(c.ZoomEye))]
+		parts := strings.Split(zoomEyeKeys, ":")
+		if len(parts) == 2 {
+			keys.ZoomEyeUsername = parts[0]
+			keys.ZoomEyePassword = parts[1]
+		}
+	}
+
 	return keys
 }
