@@ -2,6 +2,7 @@ package passive
 
 import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/alienvault"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/archiveis"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/binaryedge"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/bufferover"
@@ -30,6 +31,7 @@ import (
 
 // DefaultSources contains the list of sources used by default
 var DefaultSources = []string{
+	"alienvault",
 	"archiveis",
 	"binaryedge",
 	"bufferover",
@@ -78,6 +80,8 @@ func New(sources []string, exclusions []string) *Agent {
 func (a *Agent) addSources(sources []string) {
 	for _, source := range sources {
 		switch source {
+		case "alienvault":
+			a.sources[source] = &alienvault.Source{}
 		case "archiveis":
 			a.sources[source] = &archiveis.Source{}
 		case "binaryedge":
