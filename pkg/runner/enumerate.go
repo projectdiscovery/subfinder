@@ -118,14 +118,19 @@ func (r *Runner) EnumerateSingleDomain(domain, output string, append bool) error
 	if r.options.ChaosUpload {
 		var buf = &bytes.Buffer{}
 		err := WriteHostOutput(uniqueMap, buf)
+		// If an error occurs, do not interrupt, continue to check if user specifed an output file
 		if err != nil {
 			gologger.Errorf("Could not prepare results for chaos %s\n", err)
-		}
-		err = r.UploadToChaos(buf)
-		if err != nil {
-			gologger.Errorf("Could not upload results to chaos %s\n", err)
 		} else {
-			gologger.Infof("Input processed successfully and subdomains with valid records will be updated to chaos dataset.\n")
+			// no error in writing host output, upload to chaos
+			err = r.UploadToChaos(buf)
+			if err != nil {
+				gologger.Errorf("Could not upload results to chaos %s\n", err)
+			} else {
+				gologger.Infof("Input processed successfully and subdomains with valid records will be updated to chaos dataset.\n")
+			}
+			// clear buffer
+			buf = nil
 		}
 	}
 	// In case the user has given an output file, write all the found
