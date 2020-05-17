@@ -18,6 +18,7 @@ type Options struct {
 	MaxEnumerationTime int    // MaxEnumerationTime is the maximum amount of time in mins to wait for enumeration
 	Domain             string // Domain is the domain to find subdomains for
 	DomainsFile        string // DomainsFile is the file containing list of domains to find subdomains for
+	ChaosUpload        bool   // ChaosUpload indicates whether to upload results to the Chaos API
 	Output             string // Output is the file to write found subdomains to.
 	OutputDirectory    string // OutputDirectory is the directory to write results to in case list of domains is given
 	JSON               bool   // JSON specifies whether to use json for output format or text file
@@ -52,6 +53,7 @@ func ParseOptions() *Options {
 	flag.IntVar(&options.MaxEnumerationTime, "max-time", 10, "Minutes to wait for enumeration results")
 	flag.StringVar(&options.Domain, "d", "", "Domain to find subdomains for")
 	flag.StringVar(&options.DomainsFile, "dL", "", "File containing list of domains to enumerate")
+	flag.BoolVar(&options.ChaosUpload, "upload", false, "Upload results to the Chaos API (api-key required)")
 	flag.StringVar(&options.Output, "o", "", "File to write output to (optional)")
 	flag.StringVar(&options.OutputDirectory, "oD", "", "Directory to write enumeration results to (optional)")
 	flag.BoolVar(&options.JSON, "oJ", false, "Write output in JSON lines Format")

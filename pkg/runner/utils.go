@@ -2,16 +2,56 @@ package runner
 
 import (
 	"bufio"
+	"crypto/tls"
+	"fmt"
 	"io"
+	"io/ioutil"
+	"net/http"
 	"strings"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
+	"github.com/pkg/errors"
 )
 
 // JSONResult contains the result for a host in JSON format
 type JSONResult struct {
 	Host string `json:"host"`
 	IP   string `json:"ip"`
+}
+
+func (r *Runner) UploadToChaos(reader io.Reader) error {
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConnsPerHost: 100,
+			MaxIdleConns:        100,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+		Timeout: time.Duration(600) * time.Second, // 10 minutes - uploads may take long
+	}
+
+	request, err := http.NewRequest("POST", "https://dns.projectdiscovery.io/dns/add", reader)
+	if err != nil {
+		return errors.Wrap(err, "could not create request")
+	}
+	request.Header.Set("Authorization", r.options.YAMLConfig.GetKeys().Chaos)
+
+	resp, err := httpClient.Do(request)
+	if err != nil {
+		return errors.Wrap(err, "could not make request")
+	}
+	defer func() {
+		io.Copy(ioutil.Discard, resp.Body)
+		resp.Body.Close()
+	}()
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("invalid status code received: %d", resp.StatusCode)
+	}
+	return nil
+
 }
 
 // WriteHostOutput writes the output list of subdomain to an io.Writer
