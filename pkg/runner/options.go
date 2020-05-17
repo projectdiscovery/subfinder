@@ -53,7 +53,7 @@ func ParseOptions() *Options {
 	flag.IntVar(&options.MaxEnumerationTime, "max-time", 10, "Minutes to wait for enumeration results")
 	flag.StringVar(&options.Domain, "d", "", "Domain to find subdomains for")
 	flag.StringVar(&options.DomainsFile, "dL", "", "File containing list of domains to enumerate")
-	flag.BoolVar(&options.ChaosUpload, "upload", false, "Upload results to the Chaos API (api-key required)")
+	flag.BoolVar(&options.ChaosUpload, "cd", false, "Upload results to the Chaos API (api-key required)")
 	flag.StringVar(&options.Output, "o", "", "File to write output to (optional)")
 	flag.StringVar(&options.OutputDirectory, "oD", "", "Directory to write enumeration results to (optional)")
 	flag.BoolVar(&options.JSON, "oJ", false, "Write output in JSON lines Format")
