@@ -26,6 +26,7 @@ sources:
   - googleter
   - hackertarget
   - ipv4info
+  - netcraft
   - passivetotal
   - rapiddns
   - securitytrails

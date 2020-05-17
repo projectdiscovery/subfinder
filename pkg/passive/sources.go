@@ -17,6 +17,7 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/entrust"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/hackertarget"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/ipv4info"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/netcraft"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/passivetotal"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/rapiddns"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/securitytrails"
@@ -48,6 +49,7 @@ var DefaultSources = []string{
 	"entrust",
 	"hackertarget",
 	"ipv4info",
+	"netcraft",
 	"passivetotal",
 	"rapiddns",
 	"securitytrails",
@@ -114,6 +116,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &hackertarget.Source{}
 		case "ipv4info":
 			a.sources[source] = &ipv4info.Source{}
+		case "netcraft":
+			a.sources[source] = &netcraft.Source{}		
 		case "passivetotal":
 			a.sources[source] = &passivetotal.Source{}
 		case "rapiddns":
