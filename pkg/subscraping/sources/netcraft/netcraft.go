@@ -3,29 +3,59 @@ package netcraft
 
 import (
 	"context"
+	"crypto/sha1"
+	"fmt"
 	"io/ioutil"
+	"net/url"
 	"regexp"
 
-	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
 var name = "netcraft"
-var reNext = regexp.MustCompile("<a class=\"results-table__host\" href=\"(.*?)\".*>")
+var reNext = regexp.MustCompile("href=\"(.*host=.*?&.*last=.*?&.*from=.*?)&.*\"")
+var netcraft_url = "https://searchdns.netcraft.com"
 
 type Agent struct {
 	Results chan subscraping.Result
 	Session *subscraping.Session
 }
 
-func (a *Agent) enumerate(ctx context.Context, baseURL string, cookies string) {
+func SHA1(text string) string {
+	decodedValue, err := url.QueryUnescape(text)
+	if err != nil {
+		return ""
+	}
+	algorithm := sha1.New()
+	algorithm.Write([]byte(decodedValue))
+	return string(fmt.Sprintf("%x", algorithm.Sum(nil)))
+}
+
+func (a *Agent) getJsCookies(ctx context.Context, baseURL string) (string, error) {
+	cookie_value := ""
+	resp, err := a.Session.NormalGetWithContext(ctx, baseURL)
+
+	if err != nil {
+		return cookie_value, err
+	}
+
+	for _, cookie := range resp.Cookies() {
+		if cookie.Name == "netcraft_js_verification_challenge" {
+			cookie_value = cookie.Name + "=" + cookie.Value + "; netcraft_js_verification_response=" + SHA1(cookie.Value)
+			break
+		}
+	}
+	return cookie_value, err
+}
+
+func (a *Agent) enumerate(ctx context.Context, baseURL string, cookies string, headers map[string]string) {
 	select {
 	case <-ctx.Done():
 		return
 	default:
 	}
 
-	resp, err := a.Session.Get(ctx, baseURL, cookies, nil)
+	resp, err := a.Session.Get(ctx, baseURL, cookies, headers)
 	if err != nil {
 		a.Results <- subscraping.Result{Source: name, Type: subscraping.Error, Error: err}
 		return
@@ -34,6 +64,7 @@ func (a *Agent) enumerate(ctx context.Context, baseURL string, cookies string) {
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
+
 	if err != nil {
 		a.Results <- subscraping.Result{Source: name, Type: subscraping.Error, Error: err}
 		return
@@ -41,15 +72,13 @@ func (a *Agent) enumerate(ctx context.Context, baseURL string, cookies string) {
 
 	src := string(body)
 
-	gologger.Infof("netcraft", src)
-
 	for _, subdomain := range a.Session.Extractor.FindAllString(src, -1) {
 		a.Results <- subscraping.Result{Source: name, Type: subscraping.Subdomain, Value: subdomain}
 	}
 
 	match1 := reNext.FindStringSubmatch(src)
 	if len(match1) > 0 {
-		a.enumerate(ctx, match1[1], "")
+		a.enumerate(ctx, netcraft_url+match1[1], cookies, headers)
 	}
 }
 
@@ -66,7 +95,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	}
 
 	go func() {
-		aInstance.enumerate(ctx, "https://searchdns.netcraft.com/?host=*." + domain, "")
+		cookies, err := aInstance.getJsCookies(ctx, netcraft_url)
+		if err != nil {
+			aInstance.Results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			return
+		}
+		aInstance.enumerate(ctx, netcraft_url+"/?host="+domain, cookies, map[string]string{"Host": "searchdns.netcraft.com"})
 		close(aInstance.Results)
 	}()
 
