@@ -51,7 +51,6 @@ func (r *Runner) UploadToChaos(reader io.Reader) error {
 		return fmt.Errorf("invalid status code received: %d", resp.StatusCode)
 	}
 	return nil
-
 }
 
 // WriteHostOutput writes the output list of subdomain to an io.Writer
