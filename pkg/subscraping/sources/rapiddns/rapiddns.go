@@ -16,10 +16,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
+		defer close(results)
 		resp, err := session.NormalGetWithContext(ctx, "https://rapiddns.io/subdomain/"+domain+"?full=1")
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			close(results)
 			return
 		}
 
@@ -27,7 +27,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		resp.Body.Close()
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			close(results)
 			return
 		}
 
@@ -35,7 +34,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		for _, subdomain := range session.Extractor.FindAllString(src, -1) {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 		}
-		close(results)
 	}()
 
 	return results
