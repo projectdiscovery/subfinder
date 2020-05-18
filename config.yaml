@@ -41,6 +41,7 @@ sources:
 binaryedge: []
 censys: []
 certspotter: []
+chaos: []
 dnsdb: []
 passivetotal: []
 securitytrails: []
