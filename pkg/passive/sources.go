@@ -127,7 +127,7 @@ func (a *Agent) addSources(sources []string) {
 		case "sitedossier":
 			a.sources[source] = &sitedossier.Source{}
 		case "spyse":
-			a.sources[source] = &sitedossier.Source{}
+			a.sources[source] = &spyse.Source{}
 		case "sublist3r":
 			a.sources[source] = &sublist3r.Source{}
 		case "threatcrowd":
