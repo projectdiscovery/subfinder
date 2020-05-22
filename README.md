@@ -38,6 +38,7 @@ We have designed subfinder to comply with all passive sources licenses, and usag
  - Optimized for speed, very fast and **lightweight** on resources
  - **Stdin** and **stdout** support for integrating in workflows
 
+
 # Usage
 
 ```bash
@@ -47,6 +48,7 @@ This will display help for the tool. Here are all the switches it supports.
 
 | Flag | Description | Example |
 |------|-------------|---------|
+| -cd | Upload results to the Chaos API (api-key required) | subfinder -d uber.com -cd | 
 | -config string | Configuration file for API Keys, etc  | subfinder -config config.yaml | 
 | -d | Domain to find subdomains for | subfinder -d uber.com | 
 | -dL  | File containing list of domains to enumerate | subfinder -dL hackerone-hosts.txt | 
@@ -130,8 +132,13 @@ Subfinder will work after using the installation instructions however to configu
 - [SecurityTrails](http://securitytrails.com/)
 - [Censys](https://censys.io)
 - [Binaryedge](https://binaryedge.io)
+- [Facebook](https://shodan.io)
 - [Shodan](https://shodan.io)
 - [URLScan](https://urlscan.io)
+- [Chaos](https://chaos.projectdiscovery.io)
+- [Spyse](https://spyse.com)
+- [DnsDB](https://api.dnsdb.info)
+- [Zoomeye](https://www.zoomeye.org)
 
 Theses values are stored in the $HOME/.config/subfinder/config.yaml file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys can be specified for each of these services from which one of them will be used for enumeration.
 
@@ -227,6 +234,32 @@ google.com
 > ls ~/path/to/
 
 output.txt
+```
+
+If you want upload your data to chaos dataset, you can use `-cd` flag with your scan, chaos will resolve all the input and add valid subdomains to public dataset, which you can access on the go using [chaos-client](https://github.com/projectdiscovery/chaos-client)
+
+```bash
+> subfinder -d hackerone.com -cd 
+
+root@b0x:~# subfinder -d hackerone.com -cd 
+
+www.hackerone.com
+api.hackerone.com
+go.hackerone.com
+hackerone.com
+staging.hackerone.com
+[INF] Input processed successfully and subdomains with valid records will be updated to chaos dataset.
+```
+
+```bash 
+> chaos -d hackerone.com
+root@b0x:~# chaos -d hackerone.com
+
+www.hackerone.com
+api.hackerone.com
+go.hackerone.com
+hackerone.com
+staging.hackerone.com
 ```
 
 You can also get output in json format using -oJ switch. This switch saves the output in the JSON lines format. 
