@@ -31,6 +31,7 @@ sources:
   - securitytrails
   - shodan
   - sitedossier
+  - spyse
   - sublist3r
   - threatcrowd
   - threatminer
@@ -46,6 +47,7 @@ dnsdb: []
 passivetotal: []
 securitytrails: []
 shodan: []
+spyse: []
 urlscan: []
 virustotal: []
 zoomeye: []
