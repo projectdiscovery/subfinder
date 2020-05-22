@@ -54,7 +54,7 @@ var DefaultSources = []string{
 	"securitytrails",
 	"shodan",
 	"sitedossier",
-	"spyse"
+	"spyse",
 	"sublist3r",
 	"threatcrowd",
 	"threatminer",
