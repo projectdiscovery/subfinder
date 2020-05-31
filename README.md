@@ -49,7 +49,11 @@ gem install go
 The installation is easy. Download the pre-built binaries for different platforms from the [Releases page](https://github.com/projectdiscovery/subfinder/releases/). Extract them using tar, move it to your $PATH and you're ready to go:
 
 ```bash
-tar -xzvf subfinder-linux-amd64.tar && mv subfinder-linux-amd64 /usr/bin/subfinder && subfinder
+tar -xzvf subfinder-darwin-amd64.tar && mv subfinder-darwin-amd64 /usr/bin/subfinder
+```
+
+```bash
+subfinder
 ```
 
 ## Upgrading
