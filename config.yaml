@@ -31,23 +31,29 @@ sources:
   - securitytrails
   - shodan
   - sitedossier
-  - spyse
   - sublist3r
+  - spyse
   - threatcrowd
   - threatminer
   - urlscan
   - virustotal
   - waybackarchive
   - zoomeye
-binaryedge: []
-censys: []
-certspotter: []
-chaos: []
-dnsdb: []
-passivetotal: []
-securitytrails: []
-shodan: []
-spyse: []
+censys:
+  - <key-here>
+binaryedge: 
+  - <key-here>
+certspotter: 
+  - <key-here>
+facebook: []
+passivetotal: 
+  - <email:key-here>
+securitytrails: 
+  - <key-here>
 urlscan: []
-virustotal: []
-zoomeye: []
+virustotal: 
+  - <key-here>
+chaos: 
+  - <key-here>
+spyse:
+  - <key-here>
