@@ -25,6 +25,7 @@ sources:
   - entrust
   - googleter
   - hackertarget
+  - intelx
   - ipv4info
   - passivetotal
   - rapiddns
@@ -41,19 +42,21 @@ sources:
   - zoomeye
 censys:
   - <key-here>
-binaryedge: 
+binaryedge:
   - <key-here>
-certspotter: 
+certspotter:
   - <key-here>
 facebook: []
-passivetotal: 
+intelx:
+  - <hostname:key-here>
+passivetotal:
   - <email:key-here>
-securitytrails: 
+securitytrails:
   - <key-here>
 urlscan: []
-virustotal: 
+virustotal:
   - <key-here>
-chaos: 
+chaos:
   - <key-here>
 spyse:
   - <key-here>

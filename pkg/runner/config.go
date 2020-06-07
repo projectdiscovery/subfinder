@@ -24,10 +24,11 @@ type ConfigFile struct {
 	Certspotter    []string `yaml:"certspotter"`
 	Chaos          []string `yaml:"chaos"`
 	DNSDB          []string `yaml:"dnsdb"`
+	IntelX         []string `yaml:"intelx"`
 	PassiveTotal   []string `yaml:"passivetotal"`
 	SecurityTrails []string `yaml:"securitytrails"`
 	Shodan         []string `yaml:"shodan"`
-	Spyse        	 []string `yaml:"spyse"`
+	Spyse          []string `yaml:"spyse"`
 	URLScan        []string `yaml:"urlscan"`
 	Virustotal     []string `yaml:"virustotal"`
 	ZoomEye        []string `yaml:"zoomeye"`
@@ -116,6 +117,15 @@ func (c ConfigFile) GetKeys() subscraping.Keys {
 	}
 	if (len(c.DNSDB)) > 0 {
 		keys.DNSDB = c.DNSDB[rand.Intn(len(c.DNSDB))]
+	}
+
+	if len(c.IntelX) > 0 {
+		intelxKeys := c.IntelX[rand.Intn(len(c.IntelX))]
+		parts := strings.Split(intelxKeys, ":")
+		if len(parts) == 2 {
+			keys.IntelXHost = parts[0]
+			keys.IntelXKey = parts[1]
+		}
 	}
 
 	if len(c.PassiveTotal) > 0 {
