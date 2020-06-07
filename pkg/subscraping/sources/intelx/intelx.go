@@ -81,7 +81,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		var status = 0
 
-		for status == 0 {
+		for status == 0 || status == 3 {
 
 			resp, err = session.Get(ctx, results_url, "", map[string]string{})
 			if err != nil {
