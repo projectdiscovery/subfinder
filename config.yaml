@@ -48,7 +48,7 @@ certspotter:
   - <key-here>
 facebook: []
 intelx:
-  - <hostname:key-here>
+  - <public.intelx.io:key-here>
 passivetotal:
   - <email:key-here>
 securitytrails:
