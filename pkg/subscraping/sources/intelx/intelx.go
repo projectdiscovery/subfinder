@@ -5,10 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	jsoniter "github.com/json-iterator/go"
-	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 	"io/ioutil"
 	"net/http"
+
+	jsoniter "github.com/json-iterator/go"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
 type searchResponseType struct {
@@ -34,21 +35,20 @@ type requestBody struct {
 	Timeout    int
 }
 
+// Source is the passive scraping agent
 type Source struct{}
 
+// Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
-
 	results := make(chan subscraping.Result)
 
 	go func() {
+		defer close(results)
 		if session.Keys.IntelXKey == "" || session.Keys.IntelXHost == "" {
-			fmt.Println(session.Keys)
-			close(results)
 			return
 		}
 
-		search_url := fmt.Sprintf("https://%s/phonebook/search?k=%s", session.Keys.IntelXHost, session.Keys.IntelXKey)
-
+		searchURL := fmt.Sprintf("https://%s/phonebook/search?k=%s", session.Keys.IntelXHost, session.Keys.IntelXKey)
 		reqBody := requestBody{
 			Term:       domain,
 			Maxresults: 100000,
@@ -58,70 +58,56 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 
 		body, err := json.Marshal(reqBody)
-
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			close(results)
 			return
 		}
 
-		resp, err := http.Post(search_url, "application/json", bytes.NewBuffer(body))
-
+		resp, err := http.Post(searchURL, "application/json", bytes.NewBuffer(body))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			close(results)
 			return
 		}
 
 		var response searchResponseType
-
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
-
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			close(results)
 			return
 		}
 
-		results_url := fmt.Sprintf("https://%s/phonebook/search/result?k=%s&id=%s&limit=10000", session.Keys.IntelXHost, session.Keys.IntelXKey, response.Id)
-
-		var status = 0
-
+		resultsURL := fmt.Sprintf("https://%s/phonebook/search/result?k=%s&id=%s&limit=10000", session.Keys.IntelXHost, session.Keys.IntelXKey, response.Id)
+		status := 0
 		for status == 0 || status == 3 {
-
-			resp, err = session.Get(ctx, results_url, "", map[string]string{})
+			resp, err = session.Get(ctx, resultsURL, "", nil)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				resp.Body.Close()
-				close(results)
 				return
 			}
 			var response searchResultType
 			err = jsoniter.NewDecoder(resp.Body).Decode(&response)
-
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				close(results)
 				return
 			}
-
 			body, err = ioutil.ReadAll(resp.Body)
-
+			if err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				return
+			}
+			resp.Body.Close()
 			status = response.Status
-
 			for _, hostname := range response.Selectors {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: hostname.Selectvalue}
-
 			}
-
 		}
-
-		close(results)
 	}()
 
 	return results
 }
 
+// Name returns the name of the source
 func (s *Source) Name() string {
 	return "intelx"
 }

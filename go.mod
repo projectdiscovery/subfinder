@@ -10,5 +10,5 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/projectdiscovery/gologger v1.0.0
 	github.com/rs/xid v1.2.1
-	gopkg.in/yaml.v3 v3.0.0-20200603094226-e3079894b1e8
+	gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c
 )
