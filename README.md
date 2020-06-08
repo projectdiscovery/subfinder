@@ -75,24 +75,24 @@ This will display help for the tool. Here are all the switches it supports.
 
 #### subfinder requires go1.13+ to install successfully !
 
-The installation is easy. You can download the pre-built binaries for different platforms from the [Releases](https://github.com/projectdiscovery/subfinder/releases/) page. Extract them using tar, move it to your $PATH and you're ready to go.
+The installation is easy. You can download the pre-built binaries for different platforms from the [Releases](https://github.com/projectdiscovery/subfinder/releases/) page. Extract them using tar, move it to your `$PATH` and you're ready to go.
 
 ```bash
-> tar -xzvf subfinder-linux-amd64.tar
-> mv subfinder-linux-amd64 /usr/bin/subfinder
+> tar -xzvf subfinder-linux-amd64.tar.gz
+> mv subfinder /usr/bin/subfinder
 > subfinder 
 ```
 
 If you want to build it yourself, you can go get the repo
 
 ```bash
-go get -v github.com/projectdiscovery/subfinder/cmd/subfinder
+GO111MODULE=on go get -v github.com/projectdiscovery/subfinder/cmd/subfinder
 ```
 
 ## Upgrading
 If you wish to upgrade the package you can use:
 ```bash
-go get -u -v github.com/projectdiscovery/subfinder/cmd/subfinder
+GO111MODULE=on go get -u -v github.com/projectdiscovery/subfinder/cmd/subfinder
 ```
 ## Running in a Docker Container
 
@@ -140,7 +140,7 @@ Subfinder will work after using the installation instructions however to configu
 - [DnsDB](https://api.dnsdb.info)
 - [Zoomeye](https://www.zoomeye.org)
 
-Theses values are stored in the $HOME/.config/subfinder/config.yaml file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys can be specified for each of these services from which one of them will be used for enumeration.
+Theses values are stored in the `$HOME/.config/subfinder/config.yaml` file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys can be specified for each of these services from which one of them will be used for enumeration.
 
 For sources that require multiple keys, namely `Censys`, `Passivetotal`, they can be added by separating them via a colon (:).
 
