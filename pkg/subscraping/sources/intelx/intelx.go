@@ -67,6 +67,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		resp, err := http.Post(search_url, "application/json", bytes.NewBuffer(body))
 
+		if err != nil {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			close(results)
+			return
+		}
+
 		var response searchResponseType
 
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
