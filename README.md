@@ -96,10 +96,10 @@ GO111MODULE=on go get -u -v github.com/projectdiscovery/subfinder/cmd/subfinder
 ```
 ## Running in a Docker Container
 
-You can use the official dockerhub image at [subfinder](https://hub.docker.com/r/ice3man/subfinder). Simply run - 
+You can use the official dockerhub image at [subfinder](https://hub.docker.com/r/projectdiscovery/subfinder). Simply run - 
 
 ```bash
-> docker pull ice3man/subfinder
+> docker pull projectdiscovery/subfinder
 ```
 
 The above command will pull the latest tagged release from the dockerhub repository.
@@ -109,18 +109,18 @@ If you want to build the container yourself manually, git clone the repo, then b
 - Clone the repo using `git clone https://github.com/projectdiscovery/subfinder.git`
 - Build your docker container
 ```bash
-docker build -t ice3man/subfinder .
+docker build -t projectdiscovery/subfinder .
 ```
 
 - After building the container using either way, run the following - 
 ```bash
-docker run -it ice3man/subfinder
+docker run -it projectdiscovery/subfinder
 ```
 > The above command is the same as running `-h`
 
 For example, this runs the tool against uber.com and output the results to your host file system:
 ```bash
-docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it ice3man/subfinder -d uber.com > uber.com.txt
+docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it projectdiscovery/subfinder -d uber.com > uber.com.txt
 ```
 
 ## Post Installation Instructions
@@ -178,7 +178,7 @@ If you are using docker, you need to first create your directory structure holdi
 
 After that, you can pass it as a volume using the following sample command.
 ```bash
-> docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it ice3man/subfinder -d freelancer.com
+> docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it projectdiscovery/subfinder -d freelancer.com
 ```
 
 # Running Subfinder
