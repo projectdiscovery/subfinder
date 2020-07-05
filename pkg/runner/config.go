@@ -24,6 +24,7 @@ type ConfigFile struct {
 	Certspotter    []string `yaml:"certspotter"`
 	Chaos          []string `yaml:"chaos"`
 	DNSDB          []string `yaml:"dnsdb"`
+	GitHub         []string `yaml:"github"`
 	IntelX         []string `yaml:"intelx"`
 	PassiveTotal   []string `yaml:"passivetotal"`
 	SecurityTrails []string `yaml:"securitytrails"`
@@ -117,6 +118,9 @@ func (c ConfigFile) GetKeys() subscraping.Keys {
 	}
 	if (len(c.DNSDB)) > 0 {
 		keys.DNSDB = c.DNSDB[rand.Intn(len(c.DNSDB))]
+	}
+	if (len(c.GitHub)) > 0 {
+		keys.GitHub = c.GitHub[rand.Intn(len(c.GitHub))]
 	}
 
 	if len(c.IntelX) > 0 {

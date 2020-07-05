@@ -23,6 +23,7 @@ sources:
   - dnsdumpster
   - dnsdb
   - entrust
+  - github
   - googleter
   - hackertarget
   - intelx
@@ -47,6 +48,8 @@ binaryedge:
 certspotter:
   - <key-here>
 facebook: []
+github:
+  - <token-here>
 intelx:
   - <public.intelx.io:key-here>
 passivetotal:
