@@ -7,9 +7,11 @@ import (
 	"io/ioutil"
 	"regexp"
 	"strings"
+	"net/url"
 
 	jsoniter "github.com/json-iterator/go"
 
+	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 	"github.com/tomnomnom/linkheader"
 )
@@ -102,7 +104,13 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, headers map[st
 	// Proccess the next link recursively
 	for _, link := range linksHeader {
 		if link.Rel == "next" {
-			s.enumerate(ctx, link.URL, headers, domainRegexp, session, results)
+			nextUrl, err := url.QueryUnescape(link.URL)
+			if err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				return
+			}
+			gologger.Verbosef("Next URL %s\n", s.Name(), nextUrl)
+			s.enumerate(ctx, nextUrl, headers, domainRegexp, session, results)
 		}
 	}
 }
