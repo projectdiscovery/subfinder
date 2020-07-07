@@ -22,7 +22,7 @@ type indexResponse struct {
 // Source is the passive scraping agent
 type Source struct{}
 
-var years = [...]string{"2019", "2018", "2017", "2016"}
+var years = [...]string{"2020", "2019", "2018", "2017"}
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
