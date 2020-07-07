@@ -15,6 +15,7 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/dnsdb"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/dnsdumpster"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/entrust"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/github"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/hackertarget"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/intelx"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/ipv4info"
@@ -114,6 +115,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &dnsdb.Source{}
 		case "entrust":
 			a.sources[source] = &entrust.Source{}
+		case "github":
+			a.sources[source] = &github.Source{}
 		case "hackertarget":
 			a.sources[source] = &hackertarget.Source{}
 		case "ipv4info":

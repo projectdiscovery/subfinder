@@ -35,6 +35,7 @@ type Keys struct {
 	Certspotter          string `json:"certspotter"`
 	Chaos                string `json:"chaos"`
 	DNSDB                string `json:"dnsdb"`
+	GitHub               string `json:"github"`
 	IntelXHost           string `json:"intelXHost"`
 	IntelXKey            string `json:"intelXKey"`
 	PassiveTotalUsername string `json:"passivetotal_username"`
