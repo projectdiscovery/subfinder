@@ -156,19 +156,6 @@ securitytrails: []
 shodan: []
 ```
 
-If you are using docker, you need to first create your directory structure holding subfinder configuration file. After modifying the default config.yaml file, you can run:
-
-```bash
-> mkdir -p $HOME/.config/subfinder
-> cp config.yaml $HOME/.config/subfinder/config.yaml
-> nano $HOME/.config/subfinder/config.yaml
-```
-
-After that, you can pass it as a volume using the following sample command.
-```bash
-> docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it projectdiscovery/subfinder -d freelancer.com
-```
-
 # Running Subfinder
 
 To run the tool on a target, just use the following command.
@@ -264,14 +251,14 @@ You can specify custom resolvers too.
 
 **The new highlight of this release is the addition of stdin/stdout features.** Now, domains can be piped to subfinder and enumeration can be ran on them. For example - 
 
-```
+```bash
 > echo hackerone.com | subfinder -v
 > cat targets.txt | subfinder -v 
 ```
 
 The subdomains discovered can be piped to other tools too. For example, you can pipe the subdomains discovered by subfinder to httpx [httpx](https://github.com/projectdiscovery/httpx) which will then find running http servers on the host.
 
-```
+```bash
 > echo hackerone.com | subfinder -silent | httpx -silent
 
 http://hackerone.com
@@ -305,6 +292,19 @@ docker build -t projectdiscovery/subfinder .
 docker run -it projectdiscovery/subfinder
 ```
 > The above command is the same as running `-h`
+
+If you are using docker, you need to first create your directory structure holding subfinder configuration file. After modifying the default config.yaml file, you can run:
+
+```bash
+> mkdir -p $HOME/.config/subfinder
+> cp config.yaml $HOME/.config/subfinder/config.yaml
+> nano $HOME/.config/subfinder/config.yaml
+```
+
+After that, you can pass it as a volume using the following sample command.
+```bash
+> docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it projectdiscovery/subfinder -d freelancer.com
+```
 
 For example, this runs the tool against uber.com and output the results to your host file system:
 ```bash
