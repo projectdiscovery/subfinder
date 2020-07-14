@@ -55,10 +55,15 @@ passivetotal:
   - <email:key-here>
 securitytrails:
   - <key-here>
-urlscan: []
 virustotal:
+  - <key-here>
+urlscan:
   - <key-here>
 chaos:
   - <key-here>
 spyse:
+  - <key-here>
+shodan:
+  - <key-here>
+dnsdb:
   - <key-here>

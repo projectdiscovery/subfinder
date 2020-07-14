@@ -116,9 +116,9 @@ GO111MODULE=on go get -u -v github.com/projectdiscovery/subfinder/cmd/subfinder
 
 Subfinder will work after using the installation instructions however to configure Subfinder to work with certain services, you will need to have setup API keys. The following services do not work without an API key:
 
-- [Virustotal](https://www.virustotal.com/)
-- [Passivetotal](http://passivetotal.org/)
-- [SecurityTrails](http://securitytrails.com/)
+- [Virustotal](https://www.virustotal.com)
+- [Passivetotal](http://passivetotal.org)
+- [SecurityTrails](http://securitytrails.com)
 - [Censys](https://censys.io)
 - [Binaryedge](https://binaryedge.io)
 - [Shodan](https://shodan.io)
@@ -127,6 +127,8 @@ Subfinder will work after using the installation instructions however to configu
 - [Spyse](https://spyse.com)
 - [DnsDB](https://api.dnsdb.info)
 - [Zoomeye](https://www.zoomeye.org)
+- [Github](https://github.com)
+- [Intelx](https://intelx.io)
 
 Theses values are stored in the `$HOME/.config/subfinder/config.yaml` file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys can be specified for each of these services from which one of them will be used for enumeration.
 
@@ -151,9 +153,10 @@ censys:
   - ac244e2f-b635-4581-878a-33f4e79a2c13:dd510d6e-1b6e-4655-83f6-f347b363def9
 certspotter: []
 passivetotal: 
-  - sampleemail@user.com:sample_password
+  - sample-email@user.com:sample_password
 securitytrails: []
-shodan: []
+shodan:
+  - AAAAClP1bJJSRMEYJazgwhJKrggRwKA
 ```
 
 # Running Subfinder
