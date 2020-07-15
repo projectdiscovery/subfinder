@@ -150,7 +150,7 @@ func unique(arr []string) []string {
 // Domain regular expression to match subdomains in github files code
 func (s *Source) DomainRegexp(domain string) *regexp.Regexp {
 	rdomain := strings.Replace(domain, ".", "\\.", -1)
-	return regexp.MustCompile("[0-9a-z_\\-\\.]+\\." + rdomain)
+	return regexp.MustCompile("[\\w.]+\\." + rdomain)
 }
 
 // Raw URL to get the files code and match for subdomains
