@@ -77,7 +77,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 	ratelimitRemaining, _ := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Remaining"), 10, 64)
 	if resp.StatusCode == http.StatusForbidden && ratelimitRemaining == 0 {
 		retryAfterSeconds, _ := strconv.ParseInt(resp.Header.Get("Retry-After"), 10, 64)
-		gologger.Verbosef("GitHub Search request rate limit reached, waiting for %s before retry \n", s.Name(), retryAfterSeconds)
+		gologger.Verbosef("GitHub Search request rate limit exceeded, waiting for %d seconds before retry... \n", s.Name(), retryAfterSeconds)
 
 		time.Sleep(time.Duration(retryAfterSeconds) * time.Second)
 		s.enumerate(ctx, searchURL, domainRegexp, session, results)
