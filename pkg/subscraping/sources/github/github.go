@@ -5,9 +5,13 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"regexp"
-	"strings"
+	"math/rand"
+	"net/http"
 	"net/url"
+	"regexp"
+	"strconv"
+	"strings"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -33,29 +37,33 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
-		if session.Keys.GitHub == "" {
+		if len(session.Keys.GitHub) == 0 {
 			close(results)
 			return
 		}
 
+		rand.Seed(time.Now().UnixNano())
+
 		// search on GitHub with exact match
 		searchURL := fmt.Sprintf("https://api.github.com/search/code?per_page=100&q=\"%s\"", domain)
-		headers := map[string]string{
-			"Accept":        "application/vnd.github.v3+json",
-			"Authorization": "token " + session.Keys.GitHub,
-		}
-		s.enumerate(ctx, searchURL, headers, s.DomainRegexp(domain), session, results)
+		s.enumerate(ctx, searchURL, s.DomainRegexp(domain), session, results)
 		close(results)
 	}()
 
 	return results
 }
 
-func (s *Source) enumerate(ctx context.Context, searchURL string, headers map[string]string, domainRegexp *regexp.Regexp, session *subscraping.Session, results chan subscraping.Result) {
+func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *regexp.Regexp, session *subscraping.Session, results chan subscraping.Result) {
 	select {
 	case <-ctx.Done():
 		return
 	default:
+	}
+
+	// auth headers with random token
+	headers := map[string]string{
+		"Accept":        "application/vnd.github.v3+json",
+		"Authorization": "token " + session.Keys.GitHub[rand.Intn(len(session.Keys.GitHub))],
 	}
 
 	// Initial request to GitHub search
@@ -65,52 +73,62 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, headers map[st
 		return
 	}
 
-	// Links header, first, next, last...
-	linksHeader := linkheader.Parse(resp.Header.Get("Link"))
+	// Retry enumerarion after Retry-After seconds on rate limit abuse detected
+	ratelimitRemaining, _ := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Remaining"), 10, 64)
+	if resp.StatusCode == http.StatusForbidden && ratelimitRemaining == 0 {
+		retryAfterSeconds, _ := strconv.ParseInt(resp.Header.Get("Retry-After"), 10, 64)
+		gologger.Verbosef("GitHub Search request rate limit reached, waiting for %s before retry \n", s.Name(), retryAfterSeconds)
 
-	data := response{}
+		time.Sleep(time.Duration(retryAfterSeconds) * time.Second)
+		s.enumerate(ctx, searchURL, domainRegexp, session, results)
+	} else {
+		// Links header, first, next, last...
+		linksHeader := linkheader.Parse(resp.Header.Get("Link"))
 
-	// Marshall json reponse
-	err = jsoniter.NewDecoder(resp.Body).Decode(&data)
-	resp.Body.Close()
-	if err != nil {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-		return
-	}
+		data := response{}
 
-	// Response items iteration
-	for _, item := range data.Items {
-		resp, err := session.NormalGetWithContext(ctx, s.RawUrl(item.HtmlUrl))
-		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			return
-		}
-
-		// Get the item code from the raw file url
-		code, err := ioutil.ReadAll(resp.Body)
+		// Marshall json reponse
+		err = jsoniter.NewDecoder(resp.Body).Decode(&data)
 		resp.Body.Close()
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			return
 		}
 
-		// Search for domain matches in the code
-		domainMatch := domainRegexp.FindStringSubmatch(string(code))
-		if len(domainMatch) > 0 {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: domainMatch[1]}
-		}
-	}
-
-	// Proccess the next link recursively
-	for _, link := range linksHeader {
-		if link.Rel == "next" {
-			nextUrl, err := url.QueryUnescape(link.URL)
+		// Response items iteration
+		for _, item := range data.Items {
+			resp, err := session.NormalGetWithContext(ctx, s.RawUrl(item.HtmlUrl))
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				return
 			}
-			gologger.Verbosef("Next URL %s\n", s.Name(), nextUrl)
-			s.enumerate(ctx, nextUrl, headers, domainRegexp, session, results)
+
+			// Get the item code from the raw file url
+			code, err := ioutil.ReadAll(resp.Body)
+			resp.Body.Close()
+			if err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				return
+			}
+
+			// Search for domain matches in the code
+			domainMatch := domainRegexp.FindStringSubmatch(string(code))
+			if len(domainMatch) > 0 {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: domainMatch[1]}
+			}
+		}
+
+		// Proccess the next link recursively
+		for _, link := range linksHeader {
+			if link.Rel == "next" {
+				nextUrl, err := url.QueryUnescape(link.URL)
+				if err != nil {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+					return
+				}
+				gologger.Verbosef("Next URL %s\n", s.Name(), nextUrl)
+				s.enumerate(ctx, nextUrl, domainRegexp, session, results)
+			}
 		}
 	}
 }
