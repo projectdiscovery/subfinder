@@ -20,9 +20,14 @@ import (
 	"github.com/tomnomnom/linkheader"
 )
 
+type textMatch struct {
+	Fragment string `json:"fragment"`
+}
+
 type item struct {
-	Name    string `json:"name"`
-	HtmlUrl string `json:"html_url"`
+	Name    		string `json:"name"`
+	HtmlUrl 		string `json:"html_url"`
+	TextMatches []textMatch `json:"text_matches"`
 }
 
 type response struct {
@@ -62,7 +67,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 
 	// auth headers with random token
 	headers := map[string]string{
-		"Accept":        "application/vnd.github.v3+json",
+		"Accept":        "application/vnd.github.v3.text-match+json",
 		"Authorization": "token " + session.Keys.GitHub[rand.Intn(len(session.Keys.GitHub))],
 	}
 
@@ -111,12 +116,20 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 				return
 			}
 
+			var subdomains []string
+
 			// Search for domain matches in the code
-			subDomainMatch := domainRegexp.FindAllString(string(code), -1)
-			if len(subDomainMatch) > 0 {
-				for _, subdomain := range unique(subDomainMatch) {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-				}
+
+			subdomains = append(subdomains, matches(domainRegexp, normalizeContent(string(code)))...)
+
+			// Text matches iteration per item
+			for _, textMatch := range item.TextMatches {
+				// Search for domain matches in the text fragment
+				subdomains = append(subdomains, matches(domainRegexp, normalizeContent(textMatch.Fragment))...)
+			}
+
+			for _, subdomain := range unique(subdomains) {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 			}
 		}
 
@@ -134,6 +147,14 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 	}
 }
 
+// Normalize content before matching, query unescape, remove tabs and new line chars
+func normalizeContent(content string) string {
+	normalizedContent, _ := url.QueryUnescape(content)
+	normalizedContent = strings.Replace(normalizedContent, "\\t", "", -1)
+	normalizedContent = strings.Replace(normalizedContent, "\\n", "", -1)
+	return normalizedContent
+}
+
 // Remove duplicates from string array
 func unique(arr []string) []string {
     occured := map[string]bool{}
@@ -145,6 +166,16 @@ func unique(arr []string) []string {
         }
     }
     return result
+}
+
+// Find matches by regular expression in any content
+func matches(regexp *regexp.Regexp, content string) []string {
+	var matches []string
+	match := regexp.FindAllString(content, -1)
+	if len(match) > 0 {
+		matches = unique(match)
+	}
+	return matches
 }
 
 // Domain regular expression to match subdomains in github files code
