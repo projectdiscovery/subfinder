@@ -112,9 +112,11 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 			}
 
 			// Search for domain matches in the code
-			domainMatch := domainRegexp.FindStringSubmatch(string(code))
-			if len(domainMatch) > 0 {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: domainMatch[1]}
+			subDomainMatch := domainRegexp.FindAllString(string(code), -1)
+			if len(subDomainMatch) > 0 {
+				for _, subdomain := range unique(subDomainMatch) {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				}
 			}
 		}
 
@@ -126,17 +128,29 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 					return
 				}
-				gologger.Verbosef("Next URL %s\n", s.Name(), nextUrl)
 				s.enumerate(ctx, nextUrl, domainRegexp, session, results)
 			}
 		}
 	}
 }
 
+// Remove duplicates from string array
+func unique(arr []string) []string {
+    occured := map[string]bool{}
+    result := []string{}
+    for e := range arr {
+        if occured[arr[e]] != true {
+            occured[arr[e]] = true
+            result = append(result, arr[e])
+        }
+    }
+    return result
+}
+
 // Domain regular expression to match subdomains in github files code
 func (s *Source) DomainRegexp(domain string) *regexp.Regexp {
 	rdomain := strings.Replace(domain, ".", "\\.", -1)
-	return regexp.MustCompile("(([0-9a-z_\\-\\.]+)\\." + rdomain + ")")
+	return regexp.MustCompile("[0-9a-z_\\-\\.]+\\." + rdomain)
 }
 
 // Raw URL to get the files code and match for subdomains
