@@ -104,7 +104,7 @@ func (s *Source) getSubdomains(ctx context.Context, searchURL string, domain str
 			}
 			resp.Body.Close()
 
-			src, _ := string(body)
+			src, _ := url.QueryUnescape(string(body))
 
 			for _, subdomain := range session.Extractor.FindAllString(src, -1) {
 				subdomain = strings.TrimPrefix(subdomain, "25")
