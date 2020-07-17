@@ -4,8 +4,8 @@ import "time"
 
 type token struct {
 	Hash         string
+	RetryAfter   int64
 	ExceededTime time.Time
-  RetryAfter int64
 }
 
 type Tokens struct {
@@ -27,17 +27,17 @@ func NewTokenManager(keys []string) *Tokens {
 }
 
 func (r *Tokens) setCurrentTokenExceeded(retryAfter int64) {
-  if r.current >= len(r.pool) {
+	if r.current >= len(r.pool) {
 		r.current = r.current % len(r.pool)
 	}
-  if r.pool[r.current].RetryAfter == 0 {
-    r.pool[r.current].ExceededTime = time.Now()
-    r.pool[r.current].RetryAfter = retryAfter
-  }
+	if r.pool[r.current].RetryAfter == 0 {
+		r.pool[r.current].ExceededTime = time.Now()
+		r.pool[r.current].RetryAfter = retryAfter
+	}
 }
 
 func (r *Tokens) Get() token {
-  resetExceededTokens(r)
+	resetExceededTokens(r)
 
 	if r.current >= len(r.pool) {
 		r.current = r.current % len(r.pool)
@@ -50,12 +50,12 @@ func (r *Tokens) Get() token {
 }
 
 func resetExceededTokens(r *Tokens) {
-  for i, token := range r.pool {
-    if token.RetryAfter > 0 {
-      if int64(time.Since(token.ExceededTime) / time.Second) > token.RetryAfter {
-        r.pool[i].ExceededTime = time.Time{}
-        r.pool[i].RetryAfter = 0
-      }
-    }
-  }
+	for i, token := range r.pool {
+		if token.RetryAfter > 0 {
+			if int64(time.Since(token.ExceededTime)/time.Second) > token.RetryAfter {
+				r.pool[i].ExceededTime = time.Time{}
+				r.pool[i].RetryAfter = 0
+			}
+		}
+	}
 }
