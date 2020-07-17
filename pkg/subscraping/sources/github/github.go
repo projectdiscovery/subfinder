@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -47,28 +46,38 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		rand.Seed(time.Now().UnixNano())
+		tokens := NewTokenManager(session.Keys.GitHub)
 
 		// search on GitHub with exact match
 		searchURL := fmt.Sprintf("https://api.github.com/search/code?per_page=100&q=\"%s\"", domain)
-		s.enumerate(ctx, searchURL, s.DomainRegexp(domain), session, results)
+		s.enumerate(ctx, searchURL, s.DomainRegexp(domain), tokens, session, results)
 		close(results)
 	}()
 
 	return results
 }
 
-func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *regexp.Regexp, session *subscraping.Session, results chan subscraping.Result) {
+func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *regexp.Regexp, tokens *Tokens, session *subscraping.Session, results chan subscraping.Result) {
 	select {
 	case <-ctx.Done():
 		return
 	default:
 	}
 
-	// auth headers with random token
+	token := tokens.Get()
+
+	if token.RetryAfter > 0 {
+		if len(tokens.pool) == 1 {
+			gologger.Verbosef("GitHub Search request rate limit exceeded, waiting for %d seconds before retry... \n", s.Name(), token.RetryAfter)
+			time.Sleep(time.Duration(token.RetryAfter) * time.Second)
+		} else {
+			token = tokens.Get()
+		}
+	}
+
 	headers := map[string]string{
 		"Accept":        "application/vnd.github.v3.text-match+json",
-		"Authorization": "token " + session.Keys.GitHub[rand.Intn(len(session.Keys.GitHub))],
+		"Authorization": "token " + token.Hash,
 	}
 
 	// Initial request to GitHub search
@@ -82,10 +91,9 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 	ratelimitRemaining, _ := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Remaining"), 10, 64)
 	if resp.StatusCode == http.StatusForbidden && ratelimitRemaining == 0 {
 		retryAfterSeconds, _ := strconv.ParseInt(resp.Header.Get("Retry-After"), 10, 64)
-		gologger.Verbosef("GitHub Search request rate limit exceeded, waiting for %d seconds before retry... \n", s.Name(), retryAfterSeconds)
+		tokens.setCurrentTokenExceeded(retryAfterSeconds)
 
-		time.Sleep(time.Duration(retryAfterSeconds) * time.Second)
-		s.enumerate(ctx, searchURL, domainRegexp, session, results)
+		s.enumerate(ctx, searchURL, domainRegexp, tokens, session, results)
 	} else {
 		// Links header, first, next, last...
 		linksHeader := linkheader.Parse(resp.Header.Get("Link"))
@@ -102,7 +110,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 
 		// Response items iteration
 		for _, item := range data.Items {
-			resp, err := session.NormalGetWithContext(ctx, s.RawUrl(item.HtmlUrl))
+			resp, err := session.NormalGetWithContext(ctx, rawUrl(item.HtmlUrl))
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				return
@@ -141,7 +149,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 					return
 				}
-				s.enumerate(ctx, nextUrl, domainRegexp, session, results)
+				s.enumerate(ctx, nextUrl, domainRegexp, tokens, session, results)
 			}
 		}
 	}
@@ -178,16 +186,16 @@ func matches(regexp *regexp.Regexp, content string) []string {
 	return matches
 }
 
+// Raw URL to get the files code and match for subdomains
+func rawUrl(htmlUrl string) string {
+	domain := strings.Replace(htmlUrl, "https://github.com/", "https://raw.githubusercontent.com/", -1)
+	return strings.Replace(domain, "/blob/", "/", -1)
+}
+
 // Domain regular expression to match subdomains in github files code
 func (s *Source) DomainRegexp(domain string) *regexp.Regexp {
 	rdomain := strings.Replace(domain, ".", "\\.", -1)
 	return regexp.MustCompile("(\\w+[.])*" + rdomain)
-}
-
-// Raw URL to get the files code and match for subdomains
-func (s *Source) RawUrl(htmlUrl string) string {
-	domain := strings.Replace(htmlUrl, "https://github.com/", "https://raw.githubusercontent.com/", -1)
-	return strings.Replace(domain, "/blob/", "/", -1)
 }
 
 // Name returns the name of the source
