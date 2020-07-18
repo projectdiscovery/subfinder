@@ -120,7 +120,7 @@ func (c ConfigFile) GetKeys() subscraping.Keys {
 		keys.DNSDB = c.DNSDB[rand.Intn(len(c.DNSDB))]
 	}
 	if (len(c.GitHub)) > 0 {
-		keys.GitHub = c.GitHub[rand.Intn(len(c.GitHub))]
+		keys.GitHub = c.GitHub
 	}
 
 	if len(c.IntelX) > 0 {
