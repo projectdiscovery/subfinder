@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/url"
 	"strings"
 
 	jsoniter "github.com/json-iterator/go"
@@ -66,8 +67,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 		}
 
-		for _, url := range searchIndexes {
-			further := s.getSubdomains(ctx, url, domain, session, results)
+		for _, apiURL := range searchIndexes {
+			further := s.getSubdomains(ctx, apiURL, domain, session, results)
 			if !further {
 				break
 			}
@@ -83,13 +84,13 @@ func (s *Source) Name() string {
 	return "commoncrawl"
 }
 
-func (s *Source) getSubdomains(ctx context.Context, url string, domain string, session *subscraping.Session, results chan subscraping.Result) bool {
+func (s *Source) getSubdomains(ctx context.Context, searchURL string, domain string, session *subscraping.Session, results chan subscraping.Result) bool {
 	for {
 		select {
 		case <-ctx.Done():
 			return false
 		default:
-			resp, err := session.NormalGetWithContext(ctx, fmt.Sprintf("%s?url=*.%s&output=json", url, domain))
+			resp, err := session.NormalGetWithContext(ctx, fmt.Sprintf("%s?url=*.%s&output=json", searchURL, domain))
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				return false
@@ -103,11 +104,10 @@ func (s *Source) getSubdomains(ctx context.Context, url string, domain string, s
 			}
 			resp.Body.Close()
 
-			src := string(body)
+			src, _ := url.QueryUnescape(string(body))
 
 			for _, subdomain := range session.Extractor.FindAllString(src, -1) {
 				subdomain = strings.TrimPrefix(subdomain, "25")
-				subdomain = strings.TrimPrefix(subdomain, "2F")
 
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 			}
