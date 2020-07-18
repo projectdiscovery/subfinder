@@ -83,7 +83,7 @@ The installation is easy. You can download the pre-built binaries for different 
 
 ```bash
 > tar -xzvf subfinder-linux-amd64.tar.gz
-> mv subfinder /usr/local/bin/
+> mv subfinder /usr/local/local/bin/
 > subfinder -h
 ```
 
@@ -159,6 +159,7 @@ shodan:
   - AAAAClP1bJJSRMEYJazgwhJKrggRwKA
 github:
   - d23a554bbc1aabb208c9acfbd2dd41ce7fc9db39
+  - asdsd54bbc1aabb208c9acfbd2dd41ce7fc9db39
 ```
 
 # Running Subfinder
