@@ -61,6 +61,7 @@ This will display help for the tool. Here are all the switches it supports.
 | -max-time | Minutes to wait for enumeration results (default 10) | subfinder -max-time 1 | 
 | -nC | Don't Use colors in output | subfinder -nC | 
 | -nW | Remove Wildcard & Dead Subdomains from output | subfinder -nW | 
+| -ls | List all available sources | subfinder -ls | 
 | -o  | File to write output to (optional) | subfinder -o output.txt | 
 | -oD | Directory to write enumeration results to (optional) | subfinder -oD ~/outputs | 
 | -oI | Write output in Host,IP format | subfinder -oI |
