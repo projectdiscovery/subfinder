@@ -25,6 +25,7 @@ type Options struct {
 	HostIP             bool   // HostIP specifies whether to write subdomains in host:ip format
 	Silent             bool   // Silent suppresses any extra text and only writes subdomains to screen
 	Sources            string // Sources contains a comma-separated list of sources to use for enumeration
+	ListSources        bool   // ListSources specifies whether to list all available sources
 	ExcludeSources     string // ExcludeSources contains the comma-separated sources to not include in the enumeration process
 	Resolvers          string // Resolvers is the comma-separated resolvers to use for enumeration
 	ResolverList       string // ResolverList is a text file containing list of resolvers to use for enumeration
@@ -60,6 +61,7 @@ func ParseOptions() *Options {
 	flag.BoolVar(&options.HostIP, "oI", false, "Write output in Host,IP format")
 	flag.BoolVar(&options.Silent, "silent", false, "Show only subdomains in output")
 	flag.StringVar(&options.Sources, "sources", "", "Comma separated list of sources to use")
+	flag.BoolVar(&options.ListSources, "ls", false, "List all available sources")
 	flag.StringVar(&options.ExcludeSources, "exclude-sources", "", "List of sources to exclude from enumeration")
 	flag.StringVar(&options.Resolvers, "r", "", "Comma-separated list of resolvers to use")
 	flag.StringVar(&options.ResolverList, "rL", "", "Text file containing list of resolvers to use")
@@ -89,6 +91,14 @@ func ParseOptions() *Options {
 		options.firstRunTasks()
 	} else {
 		options.normalRunTasks()
+	}
+
+	if options.ListSources {
+		gologger.Infof("Current list of available sources. [%d]\n\n", len(options.YAMLConfig.Sources))
+		for _, source := range options.YAMLConfig.Sources {
+			gologger.Silentf("%s\n", source)
+		}
+		os.Exit(0)
 	}
 
 	// Validate the options passed by the user and if any
