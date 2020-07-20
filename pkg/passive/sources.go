@@ -47,6 +47,7 @@ var DefaultSources = []string{
 	"dnsdumpster",
 	"dnsdb",
 	"entrust",
+	"github",
 	"hackertarget",
 	"ipv4info",
 	"intelx",
