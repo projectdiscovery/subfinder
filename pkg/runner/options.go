@@ -4,6 +4,8 @@ import (
 	"flag"
 	"os"
 	"path"
+	"reflect"
+	"strings"
 
 	"github.com/projectdiscovery/gologger"
 )
@@ -94,10 +96,7 @@ func ParseOptions() *Options {
 	}
 
 	if options.ListSources {
-		gologger.Infof("Current list of available sources. [%d]\n\n", len(options.YAMLConfig.Sources))
-		for _, source := range options.YAMLConfig.Sources {
-			gologger.Silentf("%s\n", source)
-		}
+		listSources(options)
 		os.Exit(0)
 	}
 
@@ -120,4 +119,25 @@ func hasStdin() bool {
 		return false
 	}
 	return true
+}
+
+func listSources(options *Options) {
+	gologger.Infof("Current list of available sources. [%d]\n", len(options.YAMLConfig.Sources))
+	gologger.Infof("Sources marked with an * needs key or token in order to work.\n")
+	gologger.Infof("You can modify %s to configure your keys / tokens.\n\n", options.ConfigFile)
+
+	keys := options.YAMLConfig.GetKeys()
+	needsKey := make(map[string]interface{})
+	keysElem := reflect.ValueOf(&keys).Elem()
+	for i := 0; i < keysElem.NumField(); i++ {
+			needsKey[strings.ToLower(keysElem.Type().Field(i).Name)] = keysElem.Field(i).Interface()
+	}
+
+	for _, source := range options.YAMLConfig.Sources {
+		message := "%s\n"
+		if _, ok := needsKey[source]; ok {
+				message = "%s *\n"
+		}
+		gologger.Silentf(message, source)
+	}
 }
