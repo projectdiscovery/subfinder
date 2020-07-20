@@ -134,14 +134,10 @@ func listSources(options *Options) {
 	}
 
 	for _, source := range options.YAMLConfig.Sources {
-		if key, ok := needsKey[source]; ok {
-			if key != "" {
-				gologger.Silentf("%s * %s\n", source, key)
-			} else {
-				gologger.Silentf("%s *\n", source)
-			}
-		} else {
-			gologger.Silentf("%s\n", source)
+		message := "%s\n"
+		if _, ok := needsKey[source]; ok {
+				message = "%s *\n"
 		}
+		gologger.Silentf(message, source)
 	}
 }
