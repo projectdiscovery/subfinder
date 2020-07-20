@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"time"
 )
@@ -70,6 +72,13 @@ func (s *Session) Get(ctx context.Context, url string, cookies string, headers m
 	}
 
 	return httpRequestWrapper(s.Client, req)
+}
+
+func (s *Session) DiscardHttpResponse(response *http.Response) {
+	if response != nil {
+		io.Copy(ioutil.Discard, response.Body)
+		response.Body.Close()
+	}
 }
 
 func httpRequestWrapper(client *http.Client, request *http.Request) (*http.Response, error) {

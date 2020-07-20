@@ -63,26 +63,16 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		for currentPage := 0; currentPage <= 100; currentPage++ {
 			api := fmt.Sprintf("https://api.zoomeye.org/web/search?query=hostname:%s&page=%d", domain, currentPage)
 			resp, err := session.Get(ctx, api, "", headers)
+			isForbidden := resp != nil && resp.StatusCode == http.StatusForbidden
 			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				if !isForbidden && currentPage == 0 {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+					session.DiscardHttpResponse(resp)
+				}
 				close(results)
 				return
 			}
-			// if response is non-200 & current page is 0 return an error
-			if resp.StatusCode != 200 && currentPage == 0 {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("invalid status code received: %d", resp.StatusCode)}
-				io.Copy(ioutil.Discard, resp.Body)
-				resp.Body.Close()
-				close(results)
-				return
-			}
-			// otherwise we hit 403 when there are no more results
-			if resp.StatusCode != 200 {
-				io.Copy(ioutil.Discard, resp.Body)
-				resp.Body.Close()
-				close(results)
-				return
-			}
+
 			defer resp.Body.Close()
 			res := &zoomeyeResults{}
 			err = json.NewDecoder(resp.Body).Decode(res)

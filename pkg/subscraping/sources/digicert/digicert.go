@@ -19,6 +19,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		resp, err := session.Get(ctx, fmt.Sprintf("https://ssltools.digicert.com/chainTester/webservice/ctsearch/search?keyword=%s", domain), "", nil)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			session.DiscardHttpResponse(resp)
 			close(results)
 			return
 		}

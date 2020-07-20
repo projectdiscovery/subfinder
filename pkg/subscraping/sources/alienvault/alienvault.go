@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
@@ -27,16 +25,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		resp, err := session.NormalGetWithContext(ctx, fmt.Sprintf("https://otx.alienvault.com/api/v1/indicators/domain/%s/passive_dns", domain))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			session.DiscardHttpResponse(resp)
 			close(results)
 			return
 		}
-		if resp.StatusCode != 200 {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("invalid status code received: %d", resp.StatusCode)}
-			io.Copy(ioutil.Discard, resp.Body)
-			resp.Body.Close()
-			close(results)
-			return
-		}
+
 		otxResp := &alienvaultResponse{}
 		// Get the response body and decode
 		err = json.NewDecoder(resp.Body).Decode(&otxResp)

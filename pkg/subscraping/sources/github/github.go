@@ -86,6 +86,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 
 	if err != nil && !isForbidden {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		session.DiscardHttpResponse(resp)
 		return
 	} else {
 		// Retry enumerarion after Retry-After seconds on rate limit abuse detected
@@ -113,6 +114,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 				for _, item := range data.Items {
 					resp, err := session.NormalGetWithContext(ctx, rawUrl(item.HtmlUrl))
 					if err != nil {
+						session.DiscardHttpResponse(resp)
 						results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 						return
 					}

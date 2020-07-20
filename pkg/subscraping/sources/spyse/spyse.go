@@ -48,6 +48,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			resp, err := session.Get(ctx, fmt.Sprintf("https://api.spyse.com/v2/data/domain/subdomain?domain=%s&limit=100&offset=%s", domain, strconv.Itoa(offSet)), "", map[string]string{"Authorization": "Bearer " + session.Keys.Spyse})
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				session.DiscardHttpResponse(resp)
 				close(results)
 				return
 			}
