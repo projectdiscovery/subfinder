@@ -82,77 +82,80 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 
 	// Initial request to GitHub search
 	resp, err := session.Get(ctx, searchURL, "", headers)
-	if err != nil {
+	isForbidden := resp != nil && resp.StatusCode == http.StatusForbidden
+
+	if err != nil && !isForbidden {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		return
-	}
-
-	// Retry enumerarion after Retry-After seconds on rate limit abuse detected
-	ratelimitRemaining, _ := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Remaining"), 10, 64)
-	if resp.StatusCode == http.StatusForbidden && ratelimitRemaining == 0 {
-		retryAfterSeconds, _ := strconv.ParseInt(resp.Header.Get("Retry-After"), 10, 64)
-		tokens.setCurrentTokenExceeded(retryAfterSeconds)
-
-		s.enumerate(ctx, searchURL, domainRegexp, tokens, session, results)
 	} else {
-		// Links header, first, next, last...
-		linksHeader := linkheader.Parse(resp.Header.Get("Link"))
+		// Retry enumerarion after Retry-After seconds on rate limit abuse detected
+		ratelimitRemaining, _ := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Remaining"), 10, 64)
+		if isForbidden && ratelimitRemaining == 0 {
+			retryAfterSeconds, _ := strconv.ParseInt(resp.Header.Get("Retry-After"), 10, 64)
+			tokens.setCurrentTokenExceeded(retryAfterSeconds)
 
-		data := response{}
+			s.enumerate(ctx, searchURL, domainRegexp, tokens, session, results)
+			} else {
+				// Links header, first, next, last...
+				linksHeader := linkheader.Parse(resp.Header.Get("Link"))
 
-		// Marshall json reponse
-		err = jsoniter.NewDecoder(resp.Body).Decode(&data)
-		resp.Body.Close()
-		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			return
-		}
+				data := response{}
 
-		// Response items iteration
-		for _, item := range data.Items {
-			resp, err := session.NormalGetWithContext(ctx, rawUrl(item.HtmlUrl))
-			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				return
-			}
-
-			// Get the item code from the raw file url
-			code, err := ioutil.ReadAll(resp.Body)
-			resp.Body.Close()
-			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				return
-			}
-
-			var subdomains []string
-
-			// Search for domain matches in the code
-
-			subdomains = append(subdomains, matches(domainRegexp, normalizeContent(string(code)))...)
-
-			// Text matches iteration per item
-			for _, textMatch := range item.TextMatches {
-				// Search for domain matches in the text fragment
-				subdomains = append(subdomains, matches(domainRegexp, normalizeContent(textMatch.Fragment))...)
-			}
-
-			for _, subdomain := range unique(subdomains) {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-			}
-		}
-
-		// Proccess the next link recursively
-		for _, link := range linksHeader {
-			if link.Rel == "next" {
-				nextUrl, err := url.QueryUnescape(link.URL)
+				// Marshall json reponse
+				err = jsoniter.NewDecoder(resp.Body).Decode(&data)
+				resp.Body.Close()
 				if err != nil {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 					return
 				}
-				s.enumerate(ctx, nextUrl, domainRegexp, tokens, session, results)
+
+				// Response items iteration
+				for _, item := range data.Items {
+					resp, err := session.NormalGetWithContext(ctx, rawUrl(item.HtmlUrl))
+					if err != nil {
+						results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+						return
+					}
+
+					// Get the item code from the raw file url
+					code, err := ioutil.ReadAll(resp.Body)
+					resp.Body.Close()
+					if err != nil {
+						results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+						return
+					}
+
+					var subdomains []string
+
+					// Search for domain matches in the code
+
+					subdomains = append(subdomains, matches(domainRegexp, normalizeContent(string(code)))...)
+
+					// Text matches iteration per item
+					for _, textMatch := range item.TextMatches {
+						// Search for domain matches in the text fragment
+						subdomains = append(subdomains, matches(domainRegexp, normalizeContent(textMatch.Fragment))...)
+					}
+
+					for _, subdomain := range unique(subdomains) {
+						results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+					}
+				}
+
+				// Proccess the next link recursively
+				for _, link := range linksHeader {
+					if link.Rel == "next" {
+						nextUrl, err := url.QueryUnescape(link.URL)
+						if err != nil {
+							results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+							return
+						}
+						s.enumerate(ctx, nextUrl, domainRegexp, tokens, session, results)
+					}
+				}
 			}
-		}
 	}
+
 }
 
 // Normalize content before matching, query unescape, remove tabs and new line chars

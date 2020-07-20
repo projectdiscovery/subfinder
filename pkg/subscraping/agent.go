@@ -79,7 +79,7 @@ func httpRequestWrapper(client *http.Client, request *http.Request) (*http.Respo
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Unexpected status code %d received from %s, expected %d", resp.StatusCode, request.URL, http.StatusOK)
+		return resp, fmt.Errorf("Unexpected status code %d received from %s, expected %d", resp.StatusCode, request.URL, http.StatusOK)
 	}
 	return resp, nil
 }
