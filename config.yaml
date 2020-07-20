@@ -19,7 +19,6 @@ sources:
   - certspotterold
   - commoncrawl
   - crtsh
-  - digicert
   - dnsdumpster
   - dnsdb
   - entrust
