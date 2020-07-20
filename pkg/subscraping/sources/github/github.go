@@ -114,12 +114,14 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 				for _, item := range data.Items {
 					resp, err := session.NormalGetWithContext(ctx, rawUrl(item.HtmlUrl))
 					isNotFound := resp != nil && resp.StatusCode == http.StatusNotFound
-					if err != nil && !isNotFound{
-						session.DiscardHttpResponse(resp)
-						results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-						return
-					} else {
-						continue
+					if err != nil {
+						if !isNotFound {
+							session.DiscardHttpResponse(resp)
+							results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+							return
+						} else {
+							continue
+						}
 					}
 
 					// Get the item code from the raw file url
