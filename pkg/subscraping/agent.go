@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -88,7 +89,8 @@ func httpRequestWrapper(client *http.Client, request *http.Request) (*http.Respo
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return resp, fmt.Errorf("Unexpected status code %d received from %s, expected %d", resp.StatusCode, request.URL, http.StatusOK)
+		requestUrl, _ := url.QueryUnescape(request.URL.String())
+		return resp, fmt.Errorf("Unexpected status code %d received from %s", resp.StatusCode, requestUrl)
 	}
 	return resp, nil
 }
