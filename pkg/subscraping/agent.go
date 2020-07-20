@@ -3,6 +3,7 @@ package subscraping
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -44,12 +45,7 @@ func (s *Session) NormalGetWithContext(ctx context.Context, url string) (*http.R
 	req.Header.Set("Accept", "*/*")
 	req.Header.Set("Accept-Language", "en")
 
-	resp, err := s.Client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
+	return httpRequestWrapper(s.Client, req)
 }
 
 // Get makes a GET request to a URL
@@ -73,10 +69,17 @@ func (s *Session) Get(ctx context.Context, url string, cookies string, headers m
 		}
 	}
 
-	resp, err := s.Client.Do(req)
+	return httpRequestWrapper(s.Client, req)
+}
+
+func httpRequestWrapper(client *http.Client, request *http.Request) (*http.Response, error) {
+	resp, err := client.Do(request)
 	if err != nil {
 		return nil, err
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Invalid status code %d received from %s", resp.StatusCode, request.URL)
+	}
 	return resp, nil
 }
