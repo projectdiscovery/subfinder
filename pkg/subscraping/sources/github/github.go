@@ -113,30 +113,27 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 				// Response items iteration
 				for _, item := range data.Items {
 					resp, err := session.NormalGetWithContext(ctx, rawUrl(item.HtmlUrl))
-					isNotFound := resp != nil && resp.StatusCode == http.StatusNotFound
 					if err != nil {
-						if !isNotFound {
+						if resp != nil && resp.StatusCode == http.StatusNotFound {
 							session.DiscardHttpResponse(resp)
 							results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 							return
-						} else {
-							continue
 						}
-					}
-
-					// Get the item code from the raw file url
-					code, err := ioutil.ReadAll(resp.Body)
-					resp.Body.Close()
-					if err != nil {
-						results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-						return
 					}
 
 					var subdomains []string
 
-					// Search for domain matches in the code
-
-					subdomains = append(subdomains, matches(domainRegexp, normalizeContent(string(code)))...)
+					if resp.StatusCode == http.StatusOK {
+						// Get the item code from the raw file url
+						code, err := ioutil.ReadAll(resp.Body)
+						resp.Body.Close()
+						if err != nil {
+							results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+							return
+						}
+						// Search for domain matches in the code
+						subdomains = append(subdomains, matches(domainRegexp, normalizeContent(string(code)))...)
+					}
 
 					// Text matches iteration per item
 					for _, textMatch := range item.TextMatches {
