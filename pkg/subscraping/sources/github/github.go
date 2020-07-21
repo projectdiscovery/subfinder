@@ -114,7 +114,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 				for _, item := range data.Items {
 					resp, err := session.NormalGetWithContext(ctx, rawUrl(item.HtmlUrl))
 					if err != nil {
-						if resp != nil && resp.StatusCode == http.StatusNotFound {
+						if resp != nil && resp.StatusCode != http.StatusNotFound {
 							session.DiscardHttpResponse(resp)
 							results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 							return
