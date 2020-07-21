@@ -31,6 +31,7 @@ func (s *Source) getData(ctx context.Context, URL string, session *subscraping.S
 	resp, err := session.NormalGetWithContext(ctx, URL)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		session.DiscardHttpResponse(resp)
 		return
 	}
 

@@ -5,8 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"strings"
 
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
@@ -36,15 +34,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			resp, err := session.Get(ctx, fmt.Sprintf("https://api.dnsdb.info/lookup/rrset/name/*.%s?limit=1000000000000", domain), "", headers)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				close(results)
-				return
-			}
-
-			// Check status code
-			if resp.StatusCode != 200 {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("invalid status code received: %d", resp.StatusCode)}
-				io.Copy(ioutil.Discard, resp.Body)
-				resp.Body.Close()
+				session.DiscardHttpResponse(resp)				
 				close(results)
 				return
 			}

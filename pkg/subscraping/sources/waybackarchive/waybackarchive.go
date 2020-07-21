@@ -20,6 +20,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		pagesResp, err := session.NormalGetWithContext(ctx, fmt.Sprintf("http://web.archive.org/cdx/search/cdx?url=*.%s/*&output=json&fl=original&collapse=urlkey", domain))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			session.DiscardHttpResponse(pagesResp)
 			close(results)
 			return
 		}

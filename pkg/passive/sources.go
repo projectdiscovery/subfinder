@@ -11,7 +11,6 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/certspotterold"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/commoncrawl"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/crtsh"
-	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/digicert"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/dnsdb"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/dnsdumpster"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/entrust"
@@ -45,10 +44,10 @@ var DefaultSources = []string{
 	"certspotterold",
 	"commoncrawl",
 	"crtsh",
-	"digicert",
 	"dnsdumpster",
 	"dnsdb",
 	"entrust",
+	"github",
 	"hackertarget",
 	"ipv4info",
 	"intelx",
@@ -107,8 +106,6 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &commoncrawl.Source{}
 		case "crtsh":
 			a.sources[source] = &crtsh.Source{}
-		case "digicert":
-			a.sources[source] = &digicert.Source{}
 		case "dnsdumpster":
 			a.sources[source] = &dnsdumpster.Source{}
 		case "dnsdb":

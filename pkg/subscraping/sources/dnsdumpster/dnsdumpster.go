@@ -76,6 +76,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		resp, err := session.NormalGetWithContext(ctx, "https://dnsdumpster.com/")
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			session.DiscardHttpResponse(resp)
 			close(results)
 			return
 		}

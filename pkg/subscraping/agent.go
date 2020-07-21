@@ -3,7 +3,11 @@ package subscraping
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -44,12 +48,7 @@ func (s *Session) NormalGetWithContext(ctx context.Context, url string) (*http.R
 	req.Header.Set("Accept", "*/*")
 	req.Header.Set("Accept-Language", "en")
 
-	resp, err := s.Client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
+	return httpRequestWrapper(s.Client, req)
 }
 
 // Get makes a GET request to a URL
@@ -73,10 +72,25 @@ func (s *Session) Get(ctx context.Context, url string, cookies string, headers m
 		}
 	}
 
-	resp, err := s.Client.Do(req)
+	return httpRequestWrapper(s.Client, req)
+}
+
+func (s *Session) DiscardHttpResponse(response *http.Response) {
+	if response != nil {
+		io.Copy(ioutil.Discard, response.Body)
+		response.Body.Close()
+	}
+}
+
+func httpRequestWrapper(client *http.Client, request *http.Request) (*http.Response, error) {
+	resp, err := client.Do(request)
 	if err != nil {
 		return nil, err
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		requestUrl, _ := url.QueryUnescape(request.URL.String())
+		return resp, fmt.Errorf("Unexpected status code %d received from %s", resp.StatusCode, requestUrl)
+	}
 	return resp, nil
 }

@@ -19,6 +19,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		resp, err := session.NormalGetWithContext(ctx, fmt.Sprintf("https://api.threatminer.org/v2/domain.php?q=%s&rt=5", domain))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			session.DiscardHttpResponse(resp)
 			close(results)
 			return
 		}
