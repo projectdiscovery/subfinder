@@ -15,7 +15,7 @@ type resultObject struct {
 
 type dataObject struct {
 	Items       []resultObject `json:"items"`
-	Total_Count int            `json:"total_count"`
+	TotalCount int            `json:"total_count"`
 }
 
 type errorObject struct {
@@ -45,7 +45,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			resp, err := session.Get(ctx, fmt.Sprintf("https://api.spyse.com/v3/data/domain/subdomain?domain=%s&limit=100&offset=%s", domain, strconv.Itoa(offSet)), "", map[string]string{"Authorization": "Bearer " + session.Keys.Spyse})
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				session.DiscardHttpResponse(resp)
+				session.DiscardHTTPResponse(resp)
 				close(results)
 				return
 			}
@@ -62,12 +62,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 			resp.Body.Close()
 
-			if response.Data.Total_Count == 0 {
+			if response.Data.TotalCount == 0 {
 				close(results)
 				return
 			}
 
-			maxCount = response.Data.Total_Count
+			maxCount = response.Data.TotalCount
 
 			for _, hostname := range response.Data.Items {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: hostname.Name}

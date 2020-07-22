@@ -31,7 +31,7 @@ func (a *agent) enumerate(ctx context.Context, baseURL string) error {
 			resp, err := a.session.NormalGetWithContext(ctx, baseURL)
 			if err != nil {
 				a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
-				a.session.DiscardHttpResponse(resp)
+				a.session.DiscardHTTPResponse(resp)
 				close(a.results)
 				return err
 			}

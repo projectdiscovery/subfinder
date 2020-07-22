@@ -13,7 +13,7 @@ import (
 )
 
 type searchResponseType struct {
-	Id     string `json:"id"`
+	ID     string `json:"id"`
 	Status int    `json:"status"`
 }
 
@@ -66,7 +66,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		resp, err := http.Post(searchURL, "application/json", bytes.NewBuffer(body))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			session.DiscardHttpResponse(resp)
+			session.DiscardHTTPResponse(resp)
 			return
 		}
 
@@ -78,7 +78,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		resultsURL := fmt.Sprintf("https://%s/phonebook/search/result?k=%s&id=%s&limit=10000", session.Keys.IntelXHost, session.Keys.IntelXKey, response.Id)
+		resultsURL := fmt.Sprintf("https://%s/phonebook/search/result?k=%s&id=%s&limit=10000", session.Keys.IntelXHost, session.Keys.IntelXKey, response.ID)
 		status := 0
 		for status == 0 || status == 3 {
 			resp, err = session.Get(ctx, resultsURL, "", nil)

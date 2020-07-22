@@ -73,7 +73,8 @@ func (s *Session) Get(ctx context.Context, url string, cookies string, headers m
 	return httpRequestWrapper(s.Client, req)
 }
 
-func (s *Session) DiscardHttpResponse(response *http.Response) {
+// DiscardHTTPResponse discards the response content by demand
+func (s *Session) DiscardHTTPResponse(response *http.Response) {
 	if response != nil {
 		io.Copy(ioutil.Discard, response.Body)
 		response.Body.Close()
@@ -87,8 +88,8 @@ func httpRequestWrapper(client *http.Client, request *http.Request) (*http.Respo
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		requestUrl, _ := url.QueryUnescape(request.URL.String())
-		return resp, fmt.Errorf("Unexpected status code %d received from %s", resp.StatusCode, requestUrl)
+		requestURL, _ := url.QueryUnescape(request.URL.String())
+		return resp, fmt.Errorf("unexpected status code %d received from %s", resp.StatusCode, requestURL)
 	}
 	return resp, nil
 }

@@ -20,7 +20,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		resp, err := session.NormalGetWithContext(ctx, fmt.Sprintf("https://ctsearch.entrust.com/api/v1/certificates?fields=issuerCN,subjectO,issuerDN,issuerO,subjectDN,signAlg,san,publicKeyType,publicKeySize,validFrom,validTo,sn,ev,logEntries.logName,subjectCNReversed,cert&domain=%s&includeExpired=true&exactMatch=false&limit=5000", domain))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			session.DiscardHttpResponse(resp)
+			session.DiscardHTTPResponse(resp)
 			close(results)
 			return
 		}
