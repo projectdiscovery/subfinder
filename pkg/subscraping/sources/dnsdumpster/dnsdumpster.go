@@ -27,7 +27,7 @@ func getCSRFToken(page string) string {
 }
 
 // postForm posts a form for a domain and returns the response
-func postForm(token, domain string) (string, error) {
+func postForm(ctx context.Context, token, domain string) (string, error) {
 	dial := net.Dialer{}
 	client := &http.Client{
 		Transport: &http.Transport{
@@ -40,7 +40,7 @@ func postForm(token, domain string) (string, error) {
 		"targetip":            {domain},
 	}
 
-	req, err := http.NewRequest("POST", "https://dnsdumpster.com/", strings.NewReader(params.Encode()))
+	req, err := http.NewRequestWithContext(ctx, "POST", "https://dnsdumpster.com/", strings.NewReader(params.Encode()))
 	if err != nil {
 		return "", err
 	}
@@ -94,7 +94,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		resp.Body.Close()
 		csrfToken := getCSRFToken(string(body))
 
-		data, err := postForm(csrfToken, domain)
+		data, err := postForm(ctx, csrfToken, domain)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			close(results)
