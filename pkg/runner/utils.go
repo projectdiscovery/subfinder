@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/projectdiscovery/gologger"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/pkg/errors"
 )
@@ -23,6 +24,7 @@ type JSONResult struct {
 	IP   string `json:"ip"`
 }
 
+// UploadToChaos upload new data to Chaos dataset
 func (r *Runner) UploadToChaos(reader io.Reader) error {
 	httpClient := &http.Client{
 		Transport: &http.Transport{
@@ -46,7 +48,11 @@ func (r *Runner) UploadToChaos(reader io.Reader) error {
 		return errors.Wrap(err, "could not make request")
 	}
 	defer func() {
-		io.Copy(ioutil.Discard, resp.Body)
+		_, err := io.Copy(ioutil.Discard, resp.Body)
+		if err != nil {
+			gologger.Warningf("Could not discard response body.", err)
+			return
+		}
 		resp.Body.Close()
 	}()
 

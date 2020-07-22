@@ -54,7 +54,10 @@ func (a *agent) enumerate(ctx context.Context, baseURL string) error {
 			time.Sleep(time.Duration((3 + rand.Intn(SleepRandIntn))) * time.Second)
 
 			if len(match1) > 0 {
-				a.enumerate(ctx, "http://www.sitedossier.com"+match1[1])
+				err := a.enumerate(ctx, "http://www.sitedossier.com"+match1[1])
+				if err != nil {
+					return err
+				}
 			}
 			return nil
 		}

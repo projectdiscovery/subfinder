@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
@@ -118,8 +116,7 @@ func doLogin(session *subscraping.Session) (string, error) {
 	}
 	// if not 200, bad credentials
 	if resp.StatusCode != http.StatusOK {
-		io.Copy(ioutil.Discard, resp.Body)
-		resp.Body.Close()
+		session.DiscardHTTPResponse(resp)
 		return "", fmt.Errorf("login failed, non-200 response from zoomeye")
 	}
 

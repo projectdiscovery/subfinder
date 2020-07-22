@@ -40,11 +40,15 @@ func (s *Source) getSubdomainsFromSQL(domain string, results chan subscraping.Re
 	}
 
 	pattern := "%." + domain
-	rows, err := db.Query(`SELECT DISTINCT ci.NAME_VALUE as domain
-	FROM certificate_identity ci
-	WHERE reverse(lower(ci.NAME_VALUE)) LIKE reverse(lower($1))
-	ORDER BY ci.NAME_VALUE`, pattern)
+	query := `SELECT DISTINCT ci.NAME_VALUE as domain FROM certificate_identity ci
+					  WHERE reverse(lower(ci.NAME_VALUE)) LIKE reverse(lower($1))
+					  ORDER BY ci.NAME_VALUE`
+	rows, err := db.Query(query, pattern)
 	if err != nil {
+		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		return false
+	}
+	if err := rows.Err(); err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		return false
 	}

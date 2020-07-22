@@ -53,8 +53,12 @@ func GetConfigDirectory() (string, error) {
 		return config, err
 	}
 	config = directory + "/.config/subfinder"
+
 	// Create All directory for subfinder even if they exist
-	os.MkdirAll(config, os.ModePerm)
+	err = os.MkdirAll(config, os.ModePerm)
+	if err != nil {
+		return config, err
+	}
 
 	return config, nil
 }
