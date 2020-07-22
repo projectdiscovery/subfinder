@@ -38,7 +38,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		regxTokens := regexp.MustCompile("/ip-address/(.*)/" + domain)
 		matchTokens := regxTokens.FindAllString(src, -1)
 
-		if len(matchTokens) <= 0 {
+		if len(matchTokens) == 0 {
 			close(results)
 			return
 		}
@@ -63,7 +63,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		regxTokens = regexp.MustCompile("/dns/(.*?)/" + domain)
 		matchTokens = regxTokens.FindAllString(src, -1)
-		if len(matchTokens) <= 0 {
+		if len(matchTokens) == 0 {
 			close(results)
 			return
 		}
@@ -88,7 +88,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		regxTokens = regexp.MustCompile("/subdomains/(.*?)/" + domain)
 		matchTokens = regxTokens.FindAllString(src, -1)
-		if len(matchTokens) <= 0 {
+		if len(matchTokens) == 0 {
 			close(results)
 			return
 		}
