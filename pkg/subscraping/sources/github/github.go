@@ -149,7 +149,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 			}
 		}
 
-		// Proccess the next link recursively
+		// Process the next link recursively
 		for _, link := range linksHeader {
 			if link.Rel == "next" {
 				nextURL, err := url.QueryUnescape(link.URL)
