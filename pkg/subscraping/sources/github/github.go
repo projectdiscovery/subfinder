@@ -77,10 +77,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 		}
 	}
 
-	headers := map[string]string{
-		"Accept":        "application/vnd.github.v3.text-match+json",
-		"Authorization": "token " + token.Hash,
-	}
+	headers := map[string]string{"Accept": "application/vnd.github.v3.text-match+json", "Authorization": "token " + token.Hash}
 
 	// Initial request to GitHub search
 	resp, err := session.Get(ctx, searchURL, "", headers)
