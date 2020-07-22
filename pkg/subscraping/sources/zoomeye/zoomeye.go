@@ -117,7 +117,7 @@ func doLogin(session *subscraping.Session) (string, error) {
 		return "", err
 	}
 	// if not 200, bad credentials
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		io.Copy(ioutil.Discard, resp.Body)
 		resp.Body.Close()
 		return "", fmt.Errorf("login failed, non-200 response from zoomeye")

@@ -14,6 +14,9 @@ import (
 	"github.com/pkg/errors"
 )
 
+// UploadToChaosTimeoutNano timeout to upload to Chaos in nanoseconds
+const UploadToChaosTimeoutNano = 600
+
 // JSONResult contains the result for a host in JSON format
 type JSONResult struct {
 	Host string `json:"host"`
@@ -29,7 +32,7 @@ func (r *Runner) UploadToChaos(reader io.Reader) error {
 				InsecureSkipVerify: true,
 			},
 		},
-		Timeout: time.Duration(600) * time.Second, // 10 minutes - uploads may take long
+		Timeout: time.Duration(UploadToChaosTimeoutNano) * time.Second, // 10 minutes - uploads may take long
 	}
 
 	request, err := http.NewRequest("POST", "https://dns.projectdiscovery.io/dns/add", reader)
@@ -47,7 +50,7 @@ func (r *Runner) UploadToChaos(reader io.Reader) error {
 		resp.Body.Close()
 	}()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("invalid status code received: %d", resp.StatusCode)
 	}
 	return nil

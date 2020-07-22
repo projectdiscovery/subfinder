@@ -10,6 +10,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// MultipleKeyPartsLength is the max length for multiple keys
+const MultipleKeyPartsLength = 2
+
+// YAMLIndentCharLength number of chars for identation on write YAML to file
+const YAMLIndentCharLength = 4
+
 // ConfigFile contains the fields stored in the configuration file
 type ConfigFile struct {
 	// Resolvers contains the list of resolvers to use while resolving
@@ -72,7 +78,7 @@ func (c ConfigFile) MarshalWrite(file string) error {
 
 	// Indent the spaces too
 	enc := yaml.NewEncoder(f)
-	enc.SetIndent(4)
+	enc.SetIndent(YAMLIndentCharLength)
 	err = enc.Encode(&c)
 	f.Close()
 	return err
@@ -104,7 +110,7 @@ func (c ConfigFile) GetKeys() subscraping.Keys {
 	if len(c.Censys) > 0 {
 		censysKeys := c.Censys[rand.Intn(len(c.Censys))]
 		parts := strings.Split(censysKeys, ":")
-		if len(parts) == 2 {
+		if len(parts) == MultipleKeyPartsLength {
 			keys.CensysToken = parts[0]
 			keys.CensysSecret = parts[1]
 		}
@@ -126,7 +132,7 @@ func (c ConfigFile) GetKeys() subscraping.Keys {
 	if len(c.IntelX) > 0 {
 		intelxKeys := c.IntelX[rand.Intn(len(c.IntelX))]
 		parts := strings.Split(intelxKeys, ":")
-		if len(parts) == 2 {
+		if len(parts) == MultipleKeyPartsLength {
 			keys.IntelXHost = parts[0]
 			keys.IntelXKey = parts[1]
 		}
@@ -135,7 +141,7 @@ func (c ConfigFile) GetKeys() subscraping.Keys {
 	if len(c.PassiveTotal) > 0 {
 		passiveTotalKeys := c.PassiveTotal[rand.Intn(len(c.PassiveTotal))]
 		parts := strings.Split(passiveTotalKeys, ":")
-		if len(parts) == 2 {
+		if len(parts) == MultipleKeyPartsLength {
 			keys.PassiveTotalUsername = parts[0]
 			keys.PassiveTotalPassword = parts[1]
 		}
@@ -159,7 +165,7 @@ func (c ConfigFile) GetKeys() subscraping.Keys {
 	if len(c.ZoomEye) > 0 {
 		zoomEyeKeys := c.ZoomEye[rand.Intn(len(c.ZoomEye))]
 		parts := strings.Split(zoomEyeKeys, ":")
-		if len(parts) == 2 {
+		if len(parts) == MultipleKeyPartsLength {
 			keys.ZoomEyeUsername = parts[0]
 			keys.ZoomEyePassword = parts[1]
 		}

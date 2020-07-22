@@ -11,6 +11,10 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
+// SleepRandIntn is the integer value to get the pseudo-random number
+// to sleep before find the next match
+const SleepRandIntn = 5
+
 var reNext = regexp.MustCompile("<a href=\"([A-Za-z0-9\\/.]+)\"><b>")
 
 type agent struct {
@@ -47,7 +51,7 @@ func (a *agent) enumerate(ctx context.Context, baseURL string) error {
 			}
 
 			match1 := reNext.FindStringSubmatch(src)
-			time.Sleep(time.Duration((3 + rand.Intn(5))) * time.Second)
+			time.Sleep(time.Duration((3 + rand.Intn(SleepRandIntn))) * time.Second)
 
 			if len(match1) > 0 {
 				a.enumerate(ctx, "http://www.sitedossier.com"+match1[1])

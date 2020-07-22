@@ -13,11 +13,14 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
+// CSRFSubMatchLength CSRF regex submatch length
+const CSRFSubMatchLength = 2
+
 var re = regexp.MustCompile("<input type=\"hidden\" name=\"csrfmiddlewaretoken\" value=\"(.*)\">")
 
 // getCSRFToken gets the CSRF Token from the page
 func getCSRFToken(page string) string {
-	if subs := re.FindStringSubmatch(page); len(subs) == 2 {
+	if subs := re.FindStringSubmatch(page); len(subs) == CSRFSubMatchLength {
 		return strings.TrimSpace(subs[1])
 	}
 	return ""
