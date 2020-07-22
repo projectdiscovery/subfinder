@@ -2,6 +2,7 @@ package runner
 
 import (
 	"bufio"
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -25,7 +26,7 @@ type JSONResult struct {
 }
 
 // UploadToChaos upload new data to Chaos dataset
-func (r *Runner) UploadToChaos(reader io.Reader) error {
+func (r *Runner) UploadToChaos(ctx context.Context, reader io.Reader) error {
 	httpClient := &http.Client{
 		Transport: &http.Transport{
 			MaxIdleConnsPerHost: 100,
@@ -37,7 +38,7 @@ func (r *Runner) UploadToChaos(reader io.Reader) error {
 		Timeout: time.Duration(UploadToChaosTimeoutNano) * time.Second, // 10 minutes - uploads may take long
 	}
 
-	request, err := http.NewRequest("POST", "https://dns.projectdiscovery.io/dns/add", reader)
+	request, err := http.NewRequestWithContext(ctx, "POST", "https://dns.projectdiscovery.io/dns/add", reader)
 	if err != nil {
 		return errors.Wrap(err, "could not create request")
 	}

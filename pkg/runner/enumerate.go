@@ -2,6 +2,7 @@ package runner
 
 import (
 	"bytes"
+	"context"
 	"os"
 	"strings"
 	"sync"
@@ -13,7 +14,7 @@ import (
 )
 
 // EnumerateSingleDomain performs subdomain enumeration against a single domain
-func (r *Runner) EnumerateSingleDomain(domain, output string, append bool) error {
+func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output string, append bool) error {
 	gologger.Infof("Enumerating subdomains for %s\n", domain)
 
 	// Get the API keys for sources from the configuration
@@ -123,7 +124,7 @@ func (r *Runner) EnumerateSingleDomain(domain, output string, append bool) error
 			gologger.Errorf("Could not prepare results for chaos %s\n", err)
 		} else {
 			// no error in writing host output, upload to chaos
-			err = r.UploadToChaos(buf)
+			err = r.UploadToChaos(ctx, buf)
 			if err != nil {
 				gologger.Errorf("Could not upload results to chaos %s\n", err)
 			} else {

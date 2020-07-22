@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/pkg/runner"
 )
@@ -14,7 +16,7 @@ func main() {
 		gologger.Fatalf("Could not create runner: %s\n", err)
 	}
 
-	err = newRunner.RunEnumeration()
+	err = newRunner.RunEnumeration(context.Background())
 	if err != nil {
 		gologger.Fatalf("Could not run enumeration: %s\n", err)
 	}
