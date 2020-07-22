@@ -20,7 +20,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
-		found := s.getSubdomainsFromSQL(ctx, domain, session, results)
+		found := s.getSubdomainsFromSQL(domain, results)
 		if found {
 			close(results)
 			return
@@ -32,7 +32,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	return results
 }
 
-func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, session *subscraping.Session, results chan subscraping.Result) bool {
+func (s *Source) getSubdomainsFromSQL(domain string, results chan subscraping.Result) bool {
 	db, err := sql.Open("postgres", "host=crt.sh user=guest dbname=certwatch sslmode=disable binary_parameters=yes")
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
