@@ -28,7 +28,7 @@ func NewTokenManager(keys []string) *Tokens {
 
 func (r *Tokens) setCurrentTokenExceeded(retryAfter int64) {
 	if r.current >= len(r.pool) {
-		r.current = r.current % len(r.pool)
+		r.current %= len(r.pool)
 	}
 	if r.pool[r.current].RetryAfter == 0 {
 		r.pool[r.current].ExceededTime = time.Now()
@@ -40,7 +40,7 @@ func (r *Tokens) Get() token {
 	resetExceededTokens(r)
 
 	if r.current >= len(r.pool) {
-		r.current = r.current % len(r.pool)
+		r.current %= len(r.pool)
 	}
 
 	result := r.pool[r.current]

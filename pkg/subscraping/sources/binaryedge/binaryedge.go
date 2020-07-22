@@ -93,7 +93,7 @@ func (s *Source) getSubdomains(ctx context.Context, domain string, remaining, cu
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 			}
 
-			*remaining = *remaining - 100
+			*remaining -= 100
 			if *remaining <= 0 {
 				return false
 			}

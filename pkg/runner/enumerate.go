@@ -140,9 +140,9 @@ func (r *Runner) EnumerateSingleDomain(domain, output string, append bool) error
 		// else append .txt
 		if r.options.OutputDirectory != "" {
 			if r.options.JSON {
-				output = output + ".json"
+				output += ".json"
 			} else {
-				output = output + ".txt"
+				output += ".txt"
 			}
 		}
 

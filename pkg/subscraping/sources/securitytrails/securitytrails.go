@@ -46,7 +46,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		for _, subdomain := range response.Subdomains {
 			if strings.HasSuffix(subdomain, ".") {
-				subdomain = subdomain + domain
+				subdomain += domain
 			} else {
 				subdomain = subdomain + "." + domain
 			}
