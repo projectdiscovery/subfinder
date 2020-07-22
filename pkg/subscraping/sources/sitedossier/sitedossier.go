@@ -15,7 +15,7 @@ import (
 // to sleep before find the next match
 const SleepRandIntn = 5
 
-var reNext = regexp.MustCompile("<a href=\"([A-Za-z0-9\\/.]+)\"><b>")
+var reNext = regexp.MustCompile(`<a href="([A-Za-z0-9/.]+)"><b>`)
 
 type agent struct {
 	results chan subscraping.Result
