@@ -41,7 +41,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 			return
 		}
-		jwt, err := doLogin(session)
+		jwt, err := doLogin(ctx, session)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			close(results)
@@ -96,7 +96,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // doLogin performs authentication on the ZoomEye API
-func doLogin(session *subscraping.Session) (string, error) {
+func doLogin(ctx context.Context, session *subscraping.Session) (string, error) {
 	creds := &zoomAuth{
 		User: session.Keys.ZoomEyeUsername,
 		Pass: session.Keys.ZoomEyePassword,
@@ -105,7 +105,7 @@ func doLogin(session *subscraping.Session) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	req, err := http.NewRequest("POST", "https://api.zoomeye.org/user/login", bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, "POST", "https://api.zoomeye.org/user/login", bytes.NewBuffer(body))
 	if err != nil {
 		return "", err
 	}
