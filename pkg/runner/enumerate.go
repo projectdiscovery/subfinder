@@ -130,7 +130,7 @@ func (r *Runner) EnumerateSingleDomain(domain, output string, append bool) error
 				gologger.Infof("Input processed successfully and subdomains with valid records will be updated to chaos dataset.\n")
 			}
 			// clear buffer
-			buf = nil
+			buf.Reset()
 		}
 	}
 	// In case the user has given an output file, write all the found
