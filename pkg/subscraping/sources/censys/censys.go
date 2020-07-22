@@ -36,7 +36,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 			return
 		}
-		var response response
+		var censysResponse response
 
 		currentPage := 1
 		for {
@@ -59,7 +59,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				return
 			}
 
-			err = jsoniter.NewDecoder(resp.Body).Decode(&response)
+			err = jsoniter.NewDecoder(resp.Body).Decode(&censysResponse)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				resp.Body.Close()
@@ -69,11 +69,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			resp.Body.Close()
 
 			// Exit the censys enumeration if max pages is reached
-			if currentPage >= response.Metadata.Pages || currentPage >= maxCensysPages {
+			if currentPage >= censysResponse.Metadata.Pages || currentPage >= maxCensysPages {
 				break
 			}
 
-			for _, res := range response.Results {
+			for _, res := range censysResponse.Results {
 				for _, part := range res.Data {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: part}
 				}

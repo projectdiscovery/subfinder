@@ -34,8 +34,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		response := response{}
-		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
+		securityTrailsResponse := response{}
+		err = jsoniter.NewDecoder(resp.Body).Decode(&securityTrailsResponse)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
@@ -44,7 +44,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 		resp.Body.Close()
 
-		for _, subdomain := range response.Subdomains {
+		for _, subdomain := range securityTrailsResponse.Subdomains {
 			if strings.HasSuffix(subdomain, ".") {
 				subdomain += domain
 			} else {
