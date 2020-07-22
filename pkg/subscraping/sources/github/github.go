@@ -102,7 +102,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 
 				data := response{}
 
-				// Marshall json reponse
+				// Marshall json response
 				err = jsoniter.NewDecoder(resp.Body).Decode(&data)
 				resp.Body.Close()
 				if err != nil {
@@ -172,11 +172,11 @@ func normalizeContent(content string) string {
 
 // Remove duplicates from string array
 func unique(arr []string) []string {
-    occured := map[string]bool{}
+    occurred := map[string]bool{}
     result := []string{}
     for e := range arr {
-        if occured[arr[e]] != true {
-            occured[arr[e]] = true
+        if occurred[arr[e]] != true {
+            occurred[arr[e]] = true
             result = append(result, arr[e])
         }
     }

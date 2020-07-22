@@ -72,7 +72,7 @@ func (r *Runner) EnumerateMultipleDomains(reader io.Reader) error {
 		}
 
 		var err error
-		// If the user has specifed an output file, use that output file instead
+		// If the user has specified an output file, use that output file instead
 		// of creating a new output file for each domain. Else create a new file
 		// for each domain in the directory.
 		if r.options.Output != "" {

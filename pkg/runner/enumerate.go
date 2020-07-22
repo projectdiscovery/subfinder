@@ -118,7 +118,7 @@ func (r *Runner) EnumerateSingleDomain(domain, output string, append bool) error
 	if r.options.ChaosUpload {
 		var buf = &bytes.Buffer{}
 		err := WriteHostOutput(uniqueMap, buf)
-		// If an error occurs, do not interrupt, continue to check if user specifed an output file
+		// If an error occurs, do not interrupt, continue to check if user specified an output file
 		if err != nil {
 			gologger.Errorf("Could not prepare results for chaos %s\n", err)
 		} else {

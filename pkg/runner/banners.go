@@ -7,8 +7,8 @@ import (
 )
 
 const banner = `
-        _     __ _         _         
-____  _| |__ / _(_)_ _  __| |___ _ _ 
+        _     __ _         _
+____  _| |__ / _(_)_ _  __| |___ _ _
 (_-< || | '_ \  _| | ' \/ _  / -_) '_|
 /__/\_,_|_.__/_| |_|_||_\__,_\___|_| v2
 `
@@ -41,7 +41,7 @@ func (options *Options) firstRunTasks() {
 	// Create the configuration file and display information
 	// about it to the user.
 	config := ConfigFile{
-		// Use the default list of resolvers by marshalling it to the config
+		// Use the default list of resolvers by marshaling it to the config
 		Resolvers: resolve.DefaultResolvers,
 		// Use the default list of passive sources
 		Sources: passive.DefaultSources,
