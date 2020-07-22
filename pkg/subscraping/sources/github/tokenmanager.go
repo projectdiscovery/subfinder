@@ -41,7 +41,7 @@ func (r *Tokens) setCurrentTokenExceeded(retryAfter int64) {
 }
 
 // Get returns a new token from the token pool
-func (r *Tokens) Get() (*Token) {
+func (r *Tokens) Get() *Token {
 	resetExceededTokens(r)
 
 	if r.current >= len(r.pool) {

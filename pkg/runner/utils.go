@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/projectdiscovery/gologger"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/pkg/errors"
+	"github.com/projectdiscovery/gologger"
 )
 
 // UploadToChaosTimeoutNano timeout to upload to Chaos in nanoseconds

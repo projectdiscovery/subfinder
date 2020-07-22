@@ -14,7 +14,7 @@ type resultObject struct {
 }
 
 type dataObject struct {
-	Items       []resultObject `json:"items"`
+	Items      []resultObject `json:"items"`
 	TotalCount int            `json:"total_count"`
 }
 
