@@ -27,8 +27,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	return results
 }
 
-func (s *Source) getData(ctx context.Context, URL string, session *subscraping.Session, results chan subscraping.Result) {
-	resp, err := session.NormalGetWithContext(ctx, URL)
+func (s *Source) getData(ctx context.Context, sourceURL string, session *subscraping.Session, results chan subscraping.Result) {
+	resp, err := session.NormalGetWithContext(ctx, sourceURL)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		session.DiscardHTTPResponse(resp)
