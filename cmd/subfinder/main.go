@@ -9,12 +9,12 @@ func main() {
 	// Parse the command line flags and read config files
 	options := runner.ParseOptions()
 
-	runner, err := runner.NewRunner(options)
+	newRunner, err := runner.NewRunner(options)
 	if err != nil {
 		gologger.Fatalf("Could not create runner: %s\n", err)
 	}
 
-	err = runner.RunEnumeration()
+	err = newRunner.RunEnumeration()
 	if err != nil {
 		gologger.Fatalf("Could not run enumeration: %s\n", err)
 	}
