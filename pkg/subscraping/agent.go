@@ -12,7 +12,7 @@ import (
 )
 
 // NewSession creates a new session object for a domain
-func NewSession(domain string, keys Keys, timeout int) (*Session, error) {
+func NewSession(domain string, keys *Keys, timeout int) (*Session, error) {
 	client := &http.Client{
 		Transport: &http.Transport{
 			MaxIdleConns:        100,

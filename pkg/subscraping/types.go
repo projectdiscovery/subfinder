@@ -22,7 +22,7 @@ type Session struct {
 	// Extractor is the regex for subdomains created for each domain
 	Extractor *regexp.Regexp
 	// Keys is the API keys for the application
-	Keys Keys
+	Keys *Keys
 	// Client is the current http client
 	Client *http.Client
 }

@@ -33,7 +33,7 @@ func (r *Runner) EnumerateSingleDomain(domain, output string, append bool) error
 	}
 
 	// Run the passive subdomain enumeration
-	passiveResults := r.passiveAgent.EnumerateSubdomains(domain, keys, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute)
+	passiveResults := r.passiveAgent.EnumerateSubdomains(domain, &keys, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)

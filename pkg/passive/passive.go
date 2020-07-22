@@ -11,7 +11,7 @@ import (
 )
 
 // EnumerateSubdomains enumerates all the subdomains for a given domain
-func (a *Agent) EnumerateSubdomains(domain string, keys subscraping.Keys, timeout int, maxEnumTime time.Duration) chan subscraping.Result {
+func (a *Agent) EnumerateSubdomains(domain string, keys *subscraping.Keys, timeout int, maxEnumTime time.Duration) chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {

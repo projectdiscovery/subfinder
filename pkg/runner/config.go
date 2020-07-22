@@ -70,7 +70,7 @@ func CheckConfigExists(configPath string) bool {
 }
 
 // MarshalWrite writes the marshaled yaml config to disk
-func (c ConfigFile) MarshalWrite(file string) error {
+func (c *ConfigFile) MarshalWrite(file string) error {
 	f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE, 0755)
 	if err != nil {
 		return err
@@ -100,7 +100,7 @@ func UnmarshalRead(file string) (ConfigFile, error) {
 // GetKeys gets the API keys from config file and creates a Keys struct
 // We use random selection of api keys from the list of keys supplied.
 // Keys that require 2 options are separated by colon (:).
-func (c ConfigFile) GetKeys() subscraping.Keys {
+func (c *ConfigFile) GetKeys() subscraping.Keys {
 	keys := subscraping.Keys{}
 
 	if len(c.Binaryedge) > 0 {
