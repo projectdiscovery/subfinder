@@ -66,10 +66,8 @@ func (s *Session) Get(ctx context.Context, url string, cookies string, headers m
 		req.Header.Set("Cookie", cookies)
 	}
 
-	if headers != nil {
-		for key, value := range headers {
-			req.Header.Set(key, value)
-		}
+	for key, value := range headers {
+		req.Header.Set(key, value)
 	}
 
 	return httpRequestWrapper(s.Client, req)
