@@ -165,8 +165,8 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 // Normalize content before matching, query unescape, remove tabs and new line chars
 func normalizeContent(content string) string {
 	normalizedContent, _ := url.QueryUnescape(content)
-	normalizedContent = strings.Replace(normalizedContent, "\\t", "", -1)
-	normalizedContent = strings.Replace(normalizedContent, "\\n", "", -1)
+	normalizedContent = strings.ReplaceAll(normalizedContent, "\\t", "")
+	normalizedContent = strings.ReplaceAll(normalizedContent, "\\n", "")
 	return normalizedContent
 }
 
@@ -195,13 +195,13 @@ func matches(regexp *regexp.Regexp, content string) []string {
 
 // Raw URL to get the files code and match for subdomains
 func rawUrl(htmlUrl string) string {
-	domain := strings.Replace(htmlUrl, "https://github.com/", "https://raw.githubusercontent.com/", -1)
-	return strings.Replace(domain, "/blob/", "/", -1)
+	domain := strings.ReplaceAll(htmlUrl, "https://github.com/", "https://raw.githubusercontent.com/")
+	return strings.ReplaceAll(domain, "/blob/", "/")
 }
 
 // Domain regular expression to match subdomains in github files code
 func (s *Source) DomainRegexp(domain string) *regexp.Regexp {
-	rdomain := strings.Replace(domain, ".", "\\.", -1)
+	rdomain := strings.ReplaceAll(domain, ".", "\\.")
 	return regexp.MustCompile("(\\w+[.])*" + rdomain)
 }
 

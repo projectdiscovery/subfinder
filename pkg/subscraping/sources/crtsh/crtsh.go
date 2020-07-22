@@ -79,7 +79,7 @@ func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, sessi
 	resp.Body.Close()
 
 	// Also replace all newlines
-	src := strings.Replace(string(body), "\\n", " ", -1)
+	src := strings.ReplaceAll(string(body), "\\n", " ",)
 
 	for _, subdomain := range session.Extractor.FindAllString(src, -1) {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
