@@ -36,7 +36,7 @@ func (a *Agent) EnumerateSubdomains(domain string, keys subscraping.Keys, timeou
 					results <- resp
 				}
 
-				duration := time.Now().Sub(now)
+				duration := time.Since(now)
 				timeTakenMutex.Lock()
 				timeTaken[source] = fmt.Sprintf("Source took %s for enumeration\n", duration)
 				timeTakenMutex.Unlock()
