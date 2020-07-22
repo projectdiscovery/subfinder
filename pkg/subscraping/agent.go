@@ -37,8 +37,8 @@ func NewSession(domain string, keys *Keys, timeout int) (*Session, error) {
 }
 
 // NormalGetWithContext makes a normal GET request to a URL with context
-func (s *Session) NormalGetWithContext(ctx context.Context, url string) (*http.Response, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+func (s *Session) NormalGetWithContext(ctx context.Context, getURL string) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", getURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -52,8 +52,8 @@ func (s *Session) NormalGetWithContext(ctx context.Context, url string) (*http.R
 }
 
 // Get makes a GET request to a URL
-func (s *Session) Get(ctx context.Context, url string, cookies string, headers map[string]string) (*http.Response, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+func (s *Session) Get(ctx context.Context, getURL string, cookies string, headers map[string]string) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", getURL, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -175,7 +175,7 @@ func normalizeContent(content string) string {
 func unique(arr []string) []string {
 	occurred := map[string]bool{}
 	result := []string{}
-	for e := range arr {		
+	for e := range arr {
 		if !occurred[arr[e]] {
 			occurred[arr[e]] = true
 			result = append(result, arr[e])
@@ -185,9 +185,9 @@ func unique(arr []string) []string {
 }
 
 // Find matches by regular expression in any content
-func matches(regexp *regexp.Regexp, content string) []string {
+func matches(regex *regexp.Regexp, content string) []string {
 	var matches []string
-	match := regexp.FindAllString(content, -1)
+	match := regex.FindAllString(content, -1)
 	if len(match) > 0 {
 		matches = unique(match)
 	}
