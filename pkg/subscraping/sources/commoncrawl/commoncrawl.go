@@ -75,7 +75,7 @@ func (s *Source) Name() string {
 	return "commoncrawl"
 }
 
-func (s *Source) getSubdomains(ctx context.Context, searchURL string, domain string, session *subscraping.Session, results chan subscraping.Result) bool {
+func (s *Source) getSubdomains(ctx context.Context, searchURL, domain string, session *subscraping.Session, results chan subscraping.Result) bool {
 	for {
 		select {
 		case <-ctx.Done():
