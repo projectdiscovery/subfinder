@@ -48,7 +48,6 @@ func (s *Source) getData(ctx context.Context, URL string, session *subscraping.S
 	for _, subdomain := range session.Extractor.FindAllString(src, -1) {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 	}
-	return
 }
 
 // Name returns the name of the source
