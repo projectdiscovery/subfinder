@@ -80,7 +80,7 @@ func (s *Session) DiscardHTTPResponse(response *http.Response) {
 	if response != nil {
 		_, err := io.Copy(ioutil.Discard, response.Body)
 		if err != nil {
-			gologger.Warningf("Could not discard response body.", err)
+			gologger.Warningf("Could not discard response body: %s\n", err)
 			return
 		}
 		response.Body.Close()
