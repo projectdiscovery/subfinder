@@ -50,7 +50,7 @@ func (r *Runner) UploadToChaos(reader io.Reader) error {
 	defer func() {
 		_, err := io.Copy(ioutil.Discard, resp.Body)
 		if err != nil {
-			gologger.Warningf("Could not discard response body.", err)
+			gologger.Warningf("Could not discard response body: %s\n", err)
 			return
 		}
 		resp.Body.Close()
