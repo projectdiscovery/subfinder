@@ -130,13 +130,13 @@ func listSources(options *Options) {
 	needsKey := make(map[string]interface{})
 	keysElem := reflect.ValueOf(&keys).Elem()
 	for i := 0; i < keysElem.NumField(); i++ {
-			needsKey[strings.ToLower(keysElem.Type().Field(i).Name)] = keysElem.Field(i).Interface()
+		needsKey[strings.ToLower(keysElem.Type().Field(i).Name)] = keysElem.Field(i).Interface()
 	}
 
 	for _, source := range options.YAMLConfig.Sources {
 		message := "%s\n"
 		if _, ok := needsKey[source]; ok {
-				message = "%s *\n"
+			message = "%s *\n"
 		}
 		gologger.Silentf(message, source)
 	}

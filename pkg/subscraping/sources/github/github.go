@@ -24,8 +24,8 @@ type textMatch struct {
 }
 
 type item struct {
-	Name    		string `json:"name"`
-	HtmlUrl 		string `json:"html_url"`
+	Name        string      `json:"name"`
+	HtmlUrl     string      `json:"html_url"`
 	TextMatches []textMatch `json:"text_matches"`
 }
 
@@ -96,68 +96,68 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 			tokens.setCurrentTokenExceeded(retryAfterSeconds)
 
 			s.enumerate(ctx, searchURL, domainRegexp, tokens, session, results)
-			} else {
-				// Links header, first, next, last...
-				linksHeader := linkheader.Parse(resp.Header.Get("Link"))
+		} else {
+			// Links header, first, next, last...
+			linksHeader := linkheader.Parse(resp.Header.Get("Link"))
 
-				data := response{}
+			data := response{}
 
-				// Marshall json response
-				err = jsoniter.NewDecoder(resp.Body).Decode(&data)
-				resp.Body.Close()
+			// Marshall json response
+			err = jsoniter.NewDecoder(resp.Body).Decode(&data)
+			resp.Body.Close()
+			if err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				return
+			}
+
+			// Response items iteration
+			for _, item := range data.Items {
+				resp, err := session.NormalGetWithContext(ctx, rawUrl(item.HtmlUrl))
 				if err != nil {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-					return
+					if resp != nil && resp.StatusCode != http.StatusNotFound {
+						session.DiscardHttpResponse(resp)
+						results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+						return
+					}
 				}
 
-				// Response items iteration
-				for _, item := range data.Items {
-					resp, err := session.NormalGetWithContext(ctx, rawUrl(item.HtmlUrl))
+				var subdomains []string
+
+				if resp.StatusCode == http.StatusOK {
+					// Get the item code from the raw file url
+					code, err := ioutil.ReadAll(resp.Body)
+					resp.Body.Close()
 					if err != nil {
-						if resp != nil && resp.StatusCode != http.StatusNotFound {
-							session.DiscardHttpResponse(resp)
-							results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-							return
-						}
+						results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+						return
 					}
-
-					var subdomains []string
-
-					if resp.StatusCode == http.StatusOK {
-						// Get the item code from the raw file url
-						code, err := ioutil.ReadAll(resp.Body)
-						resp.Body.Close()
-						if err != nil {
-							results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-							return
-						}
-						// Search for domain matches in the code
-						subdomains = append(subdomains, matches(domainRegexp, normalizeContent(string(code)))...)
-					}
-
-					// Text matches iteration per item
-					for _, textMatch := range item.TextMatches {
-						// Search for domain matches in the text fragment
-						subdomains = append(subdomains, matches(domainRegexp, normalizeContent(textMatch.Fragment))...)
-					}
-
-					for _, subdomain := range unique(subdomains) {
-						results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-					}
+					// Search for domain matches in the code
+					subdomains = append(subdomains, matches(domainRegexp, normalizeContent(string(code)))...)
 				}
 
-				// Proccess the next link recursively
-				for _, link := range linksHeader {
-					if link.Rel == "next" {
-						nextUrl, err := url.QueryUnescape(link.URL)
-						if err != nil {
-							results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-							return
-						}
-						s.enumerate(ctx, nextUrl, domainRegexp, tokens, session, results)
-					}
+				// Text matches iteration per item
+				for _, textMatch := range item.TextMatches {
+					// Search for domain matches in the text fragment
+					subdomains = append(subdomains, matches(domainRegexp, normalizeContent(textMatch.Fragment))...)
+				}
+
+				for _, subdomain := range unique(subdomains) {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 				}
 			}
+
+			// Proccess the next link recursively
+			for _, link := range linksHeader {
+				if link.Rel == "next" {
+					nextUrl, err := url.QueryUnescape(link.URL)
+					if err != nil {
+						results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+						return
+					}
+					s.enumerate(ctx, nextUrl, domainRegexp, tokens, session, results)
+				}
+			}
+		}
 	}
 
 }
@@ -172,15 +172,15 @@ func normalizeContent(content string) string {
 
 // Remove duplicates from string array
 func unique(arr []string) []string {
-    occurred := map[string]bool{}
-    result := []string{}
-    for e := range arr {
-        if occurred[arr[e]] != true {
-            occurred[arr[e]] = true
-            result = append(result, arr[e])
-        }
-    }
-    return result
+	occurred := map[string]bool{}
+	result := []string{}
+	for e := range arr {
+		if occurred[arr[e]] != true {
+			occurred[arr[e]] = true
+			result = append(result, arr[e])
+		}
+	}
+	return result
 }
 
 // Find matches by regular expression in any content

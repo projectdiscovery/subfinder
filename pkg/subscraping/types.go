@@ -29,24 +29,24 @@ type Session struct {
 
 // Keys contains the current API Keys we have in store
 type Keys struct {
-	Binaryedge           string `json:"binaryedge"`
-	CensysToken          string `json:"censysUsername"`
-	CensysSecret         string `json:"censysPassword"`
-	Certspotter          string `json:"certspotter"`
-	Chaos                string `json:"chaos"`
-	DNSDB                string `json:"dnsdb"`
+	Binaryedge           string   `json:"binaryedge"`
+	CensysToken          string   `json:"censysUsername"`
+	CensysSecret         string   `json:"censysPassword"`
+	Certspotter          string   `json:"certspotter"`
+	Chaos                string   `json:"chaos"`
+	DNSDB                string   `json:"dnsdb"`
 	GitHub               []string `json:"github"`
-	IntelXHost           string `json:"intelXHost"`
-	IntelXKey            string `json:"intelXKey"`
-	PassiveTotalUsername string `json:"passivetotal_username"`
-	PassiveTotalPassword string `json:"passivetotal_password"`
-	Securitytrails       string `json:"securitytrails"`
-	Shodan               string `json:"shodan"`
-	Spyse                string `json:"spyse"`
-	URLScan              string `json:"urlscan"`
-	Virustotal           string `json:"virustotal"`
-	ZoomEyeUsername      string `json:"zoomeye_username"`
-	ZoomEyePassword      string `json:"zoomeye_password"`
+	IntelXHost           string   `json:"intelXHost"`
+	IntelXKey            string   `json:"intelXKey"`
+	PassiveTotalUsername string   `json:"passivetotal_username"`
+	PassiveTotalPassword string   `json:"passivetotal_password"`
+	Securitytrails       string   `json:"securitytrails"`
+	Shodan               string   `json:"shodan"`
+	Spyse                string   `json:"spyse"`
+	URLScan              string   `json:"urlscan"`
+	Virustotal           string   `json:"virustotal"`
+	ZoomEyeUsername      string   `json:"zoomeye_username"`
+	ZoomEyePassword      string   `json:"zoomeye_password"`
 }
 
 // Result is a result structure returned by a source
