@@ -63,7 +63,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		resp, err := http.Post(searchURL, "application/json", bytes.NewBuffer(body))
+		resp, err := http.Post(searchURL, "application/json", bytes.NewBuffer(body)) //nolint:noctx // needs refactor
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
@@ -77,6 +77,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 			return
 		}
+
+		resp.Body.Close()
 
 		resultsURL := fmt.Sprintf("https://%s/phonebook/search/result?k=%s&id=%s&limit=10000", session.Keys.IntelXHost, session.Keys.IntelXKey, response.ID)
 		status := 0
