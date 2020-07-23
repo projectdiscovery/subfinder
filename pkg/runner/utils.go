@@ -2,65 +2,16 @@ package runner
 
 import (
 	"bufio"
-	"context"
-	"crypto/tls"
-	"fmt"
 	"io"
-	"io/ioutil"
-	"net/http"
 	"strings"
-	"time"
 
 	jsoniter "github.com/json-iterator/go"
-	"github.com/pkg/errors"
-	"github.com/projectdiscovery/gologger"
 )
-
-// UploadToChaosTimeoutNano timeout to upload to Chaos in nanoseconds
-const UploadToChaosTimeoutNano = 600
 
 // JSONResult contains the result for a host in JSON format
 type JSONResult struct {
 	Host string `json:"host"`
 	IP   string `json:"ip"`
-}
-
-// UploadToChaos upload new data to Chaos dataset
-func (r *Runner) UploadToChaos(ctx context.Context, reader io.Reader) error {
-	httpClient := &http.Client{
-		Transport: &http.Transport{
-			MaxIdleConnsPerHost: 100,
-			MaxIdleConns:        100,
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-		},
-		Timeout: time.Duration(UploadToChaosTimeoutNano) * time.Second, // 10 minutes - uploads may take long
-	}
-
-	request, err := http.NewRequestWithContext(ctx, "POST", "https://dns.projectdiscovery.io/dns/add", reader)
-	if err != nil {
-		return errors.Wrap(err, "could not create request")
-	}
-	request.Header.Set("Authorization", r.options.YAMLConfig.GetKeys().Chaos)
-
-	resp, err := httpClient.Do(request)
-	if err != nil {
-		return errors.Wrap(err, "could not make request")
-	}
-	defer func() {
-		_, err := io.Copy(ioutil.Discard, resp.Body)
-		if err != nil {
-			gologger.Warningf("Could not discard response body: %s\n", err)
-			return
-		}
-		resp.Body.Close()
-	}()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("invalid status code received: %d", resp.StatusCode)
-	}
-	return nil
 }
 
 // WriteHostOutput writes the output list of subdomain to an io.Writer
