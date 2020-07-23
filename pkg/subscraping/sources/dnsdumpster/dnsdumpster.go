@@ -25,13 +25,6 @@ func getCSRFToken(page string) string {
 
 // postForm posts a form for a domain and returns the response
 func postForm(ctx context.Context, session *subscraping.Session, token, domain string) (string, error) {
-	// dial := net.Dialer{}
-	// client := &http.Client{
-	// 	Transport: &http.Transport{
-	// 		DialContext:         dial.DialContext,
-	// 		TLSHandshakeTimeout: 10 * time.Second,
-	// 	},
-	// }
 	params := url.Values{
 		"csrfmiddlewaretoken": {token},
 		"targetip":            {domain},
