@@ -14,7 +14,7 @@ import (
 )
 
 // EnumerateSingleDomain performs subdomain enumeration against a single domain
-func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output string, append bool) error {
+func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output string, appendToFile bool) error {
 	gologger.Infof("Enumerating subdomains for %s\n", domain)
 
 	// Get the API keys for sources from the configuration
@@ -149,7 +149,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 
 		var file *os.File
 		var err error
-		if append {
+		if appendToFile {
 			file, err = os.OpenFile(output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		} else {
 			file, err = os.Create(output)
