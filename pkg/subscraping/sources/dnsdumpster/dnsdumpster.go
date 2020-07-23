@@ -34,10 +34,10 @@ func postForm(ctx context.Context, session *subscraping.Session, token, domain s
 		ctx,
 		"POST",
 		"https://dnsdumpster.com/",
-		"csrftoken=" + token +"; Domain=dnsdumpster.com",
+		"csrftoken="+token+"; Domain=dnsdumpster.com",
 		map[string]string{
 			"Content-Type": "application/x-www-form-urlencoded",
-			"Referer": "https://dnsdumpster.com",
+			"Referer":      "https://dnsdumpster.com",
 			"X-CSRF-Token": token,
 		},
 		strings.NewReader(params.Encode()),

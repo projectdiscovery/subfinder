@@ -1,16 +1,16 @@
 package runner
 
 import (
-  "context"
-  "crypto/tls"
-  "fmt"
-  "io"
-  "io/ioutil"
-  "net/http"
-  "time"
+	"context"
+	"crypto/tls"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"time"
 
-  "github.com/pkg/errors"
-  "github.com/projectdiscovery/gologger"
+	"github.com/pkg/errors"
+	"github.com/projectdiscovery/gologger"
 )
 
 // UploadToChaosTimeoutNano timeout to upload to Chaos in nanoseconds
