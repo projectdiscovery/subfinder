@@ -28,8 +28,10 @@ type spyseResult struct {
 	Error []errorObject `json:"error"`
 }
 
+// Source is the passive scraping agent
 type Source struct{}
 
+// Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 

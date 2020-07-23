@@ -32,7 +32,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 
 		for currentPage := 0; currentPage <= 10; currentPage++ {
-			resp, err := session.NormalGetWithContext(ctx, "https://api.shodan.io/shodan/host/search?query=hostname:"+domain+"&page="+strconv.Itoa(currentPage)+"&key="+session.Keys.Shodan)
+			resp, err := session.SimpleGet(ctx, "https://api.shodan.io/shodan/host/search?query=hostname:"+domain+"&page="+strconv.Itoa(currentPage)+"&key="+session.Keys.Shodan)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				session.DiscardHTTPResponse(resp)

@@ -67,7 +67,7 @@ func (s *Source) getSubdomainsFromSQL(domain string, results chan subscraping.Re
 }
 
 func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, session *subscraping.Session, results chan subscraping.Result) bool {
-	resp, err := session.NormalGetWithContext(ctx, fmt.Sprintf("https://crt.sh/?q=%%25.%s&output=json", domain))
+	resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://crt.sh/?q=%%25.%s&output=json", domain))
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		session.DiscardHTTPResponse(resp)

@@ -3,7 +3,6 @@ package censys
 import (
 	"bytes"
 	"context"
-	"net/http"
 	"strconv"
 
 	jsoniter "github.com/json-iterator/go"
@@ -42,19 +41,19 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		for {
 			var request = []byte(`{"query":"` + domain + `", "page":` + strconv.Itoa(currentPage) + `, "fields":["parsed.names","parsed.extensions.subject_alt_name.dns_names"], "flatten":true}`)
 
-			req, err := http.NewRequestWithContext(ctx, "POST", "https://www.censys.io/api/v1/search/certificates", bytes.NewReader(request))
-			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				close(results)
-				return
-			}
-			req.SetBasicAuth(session.Keys.CensysToken, session.Keys.CensysSecret)
-			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
+			resp, err := session.HTTPRequest(
+				ctx,
+				"POST",
+				"https://www.censys.io/api/v1/search/certificates",
+				"",
+				map[string]string{"Content-Type": "application/json", "Accept": "application/json"},
+				bytes.NewReader(request),
+				subscraping.BasicAuth{Username: session.Keys.CensysToken, Password: session.Keys.CensysSecret},
+			)
 
-			resp, err := session.Client.Do(req)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				session.DiscardHTTPResponse(resp)
 				close(results)
 				return
 			}

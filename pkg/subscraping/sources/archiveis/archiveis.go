@@ -24,7 +24,7 @@ func (a *ArchiveIs) enumerate(ctx context.Context, baseURL string) {
 	default:
 	}
 
-	resp, err := a.Session.NormalGetWithContext(ctx, baseURL)
+	resp, err := a.Session.SimpleGet(ctx, baseURL)
 	if err != nil {
 		a.Results <- subscraping.Result{Source: "archiveis", Type: subscraping.Error, Error: err}
 		a.Session.DiscardHTTPResponse(resp)

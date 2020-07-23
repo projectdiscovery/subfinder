@@ -105,19 +105,10 @@ func doLogin(ctx context.Context, session *subscraping.Session) (string, error) 
 	if err != nil {
 		return "", err
 	}
-	req, err := http.NewRequestWithContext(ctx, "POST", "https://api.zoomeye.org/user/login", bytes.NewBuffer(body))
+	resp, err := session.SimplePost(ctx, "https://api.zoomeye.org/user/login", "application/json", bytes.NewBuffer(body))
 	if err != nil {
-		return "", err
-	}
-	req.Header.Add("Content-Type", "application/json")
-	resp, err := session.Client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	// if not 200, bad credentials
-	if resp.StatusCode != http.StatusOK {
 		session.DiscardHTTPResponse(resp)
-		return "", fmt.Errorf("login failed, non-200 response from zoomeye")
+		return "", err
 	}
 
 	defer resp.Body.Close()

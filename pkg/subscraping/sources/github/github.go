@@ -112,7 +112,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 
 		// Response items iteration
 		for _, item := range data.Items {
-			resp, err := session.NormalGetWithContext(ctx, rawURL(item.HTMLURL))
+			resp, err := session.SimpleGet(ctx, rawURL(item.HTMLURL))
 			if err != nil {
 				if resp != nil && resp.StatusCode != http.StatusNotFound {
 					session.DiscardHTTPResponse(resp)

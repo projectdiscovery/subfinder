@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
@@ -63,7 +62,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		resp, err := http.Post(searchURL, "application/json", bytes.NewBuffer(body)) //nolint:noctx // needs refactor
+		resp, err := session.SimplePost(ctx, searchURL, "application/json", bytes.NewBuffer(body))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)

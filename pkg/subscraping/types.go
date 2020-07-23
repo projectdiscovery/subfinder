@@ -6,6 +6,12 @@ import (
 	"regexp"
 )
 
+// BasicAuth request's Authorization header
+type BasicAuth struct {
+	Username string
+	Password string
+}
+
 // Source is an interface inherited by each passive source
 type Source interface {
 	// Run takes a domain as argument and a session object
