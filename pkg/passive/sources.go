@@ -85,7 +85,7 @@ func New(sources, exclusions []string) *Agent {
 }
 
 // addSources adds the given list of sources to the source array
-func (a *Agent) addSources(sources []string) { //nolint:funlen,addSources
+func (a *Agent) addSources(sources []string) {
 	for _, source := range sources {
 		switch source {
 		case "alienvault":
