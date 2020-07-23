@@ -101,7 +101,7 @@ func (r *ResolutionPool) resolveWorker() {
 
 		for _, host := range hosts {
 			// Ignore the host if it exists in wildcard ips map
-			if _, ok := r.wildcardIPs[host]; ok {
+			if _, ok := r.wildcardIPs[host]; ok { //nolint:staticcheck //search alternatives for "comma ok"
 				continue
 			}
 		}
