@@ -1,7 +1,7 @@
 # dockerhub-push pushes docker build to dockerhub automatically
 # on the creation of a new release
 name: Publish to Dockerhub on creation of a new release
-on: 
+on:
   release:
     types: [published]
 jobs:
