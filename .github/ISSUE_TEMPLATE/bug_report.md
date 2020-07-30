@@ -17,9 +17,4 @@ Include the version of subfinder you are using, `subfinder -version`
 
 
 **Screenshots**
-Add screenshots of the error for a better context. 
-
-
-
-**Additional context**
-Add any other context about the problem here.
+Add screenshots of the error for a better context.
