@@ -36,10 +36,10 @@ sources:
   - spyse
   - threatcrowd
   - threatminer
-  - urlscan
   - virustotal
   - waybackarchive
   - zoomeye
+
 censys:
   - <key-here>
 binaryedge:
@@ -55,8 +55,6 @@ passivetotal:
 securitytrails:
   - <key-here>
 virustotal:
-  - <key-here>
-urlscan:
   - <key-here>
 chaos:
   - <key-here>
