@@ -21,7 +21,8 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/passivetotal"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/rapiddns"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/securitytrails"
-	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/shodan"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/shodan/shodan"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/shodan/shodandnsdb"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/sitedossier"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/spyse"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/sublist3r"
@@ -54,6 +55,7 @@ var DefaultSources = []string{
 	"rapiddns",
 	"securitytrails",
 	"shodan",
+	"shodandnsdb",
 	"sitedossier",
 	"spyse",
 	"sublist3r",
@@ -126,6 +128,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &securitytrails.Source{}
 		case "shodan":
 			a.sources[source] = &shodan.Source{}
+		case "shodandnsdb":
+			a.sources[source] = &shodandnsdb.Source{}
 		case "sitedossier":
 			a.sources[source] = &sitedossier.Source{}
 		case "spyse":

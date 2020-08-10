@@ -53,28 +53,28 @@ This will display help for the tool. Here are all the switches it supports.
 
 | Flag | Description | Example |
 |------|-------------|---------|
-| -cd | Upload results to the Chaos API (api-key required) | subfinder -d uber.com -cd | 
-| -config string | Configuration file for API Keys, etc  | subfinder -config config.yaml | 
-| -d | Domain to find subdomains for | subfinder -d uber.com | 
-| -dL  | File containing list of domains to enumerate | subfinder -dL hackerone-hosts.txt | 
-| -exclude-sources | List of sources to exclude from enumeration | subfinder -exclude-sources archiveis | 
-| -max-time | Minutes to wait for enumeration results (default 10) | subfinder -max-time 1 | 
-| -nC | Don't Use colors in output | subfinder -nC | 
-| -nW | Remove Wildcard & Dead Subdomains from output | subfinder -nW | 
-| -ls | List all available sources | subfinder -ls | 
-| -o  | File to write output to (optional) | subfinder -o output.txt | 
-| -oD | Directory to write enumeration results to (optional) | subfinder -oD ~/outputs | 
+| -cd | Upload results to the Chaos API (api-key required) | subfinder -d uber.com -cd |
+| -config string | Configuration file for API Keys, etc  | subfinder -config config.yaml |
+| -d | Domain to find subdomains for | subfinder -d uber.com |
+| -dL  | File containing list of domains to enumerate | subfinder -dL hackerone-hosts.txt |
+| -exclude-sources | List of sources to exclude from enumeration | subfinder -exclude-sources archiveis |
+| -max-time | Minutes to wait for enumeration results (default 10) | subfinder -max-time 1 |
+| -nC | Don't Use colors in output | subfinder -nC |
+| -nW | Remove Wildcard & Dead Subdomains from output | subfinder -nW |
+| -ls | List all available sources | subfinder -ls |
+| -o  | File to write output to (optional) | subfinder -o output.txt |
+| -oD | Directory to write enumeration results to (optional) | subfinder -oD ~/outputs |
 | -oI | Write output in Host,IP format | subfinder -oI |
 | -oJ | Write output in JSON lines Format | subfinder -oJ |
-| -r | Comma-separated list of resolvers to use | subfinder -r 1.1.1.1,1.0.0.1 | 
+| -r | Comma-separated list of resolvers to use | subfinder -r 1.1.1.1,1.0.0.1 |
 | -rL | Text file containing list of resolvers to use | subfinder -rL resolvers.txt
-| -silent | Show only subdomains in output | subfinder -silent | 
-| -sources | Comma separated list of sources to use | subfinder -sources shodan,censys | 
-| -t | Number of concurrent goroutines for resolving (default 10) | subfinder -t 100 | 
-| -timeout | Seconds to wait before timing out (default 30) | subfinder -timeout 30 | 
-| -v | 	Show Verbose output | subfinder -v | 
-| -version | Show current program version | subfinder -version | 
-  
+| -silent | Show only subdomains in output | subfinder -silent |
+| -sources | Comma separated list of sources to use | subfinder -sources shodan,censys |
+| -t | Number of concurrent goroutines for resolving (default 10) | subfinder -t 100 |
+| -timeout | Seconds to wait before timing out (default 30) | subfinder -timeout 30 |
+| -v | 	Show Verbose output | subfinder -v |
+| -version | Show current program version | subfinder -version |
+
 
 # Installation Instructions
 
@@ -90,7 +90,7 @@ The installation is easy. You can download the pre-built binaries for different 
 
 ### From Source
 
-subfinder requires go1.13+ to install successfully. Run the following command to get the repo - 
+subfinder requires go1.13+ to install successfully. Run the following command to get the repo -
 
 ```bash
 GO111MODULE=on go get -v github.com/projectdiscovery/subfinder/cmd/subfinder
@@ -135,7 +135,7 @@ Theses values are stored in the `$HOME/.config/subfinder/config.yaml` file which
 
 For sources that require multiple keys, namely `Censys`, `Passivetotal`, they can be added by separating them via a colon (:).
 
-An example config file - 
+An example config file -
 
 ```yaml
 resolvers:
@@ -153,10 +153,12 @@ binaryedge:
 censys:
   - ac244e2f-b635-4581-878a-33f4e79a2c13:dd510d6e-1b6e-4655-83f6-f347b363def9
 certspotter: []
-passivetotal: 
+passivetotal:
   - sample-email@user.com:sample_password
 securitytrails: []
 shodan:
+  - AAAAClP1bJJSRMEYJazgwhJKrggRwKA
+shodandnsdb:
   - AAAAClP1bJJSRMEYJazgwhJKrggRwKA
 github:
   - d23a554bbc1aabb208c9acfbd2dd41ce7fc9db39
@@ -224,9 +226,9 @@ output.txt
 If you want upload your data to chaos dataset, you can use `-cd` flag with your scan, chaos will resolve all the input and add valid subdomains to public dataset, which you can access on the go using [chaos-client](https://github.com/projectdiscovery/chaos-client)
 
 ```bash
-> subfinder -d hackerone.com -cd 
+> subfinder -d hackerone.com -cd
 
-root@b0x:~# subfinder -d hackerone.com -cd 
+root@b0x:~# subfinder -d hackerone.com -cd
 
 www.hackerone.com
 api.hackerone.com
@@ -236,7 +238,7 @@ staging.hackerone.com
 [INF] Input processed successfully and subdomains with valid records will be updated to chaos dataset.
 ```
 
-You can also get output in json format using `-oJ` switch. This switch saves the output in the JSON lines format. 
+You can also get output in json format using `-oJ` switch. This switch saves the output in the JSON lines format.
 
 If you use the JSON format, or the `Host:IP` format, then it becomes mandatory for you to use the **-nW** format as resolving is essential for these output format. By default, resolving the found subdomains is disabled.
 
@@ -256,11 +258,11 @@ You can specify custom resolvers too.
 > subfinder -d freelancer.com -o result.txt -nW -v -rL resolvers.txt
 ```
 
-**The new highlight of this release is the addition of stdin/stdout features.** Now, domains can be piped to subfinder and enumeration can be ran on them. For example - 
+**The new highlight of this release is the addition of stdin/stdout features.** Now, domains can be piped to subfinder and enumeration can be ran on them. For example -
 
 ```bash
 > echo hackerone.com | subfinder -v
-> cat targets.txt | subfinder -v 
+> cat targets.txt | subfinder -v
 ```
 
 The subdomains discovered can be piped to other tools too. For example, you can pipe the subdomains discovered by subfinder to httpx [httpx](https://github.com/projectdiscovery/httpx) which will then find running http servers on the host.
@@ -278,7 +280,7 @@ http://mta-sts.managed.hackerone.com
 
 ## Running in a Docker Container
 
-You can use the official dockerhub image at [subfinder](https://hub.docker.com/r/projectdiscovery/subfinder). Simply run - 
+You can use the official dockerhub image at [subfinder](https://hub.docker.com/r/projectdiscovery/subfinder). Simply run -
 
 ```bash
 > docker pull projectdiscovery/subfinder
@@ -294,7 +296,7 @@ If you want to build the container yourself manually, git clone the repo, then b
 docker build -t projectdiscovery/subfinder .
 ```
 
-- After building the container using either way, run the following - 
+- After building the container using either way, run the following -
 ```bash
 docker run -it projectdiscovery/subfinder
 ```
