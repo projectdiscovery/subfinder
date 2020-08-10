@@ -2,21 +2,25 @@ package github
 
 import "time"
 
-type token struct {
+// Token struct
+type Token struct {
 	Hash         string
 	RetryAfter   int64
 	ExceededTime time.Time
 }
 
+// Tokens is the internal struct to manage the current token
+// and the pool
 type Tokens struct {
 	current int
-	pool    []token
+	pool    []Token
 }
 
+// NewTokenManager initialize the tokens pool
 func NewTokenManager(keys []string) *Tokens {
-	pool := []token{}
+	pool := []Token{}
 	for _, key := range keys {
-		t := token{Hash: key, ExceededTime: time.Time{}, RetryAfter: 0}
+		t := Token{Hash: key, ExceededTime: time.Time{}, RetryAfter: 0}
 		pool = append(pool, t)
 	}
 
@@ -28,7 +32,7 @@ func NewTokenManager(keys []string) *Tokens {
 
 func (r *Tokens) setCurrentTokenExceeded(retryAfter int64) {
 	if r.current >= len(r.pool) {
-		r.current = r.current % len(r.pool)
+		r.current %= len(r.pool)
 	}
 	if r.pool[r.current].RetryAfter == 0 {
 		r.pool[r.current].ExceededTime = time.Now()
@@ -36,14 +40,15 @@ func (r *Tokens) setCurrentTokenExceeded(retryAfter int64) {
 	}
 }
 
-func (r *Tokens) Get() token {
+// Get returns a new token from the token pool
+func (r *Tokens) Get() *Token {
 	resetExceededTokens(r)
 
 	if r.current >= len(r.pool) {
-		r.current = r.current % len(r.pool)
+		r.current %= len(r.pool)
 	}
 
-	result := r.pool[r.current]
+	result := &r.pool[r.current]
 	r.current++
 
 	return result

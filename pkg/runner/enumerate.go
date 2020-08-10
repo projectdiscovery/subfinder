@@ -2,6 +2,7 @@ package runner
 
 import (
 	"bytes"
+	"context"
 	"os"
 	"strings"
 	"sync"
@@ -13,7 +14,7 @@ import (
 )
 
 // EnumerateSingleDomain performs subdomain enumeration against a single domain
-func (r *Runner) EnumerateSingleDomain(domain, output string, append bool) error {
+func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output string, appendToFile bool) error {
 	gologger.Infof("Enumerating subdomains for %s\n", domain)
 
 	// Get the API keys for sources from the configuration
@@ -33,7 +34,7 @@ func (r *Runner) EnumerateSingleDomain(domain, output string, append bool) error
 	}
 
 	// Run the passive subdomain enumeration
-	passiveResults := r.passiveAgent.EnumerateSubdomains(domain, keys, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute)
+	passiveResults := r.passiveAgent.EnumerateSubdomains(domain, &keys, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
@@ -118,19 +119,19 @@ func (r *Runner) EnumerateSingleDomain(domain, output string, append bool) error
 	if r.options.ChaosUpload {
 		var buf = &bytes.Buffer{}
 		err := WriteHostOutput(uniqueMap, buf)
-		// If an error occurs, do not interrupt, continue to check if user specifed an output file
+		// If an error occurs, do not interrupt, continue to check if user specified an output file
 		if err != nil {
 			gologger.Errorf("Could not prepare results for chaos %s\n", err)
 		} else {
 			// no error in writing host output, upload to chaos
-			err = r.UploadToChaos(buf)
+			err = r.UploadToChaos(ctx, buf)
 			if err != nil {
 				gologger.Errorf("Could not upload results to chaos %s\n", err)
 			} else {
 				gologger.Infof("Input processed successfully and subdomains with valid records will be updated to chaos dataset.\n")
 			}
 			// clear buffer
-			buf = nil
+			buf.Reset()
 		}
 	}
 	// In case the user has given an output file, write all the found
@@ -140,15 +141,15 @@ func (r *Runner) EnumerateSingleDomain(domain, output string, append bool) error
 		// else append .txt
 		if r.options.OutputDirectory != "" {
 			if r.options.JSON {
-				output = output + ".json"
+				output += ".json"
 			} else {
-				output = output + ".txt"
+				output += ".txt"
 			}
 		}
 
 		var file *os.File
 		var err error
-		if append {
+		if appendToFile {
 			file, err = os.OpenFile(output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		} else {
 			file, err = os.Create(output)

@@ -29,7 +29,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		resp, err := session.Get(ctx, fmt.Sprintf("https://api.binaryedge.io/v2/query/domains/subdomain/%s", domain), "", map[string]string{"X-Key": session.Keys.Binaryedge})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			session.DiscardHttpResponse(resp)
+			session.DiscardHTTPResponse(resp)
 			close(results)
 			return
 		}
@@ -93,7 +93,7 @@ func (s *Source) getSubdomains(ctx context.Context, domain string, remaining, cu
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 			}
 
-			*remaining = *remaining - 100
+			*remaining -= 100
 			if *remaining <= 0 {
 				return false
 			}

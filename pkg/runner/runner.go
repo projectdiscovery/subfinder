@@ -2,6 +2,7 @@ package runner
 
 import (
 	"bufio"
+	"context"
 	"io"
 	"os"
 	"path"
@@ -37,10 +38,10 @@ func NewRunner(options *Options) (*Runner, error) {
 }
 
 // RunEnumeration runs the subdomain enumeration flow on the targets specified
-func (r *Runner) RunEnumeration() error {
+func (r *Runner) RunEnumeration(ctx context.Context) error {
 	// Check if only a single domain is sent as input. Process the domain now.
 	if r.options.Domain != "" {
-		return r.EnumerateSingleDomain(r.options.Domain, r.options.Output, false)
+		return r.EnumerateSingleDomain(ctx, r.options.Domain, r.options.Output, false)
 	}
 
 	// If we have multiple domains as input,
@@ -49,21 +50,21 @@ func (r *Runner) RunEnumeration() error {
 		if err != nil {
 			return err
 		}
-		err = r.EnumerateMultipleDomains(f)
+		err = r.EnumerateMultipleDomains(ctx, f)
 		f.Close()
 		return err
 	}
 
 	// If we have STDIN input, treat it as multiple domains
 	if r.options.Stdin {
-		return r.EnumerateMultipleDomains(os.Stdin)
+		return r.EnumerateMultipleDomains(ctx, os.Stdin)
 	}
 	return nil
 }
 
 // EnumerateMultipleDomains enumerates subdomains for multiple domains
 // We keep enumerating subdomains for a given domain until we reach an error
-func (r *Runner) EnumerateMultipleDomains(reader io.Reader) error {
+func (r *Runner) EnumerateMultipleDomains(ctx context.Context, reader io.Reader) error {
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		domain := scanner.Text()
@@ -72,16 +73,16 @@ func (r *Runner) EnumerateMultipleDomains(reader io.Reader) error {
 		}
 
 		var err error
-		// If the user has specifed an output file, use that output file instead
+		// If the user has specified an output file, use that output file instead
 		// of creating a new output file for each domain. Else create a new file
 		// for each domain in the directory.
 		if r.options.Output != "" {
-			err = r.EnumerateSingleDomain(domain, r.options.Output, true)
+			err = r.EnumerateSingleDomain(ctx, domain, r.options.Output, true)
 		} else if r.options.OutputDirectory != "" {
 			outputFile := path.Join(r.options.OutputDirectory, domain)
-			err = r.EnumerateSingleDomain(domain, outputFile, false)
+			err = r.EnumerateSingleDomain(ctx, domain, outputFile, false)
 		} else {
-			err = r.EnumerateSingleDomain(domain, "", true)
+			err = r.EnumerateSingleDomain(ctx, domain, "", true)
 		}
 		if err != nil {
 			return err

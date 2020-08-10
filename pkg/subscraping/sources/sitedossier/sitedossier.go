@@ -11,7 +11,11 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
-var reNext = regexp.MustCompile("<a href=\"([A-Za-z0-9\\/.]+)\"><b>")
+// SleepRandIntn is the integer value to get the pseudo-random number
+// to sleep before find the next match
+const SleepRandIntn = 5
+
+var reNext = regexp.MustCompile(`<a href="([A-Za-z0-9/.]+)"><b>`)
 
 type agent struct {
 	results chan subscraping.Result
@@ -24,10 +28,10 @@ func (a *agent) enumerate(ctx context.Context, baseURL string) error {
 		case <-ctx.Done():
 			return nil
 		default:
-			resp, err := a.session.NormalGetWithContext(ctx, baseURL)
+			resp, err := a.session.SimpleGet(ctx, baseURL)
 			if err != nil {
 				a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
-				a.session.DiscardHttpResponse(resp)
+				a.session.DiscardHTTPResponse(resp)
 				close(a.results)
 				return err
 			}
@@ -47,10 +51,13 @@ func (a *agent) enumerate(ctx context.Context, baseURL string) error {
 			}
 
 			match1 := reNext.FindStringSubmatch(src)
-			time.Sleep(time.Duration((3 + rand.Intn(5))) * time.Second)
+			time.Sleep(time.Duration((3 + rand.Intn(SleepRandIntn))) * time.Second)
 
 			if len(match1) > 0 {
-				a.enumerate(ctx, "http://www.sitedossier.com"+match1[1])
+				err := a.enumerate(ctx, "http://www.sitedossier.com"+match1[1])
+				if err != nil {
+					return err
+				}
 			}
 			return nil
 		}

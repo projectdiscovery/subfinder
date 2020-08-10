@@ -17,10 +17,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 	go func() {
 		defer close(results)
-		resp, err := session.NormalGetWithContext(ctx, "https://rapiddns.io/subdomain/"+domain+"?full=1")
+		resp, err := session.SimpleGet(ctx, "https://rapiddns.io/subdomain/"+domain+"?full=1")
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			session.DiscardHttpResponse(resp)
+			session.DiscardHTTPResponse(resp)
 			return
 		}
 

@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
@@ -43,7 +41,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 			return
 		}
-		jwt, err := doLogin(session)
+		jwt, err := doLogin(ctx, session)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			close(results)
@@ -67,7 +65,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			if err != nil {
 				if !isForbidden && currentPage == 0 {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-					session.DiscardHttpResponse(resp)
+					session.DiscardHTTPResponse(resp)
 				}
 				close(results)
 				return
@@ -98,7 +96,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // doLogin performs authentication on the ZoomEye API
-func doLogin(session *subscraping.Session) (string, error) {
+func doLogin(ctx context.Context, session *subscraping.Session) (string, error) {
 	creds := &zoomAuth{
 		User: session.Keys.ZoomEyeUsername,
 		Pass: session.Keys.ZoomEyePassword,
@@ -107,20 +105,10 @@ func doLogin(session *subscraping.Session) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	req, err := http.NewRequest("POST", "https://api.zoomeye.org/user/login", bytes.NewBuffer(body))
+	resp, err := session.SimplePost(ctx, "https://api.zoomeye.org/user/login", "application/json", bytes.NewBuffer(body))
 	if err != nil {
+		session.DiscardHTTPResponse(resp)
 		return "", err
-	}
-	req.Header.Add("Content-Type", "application/json")
-	resp, err := session.Client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	// if not 200, bad credentials
-	if resp.StatusCode != 200 {
-		io.Copy(ioutil.Discard, resp.Body)
-		resp.Body.Close()
-		return "", fmt.Errorf("login failed, non-200 response from zoomeye")
 	}
 
 	defer resp.Body.Close()

@@ -72,7 +72,7 @@ type Agent struct {
 }
 
 // New creates a new agent for passive subdomain discovery
-func New(sources []string, exclusions []string) *Agent {
+func New(sources, exclusions []string) *Agent {
 	// Create the agent, insert the sources and remove the excluded sources
 	agent := &Agent{sources: make(map[string]subscraping.Source)}
 

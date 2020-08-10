@@ -3,7 +3,6 @@ package passivetotal
 import (
 	"bytes"
 	"context"
-	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
@@ -29,19 +28,18 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		// Create JSON Get body
 		var request = []byte(`{"query":"` + domain + `"}`)
 
-		req, err := http.NewRequestWithContext(ctx, "GET", "https://api.passivetotal.org/v2/enrichment/subdomains", bytes.NewBuffer(request))
+		resp, err := session.HTTPRequest(
+			ctx,
+			"GET",
+			"https://api.passivetotal.org/v2/enrichment/subdomains",
+			"",
+			map[string]string{"Content-Type": "application/json"},
+			bytes.NewBuffer(request),
+			subscraping.BasicAuth{Username: session.Keys.PassiveTotalUsername, Password: session.Keys.PassiveTotalPassword},
+		)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			close(results)
-			return
-		}
-
-		req.SetBasicAuth(session.Keys.PassiveTotalUsername, session.Keys.PassiveTotalPassword)
-		req.Header.Set("Content-Type", "application/json")
-
-		resp, err := session.Client.Do(req)
-		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			session.DiscardHTTPResponse(resp)
 			close(results)
 			return
 		}

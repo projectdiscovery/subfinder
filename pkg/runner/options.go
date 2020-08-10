@@ -15,26 +15,26 @@ import (
 type Options struct {
 	Verbose            bool   // Verbose flag indicates whether to show verbose output or not
 	NoColor            bool   // No-Color disables the colored output
+	ChaosUpload        bool   // ChaosUpload indicates whether to upload results to the Chaos API
+	JSON               bool   // JSON specifies whether to use json for output format or text file
+	HostIP             bool   // HostIP specifies whether to write subdomains in host:ip format
+	Silent             bool   // Silent suppresses any extra text and only writes subdomains to screen
+	ListSources        bool   // ListSources specifies whether to list all available sources
+	RemoveWildcard     bool   // RemoveWildcard specifies whether to remove potential wildcard or dead subdomains from the results.
+	Stdin              bool   // Stdin specifies whether stdin input was given to the process
+	Version            bool   // Version specifies if we should just show version and exit
 	Threads            int    // Thread controls the number of threads to use for active enumerations
 	Timeout            int    // Timeout is the seconds to wait for sources to respond
 	MaxEnumerationTime int    // MaxEnumerationTime is the maximum amount of time in mins to wait for enumeration
 	Domain             string // Domain is the domain to find subdomains for
 	DomainsFile        string // DomainsFile is the file containing list of domains to find subdomains for
-	ChaosUpload        bool   // ChaosUpload indicates whether to upload results to the Chaos API
 	Output             string // Output is the file to write found subdomains to.
 	OutputDirectory    string // OutputDirectory is the directory to write results to in case list of domains is given
-	JSON               bool   // JSON specifies whether to use json for output format or text file
-	HostIP             bool   // HostIP specifies whether to write subdomains in host:ip format
-	Silent             bool   // Silent suppresses any extra text and only writes subdomains to screen
 	Sources            string // Sources contains a comma-separated list of sources to use for enumeration
-	ListSources        bool   // ListSources specifies whether to list all available sources
 	ExcludeSources     string // ExcludeSources contains the comma-separated sources to not include in the enumeration process
 	Resolvers          string // Resolvers is the comma-separated resolvers to use for enumeration
 	ResolverList       string // ResolverList is a text file containing list of resolvers to use for enumeration
-	RemoveWildcard     bool   // RemoveWildcard specifies whether to remove potential wildcard or dead subdomains from the results.
 	ConfigFile         string // ConfigFile contains the location of the config file
-	Stdin              bool   // Stdin specifies whether stdin input was given to the process
-	Version            bool   // Version specifies if we should just show version and exit
 
 	YAMLConfig ConfigFile // YAMLConfig contains the unmarshalled yaml config file
 }
@@ -130,13 +130,13 @@ func listSources(options *Options) {
 	needsKey := make(map[string]interface{})
 	keysElem := reflect.ValueOf(&keys).Elem()
 	for i := 0; i < keysElem.NumField(); i++ {
-			needsKey[strings.ToLower(keysElem.Type().Field(i).Name)] = keysElem.Field(i).Interface()
+		needsKey[strings.ToLower(keysElem.Type().Field(i).Name)] = keysElem.Field(i).Interface()
 	}
 
 	for _, source := range options.YAMLConfig.Sources {
 		message := "%s\n"
 		if _, ok := needsKey[source]; ok {
-				message = "%s *\n"
+			message = "%s *\n"
 		}
 		gologger.Silentf(message, source)
 	}

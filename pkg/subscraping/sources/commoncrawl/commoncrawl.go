@@ -28,10 +28,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
-		resp, err := session.NormalGetWithContext(ctx, indexURL)
+		resp, err := session.SimpleGet(ctx, indexURL)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			session.DiscardHttpResponse(resp)
+			session.DiscardHTTPResponse(resp)
 			close(results)
 			return
 		}
@@ -75,13 +75,13 @@ func (s *Source) Name() string {
 	return "commoncrawl"
 }
 
-func (s *Source) getSubdomains(ctx context.Context, searchURL string, domain string, session *subscraping.Session, results chan subscraping.Result) bool {
+func (s *Source) getSubdomains(ctx context.Context, searchURL, domain string, session *subscraping.Session, results chan subscraping.Result) bool {
 	for {
 		select {
 		case <-ctx.Done():
 			return false
 		default:
-			resp, err := session.NormalGetWithContext(ctx, fmt.Sprintf("%s?url=*.%s&output=json", searchURL, domain))
+			resp, err := session.SimpleGet(ctx, fmt.Sprintf("%s?url=*.%s&output=json", searchURL, domain))
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				return false

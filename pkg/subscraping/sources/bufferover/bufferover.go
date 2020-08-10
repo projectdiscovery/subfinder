@@ -27,11 +27,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	return results
 }
 
-func (s *Source) getData(ctx context.Context, URL string, session *subscraping.Session, results chan subscraping.Result) {
-	resp, err := session.NormalGetWithContext(ctx, URL)
+func (s *Source) getData(ctx context.Context, sourceURL string, session *subscraping.Session, results chan subscraping.Result) {
+	resp, err := session.SimpleGet(ctx, sourceURL)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-		session.DiscardHttpResponse(resp)
+		session.DiscardHTTPResponse(resp)
 		return
 	}
 
@@ -48,7 +48,6 @@ func (s *Source) getData(ctx context.Context, URL string, session *subscraping.S
 	for _, subdomain := range session.Extractor.FindAllString(src, -1) {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 	}
-	return
 }
 
 // Name returns the name of the source

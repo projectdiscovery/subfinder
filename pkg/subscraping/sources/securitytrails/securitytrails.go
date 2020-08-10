@@ -29,13 +29,13 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		resp, err := session.Get(ctx, fmt.Sprintf("https://api.securitytrails.com/v1/domain/%s/subdomains", domain), "", map[string]string{"APIKEY": session.Keys.Securitytrails})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			session.DiscardHttpResponse(resp)
+			session.DiscardHTTPResponse(resp)
 			close(results)
 			return
 		}
 
-		response := response{}
-		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
+		securityTrailsResponse := response{}
+		err = jsoniter.NewDecoder(resp.Body).Decode(&securityTrailsResponse)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
@@ -44,9 +44,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 		resp.Body.Close()
 
-		for _, subdomain := range response.Subdomains {
+		for _, subdomain := range securityTrailsResponse.Subdomains {
 			if strings.HasSuffix(subdomain, ".") {
-				subdomain = subdomain + domain
+				subdomain += domain
 			} else {
 				subdomain = subdomain + "." + domain
 			}

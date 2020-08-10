@@ -11,7 +11,7 @@ import (
 )
 
 // EnumerateSubdomains enumerates all the subdomains for a given domain
-func (a *Agent) EnumerateSubdomains(domain string, keys subscraping.Keys, timeout int, maxEnumTime time.Duration) chan subscraping.Result {
+func (a *Agent) EnumerateSubdomains(domain string, keys *subscraping.Keys, timeout int, maxEnumTime time.Duration) chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
@@ -36,7 +36,7 @@ func (a *Agent) EnumerateSubdomains(domain string, keys subscraping.Keys, timeou
 					results <- resp
 				}
 
-				duration := time.Now().Sub(now)
+				duration := time.Since(now)
 				timeTakenMutex.Lock()
 				timeTaken[source] = fmt.Sprintf("Source took %s for enumeration\n", duration)
 				timeTakenMutex.Unlock()
