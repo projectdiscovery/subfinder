@@ -3,6 +3,7 @@ package archiveis
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"regexp"
 
@@ -33,14 +34,15 @@ func (a *ArchiveIs) enumerate(ctx context.Context, baseURL string) {
 
 	// Get the response body
 	body, err := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
 	if err != nil {
 		a.Results <- subscraping.Result{Source: "archiveis", Type: subscraping.Error, Error: err}
+		resp.Body.Close()
 		return
 	}
 
-	src := string(body)
+	resp.Body.Close()
 
+	src := string(body)
 	for _, subdomain := range a.Session.Extractor.FindAllString(src, -1) {
 		a.Results <- subscraping.Result{Source: "archiveis", Type: subscraping.Subdomain, Value: subdomain}
 	}
@@ -64,7 +66,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	}
 
 	go func() {
-		aInstance.enumerate(ctx, "http://archive.is/*."+domain)
+		aInstance.enumerate(ctx, fmt.Sprintf("http://archive.is/*.%s", domain))
 		close(aInstance.Results)
 	}()
 

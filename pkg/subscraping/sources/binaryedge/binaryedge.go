@@ -21,8 +21,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
+		defer close(results)
+
 		if session.Keys.Binaryedge == "" {
-			close(results)
 			return
 		}
 
@@ -30,18 +31,17 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
-			close(results)
 			return
 		}
 
-		response := new(binaryedgeResponse)
+		var response binaryedgeResponse
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
-			close(results)
 			return
 		}
+
 		resp.Body.Close()
 
 		for _, subdomain := range response.Subdomains {
@@ -57,7 +57,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				break
 			}
 		}
-		close(results)
 	}()
 
 	return results
@@ -80,7 +79,7 @@ func (s *Source) getSubdomains(ctx context.Context, domain string, remaining, cu
 				return false
 			}
 
-			response := binaryedgeResponse{}
+			var response binaryedgeResponse
 			err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}

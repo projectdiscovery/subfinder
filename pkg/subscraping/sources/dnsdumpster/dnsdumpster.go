@@ -2,6 +2,7 @@ package dnsdumpster
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"net/url"
 	"regexp"
@@ -34,7 +35,7 @@ func postForm(ctx context.Context, session *subscraping.Session, token, domain s
 		ctx,
 		"POST",
 		"https://dnsdumpster.com/",
-		"csrftoken="+token+"; Domain=dnsdumpster.com",
+		fmt.Sprintf("csrftoken=%s; Domain=dnsdumpster.com", token),
 		map[string]string{
 			"Content-Type": "application/x-www-form-urlencoded",
 			"Referer":      "https://dnsdumpster.com",
@@ -63,11 +64,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
+		defer close(results)
+
 		resp, err := session.SimpleGet(ctx, "https://dnsdumpster.com/")
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
-			close(results)
 			return
 		}
 
@@ -75,23 +77,20 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
-			close(results)
 			return
 		}
 		resp.Body.Close()
-		csrfToken := getCSRFToken(string(body))
 
+		csrfToken := getCSRFToken(string(body))
 		data, err := postForm(ctx, session, csrfToken, domain)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			close(results)
 			return
 		}
 
 		for _, subdomain := range session.Extractor.FindAllString(data, -1) {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 		}
-		close(results)
 	}()
 
 	return results

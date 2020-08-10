@@ -17,6 +17,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 	go func() {
 		defer close(results)
+
 		resp, err := session.SimpleGet(ctx, "https://rapiddns.io/subdomain/"+domain+"?full=1")
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -25,11 +26,13 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 
 		body, err := ioutil.ReadAll(resp.Body)
-		resp.Body.Close()
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			resp.Body.Close()
 			return
 		}
+
+		resp.Body.Close()
 
 		src := string(body)
 		for _, subdomain := range session.Extractor.FindAllString(src, -1) {

@@ -44,8 +44,8 @@ func (a *agent) enumerate(ctx context.Context, baseURL string) error {
 				return err
 			}
 			resp.Body.Close()
-			src := string(body)
 
+			src := string(body)
 			for _, match := range a.session.Extractor.FindAllString(src, -1) {
 				a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Subdomain, Value: match}
 			}

@@ -4,10 +4,17 @@ package bufferover
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+
+	jsoniter "github.com/json-iterator/go"
 
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
+
+type response struct {
+	FDNSA   []string `json:"FDNS_A"`
+	RDNS    []string `json:"RDNS"`
+	Results []string `json:"Results"`
+}
 
 // Source is the passive scraping agent
 type Source struct{}
@@ -35,18 +42,29 @@ func (s *Source) getData(ctx context.Context, sourceURL string, session *subscra
 		return
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	var bufforesponse response
+	err = jsoniter.NewDecoder(resp.Body).Decode(&bufforesponse)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		resp.Body.Close()
 		return
 	}
+
 	resp.Body.Close()
 
-	src := string(body)
+	var subdomains []string
 
-	for _, subdomain := range session.Extractor.FindAllString(src, -1) {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+	if len(bufforesponse.FDNSA) > 0 {
+		subdomains = bufforesponse.FDNSA
+		subdomains = append(subdomains, bufforesponse.RDNS...)
+	} else if len(bufforesponse.Results) > 0 {
+		subdomains = bufforesponse.Results
+	}
+
+	for _, subdomain := range subdomains {
+		for _, value := range session.Extractor.FindAllString(subdomain, -1) {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}
+		}
 	}
 }
 

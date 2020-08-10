@@ -43,6 +43,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 	go func() {
 		defer close(results)
+
 		if session.Keys.IntelXKey == "" || session.Keys.IntelXHost == "" {
 			return
 		}
@@ -73,7 +74,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			close(results)
+			resp.Body.Close()
 			return
 		}
 
@@ -85,20 +86,25 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			resp, err = session.Get(ctx, resultsURL, "", nil)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				session.DiscardHTTPResponse(resp)
 				return
 			}
 			var response searchResultType
 			err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				resp.Body.Close()
 				return
 			}
+
 			_, err = ioutil.ReadAll(resp.Body)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				resp.Body.Close()
 				return
 			}
 			resp.Body.Close()
+
 			status = response.Status
 			for _, hostname := range response.Selectors {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: hostname.Selectvalue}

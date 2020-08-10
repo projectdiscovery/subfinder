@@ -21,8 +21,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
+		defer close(results)
+
 		if session.Keys.Certspotter == "" {
-			close(results)
 			return
 		}
 
@@ -30,16 +31,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
-			close(results)
 			return
 		}
 
-		response := []certspotterObject{}
+		var response []certspotterObject
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
-			close(results)
 			return
 		}
 		resp.Body.Close()
@@ -52,7 +51,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		// if the number of responses is zero, close the channel and return.
 		if len(response) == 0 {
-			close(results)
 			return
 		}
 
@@ -63,16 +61,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			resp, err := session.Get(ctx, reqURL, "", map[string]string{"Authorization": "Bearer " + session.Keys.Certspotter})
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				close(results)
 				return
 			}
 
-			response := []certspotterObject{}
+			var response []certspotterObject
 			err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				resp.Body.Close()
-				close(results)
 				return
 			}
 			resp.Body.Close()
@@ -89,7 +85,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			id = response[len(response)-1].ID
 		}
-		close(results)
 	}()
 
 	return results
