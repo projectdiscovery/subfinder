@@ -3,10 +3,15 @@ package certspotterold
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+
+	jsoniter "github.com/json-iterator/go"
 
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
+
+type subdomain struct {
+	DNSNames []string `json:"dns_names"`
+}
 
 // Source is the passive scraping agent
 type Source struct{}
@@ -16,31 +21,31 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
+		defer close(results)
+
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://certspotter.com/api/v0/certs?domain=%s", domain))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
-			close(results)
 			return
 		}
 
-		body, err := ioutil.ReadAll(resp.Body)
+		var subdomains []subdomain
+		err = jsoniter.NewDecoder(resp.Body).Decode(&subdomains)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
-			close(results)
 			return
 		}
+
 		resp.Body.Close()
 
-		src := string(body)
-
-		for _, subdomain := range session.Extractor.FindAllString(src, -1) {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+		for _, subdomain := range subdomains {
+			for _, dnsname := range subdomain.DNSNames {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: dnsname}
+			}
 		}
-		close(results)
 	}()
-
 	return results
 }
 

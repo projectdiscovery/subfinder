@@ -17,11 +17,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
+		defer close(results)
+
 		resp, err := session.SimpleGet(ctx, "http://ipv4info.com/search/"+domain)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
-			close(results)
 			return
 		}
 
@@ -29,50 +30,47 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
-			close(results)
 			return
 		}
 		resp.Body.Close()
-		src := string(body)
 
+		src := string(body)
 		regxTokens := regexp.MustCompile("/ip-address/(.*)/" + domain)
 		matchTokens := regxTokens.FindAllString(src, -1)
 
 		if len(matchTokens) == 0 {
-			close(results)
 			return
 		}
+
 		token := matchTokens[0]
 
 		resp, err = session.SimpleGet(ctx, "http://ipv4info.com"+token)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			close(results)
+			session.DiscardHTTPResponse(resp)
 			return
 		}
 
 		body, err = ioutil.ReadAll(resp.Body)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			resp.Body.Close()
-			close(results)
+			session.DiscardHTTPResponse(resp)
 			return
 		}
 		resp.Body.Close()
-		src = string(body)
 
+		src = string(body)
 		regxTokens = regexp.MustCompile("/dns/(.*?)/" + domain)
 		matchTokens = regxTokens.FindAllString(src, -1)
 		if len(matchTokens) == 0 {
-			close(results)
 			return
 		}
-		token = matchTokens[0]
 
+		token = matchTokens[0]
 		resp, err = session.SimpleGet(ctx, "http://ipv4info.com"+token)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			close(results)
+			session.DiscardHTTPResponse(resp)
 			return
 		}
 
@@ -80,24 +78,22 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
-			close(results)
 			return
 		}
 		resp.Body.Close()
-		src = string(body)
 
+		src = string(body)
 		regxTokens = regexp.MustCompile("/subdomains/(.*?)/" + domain)
 		matchTokens = regxTokens.FindAllString(src, -1)
 		if len(matchTokens) == 0 {
-			close(results)
 			return
 		}
-		token = matchTokens[0]
 
+		token = matchTokens[0]
 		resp, err = session.SimpleGet(ctx, "http://ipv4info.com"+token)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			close(results)
+			session.DiscardHTTPResponse(resp)
 			return
 		}
 
@@ -105,12 +101,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
-			close(results)
 			return
 		}
 		resp.Body.Close()
-		src = string(body)
 
+		src = string(body)
 		for _, match := range session.Extractor.FindAllString(src, -1) {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: match}
 		}
@@ -122,7 +117,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				break
 			}
 		}
-		close(results)
 	}()
 
 	return results

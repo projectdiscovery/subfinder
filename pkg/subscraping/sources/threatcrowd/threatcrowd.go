@@ -3,10 +3,15 @@ package threatcrowd
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+
+	jsoniter "github.com/json-iterator/go"
 
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
+
+type response struct {
+	Subdomains []string `json:"subdomains"`
+}
 
 // Source is the passive scraping agent
 type Source struct{}
@@ -16,30 +21,27 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
+		defer close(results)
+
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://www.threatcrowd.org/searchApi/v2/domain/report/?domain=%s", domain))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
-			close(results)
 			return
 		}
 
-		// Get the response body
-		body, err := ioutil.ReadAll(resp.Body)
+		defer resp.Body.Close()
+
+		var data response
+		err = jsoniter.NewDecoder(resp.Body).Decode(&data)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			resp.Body.Close()
-			close(results)
 			return
 		}
-		resp.Body.Close()
 
-		src := string(body)
-
-		for _, match := range session.Extractor.FindAllString(src, -1) {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: match}
+		for _, subdomain := range data.Subdomains {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 		}
-		close(results)
 	}()
 
 	return results

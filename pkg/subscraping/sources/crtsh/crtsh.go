@@ -4,13 +4,18 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"io/ioutil"
-	"strings"
+
+	jsoniter "github.com/json-iterator/go"
 
 	// postgres driver
 	_ "github.com/lib/pq"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
+
+type subdomain struct {
+	ID        int    `json:"id"`
+	NameValue string `json:"name_value"`
+}
 
 // Source is the passive scraping agent
 type Source struct{}
@@ -20,13 +25,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
+		defer close(results)
 		found := s.getSubdomainsFromSQL(domain, results)
 		if found {
-			close(results)
 			return
 		}
 		_ = s.getSubdomainsFromHTTP(ctx, domain, session, results)
-		close(results)
 	}()
 
 	return results
@@ -74,20 +78,20 @@ func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, sessi
 		return false
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	var subdomains []subdomain
+	err = jsoniter.NewDecoder(resp.Body).Decode(&subdomains)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		resp.Body.Close()
 		return false
 	}
+
 	resp.Body.Close()
 
-	// Also replace all newlines
-	src := strings.ReplaceAll(string(body), "\\n", " ")
-
-	for _, subdomain := range session.Extractor.FindAllString(src, -1) {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+	for _, subdomain := range subdomains {
+		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain.NameValue}
 	}
+
 	return true
 }
 

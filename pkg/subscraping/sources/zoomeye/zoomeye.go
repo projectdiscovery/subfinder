@@ -37,22 +37,23 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
+		defer close(results)
+
 		if session.Keys.ZoomEyeUsername == "" || session.Keys.ZoomEyePassword == "" {
-			close(results)
 			return
 		}
+
 		jwt, err := doLogin(ctx, session)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			close(results)
 			return
 		}
 		// check if jwt is null
 		if jwt == "" {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: errors.New("could not log into zoomeye")}
-			close(results)
 			return
 		}
+
 		headers := map[string]string{
 			"Authorization": fmt.Sprintf("JWT %s", jwt),
 			"Accept":        "application/json",
@@ -67,20 +68,18 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 					session.DiscardHTTPResponse(resp)
 				}
-				close(results)
 				return
 			}
 
-			defer resp.Body.Close()
-			res := &zoomeyeResults{}
-			err = json.NewDecoder(resp.Body).Decode(res)
+			var res zoomeyeResults
+			err = json.NewDecoder(resp.Body).Decode(&res)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				resp.Body.Close()
-				close(results)
 				return
 			}
 			resp.Body.Close()
+
 			for _, r := range res.Matches {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: r.Site}
 				for _, domain := range r.Domains {
@@ -89,7 +88,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 			currentPage++
 		}
-		close(results)
 	}()
 
 	return results
@@ -112,8 +110,9 @@ func doLogin(ctx context.Context, session *subscraping.Session) (string, error) 
 	}
 
 	defer resp.Body.Close()
-	login := &loginResp{}
-	err = json.NewDecoder(resp.Body).Decode(login)
+
+	var login loginResp
+	err = json.NewDecoder(resp.Body).Decode(&login)
 	if err != nil {
 		return "", err
 	}

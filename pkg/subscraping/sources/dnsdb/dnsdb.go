@@ -2,11 +2,12 @@ package dnsdb
 
 import (
 	"bufio"
+	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
@@ -21,46 +22,42 @@ type Source struct{}
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
-	if session.Keys.DNSDB == "" {
-		close(results)
-	} else {
+	go func() {
+		defer close(results)
+
+		if session.Keys.DNSDB == "" {
+			return
+		}
+
 		headers := map[string]string{
 			"X-API-KEY":    session.Keys.DNSDB,
 			"Accept":       "application/json",
 			"Content-Type": "application/json",
 		}
 
-		go func() {
-			resp, err := session.Get(ctx, fmt.Sprintf("https://api.dnsdb.info/lookup/rrset/name/*.%s?limit=1000000000000", domain), "", headers)
+		resp, err := session.Get(ctx, fmt.Sprintf("https://api.dnsdb.info/lookup/rrset/name/*.%s?limit=1000000000000", domain), "", headers)
+		if err != nil {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			session.DiscardHTTPResponse(resp)
+			return
+		}
+
+		scanner := bufio.NewScanner(resp.Body)
+		for scanner.Scan() {
+			line := scanner.Text()
+			if line == "" {
+				continue
+			}
+			var response dnsdbResponse
+			err = jsoniter.NewDecoder(bytes.NewBufferString(line)).Decode(&response)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				session.DiscardHTTPResponse(resp)
-				close(results)
 				return
 			}
-
-			defer resp.Body.Close()
-			// Get the response body
-			scanner := bufio.NewScanner(resp.Body)
-			for scanner.Scan() {
-				line := scanner.Text()
-				if line == "" {
-					continue
-				}
-				out := &dnsdbResponse{}
-				err := json.Unmarshal([]byte(line), out)
-				if err != nil {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-					resp.Body.Close()
-					close(results)
-					return
-				}
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: strings.TrimSuffix(out.Name, ".")}
-				out = nil
-			}
-			close(results)
-		}()
-	}
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: strings.TrimSuffix(response.Name, ".")}
+		}
+		resp.Body.Close()
+	}()
 	return results
 }
 

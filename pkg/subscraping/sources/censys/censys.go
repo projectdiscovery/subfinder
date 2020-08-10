@@ -31,11 +31,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
+		defer close(results)
+
 		if session.Keys.CensysToken == "" || session.Keys.CensysSecret == "" {
-			close(results)
 			return
 		}
-		var censysResponse response
 
 		currentPage := 1
 		for {
@@ -54,17 +54,17 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				session.DiscardHTTPResponse(resp)
-				close(results)
 				return
 			}
 
+			var censysResponse response
 			err = jsoniter.NewDecoder(resp.Body).Decode(&censysResponse)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				resp.Body.Close()
-				close(results)
 				return
 			}
+
 			resp.Body.Close()
 
 			// Exit the censys enumeration if max pages is reached
@@ -83,7 +83,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			currentPage++
 		}
-		close(results)
 	}()
 
 	return results
