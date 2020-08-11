@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hako/durafmt"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/pkg/resolve"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
@@ -34,6 +35,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 	}
 
 	// Run the passive subdomain enumeration
+	now := time.Now()
 	passiveResults := r.passiveAgent.EnumerateSubdomains(domain, &keys, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute)
 
 	wg := &sync.WaitGroup{}
@@ -104,15 +106,18 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 
 	// If verbose mode was used, then now print all the
 	// found subdomains on the screen together.
+	duration := durafmt.Parse(time.Now().Sub(now)).LimitFirstN(2).String()
 	if r.options.Verbose {
 		if r.options.RemoveWildcard {
 			for result := range foundResults {
 				gologger.Silentf("%s\n", result)
 			}
+			gologger.Infof("Found %d subdomains for %s (Took %s)\n", len(foundResults), domain, duration)
 		} else {
 			for result := range uniqueMap {
 				gologger.Silentf("%s\n", result)
 			}
+			gologger.Infof("Found %d subdomains for %s (Took %s)\n", len(uniqueMap), domain, duration)
 		}
 	}
 	// In case the user has specified to upload to chaos, write everything to a temporary buffer and upload
