@@ -62,7 +62,5 @@ spyse:
   - <key-here>
 shodan:
   - <key-here>
-shodandnsdb:
-  - <key-here>
 dnsdb:
   - <key-here>

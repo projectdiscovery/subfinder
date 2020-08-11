@@ -35,7 +35,6 @@ type ConfigFile struct {
 	PassiveTotal   []string `yaml:"passivetotal"`
 	SecurityTrails []string `yaml:"securitytrails"`
 	Shodan         []string `yaml:"shodan"`
-	ShodanDNSDB    []string `yaml:"shodandnsdb"`
 	Spyse          []string `yaml:"spyse"`
 	URLScan        []string `yaml:"urlscan"`
 	Virustotal     []string `yaml:"virustotal"`
@@ -157,9 +156,6 @@ func (c *ConfigFile) GetKeys() subscraping.Keys {
 	}
 	if len(c.Shodan) > 0 {
 		keys.Shodan = c.Shodan[rand.Intn(len(c.Shodan))]
-	}
-	if len(c.ShodanDNSDB) > 0 {
-		keys.ShodanDNSDB = c.ShodanDNSDB[rand.Intn(len(c.ShodanDNSDB))]
 	}
 	if len(c.Spyse) > 0 {
 		keys.Spyse = c.Spyse[rand.Intn(len(c.Spyse))]
