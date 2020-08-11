@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"net/http"
 	"regexp"
 	"time"
 
@@ -29,11 +30,17 @@ func (a *agent) enumerate(ctx context.Context, baseURL string) error {
 			return nil
 		default:
 			resp, err := a.session.SimpleGet(ctx, baseURL)
-			if err != nil {
+
+			isnotfound := resp != nil && resp.StatusCode == http.StatusNotFound
+			if err != nil && !isnotfound {
 				a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
 				a.session.DiscardHTTPResponse(resp)
 				close(a.results)
 				return err
+			}
+
+			if isnotfound {
+				return nil
 			}
 
 			body, err := ioutil.ReadAll(resp.Body)
