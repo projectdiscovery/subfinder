@@ -108,7 +108,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 
 	// If verbose mode was used, then now print all the
 	// found subdomains on the screen together.
-	duration := durafmt.Parse(time.Now().Sub(now)).LimitFirstN(maxNumCount).String()
+	duration := durafmt.Parse(time.Since(now)).LimitFirstN(maxNumCount).String()
 	if r.options.Verbose {
 		if r.options.RemoveWildcard {
 			for result := range foundResults {
