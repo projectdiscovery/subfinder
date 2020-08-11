@@ -39,10 +39,6 @@ func (a *agent) enumerate(ctx context.Context, baseURL string) error {
 				return err
 			}
 
-			if isnotfound {
-				return nil
-			}
-
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
