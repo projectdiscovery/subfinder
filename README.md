@@ -7,6 +7,8 @@
 [![License](https://img.shields.io/badge/license-MIT-_red.svg)](https://opensource.org/licenses/MIT)
 [![Go Report Card](https://goreportcard.com/badge/github.com/projectdiscovery/subfinder)](https://goreportcard.com/report/github.com/projectdiscovery/subfinder)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/projectdiscovery/subfinder/issues)
+[![Chat on Discord](https://img.shields.io/discord/695645237418131507.svg?logo=discord)](https://discord.gg/KECAGdH)
+
 
 
 subfinder is a subdomain discovery tool that discovers valid subdomains for websites by using passive online sources. It has a simple modular architecture and is optimized for speed. subfinder is built for doing one thing only - passive subdomain enumeration, and it does that very well.
@@ -53,6 +55,7 @@ This will display help for the tool. Here are all the switches it supports.
 
 | Flag | Description | Example |
 |------|-------------|---------|
+| -all | Use all sources (slow) for enumeration | subfinder -d uber.com -all |
 | -cd | Upload results to the Chaos API (api-key required) | subfinder -d uber.com -cd |
 | -config string | Configuration file for API Keys, etc  | subfinder -config config.yaml |
 | -d | Domain to find subdomains for | subfinder -d uber.com |
@@ -68,6 +71,7 @@ This will display help for the tool. Here are all the switches it supports.
 | -oJ | Write output in JSON lines Format | subfinder -oJ |
 | -r | Comma-separated list of resolvers to use | subfinder -r 1.1.1.1,1.0.0.1 |
 | -rL | Text file containing list of resolvers to use | subfinder -rL resolvers.txt
+| -recursive | Enumeration recursive subdomains | subfinder -d news.yahoo.com -recursive
 | -silent | Show only subdomains in output | subfinder -silent |
 | -sources | Comma separated list of sources to use | subfinder -sources shodan,censys |
 | -t | Number of concurrent goroutines for resolving (default 10) | subfinder -t 100 |
@@ -83,6 +87,7 @@ This will display help for the tool. Here are all the switches it supports.
 The installation is easy. You can download the pre-built binaries for different platforms from the [releases](https://github.com/projectdiscovery/subfinder/releases/) page. Extract them using tar, move it to your `$PATH` and you're ready to go.
 
 ```bash
+> download release from https://github.com/projectdiscovery/subfinder/releases/
 > tar -xzvf subfinder-linux-amd64.tar.gz
 > mv subfinder /usr/local/local/bin/
 > subfinder -h
@@ -90,10 +95,10 @@ The installation is easy. You can download the pre-built binaries for different 
 
 ### From Source
 
-subfinder requires go1.13+ to install successfully. Run the following command to get the repo -
+subfinder requires go1.14+ to install successfully. Run the following command to get the repo -
 
 ```bash
-GO111MODULE=on go get -v github.com/projectdiscovery/subfinder/cmd/subfinder
+GO111MODULE=auto go get -u -v github.com/projectdiscovery/subfinder/cmd/subfinder
 ```
 
 ### From Github
@@ -110,7 +115,7 @@ subfinder -h
 If you wish to upgrade the package you can use:
 
 ```bash
-GO111MODULE=on go get -u -v github.com/projectdiscovery/subfinder/cmd/subfinder
+GO111MODULE=auto go get -u -v github.com/projectdiscovery/subfinder/cmd/subfinder
 ```
 
 ## Post Installation Instructions
@@ -123,7 +128,6 @@ Subfinder will work after using the installation instructions however to configu
 - [Censys](https://censys.io)
 - [Binaryedge](https://binaryedge.io)
 - [Shodan](https://shodan.io)
-- [URLScan](https://urlscan.io)
 - [Chaos](https://chaos.projectdiscovery.io)
 - [Spyse](https://spyse.com)
 - [DnsDB](https://api.dnsdb.info)
@@ -173,15 +177,15 @@ To run the tool on a target, just use the following command.
 This will run the tool against freelancer.com. There are a number of configuration options that you can pass along with this command. The verbose switch (-v) can be used to display verbose information.
 
 ```bash
-[CERTSPOTTER] www.fi.freelancer.com
-[DNSDUMPSTER] hosting.freelancer.com
-[DNSDUMPSTER] support.freelancer.com
-[DNSDUMPSTER] accounts.freelancer.com
-[DNSDUMPSTER] phabricator.freelancer.com
-[DNSDUMPSTER] cdn1.freelancer.com
-[DNSDUMPSTER] t1.freelancer.com
-[DNSDUMPSTER] wdc.t1.freelancer.com
-[DNSDUMPSTER] dal.t1.freelancer.com
+[threatcrowd] ns1.hosting.freelancer.com
+[threatcrowd] ns2.hosting.freelancer.com
+[threatcrowd] flash.freelancer.com
+[threatcrowd] auth.freelancer.com
+[chaos] alertmanager.accounts.freelancer.com
+[chaos] analytics01.freelancer.com
+[chaos] apidocs.freelancer.com
+[chaos] brains.freelancer.com
+[chaos] consul.accounts.freelancer.com
 ```
 
 The `-silent` switch can be used to show only subdomains found without any other info.
@@ -207,35 +211,6 @@ hackerone.com.txt
 google.com.txt
 ```
 
-If you want to save results to a single file while using a domain list, specify the `-o` flag with the name of the output file.
-
-
-```bash
-> cat domains.txt
-hackerone.com
-google.com
-
-> subfinder -dL domains.txt -o ~/path/to/output.txt
-> ls ~/path/to/
-
-output.txt
-```
-
-If you want upload your data to chaos dataset, you can use `-cd` flag with your scan, chaos will resolve all the input and add valid subdomains to public dataset, which you can access on the go using [chaos-client](https://github.com/projectdiscovery/chaos-client)
-
-```bash
-> subfinder -d hackerone.com -cd
-
-root@b0x:~# subfinder -d hackerone.com -cd
-
-www.hackerone.com
-api.hackerone.com
-go.hackerone.com
-hackerone.com
-staging.hackerone.com
-[INF] Input processed successfully and subdomains with valid records will be updated to chaos dataset.
-```
-
 You can also get output in json format using `-oJ` switch. This switch saves the output in the JSON lines format.
 
 If you use the JSON format, or the `Host:IP` format, then it becomes mandatory for you to use the **-nW** format as resolving is essential for these output format. By default, resolving the found subdomains is disabled.
@@ -250,11 +225,6 @@ If you use the JSON format, or the `Host:IP` format, then it becomes mandatory f
 {"host":"mta-sts.managed.hackerone.com","ip":"185.199.110.153"}
 ```
 
-You can specify custom resolvers too.
-```bash
-> subfinder -d freelancer.com -o result.txt -nW -v -r 8.8.8.8,1.1.1.1
-> subfinder -d freelancer.com -o result.txt -nW -v -rL resolvers.txt
-```
 
 **The new highlight of this release is the addition of stdin/stdout features.** Now, domains can be piped to subfinder and enumeration can be ran on them. For example -
 
