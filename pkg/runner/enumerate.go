@@ -14,6 +14,8 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
+const maxNumCount = 2
+
 // EnumerateSingleDomain performs subdomain enumeration against a single domain
 func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output string, appendToFile bool) error {
 	gologger.Infof("Enumerating subdomains for %s\n", domain)
@@ -106,18 +108,18 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 
 	// If verbose mode was used, then now print all the
 	// found subdomains on the screen together.
-	duration := durafmt.Parse(time.Now().Sub(now)).LimitFirstN(2).String()
+	duration := durafmt.Parse(time.Now().Sub(now)).LimitFirstN(maxNumCount).String()
 	if r.options.Verbose {
 		if r.options.RemoveWildcard {
 			for result := range foundResults {
 				gologger.Silentf("%s\n", result)
 			}
-			gologger.Infof("Found %d subdomains for %s (Took %s)\n", len(foundResults), domain, duration)
+			gologger.Infof("Found %d subdomains for %s in %s\n", len(foundResults), domain, duration)
 		} else {
 			for result := range uniqueMap {
 				gologger.Silentf("%s\n", result)
 			}
-			gologger.Infof("Found %d subdomains for %s (Took %s)\n", len(uniqueMap), domain, duration)
+			gologger.Infof("Found %d subdomains for %s in %s\n", len(uniqueMap), domain, duration)
 		}
 	}
 	// In case the user has specified to upload to chaos, write everything to a temporary buffer and upload
