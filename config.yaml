@@ -29,6 +29,7 @@ sources:
   - ipv4info
   - passivetotal
   - rapiddns
+  - recon
   - securitytrails
   - shodan
   - sitedossier
