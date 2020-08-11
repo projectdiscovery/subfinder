@@ -32,6 +32,20 @@ func (options *Options) normalRunTasks() {
 	if err != nil {
 		gologger.Fatalf("Could not read configuration file %s: %s\n", options.ConfigFile, err)
 	}
+
+	// If we have a different version of subfinder installed
+	// previously, use the new iteration of config file.
+	if configFile.Version != Version {
+		configFile.Sources = passive.DefaultSources
+		configFile.AllSources = passive.DefaultAllSources
+		configFile.Recursive = passive.DefaultRecursiveSources
+		configFile.Version = Version
+
+		err = configFile.MarshalWrite(options.ConfigFile)
+		if err != nil {
+			gologger.Fatalf("Could not update configuration file to %s: %s\n", options.ConfigFile, err)
+		}
+	}
 	options.YAMLConfig = configFile
 }
 
@@ -45,6 +59,10 @@ func (options *Options) firstRunTasks() {
 		Resolvers: resolve.DefaultResolvers,
 		// Use the default list of passive sources
 		Sources: passive.DefaultSources,
+		// Use the default list of all passive sources
+		AllSources: passive.DefaultAllSources,
+		// Use the default list of recursive sources
+		Recursive: passive.DefaultRecursiveSources,
 	}
 
 	err := config.MarshalWrite(options.ConfigFile)

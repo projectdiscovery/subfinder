@@ -34,8 +34,48 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/zoomeye"
 )
 
-// DefaultSources contains the list of sources used by default
+// DefaultSources contains the list of fast sources used by default.
 var DefaultSources = []string{
+	"alienvault",
+	"binaryedge",
+	"bufferover",
+	"certspotter",
+	"certspotterold",
+	"censys",
+	"chaos",
+	"crtsh",
+	"dnsdumpster",
+	"hackertarget",
+	"intelx",
+	"ipv4info",
+	"passivetotal",
+	"securitytrails",
+	"shodan",
+	"spyse",
+	"sublist3r",
+	"threatcrowd",
+	"threatminer",
+	"virustotal",
+}
+
+// DefaultRecursiveSources contains list of default recursive sources
+var DefaultRecursiveSources = []string{
+	"alienvault",
+	"bufferover",
+	"certspotter",
+	"certspotterold",
+	"crtsh",
+	"dnsdumpster",
+	"hackertarget",
+	"ipv4info",
+	"passivetotal",
+	"securitytrails",
+	"sublist3r",
+	"virustotal",
+}
+
+// DefaultAllSources contains list of all sources
+var DefaultAllSources = []string{
 	"alienvault",
 	"archiveis",
 	"binaryedge",
