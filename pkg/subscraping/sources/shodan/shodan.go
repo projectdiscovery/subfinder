@@ -2,24 +2,25 @@ package shodan
 
 import (
 	"context"
-	"strconv"
+	"fmt"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
-type shodanResult struct {
-	Matches []shodanObject `json:"matches"`
-	Result  int            `json:"result"`
-	Error   string         `json:"error"`
-}
-
-type shodanObject struct {
-	Hostnames []string `json:"hostnames"`
-}
-
 // Source is the passive scraping agent
 type Source struct{}
+
+type dnsdbLookupResponse struct {
+	Domain string `json:"domain"`
+	Data   []struct {
+		Subdomain string `json:"subdomain"`
+		Type      string `json:"type"`
+		Value     string `json:"value"`
+	} `json:"data"`
+	Result int    `json:"result"`
+	Error  string `json:"error"`
+}
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
@@ -32,30 +33,33 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		for currentPage := 0; currentPage <= 10; currentPage++ {
-			resp, err := session.SimpleGet(ctx, "https://api.shodan.io/shodan/host/search?query=hostname:"+domain+"&page="+strconv.Itoa(currentPage)+"&key="+session.Keys.Shodan)
-			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				session.DiscardHTTPResponse(resp)
-				return
-			}
+		searchURL := fmt.Sprintf("https://api.shodan.io/dns/domain/%s?key=%s", domain, session.Keys.Shodan)
+		resp, err := session.SimpleGet(ctx, searchURL)
+		if err != nil {
+			session.DiscardHTTPResponse(resp)
+			return
+		}
 
-			var response shodanResult
-			err = jsoniter.NewDecoder(resp.Body).Decode(&response)
-			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				resp.Body.Close()
-				return
-			}
-			resp.Body.Close()
+		defer resp.Body.Close()
 
-			if response.Error != "" || len(response.Matches) == 0 {
-				return
-			}
+		var response dnsdbLookupResponse
+		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
+		if err != nil {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			return
+		}
 
-			for _, block := range response.Matches {
-				for _, hostname := range block.Hostnames {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: hostname}
+		if response.Error != "" {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%v", response.Error)}
+			return
+		}
+
+		for _, data := range response.Data {
+			if data.Subdomain != "" {
+				if data.Type == "CNAME" {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: data.Value}
+				} else if data.Type == "A" {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: fmt.Sprintf("%s.%s", data.Subdomain, domain)}
 				}
 			}
 		}
