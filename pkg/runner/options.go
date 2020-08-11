@@ -23,6 +23,8 @@ type Options struct {
 	RemoveWildcard     bool   // RemoveWildcard specifies whether to remove potential wildcard or dead subdomains from the results.
 	Stdin              bool   // Stdin specifies whether stdin input was given to the process
 	Version            bool   // Version specifies if we should just show version and exit
+	Recursive          bool   // Recursive specifies whether to use only recursive subdomain enumeration sources
+	All                bool   // All specifies whether to use all (slow) sources.
 	Threads            int    // Thread controls the number of threads to use for active enumerations
 	Timeout            int    // Timeout is the seconds to wait for sources to respond
 	MaxEnumerationTime int    // MaxEnumerationTime is the maximum amount of time in mins to wait for enumeration
@@ -62,6 +64,8 @@ func ParseOptions() *Options {
 	flag.BoolVar(&options.JSON, "oJ", false, "Write output in JSON lines Format")
 	flag.BoolVar(&options.HostIP, "oI", false, "Write output in Host,IP format")
 	flag.BoolVar(&options.Silent, "silent", false, "Show only subdomains in output")
+	flag.BoolVar(&options.Recursive, "recursive", false, "Use only recursive subdomain enumeration sources")
+	flag.BoolVar(&options.All, "all", false, "Use all sources (slow) for enumeration")
 	flag.StringVar(&options.Sources, "sources", "", "Comma separated list of sources to use")
 	flag.BoolVar(&options.ListSources, "ls", false, "List all available sources")
 	flag.StringVar(&options.ExcludeSources, "exclude-sources", "", "List of sources to exclude from enumeration")
@@ -133,7 +137,7 @@ func listSources(options *Options) {
 		needsKey[strings.ToLower(keysElem.Type().Field(i).Name)] = keysElem.Field(i).Interface()
 	}
 
-	for _, source := range options.YAMLConfig.Sources {
+	for _, source := range options.YAMLConfig.AllSources {
 		message := "%s\n"
 		if _, ok := needsKey[source]; ok {
 			message = "%s *\n"
