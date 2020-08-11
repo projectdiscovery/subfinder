@@ -20,6 +20,7 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/ipv4info"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/passivetotal"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/rapiddns"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/recon"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/sitedossier"
@@ -52,6 +53,7 @@ var DefaultSources = []string{
 	"intelx",
 	"passivetotal",
 	"rapiddns",
+	"recon",
 	"securitytrails",
 	"shodan",
 	"sitedossier",
@@ -122,6 +124,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &passivetotal.Source{}
 		case "rapiddns":
 			a.sources[source] = &rapiddns.Source{}
+		case "recon":
+			a.sources[source] = &recon.Source{}
 		case "securitytrails":
 			a.sources[source] = &securitytrails.Source{}
 		case "shodan":
