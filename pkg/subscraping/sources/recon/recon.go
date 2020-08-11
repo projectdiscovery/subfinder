@@ -12,8 +12,8 @@ type subdomain struct {
 	Domain    string `json:"domain"`
 	IP        string `json:"ip"`
 	RawDomain string `json:"rawDomain"`
-	RawPort   string `json: "rawPort"`
-	RawIP     string `json: "rawIp"`
+	RawPort   string `json:"rawPort"`
+	RawIP     string `json:"rawIp"`
 }
 
 // Source is the passive scraping agent
