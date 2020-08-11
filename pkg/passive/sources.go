@@ -9,6 +9,7 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/censys"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/certspotter"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/certspotterold"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/chaos"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/commoncrawl"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/crtsh"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/dnsdb"
@@ -42,6 +43,7 @@ var DefaultSources = []string{
 	"censys",
 	"certspotter",
 	"certspotterold",
+	"chaos",
 	"commoncrawl",
 	"crtsh",
 	"dnsdumpster",
@@ -102,6 +104,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &certspotter.Source{}
 		case "certspotterold":
 			a.sources[source] = &certspotterold.Source{}
+		case "chaos":
+			a.sources[source] = &chaos.Source{}
 		case "commoncrawl":
 			a.sources[source] = &commoncrawl.Source{}
 		case "crtsh":

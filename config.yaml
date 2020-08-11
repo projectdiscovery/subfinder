@@ -17,6 +17,7 @@ sources:
   - censys
   - certspotter
   - certspotterold
+  - chaos
   - commoncrawl
   - crtsh
   - dnsdumpster
