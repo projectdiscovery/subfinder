@@ -114,14 +114,20 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 			for result := range foundResults {
 				gologger.Silentf("%s\n", result)
 			}
-			gologger.Infof("Found %d subdomains for %s in %s\n", len(foundResults), domain, duration)
 		} else {
 			for result := range uniqueMap {
 				gologger.Silentf("%s\n", result)
 			}
-			gologger.Infof("Found %d subdomains for %s in %s\n", len(uniqueMap), domain, duration)
 		}
 	}
+
+	// Show found subdomain count in any case.
+	if r.options.RemoveWildcard {
+		gologger.Infof("Found %d subdomains for %s in %s\n", len(foundResults), domain, duration)
+	} else {
+		gologger.Infof("Found %d subdomains for %s in %s\n", len(uniqueMap), domain, duration)
+	}
+
 	// In case the user has specified to upload to chaos, write everything to a temporary buffer and upload
 	if r.options.ChaosUpload {
 		var buf = &bytes.Buffer{}
