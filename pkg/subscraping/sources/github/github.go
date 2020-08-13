@@ -51,8 +51,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		tokens := NewTokenManager(session.Keys.GitHub)
 
-		// search on GitHub with exact match
-		searchURL := fmt.Sprintf("https://api.github.com/search/code?per_page=100&q=\"%s\"", domain)
+		searchURL := fmt.Sprintf("https://api.github.com/search/code?per_page=100&q=%s&sort=created&order=asc", domain)
 		s.enumerate(ctx, searchURL, domainRegexp(domain), tokens, session, results)
 	}()
 
