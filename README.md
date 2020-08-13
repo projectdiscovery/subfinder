@@ -89,7 +89,7 @@ The installation is easy. You can download the pre-built binaries for different 
 ```bash
 > download release from https://github.com/projectdiscovery/subfinder/releases/
 > tar -xzvf subfinder-linux-amd64.tar.gz
-> mv subfinder /usr/local/local/bin/
+> mv subfinder /usr/local/bin/
 > subfinder -h
 ```
 
