@@ -3,7 +3,6 @@ package runner
 import (
 	"bytes"
 	"context"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -128,10 +127,12 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 		gologger.Infof("Found %d subdomains for %s in %s\n", len(uniqueMap), domain, duration)
 	}
 
+	outputter := &OutPutter{}
+
 	// In case the user has specified to upload to chaos, write everything to a temporary buffer and upload
 	if r.options.ChaosUpload {
 		var buf = &bytes.Buffer{}
-		err := WriteHostOutput(uniqueMap, buf)
+		err := outputter.WriteHost(uniqueMap, buf)
 		// If an error occurs, do not interrupt, continue to check if user specified an output file
 		if err != nil {
 			gologger.Errorf("Could not prepare results for chaos %s\n", err)
@@ -147,48 +148,32 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 			buf.Reset()
 		}
 	}
-	// In case the user has given an output file, write all the found
-	// subdomains to the output file.
-	if output != "" {
-		// If the output format is json, append .json
-		// else append .txt
-		if r.options.OutputDirectory != "" {
-			if r.options.JSON {
-				output += ".json"
-			} else {
-				output += ".txt"
-			}
-		}
 
-		var file *os.File
-		var err error
-		if appendToFile {
-			file, err = os.OpenFile(output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		} else {
-			file, err = os.Create(output)
-		}
+	if output != "" {
+		file, err := outputter.createFile(output, r.options.OutputDirectory, r.options.JSON, appendToFile)
 		if err != nil {
 			gologger.Errorf("Could not create file %s for %s: %s\n", output, domain, err)
 			return err
 		}
 
-		// Write the output to the file depending upon user requirement
+		defer file.Close()
+
 		if r.options.HostIP {
-			err = WriteHostIPOutput(foundResults, file)
+			err = outputter.WriteHostIP(foundResults, file)
 		} else if r.options.JSON {
-			err = WriteJSONOutput(foundResults, file)
+			err = outputter.WriteJSON(foundResults, file)
 		} else {
 			if r.options.RemoveWildcard {
-				err = WriteHostOutputNoWildcard(foundResults, file)
+				err = outputter.WriteHostNoWildcard(foundResults, file)
 			} else {
-				err = WriteHostOutput(uniqueMap, file)
+				err = outputter.WriteHost(uniqueMap, file)
 			}
 		}
 		if err != nil {
 			gologger.Errorf("Could not write results to file %s for %s: %s\n", output, domain, err)
 		}
-		file.Close()
 		return err
 	}
+
 	return nil
 }
