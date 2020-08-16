@@ -62,7 +62,10 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 				if _, ok := uniqueMap[subdomain]; ok {
 					continue
 				}
-				uniqueMap[subdomain] = resolve.HostEntry{Host: subdomain, Source: result.Source}
+
+				hostEntry := resolve.HostEntry{Host: subdomain, Source: result.Source}
+
+				uniqueMap[subdomain] = hostEntry
 
 				// Log the verbose message about the found subdomain and send the
 				// host for resolution to the resolution pool
@@ -72,7 +75,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 				// queue. Otherwise, if mode is not verbose print the results on
 				// the screen as they are discovered.
 				if r.options.RemoveWildcard {
-					resolutionPool.Tasks <- resolve.HostEntry{Host: subdomain, Source: result.Source}
+					resolutionPool.Tasks <- hostEntry
 				}
 
 				if !r.options.Verbose {
