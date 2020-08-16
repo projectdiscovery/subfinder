@@ -77,10 +77,6 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 				if r.options.RemoveWildcard {
 					resolutionPool.Tasks <- hostEntry
 				}
-
-				if !r.options.Verbose {
-					gologger.Silentf("%s\n", subdomain)
-				}
 			}
 		}
 		// Close the task channel only if wildcards are asked to be removed
@@ -111,28 +107,25 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 
 	outputter := NewOutputter(r.options.JSON)
 
-	// TODO: pasar al Outputter
 	// If verbose mode was used, then now print all the
 	// found subdomains on the screen together.
-	duration := durafmt.Parse(time.Since(now)).LimitFirstN(maxNumCount).String()
-	if r.options.Verbose {
-		var err error
-		if r.options.HostIP {
-			err = outputter.WriteHostIP(foundResults, os.Stdout)
+	var err error
+	if r.options.HostIP {
+		err = outputter.WriteHostIP(foundResults, os.Stdout)
+	} else {
+		if r.options.RemoveWildcard {
+			err = outputter.WriteHostNoWildcard(foundResults, os.Stdout)
 		} else {
-			if r.options.RemoveWildcard {
-				err = outputter.WriteHostNoWildcard(foundResults, os.Stdout)
-			} else {
-				err = outputter.WriteHost(uniqueMap, os.Stdout)
-			}
+			err = outputter.WriteHost(uniqueMap, os.Stdout)
 		}
-		if err != nil {
-			gologger.Errorf("Could not verbose results for %s: %s\n", domain, err)
-			return err
-		}
+	}
+	if err != nil {
+		gologger.Errorf("Could not verbose results for %s: %s\n", domain, err)
+		return err
 	}
 
 	// Show found subdomain count in any case.
+	duration := durafmt.Parse(time.Since(now)).LimitFirstN(maxNumCount).String()
 	if r.options.RemoveWildcard {
 		gologger.Infof("Found %d subdomains for %s in %s\n", len(foundResults), domain, duration)
 	} else {
