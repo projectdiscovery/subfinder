@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 
 	jsoniter "github.com/json-iterator/go"
@@ -35,14 +34,6 @@ func (o *OutPutter) createFile(filename, outputDirectory string, json, appendtoF
 			}
 		}
 		absFilePath = path.Join(outputDirectory, filename)
-	}
-
-	if filepath.Ext(absFilePath) == "" {
-		if json {
-			absFilePath += ".json"
-		} else {
-			absFilePath += ".txt"
-		}
 	}
 
 	var file *os.File
