@@ -156,8 +156,6 @@ func writePlainHost(results map[string]resolve.HostEntry, writer io.Writer) erro
 
 	for _, result := range results {
 		sb.WriteString(result.Host)
-		sb.WriteString(",")
-		sb.WriteString(result.Source)
 		sb.WriteString("\n")
 
 		_, err := bufwriter.WriteString(sb.String())
