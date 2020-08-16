@@ -114,7 +114,7 @@ func writePlainHostIP(results map[string]resolve.Result, writer io.Writer) error
 func writeJSONHostIP(results map[string]resolve.Result, writer io.Writer) error {
 	encoder := jsoniter.NewEncoder(writer)
 
-	data := jsonResult{}
+	var data jsonResult
 
 	for _, result := range results {
 		data.Host = result.Host
