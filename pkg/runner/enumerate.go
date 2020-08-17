@@ -172,8 +172,8 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 		}
 		if err != nil {
 			gologger.Errorf("Could not write results to file %s for %s: %s\n", output, domain, err)
+			return err
 		}
-		return err
 	}
 
 	return nil
