@@ -153,7 +153,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 	}
 
 	if output != "" {
-		file, err := outputter.createFile(output, r.options.OutputDirectory, appendToFile)
+		file, err := outputter.createFile(output, appendToFile)
 		if err != nil {
 			gologger.Errorf("Could not create file %s for %s: %s\n", output, domain, err)
 			return err

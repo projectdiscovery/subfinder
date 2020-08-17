@@ -5,7 +5,7 @@ import (
 	"errors"
 	"io"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	jsoniter "github.com/json-iterator/go"
@@ -28,29 +28,28 @@ func NewOutputter(json bool) *OutPutter {
 	return &OutPutter{JSON: json}
 }
 
-func (o *OutPutter) createFile(filename, outputDirectory string, appendtoFile bool) (*os.File, error) {
+func (o *OutPutter) createFile(filename string, appendtoFile bool) (*os.File, error) {
 	if filename == "" {
 		return nil, errors.New("empty filename")
 	}
 
-	absFilePath := filename
+	dir := filepath.Dir(filename)
 
-	if outputDirectory != "" {
-		if _, err := os.Stat(outputDirectory); os.IsNotExist(err) {
-			err := os.MkdirAll(outputDirectory, os.ModePerm)
+	if dir != "" {
+		if _, err := os.Stat(dir); os.IsNotExist(err) {
+			err := os.MkdirAll(dir, os.ModePerm)
 			if err != nil {
 				return nil, err
 			}
 		}
-		absFilePath = path.Join(outputDirectory, filename)
 	}
 
 	var file *os.File
 	var err error
 	if appendtoFile {
-		file, err = os.OpenFile(absFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		file, err = os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	} else {
-		file, err = os.Create(absFilePath)
+		file, err = os.Create(filename)
 	}
 	if err != nil {
 		return nil, err
