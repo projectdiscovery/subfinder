@@ -9,8 +9,8 @@ import (
 )
 
 type alienvaultResponse struct {
-	Detail string `json:"detail"`
-	Error  string `json:"error"`
+	Detail     string `json:"detail"`
+	Error      string `json:"error"`
 	PassiveDNS []struct {
 		Hostname string `json:"hostname"`
 	} `json:"passive_dns"`
