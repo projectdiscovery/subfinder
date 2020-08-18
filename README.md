@@ -7,6 +7,9 @@
 [![License](https://img.shields.io/badge/license-MIT-_red.svg)](https://opensource.org/licenses/MIT)
 [![Go Report Card](https://goreportcard.com/badge/github.com/projectdiscovery/subfinder)](https://goreportcard.com/report/github.com/projectdiscovery/subfinder)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/projectdiscovery/subfinder/issues)
+[![GitHub Release](https://img.shields.io/github/release/projectdiscovery/subfinder)](https://github.com/projectdiscovery/subfinder/releases)
+[![Follow on Twitter](https://img.shields.io/twitter/follow/pdiscoveryio.svg?logo=twitter)](https://twitter.com/pdiscoveryio)
+[![Docker Images](https://img.shields.io/docker/pulls/projectdiscovery/subfinder.svg)](https://hub.docker.com/r/projectdiscovery/subfinder)
 [![Chat on Discord](https://img.shields.io/discord/695645237418131507.svg?logo=discord)](https://discord.gg/KECAGdH)
 
 
