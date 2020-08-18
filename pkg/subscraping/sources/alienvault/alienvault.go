@@ -9,6 +9,8 @@ import (
 )
 
 type alienvaultResponse struct {
+	Detail string `json:"detail"`
+	Error  string `json:"error"`
 	PassiveDNS []struct {
 		Hostname string `json:"hostname"`
 	} `json:"passive_dns"`
@@ -25,7 +27,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		defer close(results)
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://otx.alienvault.com/api/v1/indicators/domain/%s/passive_dns", domain))
-		if err != nil {
+		if err != nil && resp == nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
@@ -40,6 +42,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 		resp.Body.Close()
+
+		if response.Error != "" {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s, %s", response.Detail, response.Error)}
+			return
+		}
+
 		for _, record := range response.PassiveDNS {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Hostname}
 		}
