@@ -48,7 +48,7 @@ We have designed subfinder to comply with all passive sources licenses, and usag
 
 # Usage
 
-```bash
+```sh
 subfinder -h
 ```
 This will display help for the tool. Here are all the switches it supports.
@@ -86,8 +86,8 @@ This will display help for the tool. Here are all the switches it supports.
 
 The installation is easy. You can download the pre-built binaries for different platforms from the [releases](https://github.com/projectdiscovery/subfinder/releases/) page. Extract them using tar, move it to your `$PATH` and you're ready to go.
 
-```bash
-> download release from https://github.com/projectdiscovery/subfinder/releases/
+```sh
+> # download release from https://github.com/projectdiscovery/subfinder/releases/
 > tar -xzvf subfinder-linux-amd64.tar.gz
 > mv subfinder /usr/local/bin/
 > subfinder -h
@@ -97,13 +97,13 @@ The installation is easy. You can download the pre-built binaries for different 
 
 subfinder requires go1.14+ to install successfully. Run the following command to get the repo -
 
-```bash
+```sh
 GO111MODULE=auto go get -u -v github.com/projectdiscovery/subfinder/cmd/subfinder
 ```
 
 ### From Github
 
-```bash
+```sh
 git clone https://github.com/projectdiscovery/subfinder.git
 cd subfinder/cmd/subfinder
 go build .
@@ -114,7 +114,7 @@ subfinder -h
 ### Upgrading
 If you wish to upgrade the package you can use:
 
-```bash
+```sh
 GO111MODULE=auto go get -u -v github.com/projectdiscovery/subfinder/cmd/subfinder
 ```
 
@@ -170,13 +170,13 @@ github:
 # Running Subfinder
 
 To run the tool on a target, just use the following command.
-```bash
+```sh
 > subfinder -d freelancer.com
 ```
 
 This will run the tool against freelancer.com. There are a number of configuration options that you can pass along with this command. The verbose switch (-v) can be used to display verbose information.
 
-```bash
+```
 [threatcrowd] ns1.hosting.freelancer.com
 [threatcrowd] ns2.hosting.freelancer.com
 [threatcrowd] flash.freelancer.com
@@ -193,13 +193,13 @@ The `-silent` switch can be used to show only subdomains found without any other
 
 The `-o` command can be used to specify an output file.
 
-```bash
+```sh
 > subfinder -d freelancer.com -o output.txt
 ```
 
 To run the tool on a list of domains, `-dL` option can be used. This requires a directory to write the output files. Subdomains for each domain from the list are written in a text file in the directory specified by the `-oD` flag with their name being the domain name.
 
-```bash
+```sh
 > cat domains.txt
 hackerone.com
 google.com
@@ -215,7 +215,7 @@ You can also get output in json format using `-oJ` switch. This switch saves the
 
 If you use the JSON format, or the `Host:IP` format, then it becomes mandatory for you to use the **-nW** format as resolving is essential for these output format. By default, resolving the found subdomains is disabled.
 
-```bash
+```sh
 > subfinder -d hackerone.com -o output.json -oJ -nW
 > cat output.json
 
@@ -228,14 +228,14 @@ If you use the JSON format, or the `Host:IP` format, then it becomes mandatory f
 
 **The new highlight of this release is the addition of stdin/stdout features.** Now, domains can be piped to subfinder and enumeration can be ran on them. For example -
 
-```bash
+```sh
 > echo hackerone.com | subfinder -v
 > cat targets.txt | subfinder -v
 ```
 
 The subdomains discovered can be piped to other tools too. For example, you can pipe the subdomains discovered by subfinder to httpx [httpx](https://github.com/projectdiscovery/httpx) which will then find running http servers on the host.
 
-```bash
+```sh
 > echo hackerone.com | subfinder -silent | httpx -silent
 
 http://hackerone.com
@@ -250,7 +250,7 @@ http://mta-sts.managed.hackerone.com
 
 You can use the official dockerhub image at [subfinder](https://hub.docker.com/r/projectdiscovery/subfinder). Simply run -
 
-```bash
+```sh
 > docker pull projectdiscovery/subfinder
 ```
 
@@ -260,31 +260,31 @@ If you want to build the container yourself manually, git clone the repo, then b
 
 - Clone the repo using `git clone https://github.com/projectdiscovery/subfinder.git`
 - Build your docker container
-```bash
+```sh
 docker build -t projectdiscovery/subfinder .
 ```
 
 - After building the container using either way, run the following -
-```bash
+```sh
 docker run -it projectdiscovery/subfinder
 ```
 > The above command is the same as running `-h`
 
 If you are using docker, you need to first create your directory structure holding subfinder configuration file. After modifying the default config.yaml file, you can run:
 
-```bash
+```sh
 > mkdir -p $HOME/.config/subfinder
 > cp config.yaml $HOME/.config/subfinder/config.yaml
 > nano $HOME/.config/subfinder/config.yaml
 ```
 
 After that, you can pass it as a volume using the following sample command.
-```bash
+```sh
 > docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it projectdiscovery/subfinder -d freelancer.com
 ```
 
 For example, this runs the tool against uber.com and output the results to your host file system:
-```bash
+```sh
 docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it projectdiscovery/subfinder -d uber.com > uber.com.txt
 ```
 
