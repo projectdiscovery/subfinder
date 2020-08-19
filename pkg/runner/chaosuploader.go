@@ -29,7 +29,7 @@ func (r *Runner) UploadToChaos(ctx context.Context, reader io.Reader) error {
 		Timeout: time.Duration(UploadToChaosTimeoutNano) * time.Second, // 10 minutes - uploads may take long
 	}
 
-	request, err := http.NewRequestWithContext(ctx, "POST", "https://dns.projectdiscovery.io/dns/add", reader)
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://dns.projectdiscovery.io/dns/add", reader)
 	if err != nil {
 		return errors.Wrap(err, "could not create request")
 	}
