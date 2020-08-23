@@ -43,7 +43,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	// Create a unique map for filtering duplicate subdomains out
-	uniqueMap := make(map[string]struct{})
+	uniqueMap := make(map[string]resolve.HostEntry)
 	// Process the results in a separate goroutine
 	go func() {
 		for result := range passiveResults {
@@ -62,7 +62,10 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 				if _, ok := uniqueMap[subdomain]; ok {
 					continue
 				}
-				uniqueMap[subdomain] = struct{}{}
+
+				hostEntry := resolve.HostEntry{Host: subdomain, Source: result.Source}
+
+				uniqueMap[subdomain] = hostEntry
 
 				// Log the verbose message about the found subdomain and send the
 				// host for resolution to the resolution pool
@@ -72,11 +75,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 				// queue. Otherwise, if mode is not verbose print the results on
 				// the screen as they are discovered.
 				if r.options.RemoveWildcard {
-					resolutionPool.Tasks <- subdomain
-				}
-
-				if !r.options.Verbose {
-					gologger.Silentf("%s\n", subdomain)
+					resolutionPool.Tasks <- hostEntry
 				}
 			}
 		}
@@ -89,7 +88,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 
 	// If the user asked to remove wildcards, listen from the results
 	// queue and write to the map. At the end, print the found results to the screen
-	foundResults := make(map[string]string)
+	foundResults := make(map[string]resolve.Result)
 	if r.options.RemoveWildcard {
 		// Process the results coming from the resolutions pool
 		for result := range resolutionPool.Results {
@@ -99,29 +98,34 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 			case resolve.Subdomain:
 				// Add the found subdomain to a map.
 				if _, ok := foundResults[result.Host]; !ok {
-					foundResults[result.Host] = result.IP
+					foundResults[result.Host] = result
 				}
 			}
 		}
 	}
 	wg.Wait()
 
+	outputter := NewOutputter(r.options.JSON)
+
 	// If verbose mode was used, then now print all the
 	// found subdomains on the screen together.
-	duration := durafmt.Parse(time.Since(now)).LimitFirstN(maxNumCount).String()
-	if r.options.Verbose {
+	var err error
+	if r.options.HostIP {
+		err = outputter.WriteHostIP(foundResults, os.Stdout)
+	} else {
 		if r.options.RemoveWildcard {
-			for result := range foundResults {
-				gologger.Silentf("%s\n", result)
-			}
+			err = outputter.WriteHostNoWildcard(foundResults, os.Stdout)
 		} else {
-			for result := range uniqueMap {
-				gologger.Silentf("%s\n", result)
-			}
+			err = outputter.WriteHost(uniqueMap, os.Stdout)
 		}
+	}
+	if err != nil {
+		gologger.Errorf("Could not verbose results for %s: %s\n", domain, err)
+		return err
 	}
 
 	// Show found subdomain count in any case.
+	duration := durafmt.Parse(time.Since(now)).LimitFirstN(maxNumCount).String()
 	if r.options.RemoveWildcard {
 		gologger.Infof("Found %d subdomains for %s in %s\n", len(foundResults), domain, duration)
 	} else {
@@ -131,7 +135,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 	// In case the user has specified to upload to chaos, write everything to a temporary buffer and upload
 	if r.options.ChaosUpload {
 		var buf = &bytes.Buffer{}
-		err := WriteHostOutput(uniqueMap, buf)
+		err := outputter.WriteForChaos(uniqueMap, buf)
 		// If an error occurs, do not interrupt, continue to check if user specified an output file
 		if err != nil {
 			gologger.Errorf("Could not prepare results for chaos %s\n", err)
@@ -147,48 +151,30 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 			buf.Reset()
 		}
 	}
-	// In case the user has given an output file, write all the found
-	// subdomains to the output file.
-	if output != "" {
-		// If the output format is json, append .json
-		// else append .txt
-		if r.options.OutputDirectory != "" {
-			if r.options.JSON {
-				output += ".json"
-			} else {
-				output += ".txt"
-			}
-		}
 
-		var file *os.File
-		var err error
-		if appendToFile {
-			file, err = os.OpenFile(output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		} else {
-			file, err = os.Create(output)
-		}
+	if output != "" {
+		file, err := outputter.createFile(output, appendToFile)
 		if err != nil {
 			gologger.Errorf("Could not create file %s for %s: %s\n", output, domain, err)
 			return err
 		}
 
-		// Write the output to the file depending upon user requirement
+		defer file.Close()
+
 		if r.options.HostIP {
-			err = WriteHostIPOutput(foundResults, file)
-		} else if r.options.JSON {
-			err = WriteJSONOutput(foundResults, file)
+			err = outputter.WriteHostIP(foundResults, file)
 		} else {
 			if r.options.RemoveWildcard {
-				err = WriteHostOutputNoWildcard(foundResults, file)
+				err = outputter.WriteHostNoWildcard(foundResults, file)
 			} else {
-				err = WriteHostOutput(uniqueMap, file)
+				err = outputter.WriteHost(uniqueMap, file)
 			}
 		}
 		if err != nil {
 			gologger.Errorf("Could not write results to file %s for %s: %s\n", output, domain, err)
+			return err
 		}
-		file.Close()
-		return err
 	}
+
 	return nil
 }

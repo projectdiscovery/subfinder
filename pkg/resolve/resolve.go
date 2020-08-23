@@ -16,7 +16,7 @@ const (
 // for a given host.
 type ResolutionPool struct {
 	*Resolver
-	Tasks          chan string
+	Tasks          chan HostEntry
 	Results        chan Result
 	wg             *sync.WaitGroup
 	removeWildcard bool
@@ -24,12 +24,19 @@ type ResolutionPool struct {
 	wildcardIPs map[string]struct{}
 }
 
+// HostEntry defines a host with the source
+type HostEntry struct {
+	Host   string `json:"host"`
+	Source string `json:"source"`
+}
+
 // Result contains the result for a host resolution
 type Result struct {
-	Type  ResultType
-	Host  string
-	IP    string
-	Error error
+	Type   ResultType
+	Host   string
+	IP     string
+	Error  error
+	Source string
 }
 
 // ResultType is the type of result found
@@ -45,7 +52,7 @@ const (
 func (r *Resolver) NewResolutionPool(workers int, removeWildcard bool) *ResolutionPool {
 	resolutionPool := &ResolutionPool{
 		Resolver:       r,
-		Tasks:          make(chan string),
+		Tasks:          make(chan HostEntry),
 		Results:        make(chan Result),
 		wg:             &sync.WaitGroup{},
 		removeWildcard: removeWildcard,
@@ -69,7 +76,7 @@ func (r *ResolutionPool) InitWildcards(domain string) error {
 	for i := 0; i < maxWildcardChecks; i++ {
 		uid := xid.New().String()
 
-		hosts, err := r.getARecords(uid + "." + domain)
+		hosts, err := r.getARecords(HostEntry{Host: uid + "." + domain})
 		if err != nil {
 			return err
 		}
@@ -85,13 +92,13 @@ func (r *ResolutionPool) InitWildcards(domain string) error {
 func (r *ResolutionPool) resolveWorker() {
 	for task := range r.Tasks {
 		if !r.removeWildcard {
-			r.Results <- Result{Type: Subdomain, Host: task, IP: ""}
+			r.Results <- Result{Type: Subdomain, Host: task.Host, IP: "", Source: task.Source}
 			continue
 		}
 
 		hosts, err := r.getARecords(task)
 		if err != nil {
-			r.Results <- Result{Type: Error, Error: err}
+			r.Results <- Result{Type: Error, Host: task.Host, Source: task.Source, Error: err}
 			continue
 		}
 
@@ -106,13 +113,13 @@ func (r *ResolutionPool) resolveWorker() {
 			}
 		}
 
-		r.Results <- Result{Type: Subdomain, Host: task, IP: hosts[0]}
+		r.Results <- Result{Type: Subdomain, Host: task.Host, IP: hosts[0], Source: task.Source}
 	}
 	r.wg.Done()
 }
 
 // getARecords gets all the A records for a given host
-func (r *ResolutionPool) getARecords(host string) ([]string, error) {
+func (r *ResolutionPool) getARecords(hostEntry HostEntry) ([]string, error) {
 	var iteration int
 
 	m := new(dns.Msg)
@@ -120,7 +127,7 @@ func (r *ResolutionPool) getARecords(host string) ([]string, error) {
 	m.RecursionDesired = true
 	m.Question = make([]dns.Question, 1)
 	m.Question[0] = dns.Question{
-		Name:   dns.Fqdn(host),
+		Name:   dns.Fqdn(hostEntry.Host),
 		Qtype:  dns.TypeA,
 		Qclass: dns.ClassINET,
 	}

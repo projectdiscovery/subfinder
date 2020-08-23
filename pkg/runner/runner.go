@@ -80,6 +80,11 @@ func (r *Runner) EnumerateMultipleDomains(ctx context.Context, reader io.Reader)
 			err = r.EnumerateSingleDomain(ctx, domain, r.options.Output, true)
 		} else if r.options.OutputDirectory != "" {
 			outputFile := path.Join(r.options.OutputDirectory, domain)
+			if r.options.JSON {
+				outputFile += ".json"
+			} else {
+				outputFile += ".txt"
+			}
 			err = r.EnumerateSingleDomain(ctx, domain, outputFile, false)
 		} else {
 			err = r.EnumerateSingleDomain(ctx, domain, "", true)
