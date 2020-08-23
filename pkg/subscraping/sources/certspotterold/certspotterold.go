@@ -3,11 +3,17 @@ package certspotterold
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
 
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
+
+type errorResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"Message"`
+}
 
 type subdomain struct {
 	DNSNames []string `json:"dns_names"`
@@ -24,9 +30,23 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		defer close(results)
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://certspotter.com/api/v0/certs?domain=%s", domain))
-		if err != nil {
+		if err != nil && resp == nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
+			return
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			var errResponse errorResponse
+			err = jsoniter.NewDecoder(resp.Body).Decode(&errResponse)
+			if err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				resp.Body.Close()
+				return
+			}
+
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s: %s", errResponse.Code, errResponse.Message)}
+			resp.Body.Close()
 			return
 		}
 
