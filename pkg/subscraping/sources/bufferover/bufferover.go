@@ -59,7 +59,7 @@ func (s *Source) getData(ctx context.Context, sourceURL string, session *subscra
 	metaErrors := bufforesponse.Meta.Errors
 
 	if len(metaErrors) > 0 {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", strings.Join(metaErrors[:], ", "))}
+		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", strings.Join(metaErrors, ", "))}
 		return
 	}
 
