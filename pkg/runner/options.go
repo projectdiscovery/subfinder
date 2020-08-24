@@ -61,6 +61,7 @@ func ParseOptions() *Options {
 	flag.BoolVar(&options.ChaosUpload, "cd", false, "Upload results to the Chaos API (api-key required)")
 	flag.StringVar(&options.Output, "o", "", "File to write output to (optional)")
 	flag.StringVar(&options.OutputDirectory, "oD", "", "Directory to write enumeration results to (optional)")
+	flag.BoolVar(&options.JSON, "json", false, "Write output in JSON lines Format")
 	flag.BoolVar(&options.JSON, "oJ", false, "Write output in JSON lines Format")
 	flag.BoolVar(&options.HostIP, "oI", false, "Write output in Host,IP format")
 	flag.BoolVar(&options.Silent, "silent", false, "Show only subdomains in output")
