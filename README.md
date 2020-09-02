@@ -165,6 +165,8 @@ passivetotal:
 securitytrails: []
 shodan:
   - AAAAClP1bJJSRMEYJazgwhJKrggRwKA
+fofa:
+  - email:key
 github:
   - d23a554bbc1aabb208c9acfbd2dd41ce7fc9db39
   - asdsd54bbc1aabb208c9acfbd2dd41ce7fc9db39

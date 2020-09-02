@@ -41,6 +41,8 @@ type Keys struct {
 	Certspotter          string   `json:"certspotter"`
 	Chaos                string   `json:"chaos"`
 	DNSDB                string   `json:"dnsdb"`
+	FofaEmail            string   `json:"fofa_email"`
+	FofaKey              string   `json:"fofa_key"`
 	GitHub               []string `json:"github"`
 	IntelXHost           string   `json:"intelXHost"`
 	IntelXKey            string   `json:"intelXKey"`

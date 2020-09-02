@@ -3,6 +3,8 @@ module github.com/projectdiscovery/subfinder
 go 1.14
 
 require (
+	github.com/buger/jsonparser v1.0.0 // indirect
+	github.com/fofapro/fofa-go v0.0.0-20200317042037-c0caee09013d
 	github.com/hako/durafmt v0.0.0-20200710122514-c0fb7b4da026
 	github.com/json-iterator/go v1.1.10
 	github.com/lib/pq v1.6.0

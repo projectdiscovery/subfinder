@@ -34,6 +34,7 @@ type ConfigFile struct {
 	Certspotter    []string `yaml:"certspotter"`
 	Chaos          []string `yaml:"chaos"`
 	DNSDB          []string `yaml:"dnsdb"`
+	Fofa           []string `yaml:"fofa"`
 	GitHub         []string `yaml:"github"`
 	IntelX         []string `yaml:"intelx"`
 	PassiveTotal   []string `yaml:"passivetotal"`
@@ -134,6 +135,14 @@ func (c *ConfigFile) GetKeys() subscraping.Keys {
 	}
 	if (len(c.DNSDB)) > 0 {
 		keys.DNSDB = c.DNSDB[rand.Intn(len(c.DNSDB))]
+	}
+	if (len(c.Fofa)) > 0 {
+		fofaEmailKey := c.Fofa[rand.Intn(len(c.Fofa))]
+		parts := strings.Split(fofaEmailKey, ":")
+		if len(parts) == MultipleKeyPartsLength {
+			keys.FofaEmail = parts[0]
+			keys.FofaKey = parts[1]
+		}
 	}
 	if (len(c.GitHub)) > 0 {
 		keys.GitHub = c.GitHub
