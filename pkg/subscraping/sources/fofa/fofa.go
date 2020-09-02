@@ -29,7 +29,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 
 		query := []byte(fmt.Sprintf(`domain="%s"`, domain))
-		fields := []byte("host, title")
+		fields := []byte("host,title")
 
 		arr, err := clt.QueryAsArray(1, query, fields)
 		if err != nil {
