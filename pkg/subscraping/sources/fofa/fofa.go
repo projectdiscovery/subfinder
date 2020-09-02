@@ -3,6 +3,7 @@ package fofa
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/fofapro/fofa-go/fofa"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
@@ -31,6 +32,19 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		query := []byte(fmt.Sprintf(`domain="%s"`, domain))
 		fields := []byte("host,title")
 
+    stdOut := os.Stdout
+    null, err := os.Open(os.DevNull)
+    if err != nil {
+      results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("could not open /dev/null")}
+			return
+    }
+
+    // Silent fofa client
+    setStdOut(null)
+
+    // Restore Stdout to original when the source finish
+    defer setStdOut(stdOut)
+
 		arr, err := clt.QueryAsArray(1, query, fields)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -47,6 +61,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 	return results
 }
+
+func setStdOut(out *os.File) {
+  os.Stdout = out
+}
+
 
 // Name returns the name of the source
 func (s *Source) Name() string {
