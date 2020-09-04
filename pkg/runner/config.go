@@ -37,6 +37,7 @@ type ConfigFile struct {
 	GitHub         []string `yaml:"github"`
 	IntelX         []string `yaml:"intelx"`
 	PassiveTotal   []string `yaml:"passivetotal"`
+	Recon          []string `yaml:"recon"`
 	SecurityTrails []string `yaml:"securitytrails"`
 	Shodan         []string `yaml:"shodan"`
 	Spyse          []string `yaml:"spyse"`
@@ -155,6 +156,10 @@ func (c *ConfigFile) GetKeys() subscraping.Keys {
 			keys.PassiveTotalUsername = parts[0]
 			keys.PassiveTotalPassword = parts[1]
 		}
+	}
+
+	if len(c.Recon) > 0 {
+		keys.Recon = c.Recon[rand.Intn(len(c.Recon))]
 	}
 
 	if len(c.SecurityTrails) > 0 {

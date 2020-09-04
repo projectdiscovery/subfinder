@@ -137,6 +137,7 @@ Subfinder will work after using the installation instructions however to configu
 - [Zoomeye](https://www.zoomeye.org)
 - [Github](https://github.com)
 - [Intelx](https://intelx.io)
+- [Recon](https://recon.dev)
 
 Theses values are stored in the `$HOME/.config/subfinder/config.yaml` file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys can be specified for each of these services from which one of them will be used for enumeration.
 
