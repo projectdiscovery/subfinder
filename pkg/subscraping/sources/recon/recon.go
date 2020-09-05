@@ -26,7 +26,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://api.recon.dev/search?key=%s&domain=%s", session.Keys.Recon, domain))
+		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://recon.dev/api/search?key=%s&domain=%s", session.Keys.Recon, domain))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
