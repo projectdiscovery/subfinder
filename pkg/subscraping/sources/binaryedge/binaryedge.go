@@ -10,6 +10,7 @@ import (
 
 type binaryedgeResponse struct {
 	Subdomains []string `json:"events"`
+	PageSize   int      `json:"pagesize"`
 	Total      int      `json:"total"`
 }
 
@@ -27,11 +28,18 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		resp, err := session.Get(ctx, fmt.Sprintf("https://api.binaryedge.io/v2/query/domains/subdomain/%s", domain), "", map[string]string{"X-Key": session.Keys.Binaryedge})
+		resp, err := session.Get(ctx, fmt.Sprintf("https://api.binaryedge.io/v2/query/domains/subdomain/%s?pagesize=10000", domain), "", map[string]string{"X-Key": session.Keys.Binaryedge})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
-			return
+			// Try enterprise v1 api if key does not work for v2 api
+			// provide a large pagesize it will shrink to the max supported by your account
+			resp, err = session.Get(ctx, fmt.Sprintf("https://api.binaryedge.io/v1/query/domains/subdomain/%s?pagesize=10000", domain), "", map[string]string{"X-Token": session.Keys.Binaryedge})
+			if err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				session.DiscardHTTPResponse(resp)
+				return
+			}
 		}
 
 		var response binaryedgeResponse
@@ -48,7 +56,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 		}
 
-		remaining := response.Total - 100
+		remaining := response.Total - response.PageSize
 		currentPage := 2
 
 		for {
@@ -73,10 +81,16 @@ func (s *Source) getSubdomains(ctx context.Context, domain string, remaining, cu
 		case <-ctx.Done():
 			return false
 		default:
-			resp, err := session.Get(ctx, fmt.Sprintf("https://api.binaryedge.io/v2/query/domains/subdomain/%s?page=%d", domain, *currentPage), "", map[string]string{"X-Key": session.Keys.Binaryedge})
+			resp, err := session.Get(ctx, fmt.Sprintf("https://api.binaryedge.io/v2/query/domains/subdomain/%s?page=%d&pagesize=%d", domain, *currentPage, 10000), "", map[string]string{"X-Key": session.Keys.Binaryedge})
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				return false
+				// Try enterprise v1 api if key does not work for v2 api
+				// Provide a large pagesize it will shrink to the max supported by your account
+				resp, err = session.Get(ctx, fmt.Sprintf("https://api.binaryedge.io/v1/query/domains/subdomain/%s?page=%d&pagesize=%d", domain, *currentPage, 10000), "", map[string]string{"X-Token": session.Keys.Binaryedge})
+				if err != nil {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+					return false
+				}
 			}
 
 			var response binaryedgeResponse
@@ -92,7 +106,7 @@ func (s *Source) getSubdomains(ctx context.Context, domain string, remaining, cu
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 			}
 
-			*remaining -= 100
+			*remaining -= response.PageSize
 			if *remaining <= 0 {
 				return false
 			}
