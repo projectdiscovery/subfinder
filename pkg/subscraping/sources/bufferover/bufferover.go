@@ -4,6 +4,7 @@ package bufferover
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -11,6 +12,9 @@ import (
 )
 
 type response struct {
+	Meta struct {
+		Errors []string `json:"Errors"`
+	} `json:"Meta"`
 	FDNSA   []string `json:"FDNS_A"`
 	RDNS    []string `json:"RDNS"`
 	Results []string `json:"Results"`
@@ -36,7 +40,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 func (s *Source) getData(ctx context.Context, sourceURL string, session *subscraping.Session, results chan subscraping.Result) {
 	resp, err := session.SimpleGet(ctx, sourceURL)
-	if err != nil {
+	if err != nil && resp == nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		session.DiscardHTTPResponse(resp)
 		return
@@ -51,6 +55,13 @@ func (s *Source) getData(ctx context.Context, sourceURL string, session *subscra
 	}
 
 	resp.Body.Close()
+
+	metaErrors := bufforesponse.Meta.Errors
+
+	if len(metaErrors) > 0 {
+		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", strings.Join(metaErrors, ", "))}
+		return
+	}
 
 	var subdomains []string
 
