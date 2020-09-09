@@ -138,8 +138,8 @@ func proccesItems(ctx context.Context, items []item, domainRegexp *regexp.Regexp
 		if err != nil {
 			if resp != nil && resp.StatusCode != http.StatusNotFound {
 				session.DiscardHTTPResponse(resp)
-				return err
 			}
+			return err
 		}
 
 		if resp.StatusCode == http.StatusOK {
