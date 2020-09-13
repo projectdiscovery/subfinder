@@ -50,6 +50,7 @@ type Keys struct {
 	Securitytrails       string   `json:"securitytrails"`
 	Shodan               string   `json:"shodan"`
 	Spyse                string   `json:"spyse"`
+	ThreatBook           string   `json:"threatbook"`
 	URLScan              string   `json:"urlscan"`
 	Virustotal           string   `json:"virustotal"`
 	ZoomEyeUsername      string   `json:"zoomeye_username"`
