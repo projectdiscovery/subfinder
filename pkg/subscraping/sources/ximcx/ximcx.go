@@ -12,13 +12,13 @@ import (
 type Source struct{}
 
 type domain struct {
-  Domain string `json:"domain"`
+	Domain string `json:"domain"`
 }
 
 type ximcxResponse struct {
-	Code     int64 `json:"code"`
-  Message  string `json:"message"`
-	Data []domain `json:"data"`
+	Code    int64    `json:"code"`
+	Message string   `json:"message"`
+	Data    []domain `json:"data"`
 }
 
 // Run function returns all subdomains found with the service
@@ -44,7 +44,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 		resp.Body.Close()
 
-    if response.Code > 0 {
+		if response.Code > 0 {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%d, %s", response.Code, response.Message)}
 			return
 		}
