@@ -3,6 +3,7 @@ package passive
 import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/alienvault"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/anubis"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/archiveis"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/binaryedge"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/bufferover"
@@ -37,6 +38,7 @@ import (
 // DefaultSources contains the list of fast sources used by default.
 var DefaultSources = []string{
 	"alienvault",
+	"anubis",
 	"binaryedge",
 	"bufferover",
 	"certspotter",
@@ -77,6 +79,7 @@ var DefaultRecursiveSources = []string{
 // DefaultAllSources contains list of all sources
 var DefaultAllSources = []string{
 	"alienvault",
+	"anubis",
 	"archiveis",
 	"binaryedge",
 	"bufferover",
@@ -132,6 +135,8 @@ func (a *Agent) addSources(sources []string) {
 		switch source {
 		case "alienvault":
 			a.sources[source] = &alienvault.Source{}
+		case "anubis":
+			a.sources[source] = &anubis.Source{}
 		case "archiveis":
 			a.sources[source] = &archiveis.Source{}
 		case "binaryedge":
