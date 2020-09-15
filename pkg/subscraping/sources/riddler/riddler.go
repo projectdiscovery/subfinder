@@ -1,7 +1,7 @@
 package riddler
 
 import (
-  "bufio"
+	"bufio"
 	"context"
 	"fmt"
 
@@ -16,27 +16,27 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
-    defer close(results)
+		defer close(results)
 
-    resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://riddler.io/search?q=pld:%s&view_type=data_table", domain))
-  	if err != nil {
-  		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-  		session.DiscardHTTPResponse(resp)
-  		return
-  	}
+		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://riddler.io/search?q=pld:%s&view_type=data_table", domain))
+		if err != nil {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			session.DiscardHTTPResponse(resp)
+			return
+		}
 
-    scanner := bufio.NewScanner(resp.Body)
-    for scanner.Scan() {
-      line := scanner.Text()
-      if line == "" {
-        continue
-      }
-      subdomain := session.Extractor.FindString(line)
-      if subdomain != "" {
-        results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-      }
-    }
-    resp.Body.Close()
+		scanner := bufio.NewScanner(resp.Body)
+		for scanner.Scan() {
+			line := scanner.Text()
+			if line == "" {
+				continue
+			}
+			subdomain := session.Extractor.FindString(line)
+			if subdomain != "" {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+			}
+		}
+		resp.Body.Close()
 	}()
 
 	return results
