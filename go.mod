@@ -9,6 +9,7 @@ require (
 	github.com/miekg/dns v1.1.29
 	github.com/pkg/errors v0.9.1
 	github.com/projectdiscovery/chaos-client v0.1.6
+	github.com/projectdiscovery/fdmax v0.0.1
 	github.com/projectdiscovery/gologger v1.0.0
 	github.com/rs/xid v1.2.1
 	github.com/stretchr/testify v1.5.1
