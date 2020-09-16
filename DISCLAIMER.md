@@ -6,7 +6,6 @@ Subfinder leverages multiple open APIs, it is developed for individuals to help 
 - CommonCrawl: https://commoncrawl.org/terms-of-use/full
 - certspotter: https://sslmate.com/terms
 - dnsdumpster: https://hackertarget.com/terms
-- entrust: https://www.entrustdatacard.com/pages/terms-of-use
 - Google Transparency: https://policies.google.com/terms
 - Threatcrowd: https://www.alienvault.com/terms/website-terms-of-use07may2018
 
