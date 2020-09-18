@@ -41,6 +41,7 @@ type ConfigFile struct {
 	SecurityTrails []string `yaml:"securitytrails"`
 	Shodan         []string `yaml:"shodan"`
 	Spyse          []string `yaml:"spyse"`
+	ThreatBook     []string `yaml:"threatbook"`
 	URLScan        []string `yaml:"urlscan"`
 	Virustotal     []string `yaml:"virustotal"`
 	ZoomEye        []string `yaml:"zoomeye"`
@@ -170,6 +171,9 @@ func (c *ConfigFile) GetKeys() subscraping.Keys {
 	}
 	if len(c.Spyse) > 0 {
 		keys.Spyse = c.Spyse[rand.Intn(len(c.Spyse))]
+	}
+	if len(c.ThreatBook) > 0 {
+		keys.ThreatBook = c.ThreatBook[rand.Intn(len(c.ThreatBook))]
 	}
 	if len(c.URLScan) > 0 {
 		keys.URLScan = c.URLScan[rand.Intn(len(c.URLScan))]
