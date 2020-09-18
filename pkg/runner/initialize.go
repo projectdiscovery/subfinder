@@ -55,9 +55,13 @@ func (r *Runner) initializeActiveEngine() error {
 
 	if r.options.Resolvers != "" {
 		resolvers = append(resolvers, strings.Split(r.options.Resolvers, ",")...)
-	} else {
+	} else if len(r.options.YAMLConfig.Resolvers) > 0 {
 		resolvers = append(resolvers, r.options.YAMLConfig.Resolvers...)
+	} else {
+		resolvers = append(resolvers, resolve.DefaultResolvers...)
 	}
+
 	r.resolverClient.AppendResolversFromSlice(resolvers)
+
 	return nil
 }

@@ -1,16 +1,25 @@
-package entrust
+package cebaidu
 
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
-	"strings"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
 // Source is the passive scraping agent
 type Source struct{}
+
+type domain struct {
+	Domain string `json:"domain"`
+}
+
+type cebaiduResponse struct {
+	Code    int64    `json:"code"`
+	Message string   `json:"message"`
+	Data    []domain `json:"data"`
+}
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
@@ -19,14 +28,15 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://ctsearch.entrust.com/api/v1/certificates?fields=issuerCN,subjectO,issuerDN,issuerO,subjectDN,signAlg,san,publicKeyType,publicKeySize,validFrom,validTo,sn,ev,logEntries.logName,subjectCNReversed,cert&domain=%s&includeExpired=true&exactMatch=false&limit=5000", domain))
+		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://ce.baidu.com/index/getRelatedSites?site_address=%s", domain))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
 
-		body, err := ioutil.ReadAll(resp.Body)
+		var response cebaiduResponse
+		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
@@ -34,11 +44,13 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 		resp.Body.Close()
 
-		src := string(body)
-		for _, subdomain := range session.Extractor.FindAllString(src, -1) {
-			subdomain = strings.TrimPrefix(subdomain, "u003d")
+		if response.Code > 0 {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%d, %s", response.Code, response.Message)}
+			return
+		}
 
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+		for _, result := range response.Data {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: result.Domain}
 		}
 	}()
 
@@ -47,5 +59,5 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 // Name returns the name of the source
 func (s *Source) Name() string {
-	return "entrust"
+	return "cebaidu"
 }

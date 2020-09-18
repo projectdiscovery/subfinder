@@ -23,47 +23,37 @@ type agent struct {
 	session *subscraping.Session
 }
 
-func (a *agent) enumerate(ctx context.Context, baseURL string) error {
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		default:
-			resp, err := a.session.SimpleGet(ctx, baseURL)
+func (a *agent) enumerate(ctx context.Context, baseURL string) {
+	select {
+	case <-ctx.Done():
+		return
+	default:
+	}
 
-			isnotfound := resp != nil && resp.StatusCode == http.StatusNotFound
-			if err != nil && !isnotfound {
-				a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
-				a.session.DiscardHTTPResponse(resp)
-				close(a.results)
-				return err
-			}
+	resp, err := a.session.SimpleGet(ctx, baseURL)
+	isnotfound := resp != nil && resp.StatusCode == http.StatusNotFound
+	if err != nil && !isnotfound {
+		a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
+		a.session.DiscardHTTPResponse(resp)
+	}
 
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
-				resp.Body.Close()
-				close(a.results)
-				return err
-			}
-			resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
+		resp.Body.Close()
+	}
+	resp.Body.Close()
 
-			src := string(body)
-			for _, match := range a.session.Extractor.FindAllString(src, -1) {
-				a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Subdomain, Value: match}
-			}
+	src := string(body)
+	for _, match := range a.session.Extractor.FindAllString(src, -1) {
+		a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Subdomain, Value: match}
+	}
 
-			match1 := reNext.FindStringSubmatch(src)
-			time.Sleep(time.Duration((3 + rand.Intn(SleepRandIntn))) * time.Second)
+	match1 := reNext.FindStringSubmatch(src)
+	time.Sleep(time.Duration((3 + rand.Intn(SleepRandIntn))) * time.Second)
 
-			if len(match1) > 0 {
-				err := a.enumerate(ctx, "http://www.sitedossier.com"+match1[1])
-				if err != nil {
-					return err
-				}
-			}
-			return nil
-		}
+	if len(match1) > 0 {
+		a.enumerate(ctx, "http://www.sitedossier.com"+match1[1])
 	}
 }
 
@@ -80,12 +70,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	}
 
 	go func() {
-		err := a.enumerate(ctx, fmt.Sprintf("http://www.sitedossier.com/parentdomain/%s", domain))
-		if err == nil {
-			close(a.results)
-		}
+		a.enumerate(ctx, fmt.Sprintf("http://www.sitedossier.com/parentdomain/%s", domain))
+		close(a.results)
 	}()
-	return results
+
+	return a.results
 }
 
 // Name returns the name of the source

@@ -7,6 +7,7 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/archiveis"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/binaryedge"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/bufferover"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/cebaidu"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/censys"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/certspotter"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/certspotterold"
@@ -15,7 +16,6 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/crtsh"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/dnsdb"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/dnsdumpster"
-	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/entrust"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/github"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/hackertarget"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/intelx"
@@ -24,15 +24,18 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/rapiddns"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/recon"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/riddler"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/robtex"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/sitedossier"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/spyse"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/sublist3r"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/threatbook"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/threatcrowd"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/threatminer"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/waybackarchive"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/ximcx"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/zoomeye"
 )
 
@@ -42,6 +45,7 @@ var DefaultSources = []string{
 	"anubis",
 	"binaryedge",
 	"bufferover",
+	"cebaidu",
 	"certspotter",
 	"certspotterold",
 	"censys",
@@ -52,13 +56,16 @@ var DefaultSources = []string{
 	"intelx",
 	"ipv4info",
 	"passivetotal",
+	"robtex",
 	"securitytrails",
 	"shodan",
 	"spyse",
 	"sublist3r",
+	"threatbook",
 	"threatcrowd",
 	"threatminer",
 	"virustotal",
+	"ximcx",
 }
 
 // DefaultRecursiveSources contains list of default recursive sources
@@ -85,6 +92,7 @@ var DefaultAllSources = []string{
 	"archiveis",
 	"binaryedge",
 	"bufferover",
+	"cebaidu",
 	"censys",
 	"certspotter",
 	"certspotterold",
@@ -93,7 +101,6 @@ var DefaultAllSources = []string{
 	"crtsh",
 	"dnsdumpster",
 	"dnsdb",
-	"entrust",
 	"github",
 	"hackertarget",
 	"ipv4info",
@@ -102,15 +109,18 @@ var DefaultAllSources = []string{
 	"rapiddns",
 	"riddler",
 	"recon",
+	"robtex",
 	"securitytrails",
 	"shodan",
 	"sitedossier",
 	"spyse",
 	"sublist3r",
+	"threatbook",
 	"threatcrowd",
 	"threatminer",
 	"virustotal",
 	"waybackarchive",
+	"ximcx",
 	"zoomeye",
 }
 
@@ -146,6 +156,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &binaryedge.Source{}
 		case "bufferover":
 			a.sources[source] = &bufferover.Source{}
+		case "cebaidu":
+			a.sources[source] = &cebaidu.Source{}
 		case "censys":
 			a.sources[source] = &censys.Source{}
 		case "certspotter":
@@ -162,8 +174,6 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &dnsdumpster.Source{}
 		case "dnsdb":
 			a.sources[source] = &dnsdb.Source{}
-		case "entrust":
-			a.sources[source] = &entrust.Source{}
 		case "github":
 			a.sources[source] = &github.Source{}
 		case "hackertarget":
@@ -180,6 +190,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &recon.Source{}
 		case "riddler":
 			a.sources[source] = &riddler.Source{}
+		case "robtex":
+			a.sources[source] = &robtex.Source{}
 		case "securitytrails":
 			a.sources[source] = &securitytrails.Source{}
 		case "shodan":
@@ -190,6 +202,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &spyse.Source{}
 		case "sublist3r":
 			a.sources[source] = &sublist3r.Source{}
+		case "threatbook":
+			a.sources[source] = &threatbook.Source{}
 		case "threatcrowd":
 			a.sources[source] = &threatcrowd.Source{}
 		case "threatminer":
@@ -198,6 +212,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &virustotal.Source{}
 		case "waybackarchive":
 			a.sources[source] = &waybackarchive.Source{}
+		case "ximcx":
+			a.sources[source] = &ximcx.Source{}
 		case "zoomeye":
 			a.sources[source] = &zoomeye.Source{}
 		}
