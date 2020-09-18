@@ -23,6 +23,7 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/passivetotal"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/rapiddns"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/recon"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/riddler"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/robtex"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/shodan"
@@ -78,6 +79,7 @@ var DefaultRecursiveSources = []string{
 	"hackertarget",
 	"ipv4info",
 	"passivetotal",
+	"riddler",
 	"securitytrails",
 	"sublist3r",
 	"virustotal",
@@ -105,6 +107,7 @@ var DefaultAllSources = []string{
 	"intelx",
 	"passivetotal",
 	"rapiddns",
+	"riddler",
 	"recon",
 	"robtex",
 	"securitytrails",
@@ -185,6 +188,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &rapiddns.Source{}
 		case "recon":
 			a.sources[source] = &recon.Source{}
+		case "riddler":
+			a.sources[source] = &riddler.Source{}
 		case "robtex":
 			a.sources[source] = &robtex.Source{}
 		case "securitytrails":
