@@ -31,6 +31,7 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/threatminer"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/waybackarchive"
+	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/ximcx"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping/sources/zoomeye"
 )
 
@@ -57,6 +58,7 @@ var DefaultSources = []string{
 	"threatcrowd",
 	"threatminer",
 	"virustotal",
+	"ximcx",
 }
 
 // DefaultRecursiveSources contains list of default recursive sources
@@ -106,6 +108,7 @@ var DefaultAllSources = []string{
 	"threatminer",
 	"virustotal",
 	"waybackarchive",
+	"ximcx",
 	"zoomeye",
 }
 
@@ -189,6 +192,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &virustotal.Source{}
 		case "waybackarchive":
 			a.sources[source] = &waybackarchive.Source{}
+		case "ximcx":
+			a.sources[source] = &ximcx.Source{}
 		case "zoomeye":
 			a.sources[source] = &zoomeye.Source{}
 		}
