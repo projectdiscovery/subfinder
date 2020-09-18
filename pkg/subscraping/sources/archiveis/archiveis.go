@@ -10,15 +10,14 @@ import (
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
-// ArchiveIs is a struct for archiveurlsagent
-type ArchiveIs struct {
+type agent struct {
 	Results chan subscraping.Result
 	Session *subscraping.Session
 }
 
 var reNext = regexp.MustCompile("<a id=\"next\" style=\".*\" href=\"(.*)\">&rarr;</a>")
 
-func (a *ArchiveIs) enumerate(ctx context.Context, baseURL string) {
+func (a *agent) enumerate(ctx context.Context, baseURL string) {
 	select {
 	case <-ctx.Done():
 		return
@@ -60,17 +59,17 @@ type Source struct{}
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
-	aInstance := ArchiveIs{
+	a := agent{
 		Session: session,
 		Results: results,
 	}
 
 	go func() {
-		aInstance.enumerate(ctx, fmt.Sprintf("http://archive.is/*.%s", domain))
-		close(aInstance.Results)
+		a.enumerate(ctx, fmt.Sprintf("http://archive.is/*.%s", domain))
+		close(a.Results)
 	}()
 
-	return aInstance.Results
+	return a.Results
 }
 
 // Name returns the name of the source
