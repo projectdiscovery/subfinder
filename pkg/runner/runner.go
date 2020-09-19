@@ -42,7 +42,7 @@ func NewRunner(options *Options) (*Runner, error) {
 func (r *Runner) RunEnumeration(ctx context.Context) error {
 	// Increase the OS file descriptors
 	if r.options.FdMax {
-		err := fdmax.Set(fdmax.Max)
+		err := fdmax.Set(fdmax.UnixMax)
 		if err != nil {
 			return err
 		}
