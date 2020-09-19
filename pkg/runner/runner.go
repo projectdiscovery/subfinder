@@ -39,7 +39,6 @@ func NewRunner(options *Options) (*Runner, error) {
 
 // RunEnumeration runs the subdomain enumeration flow on the targets specified
 func (r *Runner) RunEnumeration(ctx context.Context) error {
-
 	// Check if only a single domain is sent as input. Process the domain now.
 	if r.options.Domain != "" {
 		return r.EnumerateSingleDomain(ctx, r.options.Domain, r.options.Output, false)
