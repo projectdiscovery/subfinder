@@ -23,7 +23,6 @@ type Options struct {
 	RemoveWildcard     bool   // RemoveWildcard specifies whether to remove potential wildcard or dead subdomains from the results.
 	Stdin              bool   // Stdin specifies whether stdin input was given to the process
 	Version            bool   // Version specifies if we should just show version and exit
-	FdMax              bool   // FdMax automatically increases the maximum number of file descriptors
 	Recursive          bool   // Recursive specifies whether to use only recursive subdomain enumeration sources
 	All                bool   // All specifies whether to use all (slow) sources.
 	Threads            int    // Thread controls the number of threads to use for active enumerations
@@ -76,7 +75,6 @@ func ParseOptions() *Options {
 	flag.BoolVar(&options.RemoveWildcard, "nW", false, "Remove Wildcard & Dead Subdomains from output")
 	flag.StringVar(&options.ConfigFile, "config", path.Join(config, "config.yaml"), "Configuration file for API Keys, etc")
 	flag.BoolVar(&options.Version, "version", false, "Show version of subfinder")
-	flag.BoolVar(&options.FdMax, "fdmax", false, "Automatically increases the maximum number of file descriptors")
 	flag.Parse()
 
 	// Check if stdin pipe was given
