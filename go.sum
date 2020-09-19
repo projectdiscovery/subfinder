@@ -44,6 +44,8 @@ github.com/projectdiscovery/chaos-client v0.1.6 h1:AbIN7xUszjUi7FxI4qUVSqJ3um+6e
 github.com/projectdiscovery/chaos-client v0.1.6/go.mod h1:F5omaoJh/vMvWnZhKD4zFFA5ti+RPwUletwepKSyfxk=
 github.com/projectdiscovery/fdmax v0.0.1 h1:EDpan+CgIAAYJ1K1zpTii2SouIDPHQwpGQsYc2UGUj0=
 github.com/projectdiscovery/fdmax v0.0.1/go.mod h1:mbR7lJ9EONyxEfcsL2LlGtOSlzCQ5VraLzoJa/VTrAs=
+github.com/projectdiscovery/fdmax v0.0.2 h1:d0HqNC4kbrMWT669u9W7ksFS7UBvnW0zmgY6FBU45UY=
+github.com/projectdiscovery/fdmax v0.0.2/go.mod h1:mbR7lJ9EONyxEfcsL2LlGtOSlzCQ5VraLzoJa/VTrAs=
 github.com/projectdiscovery/gologger v1.0.0 h1:XAQ8kHeVKXMjY4rLGh7eT5+oHU077BNEvs7X6n+vu1s=
 github.com/projectdiscovery/gologger v1.0.0/go.mod h1:Ok+axMqK53bWNwDSU1nTNwITLYMXMdZtRc8/y1c7sWE=
 github.com/rs/xid v1.2.1 h1:mhH9Nq+C1fY2l1XIpgxIiUOfNpRBYH1kKcr+qfKgjRc=
