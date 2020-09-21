@@ -13,7 +13,7 @@ import (
 const (
 	addrRecord     = "A"
 	iPv6AddrRecord = "AAAA"
-	baseURL        = "https://freeapi.robtex.com/pdns"
+	baseURL        = "https://proapi.robtex.com/pdns"
 )
 
 // Source is the passive scraping agent
@@ -32,9 +32,13 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
+		if session.Keys.Robtex == "" {
+			return
+		}
+
 		headers := map[string]string{"Content-Type": "application/x-ndjson"}
 
-		ips, err := enumerate(ctx, session, fmt.Sprintf("%s/forward/%s", baseURL, domain), headers)
+		ips, err := enumerate(ctx, session, fmt.Sprintf("%s/forward/%s?key=%s", baseURL, domain, session.Keys.Robtex), headers)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			return
@@ -42,7 +46,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		for _, result := range ips {
 			if result.Rrtype == addrRecord || result.Rrtype == iPv6AddrRecord {
-				domains, err := enumerate(ctx, session, fmt.Sprintf("%s/reverse/%s", baseURL, result.Rrdata), headers)
+				domains, err := enumerate(ctx, session, fmt.Sprintf("%s/reverse/%s?key=%s", baseURL, result.Rrdata, session.Keys.Robtex), headers)
 				if err != nil {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 					return

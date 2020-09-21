@@ -38,6 +38,7 @@ type ConfigFile struct {
 	IntelX         []string `yaml:"intelx"`
 	PassiveTotal   []string `yaml:"passivetotal"`
 	Recon          []string `yaml:"recon"`
+	Robtex         []string `yaml:"robtex"`
 	SecurityTrails []string `yaml:"securitytrails"`
 	Shodan         []string `yaml:"shodan"`
 	Spyse          []string `yaml:"spyse"`
@@ -161,6 +162,10 @@ func (c *ConfigFile) GetKeys() subscraping.Keys {
 
 	if len(c.Recon) > 0 {
 		keys.Recon = c.Recon[rand.Intn(len(c.Recon))]
+	}
+
+	if len(c.Robtex) > 0 {
+		keys.Robtex = c.Robtex[rand.Intn(len(c.Robtex))]
 	}
 
 	if len(c.SecurityTrails) > 0 {
