@@ -43,7 +43,7 @@ We have designed subfinder to comply with all passive sources licenses, and usag
 
  - Simple and modular code base making it easy to contribute.
  - Fast And Powerful Resolution and wildcard elimination module
- - **Curated** passive sources to maximize results (26 Sources as of now)
+ - **Curated** passive sources to maximize results (35 Sources as of now)
  - Multiple Output formats supported (Json, File, Stdout)
  - Optimized for speed, very fast and **lightweight** on resources
  - **Stdin** and **stdout** support for integrating in workflows
@@ -90,10 +90,10 @@ This will display help for the tool. Here are all the switches it supports.
 The installation is easy. You can download the pre-built binaries for different platforms from the [releases](https://github.com/projectdiscovery/subfinder/releases/) page. Extract them using tar, move it to your `$PATH` and you're ready to go.
 
 ```sh
-> # download release from https://github.com/projectdiscovery/subfinder/releases/
-> tar -xzvf subfinder-linux-amd64.tar.gz
-> mv subfinder /usr/local/bin/
-> subfinder -h
+▶ # download release from https://github.com/projectdiscovery/subfinder/releases/
+▶ tar -xzvf subfinder-linux-amd64.tar.gz
+▶ mv subfinder /usr/local/bin/
+▶ subfinder -h
 ```
 
 ### From Source
@@ -125,20 +125,22 @@ GO111MODULE=auto go get -u -v github.com/projectdiscovery/subfinder/cmd/subfinde
 
 Subfinder will work after using the installation instructions however to configure Subfinder to work with certain services, you will need to have setup API keys. The following services do not work without an API key:
 
-- [Virustotal](https://www.virustotal.com)
-- [Passivetotal](http://passivetotal.org)
-- [SecurityTrails](http://securitytrails.com)
-- [Censys](https://censys.io)
 - [Binaryedge](https://binaryedge.io)
-- [Shodan](https://shodan.io)
+- [Certspotter](https://sslmate.com/certspotter/api/)
+- [Censys](https://censys.io)
 - [Chaos](https://chaos.projectdiscovery.io)
-- [Spyse](https://spyse.com)
 - [DnsDB](https://api.dnsdb.info)
-- [Zoomeye](https://www.zoomeye.org)
 - [Github](https://github.com)
 - [Intelx](https://intelx.io)
-- [Recon](https://recon.dev)
+- [Passivetotal](http://passivetotal.org)
+- [Recon.dev](https://recon.dev)
 - [Robtex](https://www.robtex.com/api/)
+- [SecurityTrails](http://securitytrails.com)
+- [Shodan](https://shodan.io)
+- [Spyse](https://spyse.com)
+- [Threatbook](https://threatbook.cn/api)
+- [Virustotal](https://www.virustotal.com)
+- [Zoomeye](https://www.zoomeye.org)
 
 Theses values are stored in the `$HOME/.config/subfinder/config.yaml` file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys can be specified for each of these services from which one of them will be used for enumeration.
 
@@ -176,7 +178,7 @@ github:
 
 To run the tool on a target, just use the following command.
 ```sh
-> subfinder -d freelancer.com
+▶ subfinder -d freelancer.com
 ```
 
 This will run the tool against freelancer.com. There are a number of configuration options that you can pass along with this command. The verbose switch (-v) can be used to display verbose information.
@@ -199,18 +201,18 @@ The `-silent` switch can be used to show only subdomains found without any other
 The `-o` command can be used to specify an output file.
 
 ```sh
-> subfinder -d freelancer.com -o output.txt
+▶ subfinder -d freelancer.com -o output.txt
 ```
 
 To run the tool on a list of domains, `-dL` option can be used. This requires a directory to write the output files. Subdomains for each domain from the list are written in a text file in the directory specified by the `-oD` flag with their name being the domain name.
 
 ```sh
-> cat domains.txt
+▶ cat domains.txt
 hackerone.com
 google.com
 
-> subfinder -dL domains.txt -oD ~/path/to/output
-> ls ~/path/to/output
+▶ subfinder -dL domains.txt -oD ~/path/to/output
+▶ ls ~/path/to/output
 
 hackerone.com.txt
 google.com.txt
@@ -221,8 +223,8 @@ You can also get output in json format using `-oJ` switch. This switch saves the
 If you use the JSON format, or the `Host:IP` format, then it becomes mandatory for you to use the **-nW** format as resolving is essential for these output format. By default, resolving the found subdomains is disabled.
 
 ```sh
-> subfinder -d hackerone.com -o output.json -oJ -nW
-> cat output.json
+▶ subfinder -d hackerone.com -o output.json -oJ -nW
+▶ cat output.json
 
 {"host":"www.hackerone.com","ip":"104.16.99.52"}
 {"host":"mta-sts.hackerone.com","ip":"185.199.108.153"}
@@ -234,14 +236,14 @@ If you use the JSON format, or the `Host:IP` format, then it becomes mandatory f
 **The new highlight of this release is the addition of stdin/stdout features.** Now, domains can be piped to subfinder and enumeration can be ran on them. For example -
 
 ```sh
-> echo hackerone.com | subfinder -v
-> cat targets.txt | subfinder -v
+▶ echo hackerone.com | subfinder
+▶ cat targets.txt | subfinder
 ```
 
 The subdomains discovered can be piped to other tools too. For example, you can pipe the subdomains discovered by subfinder to httpx [httpx](https://github.com/projectdiscovery/httpx) which will then find running http servers on the host.
 
 ```sh
-> echo hackerone.com | subfinder -silent | httpx -silent
+▶ echo hackerone.com | subfinder -silent | httpx -silent
 
 http://hackerone.com
 http://www.hackerone.com
@@ -256,7 +258,7 @@ http://mta-sts.managed.hackerone.com
 You can use the official dockerhub image at [subfinder](https://hub.docker.com/r/projectdiscovery/subfinder). Simply run -
 
 ```sh
-> docker pull projectdiscovery/subfinder
+▶ docker pull projectdiscovery/subfinder
 ```
 
 The above command will pull the latest tagged release from the dockerhub repository.
@@ -273,19 +275,19 @@ docker build -t projectdiscovery/subfinder .
 ```sh
 docker run -it projectdiscovery/subfinder
 ```
-> The above command is the same as running `-h`
+▶ The above command is the same as running `-h`
 
 If you are using docker, you need to first create your directory structure holding subfinder configuration file. After modifying the default config.yaml file, you can run:
 
 ```sh
-> mkdir -p $HOME/.config/subfinder
-> cp config.yaml $HOME/.config/subfinder/config.yaml
-> nano $HOME/.config/subfinder/config.yaml
+▶ mkdir -p $HOME/.config/subfinder
+▶ cp config.yaml $HOME/.config/subfinder/config.yaml
+▶ nano $HOME/.config/subfinder/config.yaml
 ```
 
 After that, you can pass it as a volume using the following sample command.
 ```sh
-> docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it projectdiscovery/subfinder -d freelancer.com
+▶ docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it projectdiscovery/subfinder -d freelancer.com
 ```
 
 For example, this runs the tool against uber.com and output the results to your host file system:
