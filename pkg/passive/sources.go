@@ -57,21 +57,21 @@ var DefaultSources = []string{
 	"ipv4info",
 	"passivetotal",
 	"robtex",
+	"riddler",
 	"securitytrails",
 	"shodan",
 	"spyse",
 	"sublist3r",
-	"threatbook",
 	"threatcrowd",
 	"threatminer",
 	"virustotal",
-	"ximcx",
 }
 
 // DefaultRecursiveSources contains list of default recursive sources
 var DefaultRecursiveSources = []string{
 	"alienvault",
 	"bufferover",
+	"cebaidu",
 	"certspotter",
 	"certspotterold",
 	"crtsh",
@@ -79,10 +79,10 @@ var DefaultRecursiveSources = []string{
 	"hackertarget",
 	"ipv4info",
 	"passivetotal",
-	"riddler",
 	"securitytrails",
 	"sublist3r",
 	"virustotal",
+	"ximcx",
 }
 
 // DefaultAllSources contains list of all sources
