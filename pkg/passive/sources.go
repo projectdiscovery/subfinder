@@ -43,7 +43,6 @@ import (
 var DefaultSources = []string{
 	"alienvault",
 	"anubis",
-	"binaryedge",
 	"bufferover",
 	"cebaidu",
 	"certspotter",
@@ -70,6 +69,7 @@ var DefaultSources = []string{
 // DefaultRecursiveSources contains list of default recursive sources
 var DefaultRecursiveSources = []string{
 	"alienvault",
+	"binaryedge",
 	"bufferover",
 	"cebaidu",
 	"certspotter",
