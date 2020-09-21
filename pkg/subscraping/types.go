@@ -47,6 +47,7 @@ type Keys struct {
 	PassiveTotalUsername string   `json:"passivetotal_username"`
 	PassiveTotalPassword string   `json:"passivetotal_password"`
 	Recon                string   `json:"recon"`
+	Robtex               string   `json:"robtex"`
 	Securitytrails       string   `json:"securitytrails"`
 	Shodan               string   `json:"shodan"`
 	Spyse                string   `json:"spyse"`
