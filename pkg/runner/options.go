@@ -127,7 +127,7 @@ func hasStdin() bool {
 }
 
 func listSources(options *Options) {
-	gologger.Infof("Current list of available sources. [%d]\n", len(options.YAMLConfig.Sources))
+	gologger.Infof("Current list of available sources. [%d]\n", len(options.YAMLConfig.AllSources))
 	gologger.Infof("Sources marked with an * needs key or token in order to work.\n")
 	gologger.Infof("You can modify %s to configure your keys / tokens.\n\n", options.ConfigFile)
 
