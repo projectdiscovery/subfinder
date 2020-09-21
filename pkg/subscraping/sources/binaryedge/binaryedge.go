@@ -3,15 +3,33 @@ package binaryedge
 import (
 	"context"
 	"fmt"
+	"math"
+	"net/url"
+	"strconv"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/pkg/subscraping"
 )
 
-type binaryedgeResponse struct {
-	Subdomains []string `json:"events"`
-	PageSize   int      `json:"pagesize"`
-	Total      int      `json:"total"`
+const (
+	v1                = "v1"
+	v2                = "v2"
+	baseAPIURLFmt     = "https://api.binaryedge.io/%s/query/domains/subdomain/%s"
+	v2SubscriptionURL = "https://api.binaryedge.io/v2/user/subscription"
+	v1PageSizeParam   = "pagesize"
+	pageParam         = "page"
+	firstPage         = 1
+	maxV1PageSize     = 10000
+)
+
+type subdomainsResponse struct {
+	Message    string      `json:"message"`
+	Title      string      `json:"title"`
+	Status     interface{} `json:"status"` // string for v1, int for v2
+	Subdomains []string    `json:"events"`
+	Page       int         `json:"page"`
+	PageSize   int         `json:"pagesize"`
+	Total      int         `json:"total"`
 }
 
 // Source is the passive scraping agent
@@ -28,46 +46,71 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		resp, err := session.Get(ctx, fmt.Sprintf("https://api.binaryedge.io/v2/query/domains/subdomain/%s?pagesize=10000", domain), "", map[string]string{"X-Key": session.Keys.Binaryedge})
-		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			session.DiscardHTTPResponse(resp)
-			// Try enterprise v1 api if key does not work for v2 api
-			// provide a large pagesize it will shrink to the max supported by your account
-			resp, err = session.Get(ctx, fmt.Sprintf("https://api.binaryedge.io/v1/query/domains/subdomain/%s?pagesize=10000", domain), "", map[string]string{"X-Token": session.Keys.Binaryedge})
+		var baseURL string
+
+		authHeader := map[string]string{"X-Key": session.Keys.Binaryedge}
+
+		if isV2(ctx, session, authHeader) {
+			baseURL = fmt.Sprintf(baseAPIURLFmt, v2, domain)
+		} else {
+			authHeader = map[string]string{"X-Token": session.Keys.Binaryedge}
+			v1URLWithPageSize, err := addURLParam(fmt.Sprintf(baseAPIURLFmt, v1, domain), v1PageSizeParam, strconv.Itoa(maxV1PageSize))
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				session.DiscardHTTPResponse(resp)
 				return
 			}
+			baseURL = v1URLWithPageSize.String()
 		}
 
-		var response binaryedgeResponse
-		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			resp.Body.Close()
+		if baseURL == "" {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("can't get API URL")}
 			return
 		}
 
-		resp.Body.Close()
-
-		for _, subdomain := range response.Subdomains {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-		}
-
-		remaining := response.Total - response.PageSize
-		currentPage := 2
-
-		for {
-			further := s.getSubdomains(ctx, domain, &remaining, &currentPage, session, results)
-			if !further {
-				break
-			}
-		}
+		s.enumerate(ctx, session, baseURL, firstPage, authHeader, results)
 	}()
 
 	return results
+}
+
+func (s *Source) enumerate(ctx context.Context, session *subscraping.Session, baseURL string, page int, authHeader map[string]string, results chan subscraping.Result) {
+	pageURL, err := addURLParam(baseURL, pageParam, strconv.Itoa(page))
+	if err != nil {
+		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		return
+	}
+
+	resp, err := session.Get(ctx, pageURL.String(), "", authHeader)
+	if err != nil && resp == nil {
+		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		session.DiscardHTTPResponse(resp)
+		return
+	}
+
+	var response subdomainsResponse
+	err = jsoniter.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		resp.Body.Close()
+		return
+	}
+
+	// Check error messages
+	if response.Message != "" && response.Status != nil {
+		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf(response.Message)}
+	}
+
+	resp.Body.Close()
+
+	for _, subdomain := range response.Subdomains {
+		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+	}
+
+	totalPages := int(math.Ceil(float64(response.Total) / float64(response.PageSize)))
+	nextPage := response.Page + 1
+	for currentPage := nextPage; currentPage <= totalPages; currentPage++ {
+		s.enumerate(ctx, session, baseURL, currentPage, authHeader, results)
+	}
 }
 
 // Name returns the name of the source
@@ -75,43 +118,26 @@ func (s *Source) Name() string {
 	return "binaryedge"
 }
 
-func (s *Source) getSubdomains(ctx context.Context, domain string, remaining, currentPage *int, session *subscraping.Session, results chan subscraping.Result) bool {
-	for {
-		select {
-		case <-ctx.Done():
-			return false
-		default:
-			resp, err := session.Get(ctx, fmt.Sprintf("https://api.binaryedge.io/v2/query/domains/subdomain/%s?page=%d&pagesize=%d", domain, *currentPage, 10000), "", map[string]string{"X-Key": session.Keys.Binaryedge})
-			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				// Try enterprise v1 api if key does not work for v2 api
-				// Provide a large pagesize it will shrink to the max supported by your account
-				resp, err = session.Get(ctx, fmt.Sprintf("https://api.binaryedge.io/v1/query/domains/subdomain/%s?page=%d&pagesize=%d", domain, *currentPage, 10000), "", map[string]string{"X-Token": session.Keys.Binaryedge})
-				if err != nil {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-					return false
-				}
-			}
-
-			var response binaryedgeResponse
-			err = jsoniter.NewDecoder(resp.Body).Decode(&response)
-			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				resp.Body.Close()
-				return false
-			}
-			resp.Body.Close()
-
-			for _, subdomain := range response.Subdomains {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-			}
-
-			*remaining -= response.PageSize
-			if *remaining <= 0 {
-				return false
-			}
-			*currentPage++
-			return true
-		}
+func isV2(ctx context.Context, session *subscraping.Session, authHeader map[string]string) bool {
+	resp, err := session.Get(ctx, v2SubscriptionURL, "", authHeader)
+	if err != nil {
+		session.DiscardHTTPResponse(resp)
+		return false
 	}
+
+	resp.Body.Close()
+
+	return true
+}
+
+func addURLParam(targetURL, name, value string) (*url.URL, error) {
+	u, err := url.Parse(targetURL)
+	if err != nil {
+		return u, err
+	}
+	q, _ := url.ParseQuery(u.RawQuery)
+	q.Add(name, value)
+	u.RawQuery = q.Encode()
+
+	return u, nil
 }
