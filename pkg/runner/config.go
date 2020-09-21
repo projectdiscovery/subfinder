@@ -83,7 +83,7 @@ func CheckConfigExists(configPath string) bool {
 
 // MarshalWrite writes the marshaled yaml config to disk
 func (c *ConfigFile) MarshalWrite(file string) error {
-	f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE, 0755)
+	f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0755)
 	if err != nil {
 		return err
 	}
