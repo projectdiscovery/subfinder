@@ -21,6 +21,7 @@ type Options struct {
 	Silent             bool   // Silent suppresses any extra text and only writes subdomains to screen
 	ListSources        bool   // ListSources specifies whether to list all available sources
 	RemoveWildcard     bool   // RemoveWildcard specifies whether to remove potential wildcard or dead subdomains from the results.
+	CaptureSources     bool   // CaptureSources specifies whether to save all sources that returned a specific domains or just the first source
 	Stdin              bool   // Stdin specifies whether stdin input was given to the process
 	Version            bool   // Version specifies if we should just show version and exit
 	Recursive          bool   // Recursive specifies whether to use only recursive subdomain enumeration sources
@@ -62,6 +63,7 @@ func ParseOptions() *Options {
 	flag.StringVar(&options.Output, "o", "", "File to write output to (optional)")
 	flag.StringVar(&options.OutputDirectory, "oD", "", "Directory to write enumeration results to (optional)")
 	flag.BoolVar(&options.JSON, "json", false, "Write output in JSON lines Format")
+	flag.BoolVar(&options.CaptureSources, "cS", false, "Write host source as array of sources instead of single (first) source")
 	flag.BoolVar(&options.JSON, "oJ", false, "Write output in JSON lines Format")
 	flag.BoolVar(&options.HostIP, "oI", false, "Write output in Host,IP format")
 	flag.BoolVar(&options.Silent, "silent", false, "Show only subdomains in output")

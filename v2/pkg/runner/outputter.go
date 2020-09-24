@@ -23,6 +23,17 @@ type jsonResult struct {
 	Source string `json:"source"`
 }
 
+type jsonSourceResultIP struct {
+	Host   string `json:"host"`
+	IP     string `json:"ip"`
+	Sources []string `json:"sources"`
+}
+
+type jsonSourceResult struct {
+	Host   string `json:"host"`
+	Sources []string `json:"sources"`
+}
+
 // NewOutputter creates a new Outputter
 func NewOutputter(json bool) *OutPutter {
 	return &OutPutter{JSON: json}
@@ -177,4 +188,125 @@ func writeJSONHost(results map[string]resolve.HostEntry, writer io.Writer) error
 		}
 	}
 	return nil
+}
+
+// WriteHostIP writes the output list of subdomain to an io.Writer
+func (o *OutPutter) WriteSourceHostIP(sourceMap map[string]map[string]struct{}, results map[string]resolve.Result, writer io.Writer) error {
+	var err error
+	if o.JSON {
+		err = writeSourceJSONHostIP(sourceMap, results, writer)
+	} else {
+		err = writeSourcePlainHostIP(sourceMap, results, writer)
+	}
+	return err
+}
+
+// WriteHostIP writes the output list of subdomain to an io.Writer
+func (o *OutPutter) WriteSourceHost(sourceMap map[string]map[string]struct{}, writer io.Writer) error {
+	var err error
+	if o.JSON {
+		err = writeSourceJSONHost(sourceMap, writer)
+	} else {
+		err = writeSourcePlainHost(sourceMap, writer)
+	}
+	return err
+}
+
+func writeSourceJSONHostIP(sourceMap map[string]map[string]struct{}, results map[string]resolve.Result, writer io.Writer) error {
+	encoder := jsoniter.NewEncoder(writer)
+
+	var data jsonSourceResultIP
+
+	for host, sources := range sourceMap {
+		data.Host = host
+		data.IP = ""
+		if _, ok := results[host]; ok {
+			data.IP = results[host].IP
+		}
+
+		keys := make([]string, 0, len(sources))
+		for source := range sources {
+			keys = append(keys, source)
+		}
+		data.Sources = keys
+
+		err := encoder.Encode(&data)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func writeSourceJSONHost(sourceMap map[string]map[string]struct{}, writer io.Writer) error {
+	encoder := jsoniter.NewEncoder(writer)
+
+	var data jsonSourceResult
+
+	for host, sources := range sourceMap {
+		data.Host = host
+		keys := make([]string, 0, len(sources))
+		for source := range sources {
+			keys = append(keys, source)
+		}
+		data.Sources = keys
+
+		err := encoder.Encode(&data)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func writeSourcePlainHostIP(sourceMap map[string]map[string]struct{}, results map[string]resolve.Result, writer io.Writer) error {
+	bufwriter := bufio.NewWriter(writer)
+	sb := &strings.Builder{}
+
+	for host, sources := range sourceMap {
+		sb.WriteString(host)
+		sb.WriteString(",")
+		if _, ok := results[host]; ok {
+			sb.WriteString(results[host].IP)
+		}
+		sb.WriteString(",[")
+		sourcesString := ""
+		for source := range sources {
+			sourcesString += source + ","
+		}
+		sb.WriteString(strings.Trim(sourcesString, ", "))
+		sb.WriteString("]\n")
+
+		_, err := bufwriter.WriteString(sb.String())
+		if err != nil {
+			bufwriter.Flush()
+			return err
+		}
+		sb.Reset()
+	}
+	return bufwriter.Flush()
+}
+
+func writeSourcePlainHost(sourceMap map[string]map[string]struct{}, writer io.Writer) error {
+	bufwriter := bufio.NewWriter(writer)
+	sb := &strings.Builder{}
+
+	for host, sources := range sourceMap {
+		sb.WriteString(host)
+		sb.WriteString(",[")
+		sourcesString := ""
+		for source := range sources {
+			sourcesString += source + ","
+		}
+		sb.WriteString(strings.Trim(sourcesString, ", "))
+		sb.WriteString("]\n")
+
+		_, err := bufwriter.WriteString(sb.String())
+		if err != nil {
+			bufwriter.Flush()
+			return err
+		}
+		sb.Reset()
+	}
+	return bufwriter.Flush()
 }
