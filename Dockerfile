@@ -6,6 +6,6 @@ RUN go get -u github.com/golang/dep/cmd/dep
 WORKDIR /go/src/app
 
 # Install
-RUN go get -u github.com/projectdiscovery/subfinder/cmd/subfinder
+RUN go get -u github.com/projectdiscovery/v2/subfinder/cmd/subfinder
 
 ENTRYPOINT ["subfinder"]

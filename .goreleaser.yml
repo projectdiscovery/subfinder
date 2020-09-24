@@ -1,6 +1,6 @@
 builds:
     - binary: subfinder
-      main: cmd/subfinder/main.go
+      main: v2/cmd/subfinder/main.go
       goos:
         - linux
         - windows

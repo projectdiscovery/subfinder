@@ -42,8 +42,8 @@ jobs:
 
       - name: Test
         run: go test .
-        working-directory: cmd/subfinder/
+        working-directory: v2/cmd/subfinder/
 
       - name: Build
         run: go build .
-        working-directory: cmd/subfinder/
+        working-directory: v2/cmd/subfinder/
