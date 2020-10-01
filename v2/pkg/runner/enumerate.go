@@ -44,6 +44,8 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 	wg.Add(1)
 	// Create a unique map for filtering duplicate subdomains out
 	uniqueMap := make(map[string]resolve.HostEntry)
+	// Create a map to track sources for each host
+	sourceMap := make(map[string]map[string]struct{})
 	// Process the results in a separate goroutine
 	go func() {
 		for result := range passiveResults {
@@ -57,6 +59,18 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 				}
 				subdomain := strings.ReplaceAll(strings.ToLower(result.Value), "*.", "")
 
+				if _, ok := uniqueMap[subdomain]; !ok {
+					sourceMap[subdomain] = make(map[string]struct{})
+
+				}
+
+				// Log the verbose message about the found subdomain per source
+				if _, ok := sourceMap[subdomain][result.Source]; !ok{
+					gologger.Verbosef("%s\n", result.Source, subdomain)
+				}
+
+				sourceMap[subdomain][result.Source] = struct{}{}
+
 				// Check if the subdomain is a duplicate. If not,
 				// send the subdomain for resolution.
 				if _, ok := uniqueMap[subdomain]; ok {
@@ -66,10 +80,6 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 				hostEntry := resolve.HostEntry{Host: subdomain, Source: result.Source}
 
 				uniqueMap[subdomain] = hostEntry
-
-				// Log the verbose message about the found subdomain and send the
-				// host for resolution to the resolution pool
-				gologger.Verbosef("%s\n", result.Source, subdomain)
 
 				// If the user asked to remove wildcard then send on the resolve
 				// queue. Otherwise, if mode is not verbose print the results on
@@ -116,7 +126,11 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 		if r.options.RemoveWildcard {
 			err = outputter.WriteHostNoWildcard(foundResults, os.Stdout)
 		} else {
-			err = outputter.WriteHost(uniqueMap, os.Stdout)
+			if r.options.CaptureSources {
+				err = outputter.WriteSourceHost(sourceMap,os.Stdout)
+			} else {
+				err = outputter.WriteHost(uniqueMap, os.Stdout)
+			}
 		}
 	}
 	if err != nil {
@@ -167,7 +181,11 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 			if r.options.RemoveWildcard {
 				err = outputter.WriteHostNoWildcard(foundResults, file)
 			} else {
-				err = outputter.WriteHost(uniqueMap, file)
+				if r.options.CaptureSources {
+					err = outputter.WriteSourceHost(sourceMap, file)
+				} else {
+					err = outputter.WriteHost(uniqueMap, file)
+				}
 			}
 		}
 		if err != nil {
