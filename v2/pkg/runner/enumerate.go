@@ -121,18 +121,10 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 	// found subdomains on the screen together.
 	var err error
 	if r.options.HostIP {
-		if r.options.CaptureSources {
-			err = outputter.WriteSourceHostIP(sourceMap,foundResults, os.Stdout)
-		} else {
-			err = outputter.WriteHostIP(foundResults, os.Stdout)
-		}
+		err = outputter.WriteHostIP(foundResults, os.Stdout)
 	} else {
 		if r.options.RemoveWildcard {
-			if r.options.CaptureSources {
-				err = outputter.WriteSourceHostIP(sourceMap,foundResults, os.Stdout)
-			} else {
-				err = outputter.WriteHostNoWildcard(foundResults, os.Stdout)
-			}
+			err = outputter.WriteHostNoWildcard(foundResults, os.Stdout)
 		} else {
 			if r.options.CaptureSources {
 				err = outputter.WriteSourceHost(sourceMap,os.Stdout)
@@ -184,18 +176,10 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 		defer file.Close()
 
 		if r.options.HostIP {
-			if r.options.CaptureSources {
-				err = outputter.WriteSourceHostIP(sourceMap, foundResults, file)
-			} else {
-				err = outputter.WriteHostIP(foundResults, file)
-			}
+			err = outputter.WriteHostIP(foundResults, file)
 		} else {
 			if r.options.RemoveWildcard {
-				if r.options.CaptureSources {
-					err = outputter.WriteSourceHostIP(sourceMap, foundResults, file)
-				} else {
-					err = outputter.WriteHostNoWildcard(foundResults, file)
-				}
+				err = outputter.WriteHostNoWildcard(foundResults, file)
 			} else {
 				if r.options.CaptureSources {
 					err = outputter.WriteSourceHost(sourceMap, file)
