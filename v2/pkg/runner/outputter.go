@@ -23,14 +23,8 @@ type jsonResult struct {
 	Source string `json:"source"`
 }
 
-type jsonSourceResultIP struct {
-	Host   string `json:"host"`
-	IP     string `json:"ip"`
-	Sources []string `json:"sources"`
-}
-
 type jsonSourceResult struct {
-	Host   string `json:"host"`
+	Host    string   `json:"host"`
 	Sources []string `json:"sources"`
 }
 
