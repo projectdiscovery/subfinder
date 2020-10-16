@@ -15,6 +15,7 @@ require (
 	github.com/projectdiscovery/fdmax v0.0.2
 	github.com/projectdiscovery/gologger v1.0.1
 	github.com/rs/xid v1.2.1
+	github.com/stretchr/testify v1.5.1
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
 	golang.org/x/net v0.0.0-20200925080053-05aa5d4ee321 // indirect

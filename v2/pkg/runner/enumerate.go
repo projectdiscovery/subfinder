@@ -61,11 +61,10 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 
 				if _, ok := uniqueMap[subdomain]; !ok {
 					sourceMap[subdomain] = make(map[string]struct{})
-
 				}
 
 				// Log the verbose message about the found subdomain per source
-				if _, ok := sourceMap[subdomain][result.Source]; !ok{
+				if _, ok := sourceMap[subdomain][result.Source]; !ok {
 					gologger.Verbosef("%s\n", result.Source, subdomain)
 				}
 
@@ -127,7 +126,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 			err = outputter.WriteHostNoWildcard(foundResults, os.Stdout)
 		} else {
 			if r.options.CaptureSources {
-				err = outputter.WriteSourceHost(sourceMap,os.Stdout)
+				err = outputter.WriteSourceHost(sourceMap, os.Stdout)
 			} else {
 				err = outputter.WriteHost(uniqueMap, os.Stdout)
 			}

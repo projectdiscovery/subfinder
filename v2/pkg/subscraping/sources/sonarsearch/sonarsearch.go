@@ -18,11 +18,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		getUrl := fmt.Sprintf("https://sonar.omnisint.io/subdomains/%s?page=", domain)
+		getURL := fmt.Sprintf("https://sonar.omnisint.io/subdomains/%s?page=", domain)
 		page := 0
 		var subdomains []string
 		for {
-			resp, err := session.SimpleGet(ctx, getUrl+strconv.Itoa(page))
+			resp, err := session.SimpleGet(ctx, getURL+strconv.Itoa(page))
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				session.DiscardHTTPResponse(resp)
