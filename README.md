@@ -22,7 +22,7 @@ We have designed subfinder to comply with all passive sources licenses, and usag
 # Resources
 - [Features](#features)
 - [Usage](#usage)
-- [Installation Instuctions (direct)](#direct-installation)
+- [Installation Instructions (direct)](#direct-installation)
 - [Installation Instructions](#installation-instructions)
     - [From Binary](#from-binary)
     - [From Source](#from-source)
