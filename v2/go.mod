@@ -12,6 +12,7 @@ require (
 	github.com/projectdiscovery/fdmax v0.0.3
 	github.com/projectdiscovery/gologger v1.0.1
 	github.com/rs/xid v1.2.1
+	github.com/stretchr/testify v1.5.1
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 )
