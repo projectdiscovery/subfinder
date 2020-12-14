@@ -131,7 +131,7 @@ Subfinder will work after using the installation instructions however to configu
 - [SecurityTrails](http://securitytrails.com)
 - [Shodan](https://shodan.io)
 - [Spyse](https://spyse.com)
-- [Threatbook](https://threatbook.cn/api)
+- [Threatbook](https://x.threatbook.cn/en)
 - [Virustotal](https://www.virustotal.com)
 - [Zoomeye](https://www.zoomeye.org)
 
