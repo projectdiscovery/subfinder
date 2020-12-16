@@ -3,12 +3,10 @@ package resolve
 import (
 	"sync"
 
-	"github.com/miekg/dns"
 	"github.com/rs/xid"
 )
 
 const (
-	maxResolveRetries = 5
 	maxWildcardChecks = 3
 )
 
@@ -76,7 +74,7 @@ func (r *ResolutionPool) InitWildcards(domain string) error {
 	for i := 0; i < maxWildcardChecks; i++ {
 		uid := xid.New().String()
 
-		hosts, err := r.getARecords(HostEntry{Host: uid + "." + domain})
+		hosts, err := r.DnsClient.Lookup(uid + "." + domain)
 		if err != nil {
 			return err
 		}
@@ -96,7 +94,7 @@ func (r *ResolutionPool) resolveWorker() {
 			continue
 		}
 
-		hosts, err := r.getARecords(task)
+		hosts, err := r.DnsClient.Lookup(task.Host)
 		if err != nil {
 			r.Results <- Result{Type: Error, Host: task.Host, Source: task.Source, Error: err}
 			continue
@@ -116,42 +114,4 @@ func (r *ResolutionPool) resolveWorker() {
 		r.Results <- Result{Type: Subdomain, Host: task.Host, IP: hosts[0], Source: task.Source}
 	}
 	r.wg.Done()
-}
-
-// getARecords gets all the A records for a given host
-func (r *ResolutionPool) getARecords(hostEntry HostEntry) ([]string, error) {
-	var iteration int
-
-	m := new(dns.Msg)
-	m.Id = dns.Id()
-	m.RecursionDesired = true
-	m.Question = make([]dns.Question, 1)
-	m.Question[0] = dns.Question{
-		Name:   dns.Fqdn(hostEntry.Host),
-		Qtype:  dns.TypeA,
-		Qclass: dns.ClassINET,
-	}
-exchange:
-	iteration++
-	in, err := dns.Exchange(m, r.resolvers[r.rand.Intn(len(r.resolvers))]+":53")
-	if err != nil {
-		// Retry in case of I/O error
-		if iteration <= maxResolveRetries {
-			goto exchange
-		}
-		return nil, err
-	}
-	// Ignore the error in case we have bad result
-	if in != nil && in.Rcode != dns.RcodeSuccess {
-		return nil, nil
-	}
-
-	var hosts []string
-	for _, record := range in.Answer {
-		if t, ok := record.(*dns.A); ok {
-			hosts = append(hosts, t.A.String())
-		}
-	}
-
-	return hosts, nil
 }

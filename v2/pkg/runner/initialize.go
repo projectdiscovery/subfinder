@@ -3,6 +3,7 @@ package runner
 import (
 	"strings"
 
+	"github.com/projectdiscovery/dnsx/libs/dnsx"
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
 )
@@ -41,17 +42,16 @@ func (r *Runner) initializePassiveEngine() {
 
 // initializeActiveEngine creates the resolver used to resolve the found subdomains
 func (r *Runner) initializeActiveEngine() error {
-	r.resolverClient = resolve.New()
+	var resolvers []string
 
 	// If the file has been provided, read resolvers from the file
 	if r.options.ResolverList != "" {
-		err := r.resolverClient.AppendResolversFromFile(r.options.ResolverList)
+		var err error
+		resolvers, err = loadFromFile(r.options.ResolverList)
 		if err != nil {
 			return err
 		}
 	}
-
-	var resolvers []string
 
 	if r.options.Resolvers != "" {
 		resolvers = append(resolvers, strings.Split(r.options.Resolvers, ",")...)
@@ -61,7 +61,12 @@ func (r *Runner) initializeActiveEngine() error {
 		resolvers = append(resolvers, resolve.DefaultResolvers...)
 	}
 
-	r.resolverClient.AppendResolversFromSlice(resolvers)
+	r.resolverClient = resolve.New()
+	var err error
+	r.resolverClient.DnsClient, err = dnsx.New(dnsx.Options{BaseResolvers: resolvers})
+	if err != nil {
+		return nil
+	}
 
 	return nil
 }
