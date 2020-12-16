@@ -23,7 +23,7 @@ var DefaultResolvers = []string{
 
 // Resolver is a struct for resolving DNS names
 type Resolver struct {
-	DnsClient *dnsx.DNSX
+	DNSClient *dnsx.DNSX
 	Resolvers []string
 	rand      *rand.Rand
 }

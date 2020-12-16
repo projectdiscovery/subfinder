@@ -74,7 +74,7 @@ func (r *ResolutionPool) InitWildcards(domain string) error {
 	for i := 0; i < maxWildcardChecks; i++ {
 		uid := xid.New().String()
 
-		hosts, err := r.DnsClient.Lookup(uid + "." + domain)
+		hosts, err := r.DNSClient.Lookup(uid + "." + domain)
 		if err != nil {
 			return err
 		}
@@ -94,7 +94,7 @@ func (r *ResolutionPool) resolveWorker() {
 			continue
 		}
 
-		hosts, err := r.DnsClient.Lookup(task.Host)
+		hosts, err := r.DNSClient.Lookup(task.Host)
 		if err != nil {
 			r.Results <- Result{Type: Error, Host: task.Host, Source: task.Source, Error: err}
 			continue
