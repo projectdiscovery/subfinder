@@ -1,9 +1,6 @@
 package resolve
 
 import (
-	"math/rand"
-	"time"
-
 	"github.com/projectdiscovery/dnsx/libs/dnsx"
 )
 
@@ -25,13 +22,11 @@ var DefaultResolvers = []string{
 type Resolver struct {
 	DNSClient *dnsx.DNSX
 	Resolvers []string
-	rand      *rand.Rand
 }
 
 // New creates a new resolver struct with the default resolvers
 func New() *Resolver {
 	return &Resolver{
 		Resolvers: []string{},
-		rand:      rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 }

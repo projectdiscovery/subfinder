@@ -63,7 +63,7 @@ func (r *Runner) initializeActiveEngine() error {
 
 	r.resolverClient = resolve.New()
 	var err error
-	r.resolverClient.DNSClient, err = dnsx.New(dnsx.Options{BaseResolvers: resolvers})
+	r.resolverClient.DNSClient, err = dnsx.New(dnsx.Options{BaseResolvers: resolvers, MaxRetries: 5})
 	if err != nil {
 		return nil
 	}
