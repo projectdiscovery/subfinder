@@ -101,7 +101,7 @@ The installation is easy. You can download the pre-built binaries for different 
 subfinder requires **go1.14+** to install successfully. Run the following command to get the repo -
 
 ```sh
-GO111MODULE=on go get -u -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder
+GO111MODULE=on go get -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder
 ```
 
 ### From Github
