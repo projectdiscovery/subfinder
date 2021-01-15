@@ -106,14 +106,18 @@ func (r *ResolutionPool) resolveWorker() {
 			continue
 		}
 
+		var skip bool
 		for _, host := range hosts {
 			// Ignore the host if it exists in wildcard ips map
 			if _, ok := r.wildcardIPs[host]; ok { //nolint:staticcheck //search alternatives for "comma ok"
-				continue
+				skip = true
+				break
 			}
 		}
 
-		r.Results <- Result{Type: Subdomain, Host: task.Host, IP: hosts[0], Source: task.Source}
+		if !skip {
+			r.Results <- Result{Type: Subdomain, Host: task.Host, IP: hosts[0], Source: task.Source}
+		}
 	}
 	r.wg.Done()
 }
