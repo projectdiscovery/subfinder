@@ -2,7 +2,7 @@
 
 Subfinder leverages multiple open APIs, it is developed for individuals to help them for research or internal work. If you wish to incorporate this tool into a commercial offering or purposes, you must agree to the Terms of the leveraged services:
 
-- Project Sonar / Bufferover: https://opendata.rapid7.com/about
+- Project Sonar / Bufferover: https://opendata.rapid7.com/about / [https://tls.bufferover.run](https://tls.bufferover.run/dns?q)
 - CommonCrawl: https://commoncrawl.org/terms-of-use/full
 - certspotter: https://sslmate.com/terms
 - dnsdumpster: https://hackertarget.com/terms
