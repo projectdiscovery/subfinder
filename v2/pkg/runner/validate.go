@@ -4,6 +4,8 @@ import (
 	"errors"
 
 	"github.com/projectdiscovery/gologger"
+	"github.com/projectdiscovery/gologger/formatter"
+	"github.com/projectdiscovery/gologger/levels"
 )
 
 // validateOptions validates the configuration options passed
@@ -39,12 +41,12 @@ func (options *Options) validateOptions() error {
 func (options *Options) configureOutput() {
 	// If the user desires verbose output, show verbose output
 	if options.Verbose {
-		gologger.MaxLevel = gologger.Verbose
+		gologger.DefaultLogger.SetMaxLevel(levels.LevelVerbose)
 	}
 	if options.NoColor {
-		gologger.UseColors = false
+		gologger.DefaultLogger.SetFormatter(formatter.NewCLI(true))
 	}
 	if options.Silent {
-		gologger.MaxLevel = gologger.Silent
+		gologger.DefaultLogger.SetMaxLevel(levels.LevelSilent)
 	}
 }

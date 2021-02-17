@@ -49,7 +49,7 @@ func ParseOptions() *Options {
 	config, err := GetConfigDirectory()
 	if err != nil {
 		// This should never be reached
-		gologger.Fatalf("Could not get user home: %s\n", err)
+		gologger.Fatal().Msgf("Could not get user home: %s\n", err)
 	}
 
 	flag.BoolVar(&options.Verbose, "v", false, "Show Verbose output")
@@ -89,7 +89,7 @@ func ParseOptions() *Options {
 	showBanner()
 
 	if options.Version {
-		gologger.Infof("Current Version: %s\n", Version)
+		gologger.Info().Msgf("Current Version: %s\n", Version)
 		os.Exit(0)
 	}
 
@@ -111,7 +111,7 @@ func ParseOptions() *Options {
 	// invalid options have been used, exit.
 	err = options.validateOptions()
 	if err != nil {
-		gologger.Fatalf("Program exiting: %s\n", err)
+		gologger.Fatal().Msgf("Program exiting: %s\n", err)
 	}
 
 	return options
@@ -130,9 +130,9 @@ func hasStdin() bool {
 }
 
 func listSources(options *Options) {
-	gologger.Infof("Current list of available sources. [%d]\n", len(options.YAMLConfig.AllSources))
-	gologger.Infof("Sources marked with an * needs key or token in order to work.\n")
-	gologger.Infof("You can modify %s to configure your keys / tokens.\n\n", options.ConfigFile)
+	gologger.Info().Msgf("Current list of available sources. [%d]\n", len(options.YAMLConfig.AllSources))
+	gologger.Info().Msgf("Sources marked with an * needs key or token in order to work.\n")
+	gologger.Info().Msgf("You can modify %s to configure your keys / tokens.\n\n", options.ConfigFile)
 
 	keys := options.YAMLConfig.GetKeys()
 	needsKey := make(map[string]interface{})
@@ -146,6 +146,6 @@ func listSources(options *Options) {
 		if _, ok := needsKey[source]; ok {
 			message = "%s *\n"
 		}
-		gologger.Silentf(message, source)
+		gologger.Silent().Msgf(message, source)
 	}
 }
