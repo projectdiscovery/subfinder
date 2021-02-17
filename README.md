@@ -101,7 +101,7 @@ The installation is easy. You can download the pre-built binaries for different 
 subfinder requires **go1.14+** to install successfully. Run the following command to get the repo -
 
 ```sh
-GO111MODULE=on go get -u -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder
+GO111MODULE=on go get -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder
 ```
 
 ### From Github
@@ -287,6 +287,10 @@ For example, this runs the tool against uber.com and output the results to your 
 ```sh
 docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it projectdiscovery/subfinder -d uber.com > uber.com.txt
 ```
+
+### Resources
+
+- [Recon with Me !!!](https://dhiyaneshgeek.github.io/bug/bounty/2020/02/06/recon-with-me/)
 
 # License
 
