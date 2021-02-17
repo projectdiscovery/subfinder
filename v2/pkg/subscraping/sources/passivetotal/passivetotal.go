@@ -72,4 +72,4 @@ func (s *Source) Name() string {
 	return "passivetotal"
 }
 
-var passiveTotalFilterRegex *regexp.Regexp = regexp.MustCompile(`^(?:[0-9]{1,3}\.){3}[0-9]{1,3}\\032`)
+var passiveTotalFilterRegex *regexp.Regexp = regexp.MustCompile(`^(?:\d{1,3}\.){3}\d{1,3}\\032`)
