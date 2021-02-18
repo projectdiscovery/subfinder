@@ -7,10 +7,8 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/archiveis"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/binaryedge"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/bufferover"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/cebaidu"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/censys"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/certspotter"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/certspotterold"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/chaos"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/commoncrawl"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtsh"
@@ -45,9 +43,7 @@ var DefaultSources = []string{
 	"alienvault",
 	"anubis",
 	"bufferover",
-	"cebaidu",
 	"certspotter",
-	"certspotterold",
 	"censys",
 	"chaos",
 	"crtsh",
@@ -72,9 +68,7 @@ var DefaultRecursiveSources = []string{
 	"alienvault",
 	"binaryedge",
 	"bufferover",
-	"cebaidu",
 	"certspotter",
-	"certspotterold",
 	"crtsh",
 	"dnsdumpster",
 	"hackertarget",
@@ -94,10 +88,8 @@ var DefaultAllSources = []string{
 	"archiveis",
 	"binaryedge",
 	"bufferover",
-	"cebaidu",
 	"censys",
 	"certspotter",
-	"certspotterold",
 	"chaos",
 	"commoncrawl",
 	"crtsh",
@@ -159,14 +151,10 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &binaryedge.Source{}
 		case "bufferover":
 			a.sources[source] = &bufferover.Source{}
-		case "cebaidu":
-			a.sources[source] = &cebaidu.Source{}
 		case "censys":
 			a.sources[source] = &censys.Source{}
 		case "certspotter":
 			a.sources[source] = &certspotter.Source{}
-		case "certspotterold":
-			a.sources[source] = &certspotterold.Source{}
 		case "chaos":
 			a.sources[source] = &chaos.Source{}
 		case "commoncrawl":

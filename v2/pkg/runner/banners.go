@@ -10,27 +10,27 @@ const banner = `
         _     __ _         _
 ____  _| |__ / _(_)_ _  __| |___ _ _
 (_-< || | '_ \  _| | ' \/ _  / -_) '_|
-/__/\_,_|_.__/_| |_|_||_\__,_\___|_| v2.4.5
+/__/\_,_|_.__/_| |_|_||_\__,_\___|_| v2.4.6
 `
 
 // Version is the current version of subfinder
-const Version = `2.4.5`
+const Version = `2.4.6`
 
 // showBanner is used to show the banner to the user
 func showBanner() {
-	gologger.Printf("%s\n", banner)
-	gologger.Printf("\t\tprojectdiscovery.io\n\n")
+	gologger.Print().Msgf("%s\n", banner)
+	gologger.Print().Msgf("\t\tprojectdiscovery.io\n\n")
 
-	gologger.Labelf("Use with caution. You are responsible for your actions\n")
-	gologger.Labelf("Developers assume no liability and are not responsible for any misuse or damage.\n")
-	gologger.Labelf("By using subfinder, you also agree to the terms of the APIs used.\n\n")
+	gologger.Print().Msgf("Use with caution. You are responsible for your actions\n")
+	gologger.Print().Msgf("Developers assume no liability and are not responsible for any misuse or damage.\n")
+	gologger.Print().Msgf("By using subfinder, you also agree to the terms of the APIs used.\n\n")
 }
 
 // normalRunTasks runs the normal startup tasks
 func (options *Options) normalRunTasks() {
 	configFile, err := UnmarshalRead(options.ConfigFile)
 	if err != nil {
-		gologger.Fatalf("Could not read configuration file %s: %s\n", options.ConfigFile, err)
+		gologger.Fatal().Msgf("Could not read configuration file %s: %s\n", options.ConfigFile, err)
 	}
 
 	// If we have a different version of subfinder installed
@@ -43,7 +43,7 @@ func (options *Options) normalRunTasks() {
 
 		err = configFile.MarshalWrite(options.ConfigFile)
 		if err != nil {
-			gologger.Fatalf("Could not update configuration file to %s: %s\n", options.ConfigFile, err)
+			gologger.Fatal().Msgf("Could not update configuration file to %s: %s\n", options.ConfigFile, err)
 		}
 	}
 	options.YAMLConfig = configFile
@@ -67,9 +67,9 @@ func (options *Options) firstRunTasks() {
 
 	err := config.MarshalWrite(options.ConfigFile)
 	if err != nil {
-		gologger.Fatalf("Could not write configuration file to %s: %s\n", options.ConfigFile, err)
+		gologger.Fatal().Msgf("Could not write configuration file to %s: %s\n", options.ConfigFile, err)
 	}
 	options.YAMLConfig = config
 
-	gologger.Infof("Configuration file saved to %s\n", options.ConfigFile)
+	gologger.Info().Msgf("Configuration file saved to %s\n", options.ConfigFile)
 }
