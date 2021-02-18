@@ -9,7 +9,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/bufferover"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/censys"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/certspotter"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/certspotterold"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/chaos"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/commoncrawl"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtsh"
@@ -45,7 +44,6 @@ var DefaultSources = []string{
 	"anubis",
 	"bufferover",
 	"certspotter",
-	"certspotterold",
 	"censys",
 	"chaos",
 	"crtsh",
@@ -71,7 +69,6 @@ var DefaultRecursiveSources = []string{
 	"binaryedge",
 	"bufferover",
 	"certspotter",
-	"certspotterold",
 	"crtsh",
 	"dnsdumpster",
 	"hackertarget",
@@ -93,7 +90,6 @@ var DefaultAllSources = []string{
 	"bufferover",
 	"censys",
 	"certspotter",
-	"certspotterold",
 	"chaos",
 	"commoncrawl",
 	"crtsh",
@@ -159,8 +155,6 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &censys.Source{}
 		case "certspotter":
 			a.sources[source] = &certspotter.Source{}
-		case "certspotterold":
-			a.sources[source] = &certspotterold.Source{}
 		case "chaos":
 			a.sources[source] = &chaos.Source{}
 		case "commoncrawl":
