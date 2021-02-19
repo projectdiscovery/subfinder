@@ -15,7 +15,6 @@ import (
 type Options struct {
 	Verbose            bool   // Verbose flag indicates whether to show verbose output or not
 	NoColor            bool   // No-Color disables the colored output
-	ChaosUpload        bool   // ChaosUpload indicates whether to upload results to the Chaos API
 	JSON               bool   // JSON specifies whether to use json for output format or text file
 	HostIP             bool   // HostIP specifies whether to write subdomains in host:ip format
 	Silent             bool   // Silent suppresses any extra text and only writes subdomains to screen
@@ -59,7 +58,6 @@ func ParseOptions() *Options {
 	flag.IntVar(&options.MaxEnumerationTime, "max-time", 10, "Minutes to wait for enumeration results")
 	flag.StringVar(&options.Domain, "d", "", "Domain to find subdomains for")
 	flag.StringVar(&options.DomainsFile, "dL", "", "File containing list of domains to enumerate")
-	flag.BoolVar(&options.ChaosUpload, "cd", false, "Upload results to the Chaos API (api-key required)")
 	flag.StringVar(&options.Output, "o", "", "File to write output to (optional)")
 	flag.StringVar(&options.OutputDirectory, "oD", "", "Directory to write enumeration results to (optional)")
 	flag.BoolVar(&options.JSON, "json", false, "Write output in JSON lines Format")
