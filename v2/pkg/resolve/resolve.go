@@ -1,6 +1,7 @@
 package resolve
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/rs/xid"
@@ -74,9 +75,9 @@ func (r *ResolutionPool) InitWildcards(domain string) error {
 	for i := 0; i < maxWildcardChecks; i++ {
 		uid := xid.New().String()
 
-		hosts, err := r.DNSClient.Lookup(uid + "." + domain)
-		if err != nil {
-			return err
+		hosts, _ := r.DNSClient.Lookup(uid + "." + domain)
+		if len(hosts) == 0 {
+			return fmt.Errorf("%s is not a wildcard domain", domain)
 		}
 
 		// Append all wildcard ips found for domains
