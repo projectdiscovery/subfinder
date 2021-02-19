@@ -59,7 +59,6 @@ This will display help for the tool. Here are all the switches it supports.
 | Flag | Description | Example |
 |------|-------------|---------|
 | -all | Use all sources (slow) for enumeration | subfinder -d uber.com -all |
-| -cd | Upload results to the Chaos API (api-key required) | subfinder -d uber.com -cd |
 | -config string | Configuration file for API Keys, etc  | subfinder -config config.yaml |
 | -d | Domain to find subdomains for | subfinder -d uber.com |
 | -dL  | File containing list of domains to enumerate | subfinder -dL hackerone-hosts.txt |
