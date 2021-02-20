@@ -1,4 +1,3 @@
-# Build Container
 FROM golang:1.15-alpine AS build-env
 RUN GO111MODULE=on go get -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder
 
