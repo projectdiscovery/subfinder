@@ -17,7 +17,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/github"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hackertarget"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/ipv4info"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/passivetotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rapiddns"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/recon"
@@ -49,7 +48,6 @@ var DefaultSources = []string{
 	"dnsdumpster",
 	"hackertarget",
 	"intelx",
-	"ipv4info",
 	"passivetotal",
 	"robtex",
 	"riddler",
@@ -71,7 +69,6 @@ var DefaultRecursiveSources = []string{
 	"crtsh",
 	"dnsdumpster",
 	"hackertarget",
-	"ipv4info",
 	"passivetotal",
 	"securitytrails",
 	"sonarsearch",
@@ -95,7 +92,6 @@ var DefaultAllSources = []string{
 	"dnsdb",
 	"github",
 	"hackertarget",
-	"ipv4info",
 	"intelx",
 	"passivetotal",
 	"rapiddns",
@@ -166,8 +162,6 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &github.Source{}
 		case "hackertarget":
 			a.sources[source] = &hackertarget.Source{}
-		case "ipv4info":
-			a.sources[source] = &ipv4info.Source{}
 		case "intelx":
 			a.sources[source] = &intelx.Source{}
 		case "passivetotal":
