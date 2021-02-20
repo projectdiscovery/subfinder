@@ -1,7 +1,6 @@
 package runner
 
 import (
-	"bytes"
 	"context"
 	"os"
 	"strings"
@@ -143,26 +142,6 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 		gologger.Info().Msgf("Found %d subdomains for %s in %s\n", len(foundResults), domain, duration)
 	} else {
 		gologger.Info().Msgf("Found %d subdomains for %s in %s\n", len(uniqueMap), domain, duration)
-	}
-
-	// In case the user has specified to upload to chaos, write everything to a temporary buffer and upload
-	if r.options.ChaosUpload {
-		var buf = &bytes.Buffer{}
-		err := outputter.WriteForChaos(uniqueMap, buf)
-		// If an error occurs, do not interrupt, continue to check if user specified an output file
-		if err != nil {
-			gologger.Error().Msgf("Could not prepare results for chaos %s\n", err)
-		} else {
-			// no error in writing host output, upload to chaos
-			err = r.UploadToChaos(ctx, buf)
-			if err != nil {
-				gologger.Error().Msgf("Could not upload results to chaos %s\n", err)
-			} else {
-				gologger.Info().Msgf("Input processed successfully and subdomains with valid records will be updated to chaos dataset.\n")
-			}
-			// clear buffer
-			buf.Reset()
-		}
 	}
 
 	if output != "" {
