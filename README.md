@@ -39,7 +39,7 @@ We have designed subfinder to comply with all passive sources licenses, and usag
 </h1>
 
 
- - Fast And Powerful Resolution and wildcard elimination module
+ - Fast and powerful resolution and wildcard elimination module
  - **Curated** passive sources to maximize results
  - Multiple Output formats supported (Json, File, Stdout)
  - Optimized for speed, very fast and **lightweight** on resources
