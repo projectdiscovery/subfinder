@@ -1,3 +1,4 @@
+// Package shodan logic
 package shodan
 
 import (
@@ -12,14 +13,10 @@ import (
 type Source struct{}
 
 type dnsdbLookupResponse struct {
-	Domain string `json:"domain"`
-	Data   []struct {
-		Subdomain string `json:"subdomain"`
-		Type      string `json:"type"`
-		Value     string `json:"value"`
-	} `json:"data"`
-	Result int    `json:"result"`
-	Error  string `json:"error"`
+	Domain     string   `json:"domain"`
+	Subdomains []string `json:"subdomains"`
+	Result     int      `json:"result"`
+	Error      string   `json:"error"`
 }
 
 // Run function returns all subdomains found with the service
@@ -54,14 +51,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		for _, data := range response.Data {
-			if data.Subdomain != "" {
-				if data.Type == "CNAME" {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: data.Value}
-				} else if data.Type == "A" {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: fmt.Sprintf("%s.%s", data.Subdomain, domain)}
-				}
-			}
+		for _, data := range response.Subdomains {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: fmt.Sprintf("%s.%s", data, domain)}
 		}
 	}()
 

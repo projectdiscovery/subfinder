@@ -63,25 +63,6 @@ func (o *OutPutter) createFile(filename string, appendtoFile bool) (*os.File, er
 	return file, nil
 }
 
-// WriteForChaos prepares the buffer to upload to Chaos
-func (o *OutPutter) WriteForChaos(results map[string]resolve.HostEntry, writer io.Writer) error {
-	bufwriter := bufio.NewWriter(writer)
-	sb := &strings.Builder{}
-
-	for _, result := range results {
-		sb.WriteString(result.Host)
-		sb.WriteString("\n")
-
-		_, err := bufwriter.WriteString(sb.String())
-		if err != nil {
-			bufwriter.Flush()
-			return err
-		}
-		sb.Reset()
-	}
-	return bufwriter.Flush()
-}
-
 // WriteHostIP writes the output list of subdomain to an io.Writer
 func (o *OutPutter) WriteHostIP(results map[string]resolve.Result, writer io.Writer) error {
 	var err error
@@ -184,7 +165,7 @@ func writeJSONHost(results map[string]resolve.HostEntry, writer io.Writer) error
 	return nil
 }
 
-// WriteHostIP writes the output list of subdomain to an io.Writer
+// WriteSourceHost writes the output list of subdomain to an io.Writer
 func (o *OutPutter) WriteSourceHost(sourceMap map[string]map[string]struct{}, writer io.Writer) error {
 	var err error
 	if o.JSON {

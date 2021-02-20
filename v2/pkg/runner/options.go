@@ -15,7 +15,6 @@ import (
 type Options struct {
 	Verbose            bool   // Verbose flag indicates whether to show verbose output or not
 	NoColor            bool   // No-Color disables the colored output
-	ChaosUpload        bool   // ChaosUpload indicates whether to upload results to the Chaos API
 	JSON               bool   // JSON specifies whether to use json for output format or text file
 	HostIP             bool   // HostIP specifies whether to write subdomains in host:ip format
 	Silent             bool   // Silent suppresses any extra text and only writes subdomains to screen
@@ -49,7 +48,7 @@ func ParseOptions() *Options {
 	config, err := GetConfigDirectory()
 	if err != nil {
 		// This should never be reached
-		gologger.Fatalf("Could not get user home: %s\n", err)
+		gologger.Fatal().Msgf("Could not get user home: %s\n", err)
 	}
 
 	flag.BoolVar(&options.Verbose, "v", false, "Show Verbose output")
@@ -59,7 +58,6 @@ func ParseOptions() *Options {
 	flag.IntVar(&options.MaxEnumerationTime, "max-time", 10, "Minutes to wait for enumeration results")
 	flag.StringVar(&options.Domain, "d", "", "Domain to find subdomains for")
 	flag.StringVar(&options.DomainsFile, "dL", "", "File containing list of domains to enumerate")
-	flag.BoolVar(&options.ChaosUpload, "cd", false, "Upload results to the Chaos API (api-key required)")
 	flag.StringVar(&options.Output, "o", "", "File to write output to (optional)")
 	flag.StringVar(&options.OutputDirectory, "oD", "", "Directory to write enumeration results to (optional)")
 	flag.BoolVar(&options.JSON, "json", false, "Write output in JSON lines Format")
@@ -89,7 +87,7 @@ func ParseOptions() *Options {
 	showBanner()
 
 	if options.Version {
-		gologger.Infof("Current Version: %s\n", Version)
+		gologger.Info().Msgf("Current Version: %s\n", Version)
 		os.Exit(0)
 	}
 
@@ -111,7 +109,7 @@ func ParseOptions() *Options {
 	// invalid options have been used, exit.
 	err = options.validateOptions()
 	if err != nil {
-		gologger.Fatalf("Program exiting: %s\n", err)
+		gologger.Fatal().Msgf("Program exiting: %s\n", err)
 	}
 
 	return options
@@ -130,9 +128,9 @@ func hasStdin() bool {
 }
 
 func listSources(options *Options) {
-	gologger.Infof("Current list of available sources. [%d]\n", len(options.YAMLConfig.AllSources))
-	gologger.Infof("Sources marked with an * needs key or token in order to work.\n")
-	gologger.Infof("You can modify %s to configure your keys / tokens.\n\n", options.ConfigFile)
+	gologger.Info().Msgf("Current list of available sources. [%d]\n", len(options.YAMLConfig.AllSources))
+	gologger.Info().Msgf("Sources marked with an * needs key or token in order to work.\n")
+	gologger.Info().Msgf("You can modify %s to configure your keys / tokens.\n\n", options.ConfigFile)
 
 	keys := options.YAMLConfig.GetKeys()
 	needsKey := make(map[string]interface{})
@@ -146,6 +144,6 @@ func listSources(options *Options) {
 		if _, ok := needsKey[source]; ok {
 			message = "%s *\n"
 		}
-		gologger.Silentf(message, source)
+		gologger.Silent().Msgf(message, source)
 	}
 }

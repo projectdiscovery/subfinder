@@ -15,11 +15,11 @@ func main() {
 
 	newRunner, err := runner.NewRunner(options)
 	if err != nil {
-		gologger.Fatalf("Could not create runner: %s\n", err)
+		gologger.Fatal().Msgf("Could not create runner: %s\n", err)
 	}
 
 	err = newRunner.RunEnumeration(context.Background())
 	if err != nil {
-		gologger.Fatalf("Could not run enumeration: %s\n", err)
+		gologger.Fatal().Msgf("Could not run enumeration: %s\n", err)
 	}
 }

@@ -7,10 +7,8 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/archiveis"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/binaryedge"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/bufferover"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/cebaidu"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/censys"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/certspotter"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/certspotterold"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/chaos"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/commoncrawl"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtsh"
@@ -19,7 +17,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/github"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hackertarget"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/ipv4info"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/passivetotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rapiddns"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/recon"
@@ -36,7 +33,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatminer"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/ximcx"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeye"
 )
 
@@ -45,16 +41,13 @@ var DefaultSources = []string{
 	"alienvault",
 	"anubis",
 	"bufferover",
-	"cebaidu",
 	"certspotter",
-	"certspotterold",
 	"censys",
 	"chaos",
 	"crtsh",
 	"dnsdumpster",
 	"hackertarget",
 	"intelx",
-	"ipv4info",
 	"passivetotal",
 	"robtex",
 	"riddler",
@@ -72,19 +65,15 @@ var DefaultRecursiveSources = []string{
 	"alienvault",
 	"binaryedge",
 	"bufferover",
-	"cebaidu",
 	"certspotter",
-	"certspotterold",
 	"crtsh",
 	"dnsdumpster",
 	"hackertarget",
-	"ipv4info",
 	"passivetotal",
 	"securitytrails",
 	"sonarsearch",
 	"sublist3r",
 	"virustotal",
-	"ximcx",
 }
 
 // DefaultAllSources contains list of all sources
@@ -94,10 +83,8 @@ var DefaultAllSources = []string{
 	"archiveis",
 	"binaryedge",
 	"bufferover",
-	"cebaidu",
 	"censys",
 	"certspotter",
-	"certspotterold",
 	"chaos",
 	"commoncrawl",
 	"crtsh",
@@ -105,7 +92,6 @@ var DefaultAllSources = []string{
 	"dnsdb",
 	"github",
 	"hackertarget",
-	"ipv4info",
 	"intelx",
 	"passivetotal",
 	"rapiddns",
@@ -123,7 +109,6 @@ var DefaultAllSources = []string{
 	"threatminer",
 	"virustotal",
 	"waybackarchive",
-	"ximcx",
 	"zoomeye",
 }
 
@@ -159,14 +144,10 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &binaryedge.Source{}
 		case "bufferover":
 			a.sources[source] = &bufferover.Source{}
-		case "cebaidu":
-			a.sources[source] = &cebaidu.Source{}
 		case "censys":
 			a.sources[source] = &censys.Source{}
 		case "certspotter":
 			a.sources[source] = &certspotter.Source{}
-		case "certspotterold":
-			a.sources[source] = &certspotterold.Source{}
 		case "chaos":
 			a.sources[source] = &chaos.Source{}
 		case "commoncrawl":
@@ -181,8 +162,6 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &github.Source{}
 		case "hackertarget":
 			a.sources[source] = &hackertarget.Source{}
-		case "ipv4info":
-			a.sources[source] = &ipv4info.Source{}
 		case "intelx":
 			a.sources[source] = &intelx.Source{}
 		case "passivetotal":
@@ -217,8 +196,6 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &virustotal.Source{}
 		case "waybackarchive":
 			a.sources[source] = &waybackarchive.Source{}
-		case "ximcx":
-			a.sources[source] = &ximcx.Source{}
 		case "zoomeye":
 			a.sources[source] = &zoomeye.Source{}
 		}

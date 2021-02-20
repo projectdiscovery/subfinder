@@ -1,3 +1,4 @@
+// Package chaos logic
 package chaos
 
 import (

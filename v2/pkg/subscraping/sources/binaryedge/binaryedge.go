@@ -1,3 +1,4 @@
+// Package binaryedge logic
 package binaryedge
 
 import (

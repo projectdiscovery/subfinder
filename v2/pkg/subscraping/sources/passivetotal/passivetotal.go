@@ -1,8 +1,10 @@
+// Package passivetotal logic
 package passivetotal
 
 import (
 	"bytes"
 	"context"
+	"regexp"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -54,6 +56,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		resp.Body.Close()
 
 		for _, subdomain := range data.Subdomains {
+			// skip entries like xxx.xxx.xxx.xxx\032domain.tld
+			if passiveTotalFilterRegex.MatchString(subdomain) {
+				continue
+			}
 			finalSubdomain := subdomain + "." + domain
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: finalSubdomain}
 		}
@@ -66,3 +72,5 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 func (s *Source) Name() string {
 	return "passivetotal"
 }
+
+var passiveTotalFilterRegex *regexp.Regexp = regexp.MustCompile(`^(?:\d{1,3}\.){3}\d{1,3}\\032`)

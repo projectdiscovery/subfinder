@@ -1,3 +1,4 @@
+// Package riddler logic
 package riddler
 
 import (

@@ -1,3 +1,4 @@
+// Package sitedossier logic
 package sitedossier
 
 import (
@@ -35,12 +36,14 @@ func (a *agent) enumerate(ctx context.Context, baseURL string) {
 	if err != nil && !isnotfound {
 		a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
 		a.session.DiscardHTTPResponse(resp)
+		return
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
 		resp.Body.Close()
+		return
 	}
 	resp.Body.Close()
 

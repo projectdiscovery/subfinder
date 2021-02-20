@@ -1,7 +1,6 @@
 package runner
 
 import (
-	"bytes"
 	"context"
 	"os"
 	"strings"
@@ -18,7 +17,7 @@ const maxNumCount = 2
 
 // EnumerateSingleDomain performs subdomain enumeration against a single domain
 func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output string, appendToFile bool) error {
-	gologger.Infof("Enumerating subdomains for %s\n", domain)
+	gologger.Info().Msgf("Enumerating subdomains for %s\n", domain)
 
 	// Get the API keys for sources from the configuration
 	// and also create the active resolving engine for the domain.
@@ -32,7 +31,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 		err := resolutionPool.InitWildcards(domain)
 		if err != nil {
 			// Log the error but don't quit.
-			gologger.Warningf("Could not get wildcards for domain %s: %s\n", domain, err)
+			gologger.Warning().Msgf("Could not get wildcards for domain %s: %s\n", domain, err)
 		}
 	}
 
@@ -51,7 +50,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 		for result := range passiveResults {
 			switch result.Type {
 			case subscraping.Error:
-				gologger.Warningf("Could not run source %s: %s\n", result.Source, result.Error)
+				gologger.Warning().Msgf("Could not run source %s: %s\n", result.Source, result.Error)
 			case subscraping.Subdomain:
 				// Validate the subdomain found and remove wildcards from
 				if !strings.HasSuffix(result.Value, "."+domain) {
@@ -65,7 +64,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 
 				// Log the verbose message about the found subdomain per source
 				if _, ok := sourceMap[subdomain][result.Source]; !ok {
-					gologger.Verbosef("%s\n", result.Source, subdomain)
+					gologger.Verbose().Label(result.Source).Msg(subdomain)
 				}
 
 				sourceMap[subdomain][result.Source] = struct{}{}
@@ -103,7 +102,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 		for result := range resolutionPool.Results {
 			switch result.Type {
 			case resolve.Error:
-				gologger.Warningf("Could not resolve host: %s\n", result.Error)
+				gologger.Warning().Msgf("Could not resolve host: %s\n", result.Error)
 			case resolve.Subdomain:
 				// Add the found subdomain to a map.
 				if _, ok := foundResults[result.Host]; !ok {
@@ -133,42 +132,22 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 		}
 	}
 	if err != nil {
-		gologger.Errorf("Could not verbose results for %s: %s\n", domain, err)
+		gologger.Error().Msgf("Could not verbose results for %s: %s\n", domain, err)
 		return err
 	}
 
 	// Show found subdomain count in any case.
 	duration := durafmt.Parse(time.Since(now)).LimitFirstN(maxNumCount).String()
 	if r.options.RemoveWildcard {
-		gologger.Infof("Found %d subdomains for %s in %s\n", len(foundResults), domain, duration)
+		gologger.Info().Msgf("Found %d subdomains for %s in %s\n", len(foundResults), domain, duration)
 	} else {
-		gologger.Infof("Found %d subdomains for %s in %s\n", len(uniqueMap), domain, duration)
-	}
-
-	// In case the user has specified to upload to chaos, write everything to a temporary buffer and upload
-	if r.options.ChaosUpload {
-		var buf = &bytes.Buffer{}
-		err := outputter.WriteForChaos(uniqueMap, buf)
-		// If an error occurs, do not interrupt, continue to check if user specified an output file
-		if err != nil {
-			gologger.Errorf("Could not prepare results for chaos %s\n", err)
-		} else {
-			// no error in writing host output, upload to chaos
-			err = r.UploadToChaos(ctx, buf)
-			if err != nil {
-				gologger.Errorf("Could not upload results to chaos %s\n", err)
-			} else {
-				gologger.Infof("Input processed successfully and subdomains with valid records will be updated to chaos dataset.\n")
-			}
-			// clear buffer
-			buf.Reset()
-		}
+		gologger.Info().Msgf("Found %d subdomains for %s in %s\n", len(uniqueMap), domain, duration)
 	}
 
 	if output != "" {
 		file, err := outputter.createFile(output, appendToFile)
 		if err != nil {
-			gologger.Errorf("Could not create file %s for %s: %s\n", output, domain, err)
+			gologger.Error().Msgf("Could not create file %s for %s: %s\n", output, domain, err)
 			return err
 		}
 
@@ -188,7 +167,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 			}
 		}
 		if err != nil {
-			gologger.Errorf("Could not write results to file %s for %s: %s\n", output, domain, err)
+			gologger.Error().Msgf("Could not write results to file %s for %s: %s\n", output, domain, err)
 			return err
 		}
 	}

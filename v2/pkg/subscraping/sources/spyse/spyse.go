@@ -1,3 +1,4 @@
+// Package spyse logic
 package spyse
 
 import (

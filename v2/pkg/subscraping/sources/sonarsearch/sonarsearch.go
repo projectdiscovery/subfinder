@@ -1,3 +1,4 @@
+// Package sonarsearch logic
 package sonarsearch
 
 import (

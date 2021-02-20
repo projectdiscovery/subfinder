@@ -60,7 +60,7 @@ linters:
     - deadcode
     - dogsled
     - dupl
-    - errcheck
+    # - errcheck
     - exhaustive
     - gochecknoinits
     - goconst
@@ -78,7 +78,7 @@ linters:
     - misspell
     - nakedret
     - noctx
-    - nolintlint
+    # - nolintlint
     - rowserrcheck
     - scopelint
     - staticcheck
@@ -107,6 +107,12 @@ linters:
   # - prealloc
   # - testpackage
   # - wsl
+
+issues:
+  exclude-use-default: false
+  exclude:
+    # should have a package comment, unless it's in another file for this package (golint)
+    - 'in another file for this package'
 
 # golangci.com configuration
 # https://github.com/golangci/golangci/wiki/Configuration
