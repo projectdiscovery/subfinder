@@ -1,3 +1,4 @@
+// Package securitytrails logic
 package securitytrails
 
 import (

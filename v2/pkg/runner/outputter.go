@@ -165,7 +165,7 @@ func writeJSONHost(results map[string]resolve.HostEntry, writer io.Writer) error
 	return nil
 }
 
-// WriteHostIP writes the output list of subdomain to an io.Writer
+// WriteSourceHost writes the output list of subdomain to an io.Writer
 func (o *OutPutter) WriteSourceHost(sourceMap map[string]map[string]struct{}, writer io.Writer) error {
 	var err error
 	if o.JSON {

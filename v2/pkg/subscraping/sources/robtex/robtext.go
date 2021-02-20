@@ -1,3 +1,4 @@
+// Package robtex logic
 package robtex
 
 import (

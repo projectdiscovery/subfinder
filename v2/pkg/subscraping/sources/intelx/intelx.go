@@ -1,3 +1,4 @@
+// Package intelx logic
 package intelx
 
 import (

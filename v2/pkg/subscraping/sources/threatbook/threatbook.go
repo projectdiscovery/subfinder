@@ -1,3 +1,4 @@
+// Package threatbook logic
 package threatbook
 
 import (

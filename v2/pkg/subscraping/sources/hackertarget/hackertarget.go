@@ -1,3 +1,4 @@
+// Package hackertarget logic
 package hackertarget
 
 import (

@@ -1,3 +1,4 @@
+// Package shodan logic
 package shodan
 
 import (
@@ -50,8 +51,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		for _, data := range response.Subdomains {			
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: fmt.Sprintf("%s.%s", data, domain)}	
+		for _, data := range response.Subdomains {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: fmt.Sprintf("%s.%s", data, domain)}
 		}
 	}()
 

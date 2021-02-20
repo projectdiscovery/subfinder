@@ -1,3 +1,4 @@
+// Package certspotter logic
 package certspotter
 
 import (

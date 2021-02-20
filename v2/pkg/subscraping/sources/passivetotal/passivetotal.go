@@ -1,3 +1,4 @@
+// Package passivetotal logic
 package passivetotal
 
 import (
