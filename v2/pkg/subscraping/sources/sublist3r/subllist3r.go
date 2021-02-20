@@ -1,3 +1,4 @@
+// Package sublist3r logic
 package sublist3r
 
 import (

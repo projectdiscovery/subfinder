@@ -1,3 +1,4 @@
+// Package zoomeye logic
 package zoomeye
 
 import (

@@ -1,3 +1,4 @@
+// Package dnsdb logic
 package dnsdb
 
 import (

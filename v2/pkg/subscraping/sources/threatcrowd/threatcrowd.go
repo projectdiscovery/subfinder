@@ -1,3 +1,4 @@
+// Package threatcrowd logic
 package threatcrowd
 
 import (

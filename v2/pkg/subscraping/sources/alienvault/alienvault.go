@@ -1,3 +1,4 @@
+// Package alienvault logic
 package alienvault
 
 import (

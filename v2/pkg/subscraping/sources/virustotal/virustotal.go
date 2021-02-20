@@ -1,3 +1,4 @@
+// Package virustotal logic
 package virustotal
 
 import (

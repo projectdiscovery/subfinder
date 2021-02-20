@@ -1,3 +1,4 @@
+// Package sitedossier logic
 package sitedossier
 
 import (

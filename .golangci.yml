@@ -60,7 +60,7 @@ linters:
     - deadcode
     - dogsled
     - dupl
-    - errcheck
+    # - errcheck
     - exhaustive
     - gochecknoinits
     - goconst
@@ -78,7 +78,7 @@ linters:
     - misspell
     - nakedret
     - noctx
-    - nolintlint
+    # - nolintlint
     - rowserrcheck
     - scopelint
     - staticcheck

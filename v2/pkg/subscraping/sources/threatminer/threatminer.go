@@ -1,3 +1,4 @@
+// Package threatminer logic
 package threatminer
 
 import (
