@@ -1,39 +1,37 @@
-<h1 align="left">
-  <img src="static/subfinder-logo.png" alt="subfinder" width="170px"></a>
+<h1 align="center">
+  <img src="static/subfinder-logo.png" alt="subfinder" width="200px"></a>
   <br>
 </h1>
 
-
-[![License](https://img.shields.io/badge/license-MIT-_red.svg)](https://opensource.org/licenses/MIT)
-[![Go Report Card](https://goreportcard.com/badge/github.com/projectdiscovery/subfinder)](https://goreportcard.com/report/github.com/projectdiscovery/subfinder)
-[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/projectdiscovery/subfinder/issues)
-[![GitHub Release](https://img.shields.io/github/release/projectdiscovery/subfinder)](https://github.com/projectdiscovery/subfinder/releases)
-[![Follow on Twitter](https://img.shields.io/twitter/follow/pdiscoveryio.svg?logo=twitter)](https://twitter.com/pdiscoveryio)
-[![Docker Images](https://img.shields.io/docker/pulls/projectdiscovery/subfinder.svg)](https://hub.docker.com/r/projectdiscovery/subfinder)
-[![Chat on Discord](https://img.shields.io/discord/695645237418131507.svg?logo=discord)](https://discord.gg/KECAGdH)
+<h4 align="center">Fast passive subdomain enumeration tool.</h4>
 
 
+<p align="center">
+<a href="https://goreportcard.com/report/github.com/projectdiscovery/subfinder"><img src="https://goreportcard.com/badge/github.com/projectdiscovery/subfinder"></a>
+<a href="https://github.com/projectdiscovery/subfinder/issues"><img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat"></a>
+<a href="https://github.com/projectdiscovery/subfinder/releases"><img src="https://img.shields.io/github/release/projectdiscovery/subfinder"></a>
+<a href="https://twitter.com/pdiscovery"><img src="https://img.shields.io/twitter/follow/pdiscovery.svg?logo=twitter"></a>
+<a href="https://discord.gg/projectdiscovery"><img src="https://img.shields.io/discord/695645237418131507.svg?logo=discord"></a>
+</p>
+      
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#installation">Install</a> •
+  <a href="#running-subfinder">Usage</a> •
+  <a href="#post-installation-instructions">API Setup</a> •
+  <a href="#license">License</a> •
+  <a href="https://discord.gg/projectdiscovery">Join Discord</a>
+</p>
 
-subfinder is a subdomain discovery tool that discovers valid subdomains for websites by using passive online sources. It has a simple modular architecture and is optimized for speed. subfinder is built for doing one thing only - passive subdomain enumeration, and it does that very well.
+---
+
+
+Subfinder is a subdomain discovery tool that discovers valid subdomains for websites by using passive online sources. It has a simple modular architecture and is optimized for speed. subfinder is built for doing one thing only - passive subdomain enumeration, and it does that very well.
 
 We have designed subfinder to comply with all passive sources licenses, and usage restrictions, as well as maintained a consistently passive model to make it useful to both penetration testers and bug bounty hunters alike.
 
 
-# Resources
-- [Features](#features)
-- [Usage](#usage)
-- [Installation Instructions (direct)](#direct-installation)
-- [Installation Instructions](#installation-instructions)
-    - [From Binary](#from-binary)
-    - [From Source](#from-source)
-    - [From Github](#from-github)
-- [Upgrading](#upgrading)
-- [Post Installation Instructions](#post-installation-instructions)
-- [Running subfinder](#running-subfinder)
-- [Running in a Docker Container](#running-in-a-docker-container)
-
-
- # Features
+# Features
 
 <h1 align="left">
   <img src="static/subfinder-run.png" alt="subfinder" width="700px"></a>
@@ -41,12 +39,11 @@ We have designed subfinder to comply with all passive sources licenses, and usag
 </h1>
 
 
- - Simple and modular code base making it easy to contribute.
  - Fast And Powerful Resolution and wildcard elimination module
- - **Curated** passive sources to maximize results (35 Sources as of now)
+ - **Curated** passive sources to maximize results
  - Multiple Output formats supported (Json, File, Stdout)
  - Optimized for speed, very fast and **lightweight** on resources
- - **Stdin** and **stdout** support for integrating in workflows
+ - **STDIN/OUT** support for integrating in workflows
 
 
 # Usage
@@ -56,62 +53,40 @@ subfinder -h
 ```
 This will display help for the tool. Here are all the switches it supports.
 
-| Flag | Description | Example |
-|------|-------------|---------|
-| -all | Use all sources (slow) for enumeration | subfinder -d uber.com -all |
-| -config string | Configuration file for API Keys, etc  | subfinder -config config.yaml |
-| -d | Domain to find subdomains for | subfinder -d uber.com |
-| -dL  | File containing list of domains to enumerate | subfinder -dL hackerone-hosts.txt |
-| -exclude-sources | List of sources to exclude from enumeration | subfinder -exclude-sources archiveis |
-| -max-time | Minutes to wait for enumeration results (default 10) | subfinder -max-time 1 |
-| -nC | Don't Use colors in output | subfinder -nC |
-| -nW | Remove Wildcard & Dead Subdomains from output | subfinder -nW |
-| -ls | List all available sources | subfinder -ls |
-| -o  | File to write output to (optional) | subfinder -o output.txt |
-| -oD | Directory to write enumeration results to (optional) | subfinder -oD ~/outputs |
-| -oI | Write output in Host,IP format | subfinder -oI |
-| -oJ | Write output in JSON lines Format | subfinder -oJ |
-| -r | Comma-separated list of resolvers to use | subfinder -r 1.1.1.1,1.0.0.1 |
-| -rL | Text file containing list of resolvers to use | subfinder -rL resolvers.txt
-| -recursive | Enumeration recursive subdomains | subfinder -d news.yahoo.com -recursive
-| -silent | Show only subdomains in output | subfinder -silent |
-| -sources | Comma separated list of sources to use | subfinder -sources shodan,censys |
-| -t | Number of concurrent goroutines for resolving (default 10) | subfinder -t 100 |
-| -timeout | Seconds to wait before timing out (default 30) | subfinder -timeout 30 |
-| -v | 	Show Verbose output | subfinder -v |
-| -version | Show current program version | subfinder -version |
+| Flag             | Description                                                | Example                                |
+| ---------------- | ---------------------------------------------------------- | -------------------------------------- |
+| -all             | Use all sources (slow) for enumeration                     | subfinder -d uber.com -all             |
+| -config          | Configuration file for API Keys, etc                       | subfinder -config config.yaml          |
+| -d               | Domain to find subdomains for                              | subfinder -d uber.com                  |
+| -dL              | File containing list of domains to enumerate               | subfinder -dL hackerone-hosts.txt      |
+| -exclude-sources | List of sources to exclude from enumeration                | subfinder -exclude-sources archiveis   |
+| -max-time        | Minutes to wait for enumeration results (default 10)       | subfinder -max-time 1                  |
+| -nC              | Don't Use colors in output                                 | subfinder -nC                          |
+| -nW              | Remove Wildcard & Dead Subdomains from output              | subfinder -nW                          |
+| -ls              | List all available sources                                 | subfinder -ls                          |
+| -o               | File to write output to (optional)                         | subfinder -o output.txt                |
+| -oD              | Directory to write enumeration results to (optional)       | subfinder -oD ~/outputs                |
+| -oI              | Write output in Host,IP format                             | subfinder -oI                          |
+| -oJ              | Write output in JSON lines Format                          | subfinder -oJ                          |
+| -r               | Comma-separated list of resolvers to use                   | subfinder -r 1.1.1.1,1.0.0.1           |
+| -rL              | Text file containing list of resolvers to use              | subfinder -rL resolvers.txt            |
+| -recursive       | Enumeration recursive subdomains                           | subfinder -d news.yahoo.com -recursive |
+| -silent          | Show only subdomains in output                             | subfinder -silent                      |
+| -sources         | Comma separated list of sources to use                     | subfinder -sources shodan,censys       |
+| -t               | Number of concurrent goroutines for resolving (default 10) | subfinder -t 100                       |
+| -timeout         | Seconds to wait before timing out (default 30)             | subfinder -timeout 30                  |
+| -v               | Show Verbose output                                        | subfinder -v                           |
+| -version         | Show current program version                               | subfinder -version                     |
 
 
-# Installation Instructions
+# Installation
 
-### From Binary
-
-The installation is easy. You can download the pre-built binaries for different platforms from the [releases](https://github.com/projectdiscovery/subfinder/releases/) page. Extract them using tar, move it to your `$PATH` and you're ready to go.
+Subfinder requires **go1.14+** to install successfully. Run the following command to get the repo -
 
 ```sh
-▶ # download release from https://github.com/projectdiscovery/subfinder/releases/
-▶ tar -xzvf subfinder-linux-amd64.tar.gz
-▶ mv subfinder /usr/local/bin/
-▶ subfinder -h
+▶ GO111MODULE=on go get -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder
 ```
 
-### From Source
-
-subfinder requires **go1.14+** to install successfully. Run the following command to get the repo -
-
-```sh
-GO111MODULE=on go get -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder
-```
-
-### From Github
-
-```sh
-git clone https://github.com/projectdiscovery/subfinder.git
-cd subfinder/v2/cmd/subfinder
-go build .
-mv subfinder /usr/local/bin/
-subfinder -h
-```
 
 ## Post Installation Instructions
 
@@ -170,30 +145,28 @@ github:
 
 To run the tool on a target, just use the following command.
 ```sh
-▶ subfinder -d freelancer.com
+▶ subfinder -d example.com
 ```
 
-This will run the tool against freelancer.com. There are a number of configuration options that you can pass along with this command. The verbose switch (-v) can be used to display verbose information.
+The verbose flag `v` can be used to display verbose information.
 
 ```
-[threatcrowd] ns1.hosting.freelancer.com
-[threatcrowd] ns2.hosting.freelancer.com
-[threatcrowd] flash.freelancer.com
-[threatcrowd] auth.freelancer.com
-[chaos] alertmanager.accounts.freelancer.com
-[chaos] analytics01.freelancer.com
-[chaos] apidocs.freelancer.com
-[chaos] brains.freelancer.com
-[chaos] consul.accounts.freelancer.com
+[bufferover] lutin.dima.example.com
+[bufferover] izosimdima.example.com
+[bufferover] glazkovdima.example.com
+[bufferover] dengshima.example.com
+[bufferover] wwwkima.example.com
+[bufferover] proxima.example.com
+[bufferover] mma.example.com
+[bufferover] damidoma.example.com
+[bufferover] nomerdoma.example.com
+[bufferover] soti.croma.example.com
 ```
-
-The `-silent` switch can be used to show only subdomains found without any other info.
-
 
 The `-o` command can be used to specify an output file.
 
 ```sh
-▶ subfinder -d freelancer.com -o output.txt
+▶ subfinder -d example.com -o output.txt
 ```
 
 To run the tool on a list of domains, `-dL` option can be used. This requires a directory to write the output files. Subdomains for each domain from the list are written in a text file in the directory specified by the `-oD` flag with their name being the domain name.
@@ -224,14 +197,6 @@ If you use the JSON format, or the `Host:IP` format, then it becomes mandatory f
 {"host":"mta-sts.managed.hackerone.com","ip":"185.199.110.153"}
 ```
 
-
-**The new highlight of this release is the addition of stdin/stdout features.** Now, domains can be piped to subfinder and enumeration can be ran on them. For example -
-
-```sh
-▶ echo hackerone.com | subfinder
-▶ cat targets.txt | subfinder
-```
-
 The subdomains discovered can be piped to other tools too. For example, you can pipe the subdomains discovered by subfinder to httpx [httpx](https://github.com/projectdiscovery/httpx) which will then find running http servers on the host.
 
 ```sh
@@ -245,7 +210,11 @@ https://docs.hackerone.com
 http://mta-sts.managed.hackerone.com
 ```
 
-## Running in a Docker Container
+<table>
+<tr>
+<td>  
+
+## Subfinder with docker
 
 You can use the official dockerhub image at [subfinder](https://hub.docker.com/r/projectdiscovery/subfinder). Simply run -
 
@@ -263,12 +232,6 @@ If you want to build the container yourself manually, git clone the repo, then b
 docker build -t projectdiscovery/subfinder .
 ```
 
-- After building the container using either way, run the following -
-```sh
-docker run -it projectdiscovery/subfinder
-```
-▶ The above command is the same as running `-h`
-
 If you are using docker, you need to first create your directory structure holding subfinder configuration file. After modifying the default config.yaml file, you can run:
 
 ```sh
@@ -279,13 +242,17 @@ If you are using docker, you need to first create your directory structure holdi
 
 After that, you can pass it as a volume using the following sample command.
 ```sh
-▶ docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it projectdiscovery/subfinder -d freelancer.com
+▶ docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it projectdiscovery/subfinder -d example.com
 ```
 
-For example, this runs the tool against uber.com and output the results to your host file system:
+For example, this runs the tool against example.com and output the results to your host file system:
 ```sh
-docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it projectdiscovery/subfinder -d uber.com > uber.com.txt
+docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it projectdiscovery/subfinder -d example.com > example.com.txt
 ```
+
+</td>
+</tr>
+</table>
 
 ### Resources
 
