@@ -47,7 +47,7 @@ func (a *Agent) EnumerateSubdomains(domain string, keys *subscraping.Keys, timeo
 		wg.Wait()
 
 		for source, data := range timeTaken {
-			gologger.Verbose().Lable(source).Msg(data)
+			gologger.Verbose().Label(source).Msg(data)
 		}
 
 		close(results)
