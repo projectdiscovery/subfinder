@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"net"
 	"strings"
 
 	"github.com/projectdiscovery/dnsx/libs/dnsx"
@@ -59,6 +60,13 @@ func (r *Runner) initializeActiveEngine() error {
 		resolvers = append(resolvers, r.options.YAMLConfig.Resolvers...)
 	} else {
 		resolvers = append(resolvers, resolve.DefaultResolvers...)
+	}
+
+	// Add default 53 UDP port if missing
+	for i, resolver := range resolvers {
+		if !strings.Contains(resolver, ":") {
+			resolvers[i] = net.JoinHostPort(resolver, "53")
+		}
 	}
 
 	r.resolverClient = resolve.New()
