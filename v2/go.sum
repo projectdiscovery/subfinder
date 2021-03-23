@@ -34,7 +34,7 @@ github.com/onsi/gomega v1.4.3/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1Cpa
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/projectdiscovery/chaos-client v0.1.7 h1:NSC/rjZVfg1gowKBadpjtxDpMhmgnzXGQ7iDstaFvGI=
+github.com/projectdiscovery/chaos-client v0.1.7 h1:8M1LazT+lD3qJP1ERWXiVzQn9lPMO3p6v3qsiGNKUlQ=
 github.com/projectdiscovery/chaos-client v0.1.7/go.mod h1:F5omaoJh/vMvWnZhKD4zFFA5ti+RPwUletwepKSyfxk=
 github.com/projectdiscovery/clistats v0.0.5/go.mod h1:lV6jUHAv2bYWqrQstqW8iVIydKJhWlVaLl3Xo9ioVGg=
 github.com/projectdiscovery/dnsx v1.0.1 h1:BDV9xHBxEoWESjIrcfeyNMG90vAwgwn23sDHDwlnqAk=
