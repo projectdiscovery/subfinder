@@ -31,8 +31,8 @@ jobs:
           go-version: 1.15
 
       - name: Test
-        run: go test .
-        working-directory: v2/cmd/subfinder/
+        run: go test ./...
+        working-directory: v2/
 
       - name: Build
         run: go build .

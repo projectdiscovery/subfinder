@@ -1,6 +1,10 @@
+before:
+  hooks:
+    - go mod tidy
+
 builds:
     - binary: subfinder
-      main: v2/cmd/subfinder/main.go
+      main: cmd/subfinder/main.go
       goos:
         - linux
         - windows
