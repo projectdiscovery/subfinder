@@ -18,6 +18,7 @@ jobs:
           # Required: the version of golangci-lint is required and must be specified without patch version: we always use the latest patch version.
           version: v1.33
           args: --timeout 5m
+          working-directory: v2/
 
   build:
     runs-on: ubuntu-latest
