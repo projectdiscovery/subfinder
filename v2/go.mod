@@ -1,12 +1,12 @@
 module github.com/projectdiscovery/subfinder/v2
 
-go 1.15
+go 1.16
 
 require (
-	github.com/hako/durafmt v0.0.0-20200710122514-c0fb7b4da026
+	github.com/hako/durafmt v0.0.0-20210316092057-3a2c319c1acd
 	github.com/json-iterator/go v1.1.10
-	github.com/lib/pq v1.9.0
-	github.com/projectdiscovery/chaos-client v0.1.7
+	github.com/lib/pq v1.10.0
+	github.com/projectdiscovery/chaos-client v0.1.8
 	github.com/projectdiscovery/dnsx v1.0.1
 	github.com/projectdiscovery/fdmax v0.0.3
 	github.com/projectdiscovery/gologger v1.1.4
