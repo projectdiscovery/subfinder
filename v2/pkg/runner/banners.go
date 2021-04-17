@@ -10,11 +10,11 @@ const banner = `
         _     __ _         _
 ____  _| |__ / _(_)_ _  __| |___ _ _
 (_-< || | '_ \  _| | ' \/ _  / -_) '_|
-/__/\_,_|_.__/_| |_|_||_\__,_\___|_| v2.4.6
+/__/\_,_|_.__/_| |_|_||_\__,_\___|_| v2.4.7
 `
 
 // Version is the current version of subfinder
-const Version = `2.4.6`
+const Version = `2.4.7`
 
 // showBanner is used to show the banner to the user
 func showBanner() {
