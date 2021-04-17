@@ -2,6 +2,7 @@ package runner
 
 import (
 	"flag"
+	"io"
 	"os"
 	"path"
 	"reflect"
@@ -30,7 +31,8 @@ type Options struct {
 	MaxEnumerationTime int    // MaxEnumerationTime is the maximum amount of time in mins to wait for enumeration
 	Domain             string // Domain is the domain to find subdomains for
 	DomainsFile        string // DomainsFile is the file containing list of domains to find subdomains for
-	Output             string // Output is the file to write found subdomains to.
+	Output             io.Writer
+	OutputFile         string // Output is the file to write found subdomains to.
 	OutputDirectory    string // OutputDirectory is the directory to write results to in case list of domains is given
 	Sources            string // Sources contains a comma-separated list of sources to use for enumeration
 	ExcludeSources     string // ExcludeSources contains the comma-separated sources to not include in the enumeration process
@@ -58,7 +60,7 @@ func ParseOptions() *Options {
 	flag.IntVar(&options.MaxEnumerationTime, "max-time", 10, "Minutes to wait for enumeration results")
 	flag.StringVar(&options.Domain, "d", "", "Domain to find subdomains for")
 	flag.StringVar(&options.DomainsFile, "dL", "", "File containing list of domains to enumerate")
-	flag.StringVar(&options.Output, "o", "", "File to write output to (optional)")
+	flag.StringVar(&options.OutputFile, "o", "", "File to write output to (optional)")
 	flag.StringVar(&options.OutputDirectory, "oD", "", "Directory to write enumeration results to (optional)")
 	flag.BoolVar(&options.JSON, "json", false, "Write output in JSON lines Format")
 	flag.BoolVar(&options.CaptureSources, "collect-sources", false, "Output host source as array of sources instead of single (first) source")
@@ -76,6 +78,9 @@ func ParseOptions() *Options {
 	flag.StringVar(&options.ConfigFile, "config", path.Join(config, "config.yaml"), "Configuration file for API Keys, etc")
 	flag.BoolVar(&options.Version, "version", false, "Show version of subfinder")
 	flag.Parse()
+
+	// Default output is stdout
+	options.Output = os.Stdout
 
 	// Check if stdin pipe was given
 	options.Stdin = hasStdin()
