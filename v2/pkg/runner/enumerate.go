@@ -2,7 +2,7 @@ package runner
 
 import (
 	"context"
-	"os"
+	"io"
 	"strings"
 	"sync"
 	"time"
@@ -16,7 +16,7 @@ import (
 const maxNumCount = 2
 
 // EnumerateSingleDomain performs subdomain enumeration against a single domain
-func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output string, appendToFile bool) error {
+func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain string, outputs []io.Writer) error {
 	gologger.Info().Msgf("Enumerating subdomains for %s\n", domain)
 
 	// Get the API keys for sources from the configuration
@@ -115,25 +115,26 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 
 	outputter := NewOutputter(r.options.JSON)
 
-	// If verbose mode was used, then now print all the
-	// found subdomains on the screen together.
+	// Now output all results in output writers
 	var err error
-	if r.options.HostIP {
-		err = outputter.WriteHostIP(foundResults, os.Stdout)
-	} else {
-		if r.options.RemoveWildcard {
-			err = outputter.WriteHostNoWildcard(foundResults, os.Stdout)
+	for _, w := range outputs {
+		if r.options.HostIP {
+			err = outputter.WriteHostIP(foundResults, w)
 		} else {
-			if r.options.CaptureSources {
-				err = outputter.WriteSourceHost(sourceMap, os.Stdout)
+			if r.options.RemoveWildcard {
+				err = outputter.WriteHostNoWildcard(foundResults, w)
 			} else {
-				err = outputter.WriteHost(uniqueMap, os.Stdout)
+				if r.options.CaptureSources {
+					err = outputter.WriteSourceHost(sourceMap, w)
+				} else {
+					err = outputter.WriteHost(uniqueMap, w)
+				}
 			}
 		}
-	}
-	if err != nil {
-		gologger.Error().Msgf("Could not verbose results for %s: %s\n", domain, err)
-		return err
+		if err != nil {
+			gologger.Error().Msgf("Could not verbose results for %s: %s\n", domain, err)
+			return err
+		}
 	}
 
 	// Show found subdomain count in any case.
@@ -142,34 +143,6 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain, output strin
 		gologger.Info().Msgf("Found %d subdomains for %s in %s\n", len(foundResults), domain, duration)
 	} else {
 		gologger.Info().Msgf("Found %d subdomains for %s in %s\n", len(uniqueMap), domain, duration)
-	}
-
-	if output != "" {
-		file, err := outputter.createFile(output, appendToFile)
-		if err != nil {
-			gologger.Error().Msgf("Could not create file %s for %s: %s\n", output, domain, err)
-			return err
-		}
-
-		defer file.Close()
-
-		if r.options.HostIP {
-			err = outputter.WriteHostIP(foundResults, file)
-		} else {
-			if r.options.RemoveWildcard {
-				err = outputter.WriteHostNoWildcard(foundResults, file)
-			} else {
-				if r.options.CaptureSources {
-					err = outputter.WriteSourceHost(sourceMap, file)
-				} else {
-					err = outputter.WriteHost(uniqueMap, file)
-				}
-			}
-		}
-		if err != nil {
-			gologger.Error().Msgf("Could not write results to file %s for %s: %s\n", output, domain, err)
-			return err
-		}
 	}
 
 	return nil
