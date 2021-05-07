@@ -3,6 +3,7 @@ package runner
 import (
 	"flag"
 	"io"
+	"net"
 	"os"
 	"path"
 	"reflect"
@@ -38,6 +39,8 @@ type Options struct {
 	ExcludeSources     string // ExcludeSources contains the comma-separated sources to not include in the enumeration process
 	Resolvers          string // Resolvers is the comma-separated resolvers to use for enumeration
 	ResolverList       string // ResolverList is a text file containing list of resolvers to use for enumeration
+	LocalIP            net.IP // LocalIP is the IP address used as local bind
+	LocalIPString      string // LocalIPString is the IP address in string format got from command line
 	ConfigFile         string // ConfigFile contains the location of the config file
 
 	YAMLConfig ConfigFile // YAMLConfig contains the unmarshalled yaml config file
@@ -75,6 +78,7 @@ func ParseOptions() *Options {
 	flag.StringVar(&options.Resolvers, "r", "", "Comma-separated list of resolvers to use")
 	flag.StringVar(&options.ResolverList, "rL", "", "Text file containing list of resolvers to use")
 	flag.BoolVar(&options.RemoveWildcard, "nW", false, "Remove Wildcard & Dead Subdomains from output")
+	flag.StringVar(&options.LocalIPString, "b", "", "IP address to be used as local bind")
 	flag.StringVar(&options.ConfigFile, "config", path.Join(config, "config.yaml"), "Configuration file for API Keys, etc")
 	flag.BoolVar(&options.Version, "version", false, "Show version of subfinder")
 	flag.Parse()

@@ -56,6 +56,7 @@ This will display help for the tool. Here are all the switches it supports.
 | Flag             | Description                                                | Example                                |
 | ---------------- | ---------------------------------------------------------- | -------------------------------------- |
 | -all             | Use all sources (slow) for enumeration                     | subfinder -d uber.com -all             |
+| -b               | IP address to be used as local bind                        | subfinder -b 172.16.0.1                |
 | -config          | Configuration file for API Keys, etc                       | subfinder -config config.yaml          |
 | -d               | Domain to find subdomains for                              | subfinder -d uber.com                  |
 | -dL              | File containing list of domains to enumerate               | subfinder -dL hackerone-hosts.txt      |
@@ -209,6 +210,30 @@ http://api.hackerone.com
 https://docs.hackerone.com
 http://mta-sts.managed.hackerone.com
 ```
+
+If your enterprise uses source routing to choose network output, or your computer has many public network interfaces (eg: public Wi-Fi + 4G connection + Ethernet Wire + VPN), you might want to choose your output network by binding IP source. In this case, you can use `-b` option.
+In the example below, we have 3 network interfaces able to communicate to the Internet through 3 different outputs. Each output is chosen by binding one source IP with `-b` option.
+```sh
+▶ ip addr
+[...]
+3: wlp3s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+    link/ether e8:b1:fc:50:90:a0 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.1.87/24 brd 192.168.1.255 scope global dynamic noprefixroute wlp3s0
+       valid_lft 62538sec preferred_lft 62538sec
+4: tun0: <POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UNKNOWN group default qlen 100
+    link/none
+    inet 192.168.254.70 peer 192.168.254.69/32 scope global tun0
+       valid_lft forever preferred_lft forever
+5: enx0c5b8f279a64: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 0c:5b:8f:a5:63:25 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.8.100/24 brd 192.168.8.255 scope global dynamic noprefixroute enx0c5b8f279a64
+       valid_lft 86396sec preferred_lft 86396sec
+
+▶ subfinder -d hackerone.com -b 192.168.1.87
+▶ subfinder -d hackerone.com -b 192.168.254.70
+▶ subfinder -d hackerone.com -b 192.168.8.100
+```
+
 
 <table>
 <tr>
