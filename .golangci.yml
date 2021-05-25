@@ -90,6 +90,7 @@ linters:
     - unused
     - varcheck
     - whitespace
+    - revive
 
   # don't enable:
   # - depguard
@@ -113,10 +114,3 @@ issues:
   exclude:
     # should have a package comment, unless it's in another file for this package (golint)
     - 'in another file for this package'
-
-# golangci.com configuration
-# https://github.com/golangci/golangci/wiki/Configuration
-service:
-  golangci-lint-version: 1.31.x # use the fixed version to not introduce new linters unexpectedly
-  prepare:
-    - echo "here I can run custom commands, but no preparation needed for this repo"
