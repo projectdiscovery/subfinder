@@ -18,6 +18,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hackertarget"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/passivetotal"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/quake"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rapiddns"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/recon"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/riddler"
@@ -58,6 +59,7 @@ var DefaultSources = []string{
 	"threatcrowd",
 	"threatminer",
 	"virustotal",
+	"quake",
 }
 
 // DefaultRecursiveSources contains list of default recursive sources
@@ -198,6 +200,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &waybackarchive.Source{}
 		case "zoomeye":
 			a.sources[source] = &zoomeye.Source{}
+		case "quake":
+			a.sources[source] = &quake.Source{}
 		}
 	}
 }

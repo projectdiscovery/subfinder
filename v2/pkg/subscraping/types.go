@@ -56,6 +56,7 @@ type Keys struct {
 	Virustotal           string   `json:"virustotal"`
 	ZoomEyeUsername      string   `json:"zoomeye_username"`
 	ZoomEyePassword      string   `json:"zoomeye_password"`
+	Quake                string   `json:"quake"`
 }
 
 // Result is a result structure returned by a source
