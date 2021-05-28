@@ -5,9 +5,10 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"strings"
+
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
-	"strings"
 )
 
 type quakeResults struct {
@@ -16,10 +17,10 @@ type quakeResults struct {
 	Data    []struct {
 		Service struct {
 			HTTP struct {
-				//Title           string `json:"title"`
+				// Title           string `json:"title"`
 				Host       string `json:"host"`
 				StatusCode int    `json:"status_code"`
-				//ResponseHeaders string `json:"response_headers"`
+				// ResponseHeaders string `json:"response_headers"`
 			} `json:"http"`
 		}
 	}
