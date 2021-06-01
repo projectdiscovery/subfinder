@@ -7,7 +7,7 @@ GOGET=$(GOCMD) get
     
 all: build
 build:
-		$(GOBUILD) -v -ldflags="-extldflags=-static" -o "subfiner" cmd/nuclei/main.go
+		$(GOBUILD) -v -ldflags="-extldflags=-static" -o "subfinder" cmd/subfinder/main.go
 test: 
 		$(GOTEST) -v ./...
 tidy:
