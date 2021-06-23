@@ -39,7 +39,7 @@ type Options struct {
 	Resolvers          string // Resolvers is the comma-separated resolvers to use for enumeration
 	ResolverList       string // ResolverList is a text file containing list of resolvers to use for enumeration
 	ConfigFile         string // ConfigFile contains the location of the config file
-
+    Proxy              string // HTTP proxy
 	YAMLConfig ConfigFile // YAMLConfig contains the unmarshalled yaml config file
 }
 
@@ -76,6 +76,7 @@ func ParseOptions() *Options {
 	flag.StringVar(&options.ResolverList, "rL", "", "Text file containing list of resolvers to use")
 	flag.BoolVar(&options.RemoveWildcard, "nW", false, "Remove Wildcard & Dead Subdomains from output")
 	flag.StringVar(&options.ConfigFile, "config", path.Join(config, "config.yaml"), "Configuration file for API Keys, etc")
+	flag.StringVar(&options.Proxy, "proxy", "", "HTTP proxy")
 	flag.BoolVar(&options.Version, "version", false, "Show version of subfinder")
 	flag.Parse()
 
