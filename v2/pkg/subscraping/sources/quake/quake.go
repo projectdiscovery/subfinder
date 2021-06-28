@@ -18,8 +18,8 @@ type quakeResults struct {
 		Service struct {
 			HTTP struct {
 				// Title           string `json:"title"`
-				Host       string `json:"host"`
-				StatusCode int    `json:"status_code"`
+				Host string `json:"host"`
+				//StatusCode int    `json:"status_code"`
 				// ResponseHeaders string `json:"response_headers"`
 			} `json:"http"`
 		}
