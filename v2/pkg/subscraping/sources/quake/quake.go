@@ -19,7 +19,7 @@ type quakeResults struct {
 			HTTP struct {
 				// Title           string `json:"title"`
 				Host string `json:"host"`
-				//StatusCode int    `json:"status_code"`
+				// StatusCode int    `json:"status_code"`
 				// ResponseHeaders string `json:"response_headers"`
 			} `json:"http"`
 		}
