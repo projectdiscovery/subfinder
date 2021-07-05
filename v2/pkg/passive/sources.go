@@ -59,6 +59,7 @@ var DefaultSources = []string{
 	"threatcrowd",
 	"threatminer",
 	"virustotal",
+	"fofa",
 }
 
 // DefaultRecursiveSources contains list of default recursive sources
