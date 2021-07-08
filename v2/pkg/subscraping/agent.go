@@ -14,16 +14,29 @@ import (
 )
 
 // NewSession creates a new session object for a domain
-func NewSession(domain string, keys *Keys, timeout int) (*Session, error) {
-	client := &http.Client{
-		Transport: &http.Transport{
-			MaxIdleConns:        100,
-			MaxIdleConnsPerHost: 100,
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
+func NewSession(domain string, keys *Keys, proxy string, timeout int) (*Session, error) {
+	Transport := &http.Transport{
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 100,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
 		},
-		Timeout: time.Duration(timeout) * time.Second,
+	}
+
+	// Add proxy
+	if proxy != "" {
+		proxyURL, _ := url.Parse(proxy)
+		if proxyURL == nil {
+			// Log warning but continue anyways
+			gologger.Warning().Msgf("Invalid proxy '%s' provided", proxy)
+		} else {
+			Transport.Proxy = http.ProxyURL(proxyURL)
+		}
+	}
+
+	client := &http.Client{
+		Transport: Transport,
+		Timeout:   time.Duration(timeout) * time.Second,
 	}
 
 	session := &Session{
