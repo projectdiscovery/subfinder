@@ -42,7 +42,7 @@ type Options struct {
 	LocalIP            net.IP // LocalIP is the IP address used as local bind
 	LocalIPString      string // LocalIPString is the IP address in string format got from command line
 	ConfigFile         string // ConfigFile contains the location of the config file
-
+	Proxy              string     // HTTP proxy
 	YAMLConfig ConfigFile // YAMLConfig contains the unmarshalled yaml config file
 }
 
@@ -80,6 +80,7 @@ func ParseOptions() *Options {
 	flag.BoolVar(&options.RemoveWildcard, "nW", false, "Remove Wildcard & Dead Subdomains from output")
 	flag.StringVar(&options.LocalIPString, "b", "", "IP address to be used as local bind")
 	flag.StringVar(&options.ConfigFile, "config", path.Join(config, "config.yaml"), "Configuration file for API Keys, etc")
+	flag.StringVar(&options.Proxy, "http-proxy", "", "HTTP proxy to use")
 	flag.BoolVar(&options.Version, "version", false, "Show version of subfinder")
 	flag.Parse()
 
