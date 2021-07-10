@@ -14,13 +14,13 @@ import (
 type Source struct{}
 
 type dnsdbLookupResponse struct {
-	Success     bool   `json:"success"`
+	Success    bool `json:"success"`
 	Subdomains []struct {
-		Subdomain string `json:"subdomain"`
-		Ip string `json:"ip"`
-		Cloudflare bool `json:"cloudflare"`
+		Subdomain  string `json:"subdomain"`
+		IP         string `json:"ip"`
+		Cloudflare bool   `json:"cloudflare"`
 	} `json:"subdomains"`
-	Error      string   `json:"error"`
+	Error string `json:"error"`
 }
 
 // Run function returns all subdomains found with the service
@@ -29,7 +29,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 	go func() {
 		defer close(results)
-		
+
 		if session.Keys.C99 == "" {
 			return
 		}

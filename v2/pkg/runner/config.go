@@ -30,7 +30,7 @@ type ConfigFile struct {
 	ExcludeSources []string `yaml:"exclude-sources,omitempty"`
 	// API keys for different sources
 	Binaryedge     []string `yaml:"binaryedge"`
-	C99			   []string `yaml:"c99"`
+	C99            []string `yaml:"c99"`
 	Censys         []string `yaml:"censys"`
 	Certspotter    []string `yaml:"certspotter"`
 	Chaos          []string `yaml:"chaos"`
