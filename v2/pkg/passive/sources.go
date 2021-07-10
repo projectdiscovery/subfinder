@@ -7,6 +7,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/archiveis"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/binaryedge"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/bufferover"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/c99"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/censys"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/certspotter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/chaos"
@@ -83,6 +84,7 @@ var DefaultAllSources = []string{
 	"archiveis",
 	"binaryedge",
 	"bufferover",
+	"c99",
 	"censys",
 	"certspotter",
 	"chaos",
@@ -144,6 +146,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &binaryedge.Source{}
 		case "bufferover":
 			a.sources[source] = &bufferover.Source{}
+		case "c99":
+			a.sources[source] = &c99.Source{}
 		case "censys":
 			a.sources[source] = &censys.Source{}
 		case "certspotter":
