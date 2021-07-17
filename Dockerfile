@@ -7,5 +7,9 @@ FROM alpine:latest
 RUN apk -U upgrade --no-cache \
     && apk add --no-cache bind-tools ca-certificates
 COPY --from=build-env /go/bin/subfinder /usr/local/bin/subfinder
-
+RUN addgroup user \
+    && adduser user -D -G user \
+    && mkdir /.config \
+    && chown -R user:user /.config
+USER user
 ENTRYPOINT ["subfinder"]
