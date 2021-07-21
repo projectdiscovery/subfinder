@@ -3,8 +3,9 @@ package spyse
 
 import (
 	"context"
+
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
-	"github.com/spyse-com/go-spyse/pkg"
+	spyse "github.com/spyse-com/go-spyse/pkg"
 )
 
 const searchMethodResultsLimit = 10000
