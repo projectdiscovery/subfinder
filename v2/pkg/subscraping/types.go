@@ -40,6 +40,7 @@ type Keys struct {
 	CensysSecret         string   `json:"censysPassword"`
 	Certspotter          string   `json:"certspotter"`
 	Chaos                string   `json:"chaos"`
+	Chinaz               string   `json:"chinaz"`
 	DNSDB                string   `json:"dnsdb"`
 	GitHub               []string `json:"github"`
 	IntelXHost           string   `json:"intelXHost"`

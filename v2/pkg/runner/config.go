@@ -33,6 +33,7 @@ type ConfigFile struct {
 	Censys         []string `yaml:"censys"`
 	Certspotter    []string `yaml:"certspotter"`
 	Chaos          []string `yaml:"chaos"`
+	Chinaz         []string `yaml:"chinaz"`
 	DNSDB          []string `yaml:"dnsdb"`
 	GitHub         []string `yaml:"github"`
 	IntelX         []string `yaml:"intelx"`
@@ -134,6 +135,9 @@ func (c *ConfigFile) GetKeys() subscraping.Keys {
 	}
 	if len(c.Chaos) > 0 {
 		keys.Chaos = c.Chaos[rand.Intn(len(c.Chaos))]
+	}
+	if len(c.Chinaz) > 0 {
+		keys.Chinaz = c.Chinaz[rand.Intn(len(c.Chinaz))]
 	}
 	if (len(c.DNSDB)) > 0 {
 		keys.DNSDB = c.DNSDB[rand.Intn(len(c.DNSDB))]
