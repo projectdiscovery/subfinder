@@ -44,6 +44,8 @@ func (s *Source) getSubdomainsFromSQL(domain string, results chan subscraping.Re
 		return 0
 	}
 
+	defer db.Close()
+
 	pattern := "%." + domain
 	query := `SELECT DISTINCT ci.NAME_VALUE as domain FROM certificate_identity ci
 					  WHERE reverse(lower(ci.NAME_VALUE)) LIKE reverse(lower($1))
