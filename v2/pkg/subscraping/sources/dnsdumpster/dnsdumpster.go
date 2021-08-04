@@ -30,6 +30,7 @@ func postForm(ctx context.Context, session *subscraping.Session, token, domain s
 	params := url.Values{
 		"csrfmiddlewaretoken": {token},
 		"targetip":            {domain},
+		"user":                {"free"},
 	}
 
 	resp, err := session.HTTPRequest(
