@@ -3,7 +3,6 @@ package archiveis
 
 import (
 	"context"
-	"dev.logisek.com/cyberyon/cyberyon-osint-service/osintengine/subscraping"
 	"fmt"
 	"io/ioutil"
 )
