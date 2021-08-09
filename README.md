@@ -75,6 +75,7 @@ This will display help for the tool. Here are all the switches it supports.
 | -sources         | Comma separated list of sources to use                     | subfinder -sources shodan,censys       |
 | -t               | Number of concurrent goroutines for resolving (default 10) | subfinder -t 100                       |
 | -timeout         | Seconds to wait before timing out (default 30)             | subfinder -timeout 30                  |
+| -http-proxy      | Http Proxy                                                 | subfinder -http-proxy http://localhost:3128
 | -v               | Show Verbose output                                        | subfinder -v                           |
 | -version         | Show current program version                               | subfinder -version                     |
 
@@ -93,6 +94,7 @@ Subfinder requires **go1.14+** to install successfully. Run the following comman
 Subfinder will work after using the installation instructions however to configure Subfinder to work with certain services, you will need to have setup API keys. The following services do not work without an API key:
 
 - [Binaryedge](https://binaryedge.io)
+- [C99](https://api.c99.nl/)
 - [Certspotter](https://sslmate.com/certspotter/api/)
 - [Censys](https://censys.io)
 - [Chaos](https://chaos.projectdiscovery.io)
