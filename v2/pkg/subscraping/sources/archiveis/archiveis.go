@@ -9,12 +9,15 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
+// Source is the passive scraping agent
 type Source struct{}
 
+// Name returns the name of the source
 func (s *Source) Name() string {
 	return "archiveis"
 }
 
+// Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
