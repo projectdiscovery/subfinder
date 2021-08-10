@@ -16,4 +16,4 @@ jobs:
         with:
           version: latest
           args: --timeout 5m
-          working-directory: .
+          working-directory: v2/
