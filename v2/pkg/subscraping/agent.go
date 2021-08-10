@@ -78,9 +78,9 @@ func (s *Session) HTTPRequest(ctx context.Context, method, requestURL, cookies s
 		return nil, err
 	}
 
-	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:90.0) Gecko/20100101 Firefox/90.0")
-	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8") //"*/*")
-	req.Header.Set("Accept-Language", "en-US,en;q=0.5")                                                    //"en")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36")
+	req.Header.Set("Accept", "*/*")
+	req.Header.Set("Accept-Language", "en")
 	req.Header.Set("Connection", "close")
 
 	if basicAuth.Username != "" || basicAuth.Password != "" {
