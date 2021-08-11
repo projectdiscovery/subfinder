@@ -31,6 +31,8 @@ type Session struct {
 	Keys *Keys
 	// Client is the current http client
 	Client *http.Client
+	// Perform unsafe HTTP requests without user agent randomization
+	UnSafe bool
 }
 
 // Keys contains the current API Keys we have in store

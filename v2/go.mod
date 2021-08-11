@@ -3,6 +3,7 @@ module github.com/projectdiscovery/subfinder/v2
 go 1.16
 
 require (
+	github.com/corpix/uarand v0.1.1
 	github.com/hako/durafmt v0.0.0-20210316092057-3a2c319c1acd
 	github.com/json-iterator/go v1.1.10
 	github.com/lib/pq v1.10.0
