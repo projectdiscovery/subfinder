@@ -40,7 +40,7 @@ type Options struct {
 	ResolverList       string     // ResolverList is a text file containing list of resolvers to use for enumeration
 	ConfigFile         string     // ConfigFile contains the location of the config file
 	Proxy              string     // HTTP proxy
-	RateLimit		   int        // Maximum number of HTTP requests to send per second
+	RateLimit          int        // Maximum number of HTTP requests to send per second
 	YAMLConfig         ConfigFile // YAMLConfig contains the unmarshalled yaml config file
 }
 
