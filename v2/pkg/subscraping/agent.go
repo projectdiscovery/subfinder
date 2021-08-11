@@ -15,7 +15,7 @@ import (
 )
 
 // NewSession creates a new session object for a domain
-func NewSession(domain string, keys *Keys, proxy string, unsafe bool, timeout int) (*Session, error) {
+func NewSession(domain string, keys *Keys, proxy string, timeout int) (*Session, error) {
 	Transport := &http.Transport{
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 100,
@@ -43,7 +43,6 @@ func NewSession(domain string, keys *Keys, proxy string, unsafe bool, timeout in
 	session := &Session{
 		Client: client,
 		Keys:   keys,
-		UnSafe: unsafe,
 	}
 
 	// Create a new extractor object for the current domain
@@ -80,13 +79,7 @@ func (s *Session) HTTPRequest(ctx context.Context, method, requestURL, cookies s
 		return nil, err
 	}
 
-	// Unsafe requests do not use user-agent randomization
-	if s.UnSafe {
-		req.Header.Set("User-Agent", "subfinder - Open-source Project (github.com/projectdiscovery/subfinder)")
-	} else {
-		req.Header.Set("User-Agent", uarand.GetRandom())
-	}
-
+	req.Header.Set("User-Agent", uarand.GetRandom())
 	req.Header.Set("Accept", "*/*")
 	req.Header.Set("Accept-Language", "en")
 	req.Header.Set("Connection", "close")
