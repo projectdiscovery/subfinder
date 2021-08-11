@@ -76,6 +76,7 @@ This will display help for the tool. Here are all the switches it supports.
 | -t               | Number of concurrent goroutines for resolving (default 10) | subfinder -t 100                            |
 | -timeout         | Seconds to wait before timing out (default 30)             | subfinder -timeout 30                       |
 | -http-proxy      | Http Proxy                                                 | subfinder -http-proxy http://localhost:3128 |
+| -rate-limit      | Maximum number of HTTP requests to send per second         | subfinder -rate-limit 10                    |
 | -v               | Show Verbose output                                        | subfinder -v                                |
 | -version         | Show current program version                               | subfinder -version                          |
 
