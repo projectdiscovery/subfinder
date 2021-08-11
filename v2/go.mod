@@ -14,5 +14,6 @@ require (
 	github.com/rs/xid v1.3.0
 	github.com/stretchr/testify v1.7.0
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
+	go.uber.org/ratelimit v0.2.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )

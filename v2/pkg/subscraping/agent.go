@@ -12,10 +12,11 @@ import (
 
 	"github.com/corpix/uarand"
 	"github.com/projectdiscovery/gologger"
+	"go.uber.org/ratelimit"
 )
 
 // NewSession creates a new session object for a domain
-func NewSession(domain string, keys *Keys, proxy string, timeout int) (*Session, error) {
+func NewSession(domain string, keys *Keys, proxy string, rateLimit int, timeout int) (*Session, error) {
 	Transport := &http.Transport{
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 100,
@@ -43,6 +44,13 @@ func NewSession(domain string, keys *Keys, proxy string, timeout int) (*Session,
 	session := &Session{
 		Client: client,
 		Keys:   keys,
+	}
+
+	// Initiate rate limit instance
+	if rateLimit > 0 {
+		session.RateLimiter = ratelimit.New(rateLimit)
+	} else {
+		session.RateLimiter = ratelimit.NewUnlimited()
 	}
 
 	// Create a new extractor object for the current domain
@@ -95,6 +103,8 @@ func (s *Session) HTTPRequest(ctx context.Context, method, requestURL, cookies s
 	for key, value := range headers {
 		req.Header.Set(key, value)
 	}
+
+	s.RateLimiter.Take()
 
 	return httpRequestWrapper(s.Client, req)
 }
