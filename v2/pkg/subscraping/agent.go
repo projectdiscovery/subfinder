@@ -16,7 +16,7 @@ import (
 )
 
 // NewSession creates a new session object for a domain
-func NewSession(domain string, keys *Keys, proxy string, rl int, timeout int) (*Session, error) {
+func NewSession(domain string, keys *Keys, proxy string, rateLimit, timeout int) (*Session, error) {
 	Transport := &http.Transport{
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 100,
@@ -47,8 +47,8 @@ func NewSession(domain string, keys *Keys, proxy string, rl int, timeout int) (*
 	}
 
 	// Initiate rate limit instance
-	if rl > 0 {
-		session.RateLimiter = ratelimit.New(rl)
+	if rateLimit > 0 {
+		session.RateLimiter = ratelimit.New(rateLimit)
 	} else {
 		session.RateLimiter = ratelimit.NewUnlimited()
 	}
