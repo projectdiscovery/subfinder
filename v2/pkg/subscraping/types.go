@@ -40,11 +40,11 @@ type Session struct {
 // Keys contains the current API Keys we have in store
 type Keys struct {
 	Binaryedge           string   `json:"binaryedge"`
-	C99                  string   `json:"c99"`
 	CensysToken          string   `json:"censysUsername"`
 	CensysSecret         string   `json:"censysPassword"`
 	Certspotter          string   `json:"certspotter"`
 	Chaos                string   `json:"chaos"`
+	Chinaz               string   `json:"chinaz"`
 	DNSDB                string   `json:"dnsdb"`
 	GitHub               []string `json:"github"`
 	IntelXHost           string   `json:"intelXHost"`
@@ -61,6 +61,8 @@ type Keys struct {
 	Virustotal           string   `json:"virustotal"`
 	ZoomEyeUsername      string   `json:"zoomeye_username"`
 	ZoomEyePassword      string   `json:"zoomeye_password"`
+	FofaUsername         string   `json:"fofa_username"`
+	FofaSecret           string   `json:"fofa_secret"`
 }
 
 // Result is a result structure returned by a source
