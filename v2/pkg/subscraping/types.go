@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 	"regexp"
+
+	"go.uber.org/ratelimit"
 )
 
 // BasicAuth request's Authorization header
@@ -31,6 +33,8 @@ type Session struct {
 	Keys *Keys
 	// Client is the current http client
 	Client *http.Client
+	// Rate limit instance
+	RateLimiter ratelimit.Limiter
 }
 
 // Keys contains the current API Keys we have in store
