@@ -10,7 +10,11 @@ import (
 )
 
 type subdomain struct {
-	RawDomain string `json:"rawDomain"`
+	Domains    []string `json:"domains"`
+	Ip         string   `json:"ip"`
+	RawDomains []string `json:"rawDomains"`
+	RawPort    string   `json:"rawPort"`
+	RawIp      string   `json:"rawIp"`
 }
 
 // Source is the passive scraping agent
@@ -44,7 +48,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		resp.Body.Close()
 
 		for _, subdomain := range subdomains {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain.RawDomain}
+			for _, dmn := range subdomain.RawDomains {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: dmn}
+			}
 		}
 	}()
 

@@ -10,25 +10,47 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/corpix/uarand"
 	"github.com/projectdiscovery/gologger"
+	"go.uber.org/ratelimit"
 )
 
 // NewSession creates a new session object for a domain
-func NewSession(domain string, keys *Keys, timeout int) (*Session, error) {
-	client := &http.Client{
-		Transport: &http.Transport{
-			MaxIdleConns:        100,
-			MaxIdleConnsPerHost: 100,
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
+func NewSession(domain string, keys *Keys, proxy string, rateLimit, timeout int) (*Session, error) {
+	Transport := &http.Transport{
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 100,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
 		},
-		Timeout: time.Duration(timeout) * time.Second,
+	}
+
+	// Add proxy
+	if proxy != "" {
+		proxyURL, _ := url.Parse(proxy)
+		if proxyURL == nil {
+			// Log warning but continue anyways
+			gologger.Warning().Msgf("Invalid proxy '%s' provided", proxy)
+		} else {
+			Transport.Proxy = http.ProxyURL(proxyURL)
+		}
+	}
+
+	client := &http.Client{
+		Transport: Transport,
+		Timeout:   time.Duration(timeout) * time.Second,
 	}
 
 	session := &Session{
 		Client: client,
 		Keys:   keys,
+	}
+
+	// Initiate rate limit instance
+	if rateLimit > 0 {
+		session.RateLimiter = ratelimit.New(rateLimit)
+	} else {
+		session.RateLimiter = ratelimit.NewUnlimited()
 	}
 
 	// Create a new extractor object for the current domain
@@ -65,7 +87,7 @@ func (s *Session) HTTPRequest(ctx context.Context, method, requestURL, cookies s
 		return nil, err
 	}
 
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36")
+	req.Header.Set("User-Agent", uarand.GetRandom())
 	req.Header.Set("Accept", "*/*")
 	req.Header.Set("Accept-Language", "en")
 	req.Header.Set("Connection", "close")
@@ -81,6 +103,8 @@ func (s *Session) HTTPRequest(ctx context.Context, method, requestURL, cookies s
 	for key, value := range headers {
 		req.Header.Set(key, value)
 	}
+
+	s.RateLimiter.Take()
 
 	return httpRequestWrapper(s.Client, req)
 }
