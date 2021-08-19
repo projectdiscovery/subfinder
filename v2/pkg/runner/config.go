@@ -202,6 +202,7 @@ func (c *ConfigFile) GetKeys() subscraping.Keys {
 	}
 	if len(c.Quake) > 0 {
 		keys.Quake = c.Quake[rand.Intn(len(c.Quake))]
+	}
 	if len(c.Fofa) > 0 {
 		fofaKeys := c.Fofa[rand.Intn(len(c.Fofa))]
 		parts := strings.Split(fofaKeys, ":")
