@@ -40,6 +40,7 @@ type Options struct {
 	ResolverList       string     // ResolverList is a text file containing list of resolvers to use for enumeration
 	ConfigFile         string     // ConfigFile contains the location of the config file
 	Proxy              string     // HTTP proxy
+	RateLimit          int        // Maximum number of HTTP requests to send per second
 	YAMLConfig         ConfigFile // YAMLConfig contains the unmarshalled yaml config file
 }
 
@@ -77,6 +78,7 @@ func ParseOptions() *Options {
 	flag.BoolVar(&options.RemoveWildcard, "nW", false, "Remove Wildcard & Dead Subdomains from output")
 	flag.StringVar(&options.ConfigFile, "config", path.Join(config, "config.yaml"), "Configuration file for API Keys, etc")
 	flag.StringVar(&options.Proxy, "http-proxy", "", "HTTP proxy to use")
+	flag.IntVar(&options.RateLimit, "rate-limit", 0, "Maximum number of HTTP requests to send per second")
 	flag.BoolVar(&options.Version, "version", false, "Show version of subfinder")
 	flag.Parse()
 
