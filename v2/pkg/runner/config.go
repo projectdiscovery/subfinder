@@ -30,10 +30,10 @@ type ConfigFile struct {
 	ExcludeSources []string `yaml:"exclude-sources,omitempty"`
 	// API keys for different sources
 	Binaryedge     []string `yaml:"binaryedge"`
-	C99            []string `yaml:"c99"`
 	Censys         []string `yaml:"censys"`
 	Certspotter    []string `yaml:"certspotter"`
 	Chaos          []string `yaml:"chaos"`
+	Chinaz         []string `yaml:"chinaz"`
 	DNSDB          []string `yaml:"dnsdb"`
 	GitHub         []string `yaml:"github"`
 	IntelX         []string `yaml:"intelx"`
@@ -47,6 +47,7 @@ type ConfigFile struct {
 	URLScan        []string `yaml:"urlscan"`
 	Virustotal     []string `yaml:"virustotal"`
 	ZoomEye        []string `yaml:"zoomeye"`
+	Fofa           []string `yaml:"fofa"`
 	// Version indicates the version of subfinder installed.
 	Version string `yaml:"subfinder-version"`
 }
@@ -120,9 +121,6 @@ func (c *ConfigFile) GetKeys() subscraping.Keys {
 	if len(c.Binaryedge) > 0 {
 		keys.Binaryedge = c.Binaryedge[rand.Intn(len(c.Binaryedge))]
 	}
-	if len(c.C99) > 0 {
-		keys.C99 = c.C99[rand.Intn(len(c.C99))]
-	}
 
 	if len(c.Censys) > 0 {
 		censysKeys := c.Censys[rand.Intn(len(c.Censys))]
@@ -138,6 +136,9 @@ func (c *ConfigFile) GetKeys() subscraping.Keys {
 	}
 	if len(c.Chaos) > 0 {
 		keys.Chaos = c.Chaos[rand.Intn(len(c.Chaos))]
+	}
+	if len(c.Chinaz) > 0 {
+		keys.Chinaz = c.Chinaz[rand.Intn(len(c.Chinaz))]
 	}
 	if (len(c.DNSDB)) > 0 {
 		keys.DNSDB = c.DNSDB[rand.Intn(len(c.DNSDB))]
@@ -196,6 +197,14 @@ func (c *ConfigFile) GetKeys() subscraping.Keys {
 		if len(parts) == MultipleKeyPartsLength {
 			keys.ZoomEyeUsername = parts[0]
 			keys.ZoomEyePassword = parts[1]
+		}
+	}
+	if len(c.Fofa) > 0 {
+		fofaKeys := c.Fofa[rand.Intn(len(c.Fofa))]
+		parts := strings.Split(fofaKeys, ":")
+		if len(parts) == MultipleKeyPartsLength {
+			keys.FofaUsername = parts[0]
+			keys.FofaSecret = parts[1]
 		}
 	}
 
