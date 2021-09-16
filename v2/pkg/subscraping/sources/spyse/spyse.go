@@ -51,45 +51,37 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		accountSvc := spyse.NewAccountService(client)
-
-		quota, err := accountSvc.Quota(context.Background())
-		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			return
-		}
-
 		// The default "Search" method returns only first 10 000 subdomains
 		// To obtain more than 10 000 subdomains the "Scroll" method should be using
 		// Note: The "Scroll" method is only available for "PRO" customers, so we need to check
 		// quota.IsScrollSearchEnabled param
-		if totalResults > searchMethodResultsLimit && quota.IsScrollSearchEnabled {
-			var scrollResponse *spyse.DomainScrollResponse
-			scrollResponse, err = domainSvc.ScrollSearch(
-				ctx, subdomainsSearchParams.Query, "")
-			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				return
-			}
+		if totalResults > searchMethodResultsLimit && client.Account().IsScrollSearchEnabled {
+			var scrollID string
+			var scrollResults *spyse.DomainScrollResponse
 
-			for len(scrollResponse.Items) > 0 {
-				scrollResponse, err = domainSvc.ScrollSearch(
-					context.Background(), subdomainsSearchParams.Query, scrollResponse.SearchID)
+			for {
+				scrollResults, err = domainSvc.ScrollSearch(ctx, subdomainsSearchParams.Query, scrollID)
 				if err != nil {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 					return
 				}
+				if len(scrollResults.Items) > 0 {
+					scrollID = scrollResults.SearchID
 
-				for i := range scrollResponse.Items {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: scrollResponse.Items[i].Name}
+					for i := range scrollResults.Items {
+						results <- subscraping.Result{
+							Source: s.Name(),
+							Type:   subscraping.Subdomain,
+							Value:  scrollResults.Items[i].Name,
+						}
+					}
 				}
 			}
 		} else {
 			var limit = 100
-			var offset = 0
 			var searchResults []spyse.Domain
 
-			for ; int64(offset) < totalResults && int64(offset) < searchMethodResultsLimit; offset += limit {
+			for offset := 0; int64(offset) < totalResults && int64(offset) < searchMethodResultsLimit; offset += limit {
 				searchResults, err = domainSvc.Search(ctx, subdomainsSearchParams.Query, limit, offset)
 				if err != nil {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -97,7 +89,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				}
 
 				for i := range searchResults {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: searchResults[i].Name}
+					results <- subscraping.Result{
+						Source: s.Name(),
+						Type:   subscraping.Subdomain,
+						Value:  searchResults[i].Name,
+					}
 				}
 			}
 		}
