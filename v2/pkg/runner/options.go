@@ -3,6 +3,7 @@ package runner
 import (
 	"flag"
 	"io"
+	"net"
 	"os"
 	"path"
 	"reflect"
@@ -32,15 +33,19 @@ type Options struct {
 	Domain             string // Domain is the domain to find subdomains for
 	DomainsFile        string // DomainsFile is the file containing list of domains to find subdomains for
 	Output             io.Writer
-	OutputFile         string     // Output is the file to write found subdomains to.
-	OutputDirectory    string     // OutputDirectory is the directory to write results to in case list of domains is given
-	Sources            string     // Sources contains a comma-separated list of sources to use for enumeration
-	ExcludeSources     string     // ExcludeSources contains the comma-separated sources to not include in the enumeration process
-	Resolvers          string     // Resolvers is the comma-separated resolvers to use for enumeration
-	ResolverList       string     // ResolverList is a text file containing list of resolvers to use for enumeration
-	ConfigFile         string     // ConfigFile contains the location of the config file
-	Proxy              string     // HTTP proxy
-	YAMLConfig         ConfigFile // YAMLConfig contains the unmarshalled yaml config file
+	OutputFile         string // Output is the file to write found subdomains to.
+	OutputDirectory    string // OutputDirectory is the directory to write results to in case list of domains is given
+	Sources            string // Sources contains a comma-separated list of sources to use for enumeration
+	ExcludeSources     string // ExcludeSources contains the comma-separated sources to not include in the enumeration process
+	Resolvers          string // Resolvers is the comma-separated resolvers to use for enumeration
+	ResolverList       string // ResolverList is a text file containing list of resolvers to use for enumeration
+	ConfigFile         string // ConfigFile contains the location of the config file
+	Proxy              string // HTTP proxy
+	RateLimit          int    // Maximum number of HTTP requests to send per second
+	LocalIP            net.IP // LocalIP is the IP address used as local bind
+	LocalIPString      string // LocalIPString is the IP address in string format got from command line
+
+	YAMLConfig ConfigFile // YAMLConfig contains the unmarshalled yaml config file
 }
 
 // ParseOptions parses the command line flags provided by a user
@@ -75,8 +80,10 @@ func ParseOptions() *Options {
 	flag.StringVar(&options.Resolvers, "r", "", "Comma-separated list of resolvers to use")
 	flag.StringVar(&options.ResolverList, "rL", "", "Text file containing list of resolvers to use")
 	flag.BoolVar(&options.RemoveWildcard, "nW", false, "Remove Wildcard & Dead Subdomains from output")
+	flag.StringVar(&options.LocalIPString, "b", "", "IP address to be used as local bind")
 	flag.StringVar(&options.ConfigFile, "config", path.Join(config, "config.yaml"), "Configuration file for API Keys, etc")
-	flag.StringVar(&options.Proxy, "http-proxy", "", "HTTP proxy to use")
+	flag.StringVar(&options.Proxy, "proxy", "", "HTTP proxy to use with subfinder")
+	flag.IntVar(&options.RateLimit, "rate-limit", 0, "Maximum number of HTTP requests to send per second")
 	flag.BoolVar(&options.Version, "version", false, "Show version of subfinder")
 	flag.Parse()
 

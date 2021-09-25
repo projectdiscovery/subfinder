@@ -1,12 +1,11 @@
-// Package hackertarget logic
-package hackertarget
-
+package chinaz
+// chinaz  http://my.chinaz.com/ChinazAPI/DataCenter/MyDataApi
 import (
-	"bufio"
 	"context"
 	"fmt"
-
+	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
+	"io/ioutil"
 )
 
 // Source is the passive scraping agent
@@ -19,25 +18,32 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		resp, err := session.SimpleGet(ctx, fmt.Sprintf("http://api.hackertarget.com/hostsearch/?q=%s", domain))
+		if session.Keys.Chinaz == "" {
+			return
+		}
+
+		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://apidatav2.chinaz.com/single/alexa?key=%s&domain=%s", session.Keys.Chinaz, domain))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
 
-		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
 
-		scanner := bufio.NewScanner(resp.Body)
-		for scanner.Scan() {
-			line := scanner.Text()
-			if line == "" {
-				continue
-			}
-			match := session.Extractor.FindAllString(line, -1)
-			for _, subdomain := range match {
+		resp.Body.Close()
+
+		SubdomainList :=jsoniter.Get(body, "Result").Get("ContributingSubdomainList")
+
+		if SubdomainList.ToBool() {
+			_data := []byte(SubdomainList.ToString())
+			for i := 0 ; i< SubdomainList.Size() ; i++{
+				subdomain := jsoniter.Get(_data,i,"DataUrl").ToString()
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 			}
+		} else {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			return
 		}
 	}()
 
@@ -46,5 +52,5 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 // Name returns the name of the source
 func (s *Source) Name() string {
-	return "hackertarget"
+	return "chinaz"
 }

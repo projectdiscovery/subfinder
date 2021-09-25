@@ -3,23 +3,31 @@ before:
     - go mod tidy
 
 builds:
-    - binary: subfinder
-      main: cmd/subfinder/main.go
-      goos:
-        - linux
-        - windows
-        - darwin
-      goarch:
-        - amd64
-        - 386
-        - arm
-        - arm64
-  
+- env:
+  - CGO_ENABLED=0
+  goos:
+    - windows
+    - linux
+    - darwin
+  goarch:
+    - amd64
+    - 386
+    - arm
+    - arm64
+
+  ignore:
+    - goos: darwin
+      goarch: '386'
+    - goos: windows
+      goarch: 'arm'
+
+  binary: '{{ .ProjectName }}'
+  main: cmd/subfinder/main.go
+
 archives:
-    - id: tgz
-      format: tar.gz
-      replacements:
-          darwin: macOS
-      format_overrides:
-          - goos: windows
-            format: zip
+- format: zip
+  replacements:
+      darwin: macOS
+
+checksum:
+  algorithm: sha256

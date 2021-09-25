@@ -6,21 +6,31 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
 	"time"
 
+	"github.com/corpix/uarand"
 	"github.com/projectdiscovery/gologger"
+	"go.uber.org/ratelimit"
 )
 
 // NewSession creates a new session object for a domain
-func NewSession(domain string, keys *Keys, proxy string, timeout int) (*Session, error) {
+func NewSession(domain string, keys *Keys, proxy string, rateLimit, timeout int, localIP net.IP) (*Session, error) {
+	dialer := &net.Dialer{
+		LocalAddr: &net.TCPAddr{
+			IP: localIP,
+		},
+	}
+
 	Transport := &http.Transport{
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 100,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
+		DialContext: dialer.DialContext,
 	}
 
 	// Add proxy
@@ -42,6 +52,13 @@ func NewSession(domain string, keys *Keys, proxy string, timeout int) (*Session,
 	session := &Session{
 		Client: client,
 		Keys:   keys,
+	}
+
+	// Initiate rate limit instance
+	if rateLimit > 0 {
+		session.RateLimiter = ratelimit.New(rateLimit)
+	} else {
+		session.RateLimiter = ratelimit.NewUnlimited()
 	}
 
 	// Create a new extractor object for the current domain
@@ -78,7 +95,7 @@ func (s *Session) HTTPRequest(ctx context.Context, method, requestURL, cookies s
 		return nil, err
 	}
 
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36")
+	req.Header.Set("User-Agent", uarand.GetRandom())
 	req.Header.Set("Accept", "*/*")
 	req.Header.Set("Accept-Language", "en")
 	req.Header.Set("Connection", "close")
@@ -94,6 +111,8 @@ func (s *Session) HTTPRequest(ctx context.Context, method, requestURL, cookies s
 	for key, value := range headers {
 		req.Header.Set(key, value)
 	}
+
+	s.RateLimiter.Take()
 
 	return httpRequestWrapper(s.Client, req)
 }

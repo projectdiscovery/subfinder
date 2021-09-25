@@ -7,14 +7,15 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/archiveis"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/binaryedge"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/bufferover"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/c99"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/censys"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/certspotter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/chaos"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/chinaz"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/commoncrawl"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtsh"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdb"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdumpster"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fofa"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/github"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hackertarget"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
@@ -45,6 +46,7 @@ var DefaultSources = []string{
 	"certspotter",
 	"censys",
 	"chaos",
+	"chinaz",
 	"crtsh",
 	"dnsdumpster",
 	"hackertarget",
@@ -59,6 +61,7 @@ var DefaultSources = []string{
 	"threatcrowd",
 	"threatminer",
 	"virustotal",
+	"fofa",
 }
 
 // DefaultRecursiveSources contains list of default recursive sources
@@ -84,7 +87,6 @@ var DefaultAllSources = []string{
 	"archiveis",
 	"binaryedge",
 	"bufferover",
-	"c99",
 	"censys",
 	"certspotter",
 	"chaos",
@@ -112,6 +114,7 @@ var DefaultAllSources = []string{
 	"virustotal",
 	"waybackarchive",
 	"zoomeye",
+	"fofa",
 }
 
 // Agent is a struct for running passive subdomain enumeration
@@ -146,14 +149,14 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &binaryedge.Source{}
 		case "bufferover":
 			a.sources[source] = &bufferover.Source{}
-		case "c99":
-			a.sources[source] = &c99.Source{}
 		case "censys":
 			a.sources[source] = &censys.Source{}
 		case "certspotter":
 			a.sources[source] = &certspotter.Source{}
 		case "chaos":
 			a.sources[source] = &chaos.Source{}
+		case "chinaz":
+			a.sources[source] = &chinaz.Source{}
 		case "commoncrawl":
 			a.sources[source] = &commoncrawl.Source{}
 		case "crtsh":
@@ -202,6 +205,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &waybackarchive.Source{}
 		case "zoomeye":
 			a.sources[source] = &zoomeye.Source{}
+		case "fofa":
+			a.sources[source] = &fofa.Source{}
 		}
 	}
 }
