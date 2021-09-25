@@ -132,23 +132,44 @@ github:
 # Running Subfinder
 
 To run the tool on a target, just use the following command.
+
 ```sh
-subfinder -d example.com
-```
+subfinder -d hackerone.com
 
-The verbose flag `v` can be used to display verbose information.
+               __    _____           __         
+   _______  __/ /_  / __(_)___  ____/ /__  _____
+  / ___/ / / / __ \/ /_/ / __ \/ __  / _ \/ ___/
+ (__  ) /_/ / /_/ / __/ / / / / /_/ /  __/ /    
+/____/\__,_/_.___/_/ /_/_/ /_/\__,_/\___/_/ v2.4.9
 
-```
-[bufferover] lutin.dima.example.com
-[bufferover] izosimdima.example.com
-[bufferover] glazkovdima.example.com
-[bufferover] dengshima.example.com
-[bufferover] wwwkima.example.com
-[bufferover] proxima.example.com
-[bufferover] mma.example.com
-[bufferover] damidoma.example.com
-[bufferover] nomerdoma.example.com
-[bufferover] soti.croma.example.com
+		projectdiscovery.io
+
+Use with caution. You are responsible for your actions
+Developers assume no liability and are not responsible for any misuse or damage.
+By using subfinder, you also agree to the terms of the APIs used.
+
+[INF] Enumerating subdomains for hackerone.com
+
+www.hackerone.com
+support.hackerone.com
+links.hackerone.com
+api.hackerone.com
+o1.email.hackerone.com
+go.hackerone.com
+3d.hackerone.com
+resources.hackerone.com
+a.ns.hackerone.com
+b.ns.hackerone.com
+mta-sts.hackerone.com
+docs.hackerone.com
+mta-sts.forwarding.hackerone.com
+gslink.hackerone.com
+hackerone.com
+info.hackerone.com
+mta-sts.managed.hackerone.com
+events.hackerone.com
+
+[INF] Found 18 subdomains for hackerone.com in 3 seconds 672 milliseconds
 ```
 
 The subdomains discovered can be piped to other tools too. For example, you can pipe the subdomains discovered by subfinder to httpx [httpx](https://github.com/projectdiscovery/httpx) which will then find running http servers on the host.
@@ -183,12 +204,11 @@ ip addr
     link/ether 0c:5b:8f:a5:63:25 brd ff:ff:ff:ff:ff:ff
     inet 192.168.8.100/24 brd 192.168.8.255 scope global dynamic noprefixroute enx0c5b8f279a64
        valid_lft 86396sec preferred_lft 86396sec
-
-subfinder -d hackerone.com -b 192.168.1.87
-subfinder -d hackerone.com -b 192.168.254.70
-subfinder -d hackerone.com -b 192.168.8.100
 ```
 
+```sh
+subfinder -d hackerone.com -b 192.168.1.87
+```
 
 <table>
 <tr>
@@ -196,38 +216,22 @@ subfinder -d hackerone.com -b 192.168.8.100
 
 ## Subfinder with docker
 
-You can use the official dockerhub image at [subfinder](https://hub.docker.com/r/projectdiscovery/subfinder). Simply run -
+Pull the latest tagged [subfinder](https://hub.docker.com/r/projectdiscovery/subfinder) docker image:
 
 ```sh
 docker pull projectdiscovery/subfinder:latest
 ```
 
-The above command will pull the latest tagged release from the dockerhub repository.
+Running subfinder using docker image:
 
-If you want to build the container yourself manually, git clone the repo, then build and run the following commands
-
-- Clone the repo using `git clone https://github.com/projectdiscovery/subfinder.git`
-- Build your docker container
 ```sh
-docker build -t projectdiscovery/subfinder .
+docker -t projectdiscovery/subfinder:latest -d hackerone.com
 ```
 
-If you are using docker, you need to first create your directory structure holding subfinder configuration file. After modifying the default config.yaml file, you can run:
+Running subfinder using docker image with local config file:
 
 ```sh
-▶ mkdir -p $HOME/.config/subfinder
-▶ cp config.yaml $HOME/.config/subfinder/config.yaml
-▶ nano $HOME/.config/subfinder/config.yaml
-```
-
-After that, you can pass it as a volume using the following sample command.
-```sh
-▶ docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it projectdiscovery/subfinder -d example.com
-```
-
-For example, this runs the tool against example.com and output the results to your host file system:
-```sh
-docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it projectdiscovery/subfinder -d example.com > example.com.txt
+docker run -v $HOME/.config/subfinder:/root/.config/subfinder -t projectdiscovery/subfinder -d hackerone.com
 ```
 
 </td>
