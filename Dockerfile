@@ -1,6 +1,6 @@
 # Build
 FROM golang:1.17-alpine AS build-env
-RUN GO111MODULE=on go get -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder
+RUN go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 
 # Release
 FROM alpine:3.14
