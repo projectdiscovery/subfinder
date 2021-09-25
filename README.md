@@ -53,10 +53,10 @@ subfinder -h
 ```
 This will display help for the tool. Here are all the switches it supports.
 
-<<<<<<< HEAD
 | Flag             | Description                                                | Example                                     |
 | ---------------- | ---------------------------------------------------------- | --------------------------------------------|
 | -all             | Use all sources (slow) for enumeration                     | subfinder -d uber.com -all                  |
+| -b               | IP address to be used as local bind                        | subfinder -b 172.16.0.1                |
 | -config          | Configuration file for API Keys, etc                       | subfinder -config config.yaml               |
 | -d               | Domain to find subdomains for                              | subfinder -d uber.com                       |
 | -dL              | File containing list of domains to enumerate               | subfinder -dL hackerone-hosts.txt           |
@@ -80,41 +80,14 @@ This will display help for the tool. Here are all the switches it supports.
 | -rate-limit      | Maximum number of HTTP requests to send per second         | subfinder -rate-limit 10                    |
 | -v               | Show Verbose output                                        | subfinder -v                                |
 | -version         | Show current program version                               | subfinder -version                          |
-=======
-| Flag             | Description                                                | Example                                |
-| ---------------- | ---------------------------------------------------------- | -------------------------------------- |
-| -all             | Use all sources (slow) for enumeration                     | subfinder -d uber.com -all             |
-| -b               | IP address to be used as local bind                        | subfinder -b 172.16.0.1                |
-| -config          | Configuration file for API Keys, etc                       | subfinder -config config.yaml          |
-| -d               | Domain to find subdomains for                              | subfinder -d uber.com                  |
-| -dL              | File containing list of domains to enumerate               | subfinder -dL hackerone-hosts.txt      |
-| -exclude-sources | List of sources to exclude from enumeration                | subfinder -exclude-sources archiveis   |
-| -max-time        | Minutes to wait for enumeration results (default 10)       | subfinder -max-time 1                  |
-| -nC              | Don't Use colors in output                                 | subfinder -nC                          |
-| -nW              | Remove Wildcard & Dead Subdomains from output              | subfinder -nW                          |
-| -ls              | List all available sources                                 | subfinder -ls                          |
-| -o               | File to write output to (optional)                         | subfinder -o output.txt                |
-| -oD              | Directory to write enumeration results to (optional)       | subfinder -oD ~/outputs                |
-| -oI              | Write output in Host,IP format                             | subfinder -oI                          |
-| -oJ              | Write output in JSON lines Format                          | subfinder -oJ                          |
-| -r               | Comma-separated list of resolvers to use                   | subfinder -r 1.1.1.1,1.0.0.1           |
-| -rL              | Text file containing list of resolvers to use              | subfinder -rL resolvers.txt            |
-| -recursive       | Enumeration recursive subdomains                           | subfinder -d news.yahoo.com -recursive |
-| -silent          | Show only subdomains in output                             | subfinder -silent                      |
-| -sources         | Comma separated list of sources to use                     | subfinder -sources shodan,censys       |
-| -t               | Number of concurrent goroutines for resolving (default 10) | subfinder -t 100                       |
-| -timeout         | Seconds to wait before timing out (default 30)             | subfinder -timeout 30                  |
-| -v               | Show Verbose output                                        | subfinder -v                           |
-| -version         | Show current program version                               | subfinder -version                     |
->>>>>>> 9b3a5b75dddd3b5891f7af2fabd1dfab7343f4b2
 
 
 # Installation
 
-Subfinder requires **go1.14+** to install successfully. Run the following command to get the repo -
+Subfinder requires **go1.17** to install successfully. Run the following command to get the repo -
 
 ```sh
-GO111MODULE=on go get -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder
+go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 ```
 
 
@@ -194,44 +167,10 @@ The verbose flag `v` can be used to display verbose information.
 [bufferover] soti.croma.example.com
 ```
 
-The `-o` command can be used to specify an output file.
-
-```sh
-▶ subfinder -d example.com -o output.txt
-```
-
-To run the tool on a list of domains, `-dL` option can be used. This requires a directory to write the output files. Subdomains for each domain from the list are written in a text file in the directory specified by the `-oD` flag with their name being the domain name.
-
-```sh
-▶ cat domains.txt
-hackerone.com
-google.com
-
-▶ subfinder -dL domains.txt -oD ~/path/to/output
-▶ ls ~/path/to/output
-
-hackerone.com.txt
-google.com.txt
-```
-
-You can also get output in json format using `-oJ` switch. This switch saves the output in the JSON lines format.
-
-If you use the JSON format, or the `Host:IP` format, then it becomes mandatory for you to use the **-nW** format as resolving is essential for these output format. By default, resolving the found subdomains is disabled.
-
-```sh
-▶ subfinder -d hackerone.com -o output.json -oJ -nW
-▶ cat output.json
-
-{"host":"www.hackerone.com","ip":"104.16.99.52"}
-{"host":"mta-sts.hackerone.com","ip":"185.199.108.153"}
-{"host":"hackerone.com","ip":"104.16.100.52"}
-{"host":"mta-sts.managed.hackerone.com","ip":"185.199.110.153"}
-```
-
 The subdomains discovered can be piped to other tools too. For example, you can pipe the subdomains discovered by subfinder to httpx [httpx](https://github.com/projectdiscovery/httpx) which will then find running http servers on the host.
 
 ```sh
-▶ echo hackerone.com | subfinder -silent | httpx -silent
+echo hackerone.com | subfinder -silent | httpx -silent
 
 http://hackerone.com
 http://www.hackerone.com
@@ -243,8 +182,10 @@ http://mta-sts.managed.hackerone.com
 
 If your enterprise uses source routing to choose network output, or your computer has many public network interfaces (eg: public Wi-Fi + 4G connection + Ethernet Wire + VPN), you might want to choose your output network by binding IP source. In this case, you can use `-b` option.
 In the example below, we have 3 network interfaces able to communicate to the Internet through 3 different outputs. Each output is chosen by binding one source IP with `-b` option.
+
 ```sh
-▶ ip addr
+ip addr
+
 [...]
 3: wlp3s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
     link/ether e8:b1:fc:50:90:a0 brd ff:ff:ff:ff:ff:ff
@@ -259,9 +200,9 @@ In the example below, we have 3 network interfaces able to communicate to the In
     inet 192.168.8.100/24 brd 192.168.8.255 scope global dynamic noprefixroute enx0c5b8f279a64
        valid_lft 86396sec preferred_lft 86396sec
 
-▶ subfinder -d hackerone.com -b 192.168.1.87
-▶ subfinder -d hackerone.com -b 192.168.254.70
-▶ subfinder -d hackerone.com -b 192.168.8.100
+subfinder -d hackerone.com -b 192.168.1.87
+subfinder -d hackerone.com -b 192.168.254.70
+subfinder -d hackerone.com -b 192.168.8.100
 ```
 
 
@@ -317,7 +258,7 @@ docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it projectdiscove
 
 Usage example:
 
-``` go
+```go
 package main
 
 import (
