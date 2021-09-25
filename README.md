@@ -76,7 +76,7 @@ This will display help for the tool. Here are all the switches it supports.
 | -sources         | Comma separated list of sources to use                     | subfinder -sources shodan,censys            |
 | -t               | Number of concurrent goroutines for resolving (default 10) | subfinder -t 100                            |
 | -timeout         | Seconds to wait before timing out (default 30)             | subfinder -timeout 30                       |
-| -http-proxy      | Http Proxy                                                 | subfinder -http-proxy http://localhost:3128 |
+| -proxy           | HTTP proxy to use with subfinder                           | subfinder -proxy http://localhost:3128      |
 | -rate-limit      | Maximum number of HTTP requests to send per second         | subfinder -rate-limit 10                    |
 | -v               | Show Verbose output                                        | subfinder -v                                |
 | -version         | Show current program version                               | subfinder -version                          |
@@ -95,23 +95,7 @@ go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 
 Subfinder will work after using the installation instructions however to configure Subfinder to work with certain services, you will need to have setup API keys. The following services do not work without an API key:
 
-- [Binaryedge](https://binaryedge.io)
-- [C99](https://api.c99.nl/)
-- [Certspotter](https://sslmate.com/certspotter/api/)
-- [Censys](https://censys.io)
-- [Chaos](https://chaos.projectdiscovery.io)
-- [DnsDB](https://api.dnsdb.info)
-- [Github](https://github.com)
-- [Intelx](https://intelx.io)
-- [Passivetotal](http://passivetotal.org)
-- [Recon.dev](https://recon.dev)
-- [Robtex](https://www.robtex.com/api/)
-- [SecurityTrails](http://securitytrails.com)
-- [Shodan](https://shodan.io)
-- [Spyse](https://spyse.com)
-- [Threatbook](https://x.threatbook.cn/en)
-- [Virustotal](https://www.virustotal.com)
-- [Zoomeye](https://www.zoomeye.org)
+[Binaryedge](https://binaryedge.io), [C99](https://api.c99.nl/), [Certspotter](https://sslmate.com/certspotter/api/), [Chinaz](http://my.chinaz.com/ChinazAPI/DataCenter/MyDataApi), [Censys](https://censys.io), [Chaos](https://chaos.projectdiscovery.io), [DnsDB](https://api.dnsdb.info), [Fofa](https://fofa.so/static_pages/api_help), [Github](https://github.com), [Intelx](https://intelx.io), [Passivetotal](http://passivetotal.org), [Recon.dev](https://recon.dev), [Robtex](https://www.robtex.com/api/), [SecurityTrails](http://securitytrails.com), [Shodan](https://shodan.io), [Spyse](https://spyse.com), [Threatbook](https://x.threatbook.cn/en), [Virustotal](https://www.virustotal.com), [Zoomeye](https://www.zoomeye.org)
 
 Theses values are stored in the `$HOME/.config/subfinder/config.yaml` file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys can be specified for each of these services from which one of them will be used for enumeration.
 
@@ -149,7 +133,7 @@ github:
 
 To run the tool on a target, just use the following command.
 ```sh
-▶ subfinder -d example.com
+subfinder -d example.com
 ```
 
 The verbose flag `v` can be used to display verbose information.
@@ -183,7 +167,7 @@ http://mta-sts.managed.hackerone.com
 If your enterprise uses source routing to choose network output, or your computer has many public network interfaces (eg: public Wi-Fi + 4G connection + Ethernet Wire + VPN), you might want to choose your output network by binding IP source. In this case, you can use `-b` option.
 In the example below, we have 3 network interfaces able to communicate to the Internet through 3 different outputs. Each output is chosen by binding one source IP with `-b` option.
 
-```sh
+```console
 ip addr
 
 [...]
@@ -215,7 +199,7 @@ subfinder -d hackerone.com -b 192.168.8.100
 You can use the official dockerhub image at [subfinder](https://hub.docker.com/r/projectdiscovery/subfinder). Simply run -
 
 ```sh
-▶ docker pull projectdiscovery/subfinder
+docker pull projectdiscovery/subfinder:latest
 ```
 
 The above command will pull the latest tagged release from the dockerhub repository.

@@ -82,7 +82,7 @@ func ParseOptions() *Options {
 	flag.BoolVar(&options.RemoveWildcard, "nW", false, "Remove Wildcard & Dead Subdomains from output")
 	flag.StringVar(&options.LocalIPString, "b", "", "IP address to be used as local bind")
 	flag.StringVar(&options.ConfigFile, "config", path.Join(config, "config.yaml"), "Configuration file for API Keys, etc")
-	flag.StringVar(&options.Proxy, "http-proxy", "", "HTTP proxy to use")
+	flag.StringVar(&options.Proxy, "proxy", "", "HTTP proxy to use with subfinder")
 	flag.IntVar(&options.RateLimit, "rate-limit", 0, "Maximum number of HTTP requests to send per second")
 	flag.BoolVar(&options.Version, "version", false, "Show version of subfinder")
 	flag.Parse()
