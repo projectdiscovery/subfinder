@@ -1,4 +1,4 @@
-name: Release
+name: 🎉 Release Binary
 on:
   create:
     tags:
