@@ -1,15 +1,13 @@
 package runner
 
 import (
-	"flag"
+	"github.com/projectdiscovery/goflags"
+	"github.com/projectdiscovery/gologger"
 	"io"
 	"net"
 	"os"
-	"path"
 	"reflect"
 	"strings"
-
-	"github.com/projectdiscovery/gologger"
 )
 
 // Options contains the configuration options for tuning
@@ -52,43 +50,53 @@ type Options struct {
 func ParseOptions() *Options {
 	options := &Options{}
 
-	config, err := GetConfigDirectory()
-	if err != nil {
-		// This should never be reached
-		gologger.Fatal().Msgf("Could not get user home: %s\n", err)
-	}
-
-	flag.BoolVar(&options.Verbose, "v", false, "Show Verbose output")
-	flag.BoolVar(&options.NoColor, "nC", false, "Don't Use colors in output")
-	flag.IntVar(&options.Threads, "t", 10, "Number of concurrent goroutines for resolving")
-	flag.IntVar(&options.Timeout, "timeout", 30, "Seconds to wait before timing out")
-	flag.IntVar(&options.MaxEnumerationTime, "max-time", 10, "Minutes to wait for enumeration results")
-	flag.StringVar(&options.Domain, "d", "", "Domain to find subdomains for")
-	flag.StringVar(&options.DomainsFile, "dL", "", "File containing list of domains to enumerate")
-	flag.StringVar(&options.OutputFile, "o", "", "File to write output to (optional)")
-	flag.StringVar(&options.OutputDirectory, "oD", "", "Directory to write enumeration results to (optional)")
-	flag.BoolVar(&options.JSON, "json", false, "Write output in JSON lines Format")
-	flag.BoolVar(&options.CaptureSources, "collect-sources", false, "Output host source as array of sources instead of single (first) source")
-	flag.BoolVar(&options.JSON, "oJ", false, "Write output in JSON lines Format")
-	flag.BoolVar(&options.HostIP, "oI", false, "Write output in Host,IP format")
-	flag.BoolVar(&options.Silent, "silent", false, "Show only subdomains in output")
-	flag.BoolVar(&options.Recursive, "recursive", false, "Use only recursive subdomain enumeration sources")
-	flag.BoolVar(&options.All, "all", false, "Use all sources (slow) for enumeration")
-	flag.StringVar(&options.Sources, "sources", "", "Comma separated list of sources to use")
-	flag.BoolVar(&options.ListSources, "ls", false, "List all available sources")
-	flag.StringVar(&options.ExcludeSources, "exclude-sources", "", "List of sources to exclude from enumeration")
-	flag.StringVar(&options.Resolvers, "r", "", "Comma-separated list of resolvers to use")
-	flag.StringVar(&options.ResolverList, "rL", "", "Text file containing list of resolvers to use")
-	flag.BoolVar(&options.RemoveWildcard, "nW", false, "Remove Wildcard & Dead Subdomains from output")
-	flag.StringVar(&options.LocalIPString, "b", "", "IP address to be used as local bind")
-	flag.StringVar(&options.ConfigFile, "config", path.Join(config, "config.yaml"), "Configuration file for API Keys, etc")
-	flag.StringVar(&options.Proxy, "proxy", "", "HTTP proxy to use with subfinder")
-	flag.IntVar(&options.RateLimit, "rate-limit", 0, "Maximum number of HTTP requests to send per second")
-	flag.BoolVar(&options.Version, "version", false, "Show version of subfinder")
-	flag.Parse()
+	flagSet := goflags.NewFlagSet()
+	flagSet.SetDescription(`Subfinder is a subdomain discovery tool that discovers valid subdomains for websites by using passive online sources. It has a simple modular architecture and is optimized for speed. subfinder is built for doing one thing only - passive subdomain enumeration, and it does that very well.`)
+	createGroup(flagSet, "input", "Target",
+		flagSet.StringVar(&options.Domain, "d", "", "Domain to find subdomains for"),
+		flagSet.StringVar(&options.DomainsFile, "dL", "", "File containing list of domains to enumerate"),
+		flagSet.StringVar(&options.Sources, "sources", "", "Comma separated list of sources to use"),
+	)
+	createGroup(flagSet, "template", "Template",
+		flagSet.IntVar(&options.Threads, "t", 10, "Number of concurrent goroutines for resolving"),
+		flagSet.IntVar(&options.Timeout, "timeout", 30, "Seconds to wait before timing out"),
+		flagSet.IntVar(&options.MaxEnumerationTime, "max-time", 10, "Minutes to wait for enumeration results"),
+		flagSet.BoolVar(&options.ListSources, "ls", false, "List all available sources"),
+		flagSet.BoolVar(&options.Recursive, "recursive", false, "Use only recursive subdomain enumeration sources"),
+		flagSet.BoolVar(&options.All, "all", false, "Use all sources (slow) for enumeration"),
+		flagSet.StringVar(&options.ExcludeSources, "exclude-sources", "", "List of sources to exclude from enumeration"),
+	)
+	createGroup(flagSet, "filters", "FILTERING",
+		flagSet.StringVar(&options.Resolvers, "r", "", "Comma-separated list of resolvers to use"),
+		flagSet.StringVar(&options.ResolverList, "rL", "", "Text file containing list of resolvers to use"),
+		flagSet.BoolVar(&options.RemoveWildcard, "nW", false, "Remove Wildcard & Dead Subdomains from output"),
+		flagSet.StringVar(&options.LocalIPString, "b", "", "IP address to be used as local bind"),
+		flagSet.StringVar(&options.Proxy, "proxy", "", "HTTP proxy to use with subfinder"),
+	)
+	createGroup(flagSet, "config", "Configurations",
+		flagSet.StringVar(&options.ConfigFile, "config", "", "Configuration file for API Keys, etc"),
+		//flagSet.StringVar(&options.ConfigFile, "config", path.Join(config, "config.yaml"), "Configuration file for API Keys, etc"),
+		//flagSet.StringVar(&options.SourceConfigFile, "source-config", path.Join(config, "config.yaml"), "Source Configuration file for API Keys, etc"),
+	)
+	createGroup(flagSet, "rate-limit", "RATE-LIMIT",
+		flagSet.IntVar(&options.RateLimit, "rate-limit", 0, "Maximum number of HTTP requests to send per second"),
+	)
+	createGroup(flagSet, "output", "Output",
+		flagSet.BoolVar(&options.Verbose, "v", false, "Show Verbose output"),
+		flagSet.BoolVar(&options.NoColor, "nC", false, "Don't Use colors in output"),
+		flagSet.StringVar(&options.OutputFile, "o", "", "File to write output to (optional)"),
+		flagSet.StringVar(&options.OutputDirectory, "oD", "", "Directory to write enumeration results to (optional)"),
+		flagSet.BoolVar(&options.JSON, "json", false, "Write output in JSON lines Format"),
+		flagSet.BoolVar(&options.CaptureSources, "collect-sources", false, "Output host source as array of sources instead of single (first) source"),
+		flagSet.BoolVar(&options.JSON, "oJ", false, "Write output in JSON lines Format"),
+		flagSet.BoolVar(&options.HostIP, "oI", false, "Write output in Host,IP format"),
+		flagSet.BoolVar(&options.Silent, "silent", false, "Show only subdomains in output"),
+		flagSet.BoolVar(&options.Version, "version", false, "Show version of subfinder"),
+	)
+	flagSet.Parse()
 
 	// Default output is stdout
-	options.Output = os.Stdout
+	//	options.Output = os.Stdout
 
 	// Check if stdin pipe was given
 	options.Stdin = hasStdin()
@@ -104,15 +112,15 @@ func ParseOptions() *Options {
 		os.Exit(0)
 	}
 
-	// Check if the config file exists. If not, it means this is the
-	// first run of the program. Show the first run notices and initialize the config file.
-	// Else show the normal banners and read the yaml fiile to the config
-	if !CheckConfigExists(options.ConfigFile) {
-		options.firstRunTasks()
+	// Check if the application loading with any configuration, then take it
+	// Otherwise load the default config data from the code
+	if options.ConfigFile != "" {
+		gologger.Info().Msgf("loading from file %s", options.ConfigFile)
+		options.sourceRunTasks()
 	} else {
-		options.normalRunTasks()
+		gologger.Info().Msg("loading the default")
+		options.defaultRunTasks()
 	}
-
 	if options.ListSources {
 		listSources(options)
 		os.Exit(0)
@@ -120,7 +128,7 @@ func ParseOptions() *Options {
 
 	// Validate the options passed by the user and if any
 	// invalid options have been used, exit.
-	err = options.validateOptions()
+	err := options.validateOptions()
 	if err != nil {
 		gologger.Fatal().Msgf("Program exiting: %s\n", err)
 	}
@@ -158,5 +166,11 @@ func listSources(options *Options) {
 			message = "%s *\n"
 		}
 		gologger.Silent().Msgf(message, source)
+	}
+}
+func createGroup(flagSet *goflags.FlagSet, groupName, description string, flags ...*goflags.FlagData) {
+	flagSet.SetGroup(groupName, description)
+	for _, currentFlag := range flags {
+		currentFlag.Group(groupName)
 	}
 }

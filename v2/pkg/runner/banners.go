@@ -27,13 +27,12 @@ func showBanner() {
 	gologger.Print().Msgf("By using subfinder, you also agree to the terms of the APIs used.\n\n")
 }
 
-// normalRunTasks runs the normal startup tasks
-func (options *Options) normalRunTasks() {
+// sourceRunTasks runs the app with source config
+func (options *Options) sourceRunTasks() {
 	configFile, err := UnmarshalRead(options.ConfigFile)
 	if err != nil {
 		gologger.Fatal().Msgf("Could not read configuration file %s: %s\n", options.ConfigFile, err)
 	}
-
 	// If we have a different version of subfinder installed
 	// previously, use the new iteration of config file.
 	if configFile.Version != Version {
@@ -46,15 +45,14 @@ func (options *Options) normalRunTasks() {
 		if err != nil {
 			gologger.Fatal().Msgf("Could not update configuration file to %s: %s\n", options.ConfigFile, err)
 		}
+		gologger.Info().Msgf("Configuration file updated to %s\n", options.ConfigFile)
 	}
 	options.YAMLConfig = configFile
 }
 
-// firstRunTasks runs some housekeeping tasks done
-// when the program is ran for the first time
-func (options *Options) firstRunTasks() {
-	// Create the configuration file and display information
-	// about it to the user.
+// defaultRunTasks runs the app with default configuration
+func (options *Options) defaultRunTasks() {
+	// Setting default configurations data
 	config := ConfigFile{
 		// Use the default list of resolvers by marshaling it to the config
 		Resolvers: resolve.DefaultResolvers,
@@ -65,12 +63,5 @@ func (options *Options) firstRunTasks() {
 		// Use the default list of recursive sources
 		Recursive: passive.DefaultRecursiveSources,
 	}
-
-	err := config.MarshalWrite(options.ConfigFile)
-	if err != nil {
-		gologger.Fatal().Msgf("Could not write configuration file to %s: %s\n", options.ConfigFile, err)
-	}
 	options.YAMLConfig = config
-
-	gologger.Info().Msgf("Configuration file saved to %s\n", options.ConfigFile)
 }

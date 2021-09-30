@@ -21,6 +21,7 @@ require (
 
 require (
 	github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129 // indirect
+	github.com/cnf/structhash v0.0.0-20201127153200-e1b16c1ebc08 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
 	github.com/miekg/dns v1.1.41 // indirect
@@ -29,8 +30,11 @@ require (
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/projectdiscovery/goflags v0.0.7 // indirect
 	github.com/projectdiscovery/retryabledns v1.0.12-0.20210419174848-eec3ac17d61e // indirect
+	github.com/projectdiscovery/stringsutil v0.0.0-20210804142656-fd3c28dbaafe // indirect
 	golang.org/x/net v0.0.0-20210415231046-e915ea6b2b7d // indirect
 	golang.org/x/sys v0.0.0-20210419170143-37df388d1f33 // indirect
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
