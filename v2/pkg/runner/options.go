@@ -93,7 +93,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVar(&options.Silent, "silent", false, "Show only subdomains in output"),
 		flagSet.BoolVar(&options.Version, "version", false, "Show version of subfinder"),
 	)
-	flagSet.Parse()
+	_ = flagSet.Parse()
 
 	// Default output is stdout
 	//	options.Output = os.Stdout
