@@ -51,48 +51,57 @@ func ParseOptions() *Options {
 	options := &Options{}
 
 	flagSet := goflags.NewFlagSet()
-	flagSet.SetDescription(`Subfinder is a subdomain discovery tool that discovers valid subdomains for websites by using passive online sources. It has a simple modular architecture and is optimized for speed. subfinder is built for doing one thing only - passive subdomain enumeration, and it does that very well.`)
-	createGroup(flagSet, "input", "Target",
-		flagSet.StringVar(&options.Domain, "d", "", "Domain to find subdomains for"),
-		flagSet.StringVar(&options.DomainsFile, "dL", "", "File containing list of domains to enumerate"),
-		flagSet.StringVar(&options.Sources, "sources", "", "Comma separated list of sources to use"),
+	flagSet.SetDescription(`Subfinder is a subdomain discovery tool that discovers subdomains for websites by using passive online sources.`)
+
+	createGroup(flagSet, "input", "Input",
+		flagSet.StringVarP(&options.Domain,"domain", "d", "", "Domain to find subdomains for"),
+		flagSet.StringVarP(&options.DomainsFile,"list", "dL", "", "File containing list of domains to enumerate"),
 	)
-	createGroup(flagSet, "template", "Template",
-		flagSet.IntVar(&options.Threads, "t", 10, "Number of concurrent goroutines for resolving"),
+
+	createGroup(flagSet, "source", "Source",
+		flagSet.StringVarP(&options.Sources,"sources","s", "", "Sources to use for enumeration (-s crtsh,bufferover"),
+		flagSet.BoolVar(&options.Recursive, "recursive", false, "Sources to use supports recursive enumeration"),
+		flagSet.BoolVar(&options.All, "all", false, "Use all sources (slow) for enumeration"),
+		flagSet.StringVarP(&options.ExcludeSources, "exclude-sources","es", "", "Sources to exclude from enumeration (-es archiveis,zoomeye)"),
+	)
+
+	createGroup(flagSet, "rate-limit", "Rate-limit",
+		flagSet.IntVar(&options.RateLimit, "rate-limit", 0, "Maximum number of HTTP requests to send per second"),
+		flagSet.IntVar(&options.Threads, "t", 10, "Number of concurrent goroutines for resolving (-active only)"),
+	)
+
+	createGroup(flagSet, "optimization", "Optimization",
 		flagSet.IntVar(&options.Timeout, "timeout", 30, "Seconds to wait before timing out"),
 		flagSet.IntVar(&options.MaxEnumerationTime, "max-time", 10, "Minutes to wait for enumeration results"),
-		flagSet.BoolVar(&options.ListSources, "ls", false, "List all available sources"),
-		flagSet.BoolVar(&options.Recursive, "recursive", false, "Use only recursive subdomain enumeration sources"),
-		flagSet.BoolVar(&options.All, "all", false, "Use all sources (slow) for enumeration"),
-		flagSet.StringVar(&options.ExcludeSources, "exclude-sources", "", "List of sources to exclude from enumeration"),
 	)
-	createGroup(flagSet, "filters", "FILTERING",
-		flagSet.StringVar(&options.Resolvers, "r", "", "Comma-separated list of resolvers to use"),
-		flagSet.StringVar(&options.ResolverList, "rL", "", "Text file containing list of resolvers to use"),
-		flagSet.BoolVar(&options.RemoveWildcard, "nW", false, "Remove Wildcard & Dead Subdomains from output"),
-		flagSet.StringVar(&options.LocalIPString, "b", "", "IP address to be used as local bind"),
-		flagSet.StringVar(&options.Proxy, "proxy", "", "HTTP proxy to use with subfinder"),
+
+	createGroup(flagSet, "output", "Output",
+		flagSet.StringVarP(&options.OutputFile,"output", "o", "", "File to write output to (optional)"),
+		flagSet.BoolVarP(&options.JSON, "json","oJ", false, "Write output in JSONL(ines) format"),
+		flagSet.StringVarP(&options.OutputDirectory,"output-dir", "oD", "", "Directory to write output (-dL only)"),
+		flagSet.BoolVarP(&options.CaptureSources, "collect-sources","cs", false, "Include all sources in the output (-json only)"),
+		flagSet.BoolVarP(&options.HostIP,"ip", "oI", false, "Include host IP in output (-active only)"),
 	)
-	createGroup(flagSet, "config", "Configurations",
-		flagSet.StringVar(&options.ConfigFile, "config", "", "Configuration file for API Keys, etc"),
+
+	createGroup(flagSet, "configuration", "Configuration",
 		//flagSet.StringVar(&options.ConfigFile, "config", path.Join(config, "config.yaml"), "Configuration file for API Keys, etc"),
 		//flagSet.StringVar(&options.SourceConfigFile, "source-config", path.Join(config, "config.yaml"), "Source Configuration file for API Keys, etc"),
+		flagSet.StringVar(&options.ConfigFile, "config", "", "Configuration file for API Keys, etc"),
+		flagSet.StringVar(&options.Resolvers, "r", "", "Comma separated list of resolvers to use"),
+		flagSet.StringVarP(&options.ResolverList,"rlist", "rL", "", "File containing list of resolvers to use"),
+		flagSet.BoolVarP(&options.RemoveWildcard,"active", "nW", false, "Display active subdomains only"),
+		flagSet.StringVarP(&options.LocalIPString,"bind-ip", "b", "", "IP address to be used as local bind"),
+		flagSet.StringVar(&options.Proxy, "proxy", "", "HTTP proxy to use with subfinder"),
 	)
-	createGroup(flagSet, "rate-limit", "RATE-LIMIT",
-		flagSet.IntVar(&options.RateLimit, "rate-limit", 0, "Maximum number of HTTP requests to send per second"),
-	)
-	createGroup(flagSet, "output", "Output",
-		flagSet.BoolVar(&options.Verbose, "v", false, "Show Verbose output"),
-		flagSet.BoolVar(&options.NoColor, "nC", false, "Don't Use colors in output"),
-		flagSet.StringVar(&options.OutputFile, "o", "", "File to write output to (optional)"),
-		flagSet.StringVar(&options.OutputDirectory, "oD", "", "Directory to write enumeration results to (optional)"),
-		flagSet.BoolVar(&options.JSON, "json", false, "Write output in JSON lines Format"),
-		flagSet.BoolVar(&options.CaptureSources, "collect-sources", false, "Output host source as array of sources instead of single (first) source"),
-		flagSet.BoolVar(&options.JSON, "oJ", false, "Write output in JSON lines Format"),
-		flagSet.BoolVar(&options.HostIP, "oI", false, "Write output in Host,IP format"),
+
+	createGroup(flagSet, "debug", "Debug",
 		flagSet.BoolVar(&options.Silent, "silent", false, "Show only subdomains in output"),
 		flagSet.BoolVar(&options.Version, "version", false, "Show version of subfinder"),
+		flagSet.BoolVar(&options.Verbose, "v", false, "Show Verbose output"),
+		flagSet.BoolVarP(&options.NoColor,"nc", "nC", false, "Disable color in output"),
+		flagSet.BoolVar(&options.ListSources, "ls", false, "List all available sources"),
 	)
+
 	_ = flagSet.Parse()
 
 	// Default output is stdout
