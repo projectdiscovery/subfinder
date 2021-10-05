@@ -1,13 +1,14 @@
 package runner
 
 import (
-	"github.com/projectdiscovery/goflags"
-	"github.com/projectdiscovery/gologger"
 	"io"
 	"net"
 	"os"
 	"reflect"
 	"strings"
+
+	"github.com/projectdiscovery/goflags"
+	"github.com/projectdiscovery/gologger"
 )
 
 // Options contains the configuration options for tuning
@@ -96,7 +97,7 @@ func ParseOptions() *Options {
 	_ = flagSet.Parse()
 
 	// Default output is stdout
-	//	options.Output = os.Stdout
+	options.Output = os.Stdout
 
 	// Check if stdin pipe was given
 	options.Stdin = hasStdin()
