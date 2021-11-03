@@ -254,7 +254,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
@@ -287,7 +286,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	data, err := ioutil.ReadAll(&buf)
+	data, err := io.ReadAll(&buf)
 	if err != nil {
 		log.Fatal(err)
 	}
