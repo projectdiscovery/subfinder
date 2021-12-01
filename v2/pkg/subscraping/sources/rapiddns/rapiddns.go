@@ -3,7 +3,7 @@ package rapiddns
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
@@ -25,7 +25,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
