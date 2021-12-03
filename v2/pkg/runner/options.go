@@ -71,11 +71,6 @@ func ParseOptions() *Options {
 		flagSet.IntVar(&options.Threads, "t", 10, "Number of concurrent goroutines for resolving (-active only)"),
 	)
 
-	createGroup(flagSet, "optimization", "Optimization",
-		flagSet.IntVar(&options.Timeout, "timeout", 30, "Seconds to wait before timing out"),
-		flagSet.IntVar(&options.MaxEnumerationTime, "max-time", 10, "Minutes to wait for enumeration results"),
-	)
-
 	createGroup(flagSet, "output", "Output",
 		flagSet.StringVarP(&options.OutputFile,"output", "o", "", "File to write output to (optional)"),
 		flagSet.BoolVarP(&options.JSON, "json","oJ", false, "Write output in JSONL(ines) format"),
@@ -85,8 +80,6 @@ func ParseOptions() *Options {
 	)
 
 	createGroup(flagSet, "configuration", "Configuration",
-		//flagSet.StringVar(&options.ConfigFile, "config", path.Join(config, "config.yaml"), "Configuration file for API Keys, etc"),
-		//flagSet.StringVar(&options.SourceConfigFile, "source-config", path.Join(config, "config.yaml"), "Source Configuration file for API Keys, etc"),
 		flagSet.StringVar(&options.ConfigFile, "config", "", "Configuration file for API Keys, etc"),
 		flagSet.StringVar(&options.Resolvers, "r", "", "Comma separated list of resolvers to use"),
 		flagSet.StringVarP(&options.ResolverList,"rlist", "rL", "", "File containing list of resolvers to use"),
@@ -101,6 +94,11 @@ func ParseOptions() *Options {
 		flagSet.BoolVar(&options.Verbose, "v", false, "Show Verbose output"),
 		flagSet.BoolVarP(&options.NoColor,"nc", "nC", false, "Disable color in output"),
 		flagSet.BoolVar(&options.ListSources, "ls", false, "List all available sources"),
+	)
+
+	createGroup(flagSet, "optimization", "Optimization",
+		flagSet.IntVar(&options.Timeout, "timeout", 30, "Seconds to wait before timing out"),
+		flagSet.IntVar(&options.MaxEnumerationTime, "max-time", 10, "Minutes to wait for enumeration results"),
 	)
 
 	_ = flagSet.Parse()
