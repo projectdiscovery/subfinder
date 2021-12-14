@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"fmt"
 	"io"
 	"net"
 	"os"
@@ -55,15 +56,15 @@ func ParseOptions() *Options {
 	flagSet.SetDescription(`Subfinder is a subdomain discovery tool that discovers subdomains for websites by using passive online sources.`)
 
 	createGroup(flagSet, "input", "Input",
-		flagSet.StringVarP(&options.Domain,"domain", "d", "", "Domain to find subdomains for"),
-		flagSet.StringVarP(&options.DomainsFile,"list", "dL", "", "File containing list of domains to enumerate"),
+		flagSet.StringVarP(&options.Domain, "domain", "d", "", "Domain to find subdomains for"),
+		flagSet.StringVarP(&options.DomainsFile, "list", "dL", "", "File containing list of domains to enumerate"),
 	)
 
 	createGroup(flagSet, "source", "Source",
-		flagSet.StringVarP(&options.Sources,"sources","s", "", "Sources to use for enumeration (-s crtsh,bufferover"),
+		flagSet.StringVarP(&options.Sources, "sources", "s", "", "Sources to use for enumeration (-s crtsh,bufferover"),
 		flagSet.BoolVar(&options.Recursive, "recursive", false, "Sources to use supports recursive enumeration"),
 		flagSet.BoolVar(&options.All, "all", false, "Use all sources (slow) for enumeration"),
-		flagSet.StringVarP(&options.ExcludeSources, "exclude-sources","es", "", "Sources to exclude from enumeration (-es archiveis,zoomeye)"),
+		flagSet.StringVarP(&options.ExcludeSources, "exclude-sources", "es", "", "Sources to exclude from enumeration (-es archiveis,zoomeye)"),
 	)
 
 	createGroup(flagSet, "rate-limit", "Rate-limit",
@@ -72,19 +73,19 @@ func ParseOptions() *Options {
 	)
 
 	createGroup(flagSet, "output", "Output",
-		flagSet.StringVarP(&options.OutputFile,"output", "o", "", "File to write output to (optional)"),
-		flagSet.BoolVarP(&options.JSON, "json","oJ", false, "Write output in JSONL(ines) format"),
-		flagSet.StringVarP(&options.OutputDirectory,"output-dir", "oD", "", "Directory to write output (-dL only)"),
-		flagSet.BoolVarP(&options.CaptureSources, "collect-sources","cs", false, "Include all sources in the output (-json only)"),
-		flagSet.BoolVarP(&options.HostIP,"ip", "oI", false, "Include host IP in output (-active only)"),
+		flagSet.StringVarP(&options.OutputFile, "output", "o", "", "File to write output to (optional)"),
+		flagSet.BoolVarP(&options.JSON, "json", "oJ", false, "Write output in JSONL(ines) format"),
+		flagSet.StringVarP(&options.OutputDirectory, "output-dir", "oD", "", "Directory to write output (-dL only)"),
+		flagSet.BoolVarP(&options.CaptureSources, "collect-sources", "cs", false, "Include all sources in the output (-json only)"),
+		flagSet.BoolVarP(&options.HostIP, "ip", "oI", false, "Include host IP in output (-active only)"),
 	)
 
 	createGroup(flagSet, "configuration", "Configuration",
 		flagSet.StringVar(&options.ConfigFile, "config", "", "Configuration file for API Keys, etc"),
 		flagSet.StringVar(&options.Resolvers, "r", "", "Comma separated list of resolvers to use"),
-		flagSet.StringVarP(&options.ResolverList,"rlist", "rL", "", "File containing list of resolvers to use"),
-		flagSet.BoolVarP(&options.RemoveWildcard,"active", "nW", false, "Display active subdomains only"),
-		flagSet.StringVarP(&options.LocalIPString,"bind-ip", "b", "", "IP address to be used as local bind"),
+		flagSet.StringVarP(&options.ResolverList, "rlist", "rL", "", "File containing list of resolvers to use"),
+		flagSet.BoolVarP(&options.RemoveWildcard, "active", "nW", false, "Display active subdomains only"),
+		flagSet.StringVarP(&options.LocalIPString, "bind-ip", "b", "", "IP address to be used as local bind"),
 		flagSet.StringVar(&options.Proxy, "proxy", "", "HTTP proxy to use with subfinder"),
 	)
 
@@ -92,7 +93,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVar(&options.Silent, "silent", false, "Show only subdomains in output"),
 		flagSet.BoolVar(&options.Version, "version", false, "Show version of subfinder"),
 		flagSet.BoolVar(&options.Verbose, "v", false, "Show Verbose output"),
-		flagSet.BoolVarP(&options.NoColor,"nc", "nC", false, "Disable color in output"),
+		flagSet.BoolVarP(&options.NoColor, "nc", "nC", false, "Disable color in output"),
 		flagSet.BoolVar(&options.ListSources, "ls", false, "List all available sources"),
 	)
 
@@ -101,7 +102,10 @@ func ParseOptions() *Options {
 		flagSet.IntVar(&options.MaxEnumerationTime, "max-time", 10, "Minutes to wait for enumeration results"),
 	)
 
-	_ = flagSet.Parse()
+	if err := flagSet.Parse(); err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
 
 	// Default output is stdout
 	options.Output = os.Stdout
