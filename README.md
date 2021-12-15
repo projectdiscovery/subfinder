@@ -59,7 +59,7 @@ INPUT:
    -dL, -list string   File containing list of domains to enumerate
 
 SOURCE:
-   -s, -sources string           Sources to use for enumeration (-s crtsh,bufferover
+   -s, -sources string           Sources to use for enumeration (-s crtsh,bufferover)
    -recursive                    Sources to use supports recursive enumeration
    -all                          Use all sources (slow) for enumeration
    -es, -exclude-sources string  Sources to exclude from enumeration (-es archiveis,zoomeye)
