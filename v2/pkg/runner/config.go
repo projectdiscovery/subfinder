@@ -1,7 +1,6 @@
 package runner
 
 import (
-	"fmt"
 	"math/rand"
 	"os"
 	"strings"
@@ -212,6 +211,5 @@ func (c *ConfigFile) GetKeys() subscraping.Keys {
 	if len(c.FullHunt) > 0 {
 		keys.FullHunt = c.FullHunt[rand.Intn(len(c.FullHunt))]
 	}
-	fmt.Println("full hunt ky", keys.FullHunt)
 	return keys
 }
