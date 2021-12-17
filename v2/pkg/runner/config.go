@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"fmt"
 	"math/rand"
 	"os"
 	"strings"
@@ -48,6 +49,7 @@ type ConfigFile struct {
 	Virustotal     []string `yaml:"virustotal"`
 	ZoomEye        []string `yaml:"zoomeye"`
 	Fofa           []string `yaml:"fofa"`
+	FullHunt       []string `json:"fullhunt"`
 	// Version indicates the version of subfinder installed.
 	Version string `yaml:"subfinder-version"`
 }
@@ -207,6 +209,9 @@ func (c *ConfigFile) GetKeys() subscraping.Keys {
 			keys.FofaSecret = parts[1]
 		}
 	}
-
+	if len(c.FullHunt) > 0 {
+		keys.FullHunt = c.FullHunt[rand.Intn(len(c.FullHunt))]
+	}
+	fmt.Println("full hunt ky", keys.FullHunt)
 	return keys
 }

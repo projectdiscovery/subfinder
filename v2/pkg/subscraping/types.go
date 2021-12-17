@@ -63,6 +63,7 @@ type Keys struct {
 	ZoomEyePassword      string   `json:"zoomeye_password"`
 	FofaUsername         string   `json:"fofa_username"`
 	FofaSecret           string   `json:"fofa_secret"`
+	FullHunt             string   `json:"fullhunt"`
 }
 
 // Result is a result structure returned by a source

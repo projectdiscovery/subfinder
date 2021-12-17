@@ -36,6 +36,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeye"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fullhunt"
 )
 
 // DefaultSources contains the list of fast sources used by default.
@@ -62,6 +63,7 @@ var DefaultSources = []string{
 	"threatminer",
 	"virustotal",
 	"fofa",
+	"fullhunt",
 }
 
 // DefaultRecursiveSources contains list of default recursive sources
@@ -115,6 +117,7 @@ var DefaultAllSources = []string{
 	"waybackarchive",
 	"zoomeye",
 	"fofa",
+	"fullhunt",
 }
 
 // Agent is a struct for running passive subdomain enumeration
@@ -207,6 +210,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &zoomeye.Source{}
 		case "fofa":
 			a.sources[source] = &fofa.Source{}
+		case "fullhunt":
+			a.sources[source] = &fullhunt.Source{}
 		}
 	}
 }
