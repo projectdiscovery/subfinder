@@ -49,7 +49,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			x = fmt.Sprintf("\"%s,\"%s\"", x, record.Host)
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Host}
 		}
-		fmt.Print(len(x))
 	}()
 	return results
 }
