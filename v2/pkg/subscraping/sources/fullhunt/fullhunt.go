@@ -15,7 +15,7 @@ type fullHuntResponse struct {
 	Status  int           `json:"status"`
 }
 
-//hostDetails struct
+// hostDetails struct
 type hostDetails struct {
 	Host string `json:"host"`
 }
@@ -44,7 +44,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 		resp.Body.Close()
-		fmt.Println("reading record data :", len(response.Hosts))
 		var x = ""
 		for _, record := range response.Hosts {
 			x = fmt.Sprintf("\"%s,\"%s\"", x, record.Host)
