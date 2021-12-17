@@ -28,10 +28,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 	go func() {
 		defer close(results)
-		// if session.Keys.FullHunt == "" {
-		// 	return
-		// }
-	
+		
 		resp, err := session.Get(ctx, fmt.Sprintf("https://fullhunt.io/api/v1/domain/%s/details", domain), "", map[string]string{"X-API-KEY": session.Keys.FullHunt})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
