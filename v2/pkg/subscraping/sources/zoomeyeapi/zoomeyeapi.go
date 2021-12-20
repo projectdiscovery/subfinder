@@ -57,11 +57,13 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			var res zoomeyeResults
 			err = json.NewDecoder(resp.Body).Decode(&res)
+
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				_ = resp.Body.Close()
 				return
 			}
+			_ = resp.Body.Close()
 			pages = int(res.Total/1000) + 1
 			for _, r := range res.List {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: r.Name}
