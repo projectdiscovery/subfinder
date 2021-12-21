@@ -8,16 +8,11 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-//fullHunt response
+//fullhunt response
 type fullHuntResponse struct {
-	Hosts   []hostDetails `json:"hosts"`
-	Message string        `json:"message"`
-	Status  int           `json:"status"`
-}
-
-// hostDetails struct
-type hostDetails struct {
-	Host string `json:"host"`
+	Hosts   []string `json:"hosts"`
+	Message string   `json:"message"`
+	Status  int      `json:"status"`
 }
 
 // Source is the passive scraping agent
@@ -28,8 +23,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 	go func() {
 		defer close(results)
-		
-		resp, err := session.Get(ctx, fmt.Sprintf("https://fullhunt.io/api/v1/domain/%s/details", domain), "", map[string]string{"X-API-KEY": session.Keys.FullHunt})
+
+		resp, err := session.Get(ctx, fmt.Sprintf("https://fullhunt.io/api/v1/domain/%s/subdomains", domain), "", map[string]string{"X-API-KEY": session.Keys.FullHunt})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
@@ -44,10 +39,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 		resp.Body.Close()
-		var x = ""
 		for _, record := range response.Hosts {
-			x = fmt.Sprintf("\"%s,\"%s\"", x, record.Host)
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Host}
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record}
 		}
 	}()
 	return results
