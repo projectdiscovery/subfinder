@@ -30,6 +30,7 @@ type ConfigFile struct {
 	ExcludeSources []string `yaml:"exclude-sources,omitempty"`
 	// API keys for different sources
 	Binaryedge     []string `yaml:"binaryedge"`
+	C99            []string `yaml:"c99"`
 	Censys         []string `yaml:"censys"`
 	Certspotter    []string `yaml:"certspotter"`
 	Chaos          []string `yaml:"chaos"`
@@ -49,6 +50,7 @@ type ConfigFile struct {
 	ZoomEye        []string `yaml:"zoomeye"`
 	ZoomEyeApi     []string `yaml:"zoomeyeapi"`
 	Fofa           []string `yaml:"fofa"`
+	FullHunt       []string `json:"fullhunt"`
 	// Version indicates the version of subfinder installed.
 	Version string `yaml:"subfinder-version"`
 }
@@ -121,6 +123,9 @@ func (c *ConfigFile) GetKeys() subscraping.Keys {
 
 	if len(c.Binaryedge) > 0 {
 		keys.Binaryedge = c.Binaryedge[rand.Intn(len(c.Binaryedge))]
+	}
+	if len(c.C99) > 0 {
+		keys.C99 = c.C99[rand.Intn(len(c.C99))]
 	}
 
 	if len(c.Censys) > 0 {
@@ -211,6 +216,8 @@ func (c *ConfigFile) GetKeys() subscraping.Keys {
 			keys.FofaSecret = parts[1]
 		}
 	}
-
+	if len(c.FullHunt) > 0 {
+		keys.FullHunt = c.FullHunt[rand.Intn(len(c.FullHunt))]
+	}
 	return keys
 }

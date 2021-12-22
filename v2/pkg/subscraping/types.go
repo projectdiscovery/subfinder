@@ -40,6 +40,7 @@ type Session struct {
 // Keys contains the current API Keys we have in store
 type Keys struct {
 	Binaryedge           string   `json:"binaryedge"`
+	C99                  string   `json:"c99"`
 	CensysToken          string   `json:"censysUsername"`
 	CensysSecret         string   `json:"censysPassword"`
 	Certspotter          string   `json:"certspotter"`
@@ -64,6 +65,7 @@ type Keys struct {
 	ZoomEyeKey           string   `json:"zoomeye_key"`
 	FofaUsername         string   `json:"fofa_username"`
 	FofaSecret           string   `json:"fofa_secret"`
+	FullHunt             string   `json:"fullhunt"`
 }
 
 // Result is a result structure returned by a source
