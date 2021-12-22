@@ -48,6 +48,7 @@ type ConfigFile struct {
 	URLScan        []string `yaml:"urlscan"`
 	Virustotal     []string `yaml:"virustotal"`
 	ZoomEye        []string `yaml:"zoomeye"`
+	ZoomEyeApi     []string `yaml:"zoomeyeapi"`
 	Fofa           []string `yaml:"fofa"`
 	FullHunt       []string `json:"fullhunt"`
 	// Version indicates the version of subfinder installed.
@@ -203,6 +204,9 @@ func (c *ConfigFile) GetKeys() subscraping.Keys {
 			keys.ZoomEyeUsername = parts[0]
 			keys.ZoomEyePassword = parts[1]
 		}
+	}
+	if len(c.ZoomEyeApi) > 0 {
+		keys.ZoomEyeKey = c.ZoomEyeApi[rand.Intn(len(c.ZoomEyeApi))]
 	}
 	if len(c.Fofa) > 0 {
 		fofaKeys := c.Fofa[rand.Intn(len(c.Fofa))]

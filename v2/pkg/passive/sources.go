@@ -37,6 +37,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeye"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeyeapi"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fullhunt"
 )
 
@@ -119,6 +120,7 @@ var DefaultAllSources = []string{
 	"virustotal",
 	"waybackarchive",
 	"zoomeye",
+	"zoomeyeapi",
 	"fofa",
 	"fullhunt",
 }
@@ -213,6 +215,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &waybackarchive.Source{}
 		case "zoomeye":
 			a.sources[source] = &zoomeye.Source{}
+		case "zoomeyeapi":
+			a.sources[source] = &zoomeyeapi.Source{}
 		case "fofa":
 			a.sources[source] = &fofa.Source{}
 		case "fullhunt":
