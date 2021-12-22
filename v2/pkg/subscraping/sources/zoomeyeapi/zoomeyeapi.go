@@ -9,10 +9,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-//type loginResp struct {
-//	JWT string `json:"access_token"`
-//}
-
 // search results
 type zoomeyeResults struct {
 	Status int `json:"status"`
@@ -48,7 +44,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			resp, err := session.Get(ctx, api, "", headers)
 			isForbidden := resp != nil && resp.StatusCode == http.StatusForbidden
 			if err != nil {
-				if !isForbidden && currentPage == 0 {
+				if !isForbidden {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 					session.DiscardHTTPResponse(resp)
 				}
