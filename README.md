@@ -210,6 +210,13 @@ ip addr
 subfinder -d hackerone.com -b 192.168.1.87
 ```
 
+##### TIP 
+You can get an intimation to your telegram mobile application once the fuzzing is done using the python [intimations](https://github.com/AbhijithAJ/intimations) module.
+
+```
+subfinder -d hackerone.com -b 192.168.1.87 ; python3 -m intimations telegram --title 'Subfinder' --message 'Subdomain enumeration is completed.' 
+``` 
+
 <table>
 <tr>
 <td>  
