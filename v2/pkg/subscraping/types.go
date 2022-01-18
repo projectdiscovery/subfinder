@@ -40,6 +40,7 @@ type Session struct {
 // Keys contains the current API Keys we have in store
 type Keys struct {
 	Binaryedge           string   `json:"binaryedge"`
+	Bufferover           string   `json:"bufferover"`
 	CensysToken          string   `json:"censysUsername"`
 	CensysSecret         string   `json:"censysPassword"`
 	Certspotter          string   `json:"certspotter"`
