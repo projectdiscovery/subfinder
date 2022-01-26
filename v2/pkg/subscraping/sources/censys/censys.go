@@ -45,7 +45,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			resp, err := session.HTTPRequest(
 				ctx,
 				"POST",
-				"https://www.censys.io/api/v1/search/certificates",
+				"https://search.censys.io/api/v1/search/certificates",
 				"",
 				map[string]string{"Content-Type": "application/json", "Accept": "application/json"},
 				bytes.NewReader(request),
@@ -68,11 +68,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			resp.Body.Close()
 
-			// Exit the censys enumeration if max pages is reached
-			if currentPage >= censysResponse.Metadata.Pages || currentPage >= maxCensysPages {
-				break
-			}
-
 			for _, res := range censysResponse.Results {
 				for _, part := range res.Data {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: part}
@@ -80,6 +75,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				for _, part := range res.Data1 {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: part}
 				}
+			}
+
+			// Exit the censys enumeration if max pages is reached
+			if currentPage >= censysResponse.Metadata.Pages || currentPage >= maxCensysPages {
+				break
 			}
 
 			currentPage++
