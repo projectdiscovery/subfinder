@@ -91,6 +91,8 @@ github.com/projectdiscovery/dnsx v1.0.3 h1:IbMlMEeki6mlllHxATVh50+eOBwyOn8OKD1Cl
 github.com/projectdiscovery/dnsx v1.0.3/go.mod h1:M79ADVHwnNQM6kN2J4/XvjydJ3cDhaHHoI5lxJR2Z/A=
 github.com/projectdiscovery/fdmax v0.0.3 h1:FM6lv9expZ/rEEBI9tkRh6tx3DV0gtpwzdc0h7bGPqg=
 github.com/projectdiscovery/fdmax v0.0.3/go.mod h1:NWRcaR7JTO7fC27H4jCl9n7Z+KIredwpgw1fV+4KrKI=
+github.com/projectdiscovery/goflags v0.0.7-0.20220127045615-f8749b99fe7c h1:TZ+p5LdrgkbsYHchUPezjYCUXPQ1bhBcF/mUJdr9TDo=
+github.com/projectdiscovery/goflags v0.0.7-0.20220127045615-f8749b99fe7c/go.mod h1:Jjwsf4eEBPXDSQI2Y+6fd3dBumJv/J1U0nmpM+hy2YY=
 github.com/projectdiscovery/goflags v0.0.7 h1:aykmRkrOgDyRwcvGrK3qp+9aqcjGfAMs/+LtRmtyxwk=
 github.com/projectdiscovery/goflags v0.0.7/go.mod h1:Jjwsf4eEBPXDSQI2Y+6fd3dBumJv/J1U0nmpM+hy2YY=
 github.com/projectdiscovery/gologger v1.0.0/go.mod h1:Ok+axMqK53bWNwDSU1nTNwITLYMXMdZtRc8/y1c7sWE=
