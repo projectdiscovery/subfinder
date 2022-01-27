@@ -5,7 +5,7 @@ import (
 	"io"
 	"net"
 	"os"
-	"path"
+	"path/filepath"
 	"reflect"
 	"strings"
 
@@ -146,9 +146,9 @@ func ParseOptions() *Options {
 	} else {
 		gologger.Info().Msg("loading the default")
 		if flagSet.ProviderConfigFile {
-			options.ConfigFile = path.Join(config, "provider.yaml")
+			options.ConfigFile = filepath.Join(config, "provider.yaml")
 		} else {
-			options.ConfigFile = path.Join(config, "config.yaml")
+			options.ConfigFile = filepath.Join(config, "config.yaml")
 		}
 		options.defaultRunTasks()
 	}
