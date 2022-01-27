@@ -52,16 +52,13 @@ func (options *Options) sourceRunTasks() {
 
 // defaultRunTasks runs the app with default configuration
 func (options *Options) defaultRunTasks() {
-	// Setting default configurations data
-	config := ConfigFile{
-		// Use the default list of resolvers by marshaling it to the config
-		Resolvers: resolve.DefaultResolvers,
-		// Use the default list of passive sources
-		Sources: passive.DefaultSources,
-		// Use the default list of all passive sources
-		AllSources: passive.DefaultAllSources,
-		// Use the default list of recursive sources
-		Recursive: passive.DefaultRecursiveSources,
+	configFile, err := UnmarshalRead(options.ConfigFile)
+	if err != nil {
+		gologger.Fatal().Msgf("Could not read configuration file %s: %s\n", options.ConfigFile, err)
 	}
-	options.YAMLConfig = config
+	configFile.Sources = passive.DefaultSources
+	configFile.AllSources = passive.DefaultAllSources
+	configFile.Recursive = passive.DefaultRecursiveSources
+	configFile.Resolvers = resolve.DefaultResolvers
+	options.YAMLConfig = configFile
 }
