@@ -118,6 +118,8 @@ func ParseOptions() *Options {
 		os.Exit(0)
 	}
 
+	options.preProcessOptions()
+
 	// Validate the options passed by the user and if any
 	// invalid options have been used, exit.
 	err = options.validateOptions()
@@ -159,4 +161,8 @@ func listSources(options *Options) {
 		}
 		gologger.Silent().Msgf(message, source)
 	}
+}
+
+func (options *Options) preProcessOptions() {
+	options.Domain, _ = sanitize(options.Domain)
 }
