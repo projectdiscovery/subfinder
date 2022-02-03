@@ -5,7 +5,6 @@ import (
 	"io"
 	"net"
 	"os"
-	"path/filepath"
 	"reflect"
 	"strings"
 
@@ -52,11 +51,7 @@ type Options struct {
 // ParseOptions parses the command line flags provided by a user
 func ParseOptions() *Options {
 	options := &Options{}
-	config, err := GetConfigDirectory()
-	if err != nil {
-		// This should never be reached
-		gologger.Fatal().Msgf("Could not get user home: %s\n", err)
-	}
+	var err error
 	flagSet := goflags.NewFlagSet()
 	flagSet.SetDescription(`Subfinder is a subdomain discovery tool that discovers subdomains for websites by using passive online sources.`)
 
@@ -108,7 +103,7 @@ func ParseOptions() *Options {
 	)
 
 	if err := flagSet.Parse(); err != nil {
-		if strings.Contains(err.Error(), "-providerfile") {
+		if strings.Contains(err.Error(), goflags.ProviderFlagName) {
 			if c, cErr := flagSet.GetProviderConfig(); cErr == nil {
 				delete(c, "resolvers")
 				delete(c, "sources")
@@ -145,11 +140,7 @@ func ParseOptions() *Options {
 		options.sourceRunTasks()
 	} else {
 		gologger.Info().Msg("loading the default")
-		if flagSet.ProviderConfigFile {
-			options.ConfigFile = filepath.Join(config, "provider.yaml")
-		} else {
-			options.ConfigFile = filepath.Join(config, "config.yaml")
-		}
+		options.ConfigFile = flagSet.GetProviderConfigPath()
 		options.defaultRunTasks()
 	}
 	if options.ListSources {
