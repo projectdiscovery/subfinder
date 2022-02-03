@@ -198,6 +198,7 @@ func createGroup(flagSet *goflags.FlagSet, groupName, description string, flags 
 	for _, currentFlag := range flags {
 		currentFlag.Group(groupName)
 	}
+}
 
 func (options *Options) preProcessOptions() {
 	options.Domain, _ = sanitize(options.Domain)
