@@ -1,6 +1,9 @@
 package runner
 
 import (
+	"strings"
+
+	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
@@ -53,7 +56,7 @@ func (options *Options) sourceRunTasks() {
 // defaultRunTasks runs the app with default configuration
 func (options *Options) defaultRunTasks() {
 	configFile, err := UnmarshalRead(options.ConfigFile)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), goflags.ErrEofYaml.Error()) {
 		gologger.Fatal().Msgf("Could not read configuration file %s: %s\n", options.ConfigFile, err)
 	}
 	configFile.Sources = passive.DefaultSources
