@@ -10,6 +10,7 @@ require (
 	github.com/projectdiscovery/chaos-client v0.1.8
 	github.com/projectdiscovery/dnsx v1.0.3
 	github.com/projectdiscovery/fdmax v0.0.3
+	github.com/projectdiscovery/fileutil v0.0.0-20210928100737-cab279c5d4b5
 	github.com/projectdiscovery/gologger v1.1.4
 	github.com/rs/xid v1.3.0
 	github.com/spyse-com/go-spyse v1.2.3
@@ -18,6 +19,8 @@ require (
 	go.uber.org/ratelimit v0.2.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
+
+require github.com/karrick/godirwalk v1.16.1 // indirect
 
 require (
 	github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129 // indirect
@@ -28,9 +31,9 @@ require (
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/projectdiscovery/goflags v0.0.7-0.20220203040211-bbdcd4c06ed5
+	github.com/projectdiscovery/goflags v0.0.8-0.20220208063718-9bbeacc2fb8f
 	github.com/projectdiscovery/retryabledns v1.0.12-0.20210419174848-eec3ac17d61e // indirect
 	github.com/projectdiscovery/stringsutil v0.0.0-20210804142656-fd3c28dbaafe // indirect
 	golang.org/x/net v0.0.0-20210415231046-e915ea6b2b7d // indirect

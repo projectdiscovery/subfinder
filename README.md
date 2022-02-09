@@ -80,7 +80,6 @@ CONFIGURATION:
    -r string            Comma separated list of resolvers to use
    -rL, -rlist string   File containing list of resolvers to use
    -nW, -active         Display active subdomains only
-   -b, -bind-ip string  IP address to be used as local bind
    -proxy string        HTTP proxy to use with subfinder
 
 DEBUG:

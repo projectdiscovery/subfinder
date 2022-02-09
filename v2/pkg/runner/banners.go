@@ -1,9 +1,6 @@
 package runner
 
 import (
-	"strings"
-
-	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
@@ -30,38 +27,21 @@ func showBanner() {
 	gologger.Print().Msgf("By using subfinder, you also agree to the terms of the APIs used.\n\n")
 }
 
-// sourceRunTasks runs the app with source config
-func (options *Options) sourceRunTasks() {
-	configFile, err := UnmarshalRead(options.ConfigFile)
-	if err != nil {
-		gologger.Fatal().Msgf("Could not read configuration file %s: %s\n", options.ConfigFile, err)
+// loadProvidersFrom runs the app with source config
+func (options *Options) loadProvidersFrom(location string) {
+	if len(options.AllSources) == 0 {
+		options.AllSources = passive.DefaultAllSources
 	}
-	// If we have a different version of subfinder installed
-	// previously, use the new iteration of config file.
-	if configFile.Version != Version {
-		configFile.Sources = passive.DefaultSources
-		configFile.AllSources = passive.DefaultAllSources
-		configFile.Recursive = passive.DefaultRecursiveSources
-		configFile.Version = Version
+	if len(options.Recursive) == 0 {
+		options.Recursive = passive.DefaultRecursiveSources
+	}
+	// todo: move elsewhere
+	if len(options.Resolvers) == 0 {
+		options.Recursive = resolve.DefaultResolvers
+	}
 
-		err = configFile.MarshalWrite(options.ConfigFile)
-		if err != nil {
-			gologger.Fatal().Msgf("Could not update configuration file to %s: %s\n", options.ConfigFile, err)
-		}
-		gologger.Info().Msgf("Configuration file updated to %s\n", options.ConfigFile)
+	options.Providers = &Providers{}
+	if err := options.Providers.UnmarshalFrom(location); isFatalErr(err) {
+		gologger.Fatal().Msgf("Could not read providers from %s: %s\n", location, err)
 	}
-	options.YAMLConfig = configFile
-}
-
-// defaultRunTasks runs the app with default configuration
-func (options *Options) defaultRunTasks() {
-	configFile, err := UnmarshalRead(options.ConfigFile)
-	if err != nil && !strings.Contains(err.Error(), goflags.ErrEofYaml.Error()) {
-		gologger.Fatal().Msgf("Could not read configuration file %s: %s\n", options.ConfigFile, err)
-	}
-	configFile.Sources = passive.DefaultSources
-	configFile.AllSources = passive.DefaultAllSources
-	configFile.Recursive = passive.DefaultRecursiveSources
-	configFile.Resolvers = resolve.DefaultResolvers
-	options.YAMLConfig = configFile
 }

@@ -2,7 +2,6 @@ package runner
 
 import (
 	"errors"
-	"net"
 
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/gologger/formatter"
@@ -13,7 +12,7 @@ import (
 func (options *Options) validateOptions() error {
 	// Check if domain, list of domains, or stdin info was provided.
 	// If none was provided, then return.
-	if options.Domain == "" && options.DomainsFile == "" && !options.Stdin {
+	if len(options.Domain) == 0 && options.DomainsFile == "" && !options.Stdin {
 		return errors.New("no input list provided")
 	}
 
@@ -33,14 +32,6 @@ func (options *Options) validateOptions() error {
 	// Always remove wildcard with hostip
 	if options.HostIP && !options.RemoveWildcard {
 		return errors.New("hostip flag must be used with RemoveWildcard option")
-	}
-
-	// Check local IP address
-	if options.LocalIPString != "" {
-		options.LocalIP = net.ParseIP(options.LocalIPString)
-		if options.LocalIP == nil {
-			return errors.New("local bind ip is malformed")
-		}
 	}
 
 	return nil
