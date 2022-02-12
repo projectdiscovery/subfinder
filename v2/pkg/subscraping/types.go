@@ -25,7 +25,7 @@ type Source interface {
 }
 
 // Session is the option passed to the source, an option is created
-// uniquely for eac source.
+// uniquely for each source.
 type Session struct {
 	// Extractor is the regex for subdomains created for each domain
 	Extractor *regexp.Regexp
