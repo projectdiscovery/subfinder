@@ -72,6 +72,8 @@ func ParseOptions() *Options {
 		if err := migrateToProviderConfig(defaultConfigLocation, defaultProviderConfigLocation); err != nil {
 			gologger.Fatal().Msgf("Could not migrate providers from existing config (%s) to provider config (%s): %s\n", defaultConfigLocation, defaultProviderConfigLocation, err)
 		} else {
+			//cleanup the existing config file post migration
+			os.Remove(defaultConfigLocation)
 			gologger.Info().Msgf("Migrated %s to %s successfully\n", defaultConfigLocation, defaultProviderConfigLocation)
 		}
 	}

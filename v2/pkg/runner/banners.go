@@ -39,6 +39,9 @@ func (options *Options) loadProvidersFrom(location string) {
 	if len(options.Resolvers) == 0 {
 		options.Recursive = resolve.DefaultResolvers
 	}
+	if len(options.Sources) == 0 {
+		options.Sources = passive.DefaultSources
+	}
 
 	options.Providers = &Providers{}
 	if err := options.Providers.UnmarshalFrom(location); isFatalErr(err) {
