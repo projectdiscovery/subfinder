@@ -51,6 +51,7 @@ type ConfigFile struct {
 	ZoomEyeApi     []string `yaml:"zoomeyeapi"`
 	Fofa           []string `yaml:"fofa"`
 	FullHunt       []string `json:"fullhunt"`
+	DnsRepo        []string `json:"dnsrepo"`
 	// Version indicates the version of subfinder installed.
 	Version string `yaml:"subfinder-version"`
 }
@@ -218,6 +219,9 @@ func (c *ConfigFile) GetKeys() subscraping.Keys {
 	}
 	if len(c.FullHunt) > 0 {
 		keys.FullHunt = c.FullHunt[rand.Intn(len(c.FullHunt))]
+	}
+	if len(c.DnsRepo) > 0 {
+		keys.DnsRepo = c.DnsRepo[rand.Intn(len(c.DnsRepo))]
 	}
 	return keys
 }

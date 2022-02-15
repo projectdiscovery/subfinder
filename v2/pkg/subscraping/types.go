@@ -66,6 +66,7 @@ type Keys struct {
 	FofaUsername         string   `json:"fofa_username"`
 	FofaSecret           string   `json:"fofa_secret"`
 	FullHunt             string   `json:"fullhunt"`
+	DnsRepo              string   `json:"dnsrepo"`
 }
 
 // Result is a result structure returned by a source
