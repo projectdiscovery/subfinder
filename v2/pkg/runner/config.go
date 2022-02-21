@@ -29,6 +29,7 @@ type ConfigFile struct {
 	// ExcludeSources contains the sources to not include in the enumeration process
 	ExcludeSources []string `yaml:"exclude-sources,omitempty"`
 	// API keys for different sources
+	Bufferover     []string `yaml:"bufferover"`
 	Binaryedge     []string `yaml:"binaryedge"`
 	C99            []string `yaml:"c99"`
 	Censys         []string `yaml:"censys"`
@@ -126,6 +127,10 @@ func (c *ConfigFile) GetKeys() subscraping.Keys {
 	}
 	if len(c.C99) > 0 {
 		keys.C99 = c.C99[rand.Intn(len(c.C99))]
+	}
+
+	if len(c.Bufferover) > 0 {
+		keys.Bufferover = c.Bufferover[rand.Intn(len(c.Bufferover))]
 	}
 
 	if len(c.Censys) > 0 {
