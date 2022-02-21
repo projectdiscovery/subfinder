@@ -125,8 +125,8 @@ securitytrails: []
 shodan:
   - AAAAClP1bJJSRMEYJazgwhJKrggRwKA
 github:
-  - d23a554bbc1aabb208c9acfbd2dd41ce7fc9db39
-  - asdsd54bbc1aabb208c9acfbd2dd41ce7fc9db39
+  - ghp_lkyJGU3jv1xmwk4SDXavrLDJ4dl2pSJMzj4X
+  - ghp_gkUuhkIYdQPj13ifH4KA3cXRn8JD2lqir2d4
 ```
 
 # Running Subfinder
@@ -254,7 +254,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
@@ -287,7 +286,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	data, err := ioutil.ReadAll(&buf)
+	data, err := io.ReadAll(&buf)
 	if err != nil {
 		log.Fatal(err)
 	}

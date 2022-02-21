@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/pkg/errors"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
@@ -83,12 +84,11 @@ func (r *Runner) RunEnumeration(ctx context.Context) error {
 func (r *Runner) EnumerateMultipleDomains(ctx context.Context, reader io.Reader, outputs []io.Writer) error {
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
-		domain := scanner.Text()
-		if domain == "" {
+		domain, err := sanitize(scanner.Text())
+		if errors.Is(err, ErrEmptyInput) {
 			continue
 		}
 
-		var err error
 		var file *os.File
 		// If the user has specified an output file, use that output file instead
 		// of creating a new output file for each domain. Else create a new file

@@ -7,6 +7,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/archiveis"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/binaryedge"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/bufferover"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/c99"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/censys"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/certspotter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/chaos"
@@ -36,6 +37,8 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeye"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeyeapi"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fullhunt"
 )
 
 // DefaultSources contains the list of fast sources used by default.
@@ -43,6 +46,7 @@ var DefaultSources = []string{
 	"alienvault",
 	"anubis",
 	"bufferover",
+	"c99",
 	"certspotter",
 	"censys",
 	"chaos",
@@ -62,6 +66,7 @@ var DefaultSources = []string{
 	"threatminer",
 	"virustotal",
 	"fofa",
+	"fullhunt",
 }
 
 // DefaultRecursiveSources contains list of default recursive sources
@@ -87,6 +92,7 @@ var DefaultAllSources = []string{
 	"archiveis",
 	"binaryedge",
 	"bufferover",
+	"c99",
 	"censys",
 	"certspotter",
 	"chaos",
@@ -114,7 +120,9 @@ var DefaultAllSources = []string{
 	"virustotal",
 	"waybackarchive",
 	"zoomeye",
+	"zoomeyeapi",
 	"fofa",
+	"fullhunt",
 }
 
 // Agent is a struct for running passive subdomain enumeration
@@ -149,6 +157,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &binaryedge.Source{}
 		case "bufferover":
 			a.sources[source] = &bufferover.Source{}
+		case "c99":
+			a.sources[source] = &c99.Source{}
 		case "censys":
 			a.sources[source] = &censys.Source{}
 		case "certspotter":
@@ -205,8 +215,12 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &waybackarchive.Source{}
 		case "zoomeye":
 			a.sources[source] = &zoomeye.Source{}
+		case "zoomeyeapi":
+			a.sources[source] = &zoomeyeapi.Source{}
 		case "fofa":
 			a.sources[source] = &fofa.Source{}
+		case "fullhunt":
+			a.sources[source] = &fullhunt.Source{}
 		}
 	}
 }
