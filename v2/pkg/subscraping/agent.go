@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"net/url"
 	"time"
@@ -16,20 +15,13 @@ import (
 )
 
 // NewSession creates a new session object for a domain
-func NewSession(domain string, keys *Keys, proxy string, rateLimit, timeout int, localIP net.IP) (*Session, error) {
-	dialer := &net.Dialer{
-		LocalAddr: &net.TCPAddr{
-			IP: localIP,
-		},
-	}
-
+func NewSession(domain string, keys *Keys, proxy string, rateLimit, timeout int) (*Session, error) {
 	Transport := &http.Transport{
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 100,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
-		DialContext: dialer.DialContext,
 	}
 
 	// Add proxy

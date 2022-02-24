@@ -13,31 +13,22 @@ import (
 func (r *Runner) initializePassiveEngine() {
 	var sources, exclusions []string
 
-	if r.options.ExcludeSources != "" {
-		exclusions = append(exclusions, strings.Split(r.options.ExcludeSources, ",")...)
-	} else {
-		exclusions = append(exclusions, r.options.YAMLConfig.ExcludeSources...)
+	if len(r.options.ExcludeSources) > 0 {
+		exclusions = r.options.ExcludeSources
 	}
 
+	switch {
 	// Use all sources if asked by the user
-	if r.options.All {
-		sources = append(sources, r.options.YAMLConfig.AllSources...)
-	}
-
+	case r.options.All:
+		sources = append(sources, r.options.AllSources...)
 	// If only recursive sources are wanted, use them only.
-	if r.options.Recursive {
-		sources = append(sources, r.options.YAMLConfig.Recursive...)
+	case r.options.OnlyRecursive:
+		sources = append(sources, r.options.Recursive...)
+	// Otherwise, use the CLI/YAML sources
+	default:
+		sources = append(sources, r.options.Sources...)
 	}
 
-	// If there are any sources from CLI, only use them
-	// Otherwise, use the yaml file sources
-	if !r.options.All && !r.options.Recursive {
-		if r.options.Sources != "" {
-			sources = append(sources, strings.Split(r.options.Sources, ",")...)
-		} else {
-			sources = append(sources, r.options.YAMLConfig.Sources...)
-		}
-	}
 	r.passiveAgent = passive.New(sources, exclusions)
 }
 
@@ -54,10 +45,8 @@ func (r *Runner) initializeActiveEngine() error {
 		}
 	}
 
-	if r.options.Resolvers != "" {
-		resolvers = append(resolvers, strings.Split(r.options.Resolvers, ",")...)
-	} else if len(r.options.YAMLConfig.Resolvers) > 0 {
-		resolvers = append(resolvers, r.options.YAMLConfig.Resolvers...)
+	if len(r.options.Resolvers) > 0 {
+		resolvers = append(resolvers, r.options.Resolvers...)
 	} else {
 		resolvers = append(resolvers, resolve.DefaultResolvers...)
 	}

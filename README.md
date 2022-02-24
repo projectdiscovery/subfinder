@@ -53,34 +53,45 @@ subfinder -h
 ```
 This will display help for the tool. Here are all the switches it supports.
 
-| Flag             | Description                                                | Example                                     |
-| ---------------- | ---------------------------------------------------------- | --------------------------------------------|
-| -all             | Use all sources (slow) for enumeration                     | subfinder -d uber.com -all                  |
-| -b               | IP address to be used as local bind                        | subfinder -b 172.16.0.1                |
-| -config          | Configuration file for API Keys, etc                       | subfinder -config config.yaml               |
-| -d               | Domain to find subdomains for                              | subfinder -d uber.com                       |
-| -dL              | File containing list of domains to enumerate               | subfinder -dL hackerone-hosts.txt           |
-| -exclude-sources | List of sources to exclude from enumeration                | subfinder -exclude-sources archiveis        |
-| -max-time        | Minutes to wait for enumeration results (default 10)       | subfinder -max-time 1                       |
-| -nC              | Don't Use colors in output                                 | subfinder -nC                               |
-| -nW              | Remove Wildcard & Dead Subdomains from output              | subfinder -nW                               |
-| -ls              | List all available sources                                 | subfinder -ls                               |
-| -o               | File to write output to (optional)                         | subfinder -o output.txt                     |
-| -oD              | Directory to write enumeration results to (optional)       | subfinder -oD ~/outputs                     |
-| -oI              | Write output in Host,IP format                             | subfinder -oI                               |
-| -oJ              | Write output in JSON lines Format                          | subfinder -oJ                               |
-| -r               | Comma-separated list of resolvers to use                   | subfinder -r 1.1.1.1,1.0.0.1                |
-| -rL              | Text file containing list of resolvers to use              | subfinder -rL resolvers.txt                 |
-| -recursive       | Enumeration recursive subdomains                           | subfinder -d news.yahoo.com -recursive      |
-| -silent          | Show only subdomains in output                             | subfinder -silent                           |
-| -sources         | Comma separated list of sources to use                     | subfinder -sources shodan,censys            |
-| -t               | Number of concurrent goroutines for resolving (default 10) | subfinder -t 100                            |
-| -timeout         | Seconds to wait before timing out (default 30)             | subfinder -timeout 30                       |
-| -proxy           | HTTP proxy to use with subfinder                           | subfinder -proxy http://localhost:3128      |
-| -rate-limit      | Maximum number of HTTP requests to send per second         | subfinder -rate-limit 10                    |
-| -v               | Show Verbose output                                        | subfinder -v                                |
-| -version         | Show current program version                               | subfinder -version                          |
+Flags:
+INPUT:
+   -d, -domain string  Domain to find subdomains for
+   -dL, -list string   File containing list of domains to enumerate
 
+SOURCE:
+   -s, -sources string           Sources to use for enumeration (-s crtsh,bufferover)
+   -recursive                    Sources to use supports recursive enumeration
+   -all                          Use all sources (slow) for enumeration
+   -es, -exclude-sources string  Sources to exclude from enumeration (-es archiveis,zoomeye)
+
+RATE-LIMIT:
+   -rate-limit int  Maximum number of HTTP requests to send per second
+   -t int           Number of concurrent goroutines for resolving (-active only) (default 10)
+
+OUTPUT:
+   -o, -output string       File to write output to (optional)
+   -oJ, -json               Write output in JSONL(ines) format
+   -oD, -output-dir string  Directory to write output (-dL only)
+   -cs, -collect-sources    Include all sources in the output (-json only)
+   -oI, -ip                 Include host IP in output (-active only)
+
+CONFIGURATION:
+   -config string       Configuration file for API Keys, etc
+   -r string            Comma separated list of resolvers to use
+   -rL, -rlist string   File containing list of resolvers to use
+   -nW, -active         Display active subdomains only
+   -proxy string        HTTP proxy to use with subfinder
+
+DEBUG:
+   -silent   Show only subdomains in output
+   -version  Show version of subfinder
+   -v        Show Verbose output
+   -nC, -nc  Disable color in output
+   -ls       List all available sources
+
+OPTIMIZATION:
+   -timeout int   Seconds to wait before timing out (default 30)
+   -max-time int  Minutes to wait for enumeration results (default 10)
 
 # Installation
 
