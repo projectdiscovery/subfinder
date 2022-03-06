@@ -53,45 +53,48 @@ subfinder -h
 ```
 This will display help for the tool. Here are all the switches it supports.
 
+```yaml
 Flags:
 INPUT:
-   -d, -domain string  Domain to find subdomains for
-   -dL, -list string   File containing list of domains to enumerate
+   -d, -domain string[]  domains to find subdomains for
+   -dL, -list string     file containing list of domains for subdomain discovery
 
 SOURCE:
-   -s, -sources string           Sources to use for enumeration (-s crtsh,bufferover)
-   -recursive                    Sources to use supports recursive enumeration
-   -all                          Use all sources (slow) for enumeration
-   -es, -exclude-sources string  Sources to exclude from enumeration (-es archiveis,zoomeye)
+   -s, -sources string[]           sources to use for discovery (-s crtsh,github
+   -recursive                      use only recursive sources
+   -all                            Use all sources (slow) for enumeration
+   -es, -exclude-sources string[]  sources to exclude from enumeration (-es archiveis,zoomeye)
 
 RATE-LIMIT:
-   -rate-limit int  Maximum number of HTTP requests to send per second
-   -t int           Number of concurrent goroutines for resolving (-active only) (default 10)
+   -rl, -rate-limit int  maximum number of http requests to send per second
+   -t int                number of concurrent goroutines for resolving (-active only) (default 10)
 
 OUTPUT:
-   -o, -output string       File to write output to (optional)
-   -oJ, -json               Write output in JSONL(ines) format
-   -oD, -output-dir string  Directory to write output (-dL only)
-   -cs, -collect-sources    Include all sources in the output (-json only)
-   -oI, -ip                 Include host IP in output (-active only)
+   -o, -output string       file to write output to
+   -oJ, -json               write output in JSONL(ines) format
+   -oD, -output-dir string  directory to write output (-dL only)
+   -cs, -collect-sources    include all sources in the output (-json only)
+   -oI, -ip                 include host IP in output (-active only)
 
 CONFIGURATION:
-   -config string       Configuration file for API Keys, etc
-   -r string            Comma separated list of resolvers to use
-   -rL, -rlist string   File containing list of resolvers to use
-   -nW, -active         Display active subdomains only
-   -proxy string        HTTP proxy to use with subfinder
+   -config string                flag config file (default "$HOME/.config/subfinder/config.yaml")
+   -pc, -provider-config string  provider config file (default "$HOME/.config/subfinder/provider-config.yaml")
+   -r string[]                   comma separated list of resolvers to use
+   -rL, -rlist string            file containing list of resolvers to use
+   -nW, -active                  display active subdomains only
+   -proxy string                 http proxy to use with subfinder
 
 DEBUG:
-   -silent   Show only subdomains in output
-   -version  Show version of subfinder
-   -v        Show Verbose output
-   -nC, -nc  Disable color in output
-   -ls       List all available sources
+   -silent   show only subdomains in output
+   -version  show version of subfinder
+   -v        show verbose output
+   -nC, -nc  disable color in output
+   -ls       list all available sources
 
 OPTIMIZATION:
-   -timeout int   Seconds to wait before timing out (default 30)
-   -max-time int  Minutes to wait for enumeration results (default 10)
+   -timeout int   seconds to wait before timing out (default 30)
+   -max-time int  minutes to wait for enumeration results (default 10)
+```
 
 # Installation
 
@@ -106,24 +109,15 @@ go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 
 Subfinder will work after using the installation instructions however to configure Subfinder to work with certain services, you will need to have setup API keys. The following services do not work without an API key:
 
-[Binaryedge](https://binaryedge.io), [C99](https://api.c99.nl/), [Certspotter](https://sslmate.com/certspotter/api/), [Chinaz](http://my.chinaz.com/ChinazAPI/DataCenter/MyDataApi), [Censys](https://censys.io), [Chaos](https://chaos.projectdiscovery.io), [DnsDB](https://api.dnsdb.info), [Fofa](https://fofa.so/static_pages/api_help), [Github](https://github.com), [Intelx](https://intelx.io), [Passivetotal](http://passivetotal.org), [Recon.dev](https://recon.dev), [Robtex](https://www.robtex.com/api/), [SecurityTrails](http://securitytrails.com), [Shodan](https://shodan.io), [Spyse](https://spyse.com), [Threatbook](https://x.threatbook.cn/en), [Virustotal](https://www.virustotal.com), [Zoomeye](https://www.zoomeye.org)
+[Binaryedge](https://binaryedge.io), [C99](https://api.c99.nl/), [Certspotter](https://sslmate.com/certspotter/api/), [Chinaz](http://my.chinaz.com/ChinazAPI/DataCenter/MyDataApi), [Censys](https://censys.io), [Chaos](https://chaos.projectdiscovery.io), [DnsDB](https://api.dnsdb.info), [Fofa](https://fofa.so/static_pages/api_help), [Github](https://github.com), [Intelx](https://intelx.io), [Passivetotal](http://passivetotal.org), [Robtex](https://www.robtex.com/api/), [SecurityTrails](http://securitytrails.com), [Shodan](https://shodan.io), [Spyse](https://spyse.com), [Threatbook](https://x.threatbook.cn/en), [Virustotal](https://www.virustotal.com), [Zoomeye](https://www.zoomeye.org)
 
 Theses values are stored in the `$HOME/.config/subfinder/provider-config.yaml` file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys can be specified for each of these services from which one of them will be used for enumeration.
 
 For sources that require multiple keys, namely `Censys`, `Passivetotal`, they can be added by separating them via a colon (:).
 
-An example config file -
+An example provider config file -
 
 ```yaml
-resolvers:
-  - 1.1.1.1
-  - 1.0.0.1
-sources:
-  - binaryedge
-  - bufferover
-  - censys
-  - passivetotal
-  - sitedossier
 binaryedge:
   - 0bf8919b-aab9-42e4-9574-d3b639324597
   - ac244e2f-b635-4581-878a-33f4e79a2c13
@@ -144,7 +138,7 @@ github:
 
 To run the tool on a target, just use the following command.
 
-```sh
+```console
 subfinder -d hackerone.com
 
                __    _____           __         
@@ -185,7 +179,7 @@ events.hackerone.com
 
 The subdomains discovered can be piped to other tools too. For example, you can pipe the subdomains discovered by subfinder to httpx [httpx](https://github.com/projectdiscovery/httpx) which will then find running http servers on the host.
 
-```sh
+```console
 echo hackerone.com | subfinder -silent | httpx -silent
 
 http://hackerone.com
@@ -194,31 +188,6 @@ http://docs.hackerone.com
 http://api.hackerone.com
 https://docs.hackerone.com
 http://mta-sts.managed.hackerone.com
-```
-
-If your enterprise uses source routing to choose network output, or your computer has many public network interfaces (eg: public Wi-Fi + 4G connection + Ethernet Wire + VPN), you might want to choose your output network by binding IP source. In this case, you can use `-b` option.
-In the example below, we have 3 network interfaces able to communicate to the Internet through 3 different outputs. Each output is chosen by binding one source IP with `-b` option.
-
-```console
-ip addr
-
-[...]
-3: wlp3s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
-    link/ether e8:b1:fc:50:90:a0 brd ff:ff:ff:ff:ff:ff
-    inet 192.168.1.87/24 brd 192.168.1.255 scope global dynamic noprefixroute wlp3s0
-       valid_lft 62538sec preferred_lft 62538sec
-4: tun0: <POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UNKNOWN group default qlen 100
-    link/none
-    inet 192.168.254.70 peer 192.168.254.69/32 scope global tun0
-       valid_lft forever preferred_lft forever
-5: enx0c5b8f279a64: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
-    link/ether 0c:5b:8f:a5:63:25 brd ff:ff:ff:ff:ff:ff
-    inet 192.168.8.100/24 brd 192.168.8.255 scope global dynamic noprefixroute enx0c5b8f279a64
-       valid_lft 86396sec preferred_lft 86396sec
-```
-
-```sh
-subfinder -d hackerone.com -b 192.168.1.87
 ```
 
 <table>

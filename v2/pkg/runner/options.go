@@ -69,7 +69,7 @@ func ParseOptions() *Options {
 
 	// Migrate config to provider config
 	if fileutil.FileExists(defaultConfigLocation) && !fileutil.FileExists(defaultProviderConfigLocation) {
-		gologger.Info().Msgf("Detected old %s file, trying to migrate providers to %s\n", defaultConfigLocation, defaultProviderConfigLocation)
+		gologger.Info().Msgf("Detected old %s config file, trying to migrate providers to %s\n", defaultConfigLocation, defaultProviderConfigLocation)
 		if err := migrateToProviderConfig(defaultConfigLocation, defaultProviderConfigLocation); err != nil {
 			gologger.Fatal().Msgf("Could not migrate providers from existing config (%s) to provider config (%s): %s\n", defaultConfigLocation, defaultProviderConfigLocation, err)
 		} else {
@@ -85,50 +85,50 @@ func ParseOptions() *Options {
 	flagSet.SetDescription(`Subfinder is a subdomain discovery tool that discovers subdomains for websites by using passive online sources.`)
 
 	createGroup(flagSet, "input", "Input",
-		flagSet.NormalizedStringSliceVarP(&options.Domain, "domain", "d", []string{}, "Domains to find subdomains for"),
-		flagSet.StringVarP(&options.DomainsFile, "list", "dL", "", "File containing list of domains to enumerate"),
+		flagSet.NormalizedStringSliceVarP(&options.Domain, "domain", "d", []string{}, "domains to find subdomains for"),
+		flagSet.StringVarP(&options.DomainsFile, "list", "dL", "", "file containing list of domains for subdomain discovery"),
 	)
 
 	createGroup(flagSet, "source", "Source",
-		flagSet.NormalizedStringSliceVarP(&options.Sources, "sources", "s", []string{}, "Sources to use for enumeration (-s crtsh,bufferover"),
-		flagSet.BoolVar(&options.OnlyRecursive, "recursive", false, "Use only recursive sources"),
+		flagSet.NormalizedStringSliceVarP(&options.Sources, "sources", "s", []string{}, "specific sources to use for discovery (-s crtsh,github"),
+		flagSet.BoolVar(&options.OnlyRecursive, "recursive", false, "use only recursive sources"),
 		flagSet.BoolVar(&options.All, "all", false, "Use all sources (slow) for enumeration"),
-		flagSet.NormalizedStringSliceVarP(&options.ExcludeSources, "exclude-sources", "es", []string{}, "Sources to exclude from enumeration (-es archiveis,zoomeye)"),
+		flagSet.NormalizedStringSliceVarP(&options.ExcludeSources, "exclude-sources", "es", []string{}, "sources to exclude from enumeration (-es archiveis,zoomeye)"),
 	)
 
 	createGroup(flagSet, "rate-limit", "Rate-limit",
-		flagSet.IntVar(&options.RateLimit, "rate-limit", 0, "Maximum number of HTTP requests to send per second"),
-		flagSet.IntVar(&options.Threads, "t", 10, "Number of concurrent goroutines for resolving (-active only)"),
+		flagSet.IntVarP(&options.RateLimit, "rate-limit", "rl", 0, "maximum number of http requests to send per second"),
+		flagSet.IntVar(&options.Threads, "t", 10, "number of concurrent goroutines for resolving (-active only)"),
 	)
 
 	createGroup(flagSet, "output", "Output",
-		flagSet.StringVarP(&options.OutputFile, "output", "o", "", "File to write output to (optional)"),
-		flagSet.BoolVarP(&options.JSON, "json", "oJ", false, "Write output in JSONL(ines) format"),
-		flagSet.StringVarP(&options.OutputDirectory, "output-dir", "oD", "", "Directory to write output (-dL only)"),
-		flagSet.BoolVarP(&options.CaptureSources, "collect-sources", "cs", false, "Include all sources in the output (-json only)"),
-		flagSet.BoolVarP(&options.HostIP, "ip", "oI", false, "Include host IP in output (-active only)"),
+		flagSet.StringVarP(&options.OutputFile, "output", "o", "", "file to write output to"),
+		flagSet.BoolVarP(&options.JSON, "json", "oJ", false, "write output in JSONL(ines) format"),
+		flagSet.StringVarP(&options.OutputDirectory, "output-dir", "oD", "", "directory to write output (-dL only)"),
+		flagSet.BoolVarP(&options.CaptureSources, "collect-sources", "cs", false, "include all sources in the output (-json only)"),
+		flagSet.BoolVarP(&options.HostIP, "ip", "oI", false, "include host IP in output (-active only)"),
 	)
 
 	createGroup(flagSet, "configuration", "Configuration",
-		flagSet.StringVar(&options.Config, "config", defaultConfigLocation, "subfinder config file"),
-		flagSet.StringVarP(&options.ProviderConfig, "provider-config", "pc", defaultProviderConfigLocation, "provider config file containing API Keys, etc."),
-		flagSet.NormalizedStringSliceVar(&options.Resolvers, "r", []string{}, "Comma separated list of resolvers to use"),
-		flagSet.StringVarP(&options.ResolverList, "rlist", "rL", "", "File containing list of resolvers to use"),
-		flagSet.BoolVarP(&options.RemoveWildcard, "active", "nW", false, "Display active subdomains only"),
-		flagSet.StringVar(&options.Proxy, "proxy", "", "HTTP proxy to use with subfinder"),
+		flagSet.StringVar(&options.Config, "config", defaultConfigLocation, "flag config file"),
+		flagSet.StringVarP(&options.ProviderConfig, "provider-config", "pc", defaultProviderConfigLocation, "provider config file"),
+		flagSet.NormalizedStringSliceVar(&options.Resolvers, "r", []string{}, "comma separated list of resolvers to use"),
+		flagSet.StringVarP(&options.ResolverList, "rlist", "rL", "", "file containing list of resolvers to use"),
+		flagSet.BoolVarP(&options.RemoveWildcard, "active", "nW", false, "display active subdomains only"),
+		flagSet.StringVar(&options.Proxy, "proxy", "", "http proxy to use with subfinder"),
 	)
 
 	createGroup(flagSet, "debug", "Debug",
-		flagSet.BoolVar(&options.Silent, "silent", false, "Show only subdomains in output"),
-		flagSet.BoolVar(&options.Version, "version", false, "Show version of subfinder"),
-		flagSet.BoolVar(&options.Verbose, "v", false, "Show Verbose output"),
-		flagSet.BoolVarP(&options.NoColor, "nc", "nC", false, "Disable color in output"),
-		flagSet.BoolVar(&options.ListSources, "ls", false, "List all available sources"),
+		flagSet.BoolVar(&options.Silent, "silent", false, "show only subdomains in output"),
+		flagSet.BoolVar(&options.Version, "version", false, "show version of subfinder"),
+		flagSet.BoolVar(&options.Verbose, "v", false, "show verbose output"),
+		flagSet.BoolVarP(&options.NoColor, "no-color", "nc", false, "disable color in output"),
+		flagSet.BoolVarP(&options.ListSources, "list-sources", "ls", false, "list all available sources"),
 	)
 
 	createGroup(flagSet, "optimization", "Optimization",
-		flagSet.IntVar(&options.Timeout, "timeout", 30, "Seconds to wait before timing out"),
-		flagSet.IntVar(&options.MaxEnumerationTime, "max-time", 10, "Minutes to wait for enumeration results"),
+		flagSet.IntVar(&options.Timeout, "timeout", 30, "seconds to wait before timing out"),
+		flagSet.IntVar(&options.MaxEnumerationTime, "max-time", 10, "minutes to wait for enumeration results"),
 	)
 
 	if err := flagSet.Parse(); err != nil {
@@ -159,10 +159,10 @@ func ParseOptions() *Options {
 	// Check if the application loading with any provider configuration, then take it
 	// Otherwise load the default provider config
 	if fileutil.FileExists(options.ProviderConfig) {
-		gologger.Info().Msgf("loading providers from file %s", options.ProviderConfig)
+		gologger.Info().Msgf("Loading provider config file %s", options.ProviderConfig)
 		options.loadProvidersFrom(options.ProviderConfig)
 	} else {
-		gologger.Info().Msg("loading the default")
+		gologger.Info().Msg("Loading the default")
 		options.loadProvidersFrom(defaultProviderConfigLocation)
 	}
 	if options.ListSources {

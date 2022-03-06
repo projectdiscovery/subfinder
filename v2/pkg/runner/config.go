@@ -26,7 +26,6 @@ type Providers struct {
 	GitHub         []string `yaml:"github"`
 	IntelX         []string `yaml:"intelx"`
 	PassiveTotal   []string `yaml:"passivetotal"`
-	Recon          []string `yaml:"recon"`
 	Robtex         []string `yaml:"robtex"`
 	SecurityTrails []string `yaml:"securitytrails"`
 	Shodan         []string `yaml:"shodan"`
@@ -139,10 +138,6 @@ func (c *Providers) GetKeys() subscraping.Keys {
 			keys.PassiveTotalUsername = parts[0]
 			keys.PassiveTotalPassword = parts[1]
 		}
-	}
-
-	if len(c.Recon) > 0 {
-		keys.Recon = c.Recon[rand.Intn(len(c.Recon))]
 	}
 
 	if len(c.Robtex) > 0 {
