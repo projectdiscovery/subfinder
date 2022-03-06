@@ -25,7 +25,7 @@ type Source interface {
 }
 
 // Session is the option passed to the source, an option is created
-// uniquely for eac source.
+// uniquely for each source.
 type Session struct {
 	// Extractor is the regex for subdomains created for each domain
 	Extractor *regexp.Regexp
@@ -40,6 +40,8 @@ type Session struct {
 // Keys contains the current API Keys we have in store
 type Keys struct {
 	Binaryedge           string   `json:"binaryedge"`
+	Bufferover           string   `json:"bufferover"`
+	C99                  string   `json:"c99"`
 	CensysToken          string   `json:"censysUsername"`
 	CensysSecret         string   `json:"censysPassword"`
 	Certspotter          string   `json:"certspotter"`
@@ -51,7 +53,6 @@ type Keys struct {
 	IntelXKey            string   `json:"intelXKey"`
 	PassiveTotalUsername string   `json:"passivetotal_username"`
 	PassiveTotalPassword string   `json:"passivetotal_password"`
-	Recon                string   `json:"recon"`
 	Robtex               string   `json:"robtex"`
 	Securitytrails       string   `json:"securitytrails"`
 	Shodan               string   `json:"shodan"`
@@ -61,8 +62,10 @@ type Keys struct {
 	Virustotal           string   `json:"virustotal"`
 	ZoomEyeUsername      string   `json:"zoomeye_username"`
 	ZoomEyePassword      string   `json:"zoomeye_password"`
+	ZoomEyeKey           string   `json:"zoomeye_key"`
 	FofaUsername         string   `json:"fofa_username"`
 	FofaSecret           string   `json:"fofa_secret"`
+	FullHunt             string   `json:"fullhunt"`
 }
 
 // Result is a result structure returned by a source

@@ -4,7 +4,7 @@ package sitedossier
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math/rand"
 	"net/http"
 	"regexp"
@@ -39,7 +39,7 @@ func (a *agent) enumerate(ctx context.Context, baseURL string) {
 		return
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
 		resp.Body.Close()

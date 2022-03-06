@@ -3,7 +3,6 @@ package passive
 import (
 	"context"
 	"fmt"
-	"net"
 	"sync"
 	"time"
 
@@ -12,11 +11,10 @@ import (
 )
 
 // EnumerateSubdomains enumerates all the subdomains for a given domain
-func (a *Agent) EnumerateSubdomains(domain string, keys *subscraping.Keys, proxy string, rateLimit, timeout int, maxEnumTime time.Duration, localIP net.IP) chan subscraping.Result {
+func (a *Agent) EnumerateSubdomains(domain string, keys *subscraping.Keys, proxy string, rateLimit, timeout int, maxEnumTime time.Duration) chan subscraping.Result {
 	results := make(chan subscraping.Result)
-
 	go func() {
-		session, err := subscraping.NewSession(domain, keys, proxy, rateLimit, timeout, localIP)
+		session, err := subscraping.NewSession(domain, keys, proxy, rateLimit, timeout)
 		if err != nil {
 			results <- subscraping.Result{Type: subscraping.Error, Error: fmt.Errorf("could not init passive session for %s: %s", domain, err)}
 		}

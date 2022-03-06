@@ -5,8 +5,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"net"
 	"net/http"
 	"net/url"
 	"time"
@@ -17,20 +15,13 @@ import (
 )
 
 // NewSession creates a new session object for a domain
-func NewSession(domain string, keys *Keys, proxy string, rateLimit, timeout int, localIP net.IP) (*Session, error) {
-	dialer := &net.Dialer{
-		LocalAddr: &net.TCPAddr{
-			IP: localIP,
-		},
-	}
-
+func NewSession(domain string, keys *Keys, proxy string, rateLimit, timeout int) (*Session, error) {
 	Transport := &http.Transport{
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 100,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
-		DialContext: dialer.DialContext,
 	}
 
 	// Add proxy
@@ -120,7 +111,7 @@ func (s *Session) HTTPRequest(ctx context.Context, method, requestURL, cookies s
 // DiscardHTTPResponse discards the response content by demand
 func (s *Session) DiscardHTTPResponse(response *http.Response) {
 	if response != nil {
-		_, err := io.Copy(ioutil.Discard, response.Body)
+		_, err := io.Copy(io.Discard, response.Body)
 		if err != nil {
 			gologger.Warning().Msgf("Could not discard response body: %s\n", err)
 			return
