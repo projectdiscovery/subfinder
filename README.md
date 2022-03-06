@@ -60,7 +60,7 @@ INPUT:
    -dL, -list string     file containing list of domains for subdomain discovery
 
 SOURCE:
-   -s, -sources string[]           sources to use for discovery (-s crtsh,github
+   -s, -sources string[]           sources to use for discovery (-s crtsh,github)
    -recursive                      use only recursive sources
    -all                            Use all sources (slow) for enumeration
    -es, -exclude-sources string[]  sources to exclude from enumeration (-es archiveis,zoomeye)
@@ -85,11 +85,11 @@ CONFIGURATION:
    -proxy string                 http proxy to use with subfinder
 
 DEBUG:
+   -ls       list all available sources
    -silent   show only subdomains in output
    -version  show version of subfinder
    -v        show verbose output
-   -nC, -nc  disable color in output
-   -ls       list all available sources
+   -nc, -no-color      disable color in output
 
 OPTIMIZATION:
    -timeout int   seconds to wait before timing out (default 30)
