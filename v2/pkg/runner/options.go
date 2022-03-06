@@ -53,11 +53,12 @@ type Options struct {
 	// ExcludeSources contains the comma-separated sources to not include in the enumeration process
 	ExcludeSources goflags.NormalizedStringSlice `yaml:"exclude-sources,omitempty"`
 	// Resolvers is the comma-separated resolvers to use for enumeration
-	Resolvers    goflags.NormalizedStringSlice `yaml:"resolvers,omitempty"`
-	ResolverList string                        // ResolverList is a text file containing list of resolvers to use for enumeration
-	ProviderFile string                        // ProviderFile contains the location of the config file
-	Proxy        string                        // HTTP proxy
-	RateLimit    int                           // Maximum number of HTTP requests to send per second
+	Resolvers      goflags.NormalizedStringSlice `yaml:"resolvers,omitempty"`
+	ResolverList   string                        // ResolverList is a text file containing list of resolvers to use for enumeration
+	Config         string                        // Config contains the location of the config file
+	ProviderConfig string                        // ProviderConfig contains the location of the provider config file
+	Proxy          string                        // HTTP proxy
+	RateLimit      int                           // Maximum number of HTTP requests to send per second
 	// YAMLConfig contains the unmarshalled yaml config file
 	Providers *Providers
 }
@@ -109,7 +110,8 @@ func ParseOptions() *Options {
 	)
 
 	createGroup(flagSet, "configuration", "Configuration",
-		flagSet.StringVar(&options.ProviderFile, "config", "", "Configuration file for API Keys, etc"),
+		flagSet.StringVar(&options.Config, "config", defaultConfigLocation, "subfinder config file"),
+		flagSet.StringVarP(&options.ProviderConfig, "provider-config", "pc", defaultProviderConfigLocation, "provider config file containing API Keys, etc."),
 		flagSet.NormalizedStringSliceVar(&options.Resolvers, "r", []string{}, "Comma separated list of resolvers to use"),
 		flagSet.StringVarP(&options.ResolverList, "rlist", "rL", "", "File containing list of resolvers to use"),
 		flagSet.BoolVarP(&options.RemoveWildcard, "active", "nW", false, "Display active subdomains only"),
@@ -134,6 +136,12 @@ func ParseOptions() *Options {
 		os.Exit(1)
 	}
 
+	if options.Config != defaultConfigLocation {
+		if err := flagSet.MergeConfigFile(options.Config); err != nil {
+			gologger.Fatal().Msgf("Could not read config: %s\n", err)
+		}
+	}
+
 	// Default output is stdout
 	options.Output = os.Stdout
 
@@ -148,11 +156,11 @@ func ParseOptions() *Options {
 		os.Exit(0)
 	}
 
-	// Check if the application loading with any configuration, then take it
-	// Otherwise load the default config data from the code
-	if fileutil.FileExists(options.ProviderFile) {
-		gologger.Info().Msgf("loading from file %s", options.ProviderFile)
-		options.loadProvidersFrom(options.ProviderFile)
+	// Check if the application loading with any provider configuration, then take it
+	// Otherwise load the default provider config
+	if fileutil.FileExists(options.ProviderConfig) {
+		gologger.Info().Msgf("loading providers from file %s", options.ProviderConfig)
+		options.loadProvidersFrom(options.ProviderConfig)
 	} else {
 		gologger.Info().Msg("loading the default")
 		options.loadProvidersFrom(defaultProviderConfigLocation)
@@ -216,7 +224,7 @@ func hasStdin() bool {
 func listSources(options *Options) {
 	gologger.Info().Msgf("Current list of available sources. [%d]\n", len(options.AllSources))
 	gologger.Info().Msgf("Sources marked with an * needs key or token in order to work.\n")
-	gologger.Info().Msgf("You can modify %s to configure your keys / tokens.\n\n", options.ProviderFile)
+	gologger.Info().Msgf("You can modify %s to configure your keys / tokens.\n\n", options.ProviderConfig)
 
 	keys := options.Providers.GetKeys()
 	needsKey := make(map[string]interface{})
