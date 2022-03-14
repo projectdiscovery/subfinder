@@ -60,7 +60,8 @@ type Options struct {
 	Proxy          string                        // HTTP proxy
 	RateLimit      int                           // Maximum number of HTTP requests to send per second
 	// YAMLConfig contains the unmarshalled yaml config file
-	Providers *Providers
+	Providers  *Providers
+	ExcludeIps bool
 }
 
 // ParseOptions parses the command line flags provided by a user
@@ -116,6 +117,7 @@ func ParseOptions() *Options {
 		flagSet.StringVarP(&options.ResolverList, "rlist", "rL", "", "file containing list of resolvers to use"),
 		flagSet.BoolVarP(&options.RemoveWildcard, "active", "nW", false, "display active subdomains only"),
 		flagSet.StringVar(&options.Proxy, "proxy", "", "http proxy to use with subfinder"),
+		flagSet.BoolVarP(&options.ExcludeIps, "exclude-ip", "ei", false, "Exclude ips from the list of domains"),
 	)
 
 	createGroup(flagSet, "debug", "Debug",
