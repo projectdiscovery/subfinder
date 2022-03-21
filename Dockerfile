@@ -1,5 +1,5 @@
 # Build
-FROM golang:1.17-alpine AS build-env
+FROM golang:1.18.0-alpine AS build-env
 RUN go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 
 # Release
