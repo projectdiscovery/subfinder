@@ -19,17 +19,20 @@ type OutPutter struct {
 
 type jsonSourceResult struct {
 	Host   string `json:"host"`
+	Input  string `json:"input"`
 	Source string `json:"source"`
 }
 
 type jsonSourceIPResult struct {
 	Host   string `json:"host"`
 	IP     string `json:"ip"`
+	Input  string `json:"input"`
 	Source string `json:"source"`
 }
 
 type jsonSourcesResult struct {
 	Host    string   `json:"host"`
+	Input   string   `json:"input"`
 	Sources []string `json:"sources"`
 }
 
@@ -69,17 +72,17 @@ func (o *OutPutter) createFile(filename string, appendtoFile bool) (*os.File, er
 }
 
 // WriteHostIP writes the output list of subdomain to an io.Writer
-func (o *OutPutter) WriteHostIP(results map[string]resolve.Result, writer io.Writer) error {
+func (o *OutPutter) WriteHostIP(input string, results map[string]resolve.Result, writer io.Writer) error {
 	var err error
 	if o.JSON {
-		err = writeJSONHostIP(results, writer)
+		err = writeJSONHostIP(input, results, writer)
 	} else {
-		err = writePlainHostIP(results, writer)
+		err = writePlainHostIP(input, results, writer)
 	}
 	return err
 }
 
-func writePlainHostIP(results map[string]resolve.Result, writer io.Writer) error {
+func writePlainHostIP(_ string, results map[string]resolve.Result, writer io.Writer) error {
 	bufwriter := bufio.NewWriter(writer)
 	sb := &strings.Builder{}
 
@@ -101,7 +104,7 @@ func writePlainHostIP(results map[string]resolve.Result, writer io.Writer) error
 	return bufwriter.Flush()
 }
 
-func writeJSONHostIP(results map[string]resolve.Result, writer io.Writer) error {
+func writeJSONHostIP(input string, results map[string]resolve.Result, writer io.Writer) error {
 	encoder := jsoniter.NewEncoder(writer)
 
 	var data jsonSourceIPResult
@@ -109,6 +112,7 @@ func writeJSONHostIP(results map[string]resolve.Result, writer io.Writer) error 
 	for _, result := range results {
 		data.Host = result.Host
 		data.IP = result.IP
+		data.Input = input
 		data.Source = result.Source
 
 		err := encoder.Encode(&data)
@@ -120,27 +124,27 @@ func writeJSONHostIP(results map[string]resolve.Result, writer io.Writer) error 
 }
 
 // WriteHostNoWildcard writes the output list of subdomain with nW flag to an io.Writer
-func (o *OutPutter) WriteHostNoWildcard(results map[string]resolve.Result, writer io.Writer) error {
+func (o *OutPutter) WriteHostNoWildcard(input string, results map[string]resolve.Result, writer io.Writer) error {
 	hosts := make(map[string]resolve.HostEntry)
 	for host, result := range results {
 		hosts[host] = resolve.HostEntry{Host: result.Host, Source: result.Source}
 	}
 
-	return o.WriteHost(hosts, writer)
+	return o.WriteHost(input, hosts, writer)
 }
 
 // WriteHost writes the output list of subdomain to an io.Writer
-func (o *OutPutter) WriteHost(results map[string]resolve.HostEntry, writer io.Writer) error {
+func (o *OutPutter) WriteHost(input string, results map[string]resolve.HostEntry, writer io.Writer) error {
 	var err error
 	if o.JSON {
-		err = writeJSONHost(results, writer)
+		err = writeJSONHost(input, results, writer)
 	} else {
-		err = writePlainHost(results, writer)
+		err = writePlainHost(input, results, writer)
 	}
 	return err
 }
 
-func writePlainHost(results map[string]resolve.HostEntry, writer io.Writer) error {
+func writePlainHost(_ string, results map[string]resolve.HostEntry, writer io.Writer) error {
 	bufwriter := bufio.NewWriter(writer)
 	sb := &strings.Builder{}
 
@@ -158,12 +162,13 @@ func writePlainHost(results map[string]resolve.HostEntry, writer io.Writer) erro
 	return bufwriter.Flush()
 }
 
-func writeJSONHost(results map[string]resolve.HostEntry, writer io.Writer) error {
+func writeJSONHost(input string, results map[string]resolve.HostEntry, writer io.Writer) error {
 	encoder := jsoniter.NewEncoder(writer)
 
 	var data jsonSourceResult
 	for _, result := range results {
 		data.Host = result.Host
+		data.Input = input
 		data.Source = result.Source
 		err := encoder.Encode(data)
 		if err != nil {
@@ -174,23 +179,24 @@ func writeJSONHost(results map[string]resolve.HostEntry, writer io.Writer) error
 }
 
 // WriteSourceHost writes the output list of subdomain to an io.Writer
-func (o *OutPutter) WriteSourceHost(sourceMap map[string]map[string]struct{}, writer io.Writer) error {
+func (o *OutPutter) WriteSourceHost(input string, sourceMap map[string]map[string]struct{}, writer io.Writer) error {
 	var err error
 	if o.JSON {
-		err = writeSourceJSONHost(sourceMap, writer)
+		err = writeSourceJSONHost(input, sourceMap, writer)
 	} else {
-		err = writeSourcePlainHost(sourceMap, writer)
+		err = writeSourcePlainHost(input, sourceMap, writer)
 	}
 	return err
 }
 
-func writeSourceJSONHost(sourceMap map[string]map[string]struct{}, writer io.Writer) error {
+func writeSourceJSONHost(input string, sourceMap map[string]map[string]struct{}, writer io.Writer) error {
 	encoder := jsoniter.NewEncoder(writer)
 
 	var data jsonSourcesResult
 
 	for host, sources := range sourceMap {
 		data.Host = host
+		data.Input = input
 		keys := make([]string, 0, len(sources))
 		for source := range sources {
 			keys = append(keys, source)
@@ -205,7 +211,7 @@ func writeSourceJSONHost(sourceMap map[string]map[string]struct{}, writer io.Wri
 	return nil
 }
 
-func writeSourcePlainHost(sourceMap map[string]map[string]struct{}, writer io.Writer) error {
+func writeSourcePlainHost(_ string, sourceMap map[string]map[string]struct{}, writer io.Writer) error {
 	bufwriter := bufio.NewWriter(writer)
 	sb := &strings.Builder{}
 
