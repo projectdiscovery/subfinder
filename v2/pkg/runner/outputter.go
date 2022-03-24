@@ -17,13 +17,18 @@ type OutPutter struct {
 	JSON bool
 }
 
-type jsonResult struct {
+type jsonSourceResult struct {
+	Host   string `json:"host"`
+	Source string `json:"source"`
+}
+
+type jsonSourceIPResult struct {
 	Host   string `json:"host"`
 	IP     string `json:"ip"`
 	Source string `json:"source"`
 }
 
-type jsonSourceResult struct {
+type jsonSourcesResult struct {
 	Host    string   `json:"host"`
 	Sources []string `json:"sources"`
 }
@@ -99,7 +104,7 @@ func writePlainHostIP(results map[string]resolve.Result, writer io.Writer) error
 func writeJSONHostIP(results map[string]resolve.Result, writer io.Writer) error {
 	encoder := jsoniter.NewEncoder(writer)
 
-	var data jsonResult
+	var data jsonSourceIPResult
 
 	for _, result := range results {
 		data.Host = result.Host
@@ -156,8 +161,11 @@ func writePlainHost(results map[string]resolve.HostEntry, writer io.Writer) erro
 func writeJSONHost(results map[string]resolve.HostEntry, writer io.Writer) error {
 	encoder := jsoniter.NewEncoder(writer)
 
+	var data jsonSourceResult
 	for _, result := range results {
-		err := encoder.Encode(result)
+		data.Host = result.Host
+		data.Source = result.Source
+		err := encoder.Encode(data)
 		if err != nil {
 			return err
 		}
@@ -179,7 +187,7 @@ func (o *OutPutter) WriteSourceHost(sourceMap map[string]map[string]struct{}, wr
 func writeSourceJSONHost(sourceMap map[string]map[string]struct{}, writer io.Writer) error {
 	encoder := jsoniter.NewEncoder(writer)
 
-	var data jsonSourceResult
+	var data jsonSourcesResult
 
 	for host, sources := range sourceMap {
 		data.Host = host
