@@ -11,7 +11,7 @@ const banner = `
    _______  __/ /_  / __(_)___  ____/ /__  _____
   / ___/ / / / __ \/ /_/ / __ \/ __  / _ \/ ___/
  (__  ) /_/ / /_/ / __/ / / / / /_/ /  __/ /    
-/____/\__,_/_.___/_/ /_/_/ /_/\__,_/\___/_/ v2.5.0
+/____/\__,_/_.___/_/ /_/_/ /_/\__,_/\___/_/ v2.51-dev
             projectdiscovery.io
 
 Use with caution. You are responsible for your actions
@@ -20,7 +20,7 @@ By using subfinder, you also agree to the terms of the APIs used.
 `
 
 // Version is the current version of subfinder
-const Version = `v2.5.0`
+const Version = `v2.5.1-dev`
 
 // showBanner is used to show the banner to the user
 func showBanner() {
