@@ -119,15 +119,15 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain string, outpu
 	var err error
 	for _, w := range outputs {
 		if r.options.HostIP {
-			err = outputter.WriteHostIP(foundResults, w)
+			err = outputter.WriteHostIP(domain, foundResults, w)
 		} else {
 			if r.options.RemoveWildcard {
-				err = outputter.WriteHostNoWildcard(foundResults, w)
+				err = outputter.WriteHostNoWildcard(domain, foundResults, w)
 			} else {
 				if r.options.CaptureSources {
-					err = outputter.WriteSourceHost(sourceMap, w)
+					err = outputter.WriteSourceHost(domain, sourceMap, w)
 				} else {
-					err = outputter.WriteHost(uniqueMap, w)
+					err = outputter.WriteHost(domain, uniqueMap, w)
 				}
 			}
 		}
