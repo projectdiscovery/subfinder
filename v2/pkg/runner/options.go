@@ -139,7 +139,8 @@ func ParseOptions() *Options {
 	}
 
 	if options.Config != defaultConfigLocation {
-		if err := flagSet.MergeConfigFile(options.Config); err != nil {
+		// An empty source file is not a fatal error
+		if err := flagSet.MergeConfigFile(options.Config); err != nil && !errors.Is(err, io.EOF) {
 			gologger.Fatal().Msgf("Could not read config: %s\n", err)
 		}
 	}
