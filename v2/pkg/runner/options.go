@@ -66,7 +66,6 @@ type Options struct {
 
 // ParseOptions parses the command line flags provided by a user
 func ParseOptions() *Options {
-
 	// Migrate config to provider config
 	if fileutil.FileExists(defaultConfigLocation) && !fileutil.FileExists(defaultProviderConfigLocation) {
 		gologger.Info().Msgf("Detected old %s config file, trying to migrate providers to %s\n", defaultConfigLocation, defaultProviderConfigLocation)
@@ -83,7 +82,7 @@ func ParseOptions() *Options {
 
 	var err error
 	flagSet := goflags.NewFlagSet()
-	flagSet.SetDescription(banner+"\nSubfinder is a subdomain discovery tool that discovers subdomains for websites by using passive online sources.")
+	flagSet.SetDescription(`Subfinder is a subdomain discovery tool that discovers subdomains for websites by using passive online sources.`)
 
 	createGroup(flagSet, "input", "Input",
 		flagSet.NormalizedStringSliceVarP(&options.Domain, "domain", "d", []string{}, "domains to find subdomains for"),
@@ -133,7 +132,7 @@ func ParseOptions() *Options {
 		flagSet.IntVar(&options.MaxEnumerationTime, "max-time", 10, "minutes to wait for enumeration results"),
 	)
 
-    if err := flagSet.Parse(); err != nil {
+	if err := flagSet.Parse(); err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
@@ -174,9 +173,9 @@ func ParseOptions() *Options {
 
 	options.preProcessOptions()
 
-    if !options.Silent {
-	    showBanner()
-    }
+	if !options.Silent {
+		showBanner()
+	}
 
 	// Validate the options passed by the user and if any
 	// invalid options have been used, exit.
