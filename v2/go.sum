@@ -97,6 +97,8 @@ github.com/projectdiscovery/fileutil v0.0.0-20210928100737-cab279c5d4b5 h1:2dbm7
 github.com/projectdiscovery/fileutil v0.0.0-20210928100737-cab279c5d4b5/go.mod h1:U+QCpQnX8o2N2w0VUGyAzjM3yBAe4BKedVElxiImsx0=
 github.com/projectdiscovery/goflags v0.0.8-0.20220208063718-9bbeacc2fb8f h1:FKTkdM1pPIL0gQRRQDoWjd/mZz+4DZ2Bk1l+ZbOJmIQ=
 github.com/projectdiscovery/goflags v0.0.8-0.20220208063718-9bbeacc2fb8f/go.mod h1:Jjwsf4eEBPXDSQI2Y+6fd3dBumJv/J1U0nmpM+hy2YY=
+github.com/projectdiscovery/goflags v0.0.8-0.20220328195035-cc76049ee216 h1:Th8GrVWt6LJQAwneHikni4BpoLEPa69DPEnYCxAINmo=
+github.com/projectdiscovery/goflags v0.0.8-0.20220328195035-cc76049ee216/go.mod h1:37KhVbVLllyuIAgpXGqcvE/hsFEwJ+ctEUSHawjhsBY=
 github.com/projectdiscovery/gologger v1.0.0/go.mod h1:Ok+axMqK53bWNwDSU1nTNwITLYMXMdZtRc8/y1c7sWE=
 github.com/projectdiscovery/gologger v1.1.4 h1:qWxGUq7ukHWT849uGPkagPKF3yBPYAsTtMKunQ8O2VI=
 github.com/projectdiscovery/gologger v1.1.4/go.mod h1:Bhb6Bdx2PV1nMaFLoXNBmHIU85iROS9y1tBuv7T5pMY=

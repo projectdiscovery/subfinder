@@ -70,7 +70,7 @@ func ParseOptions() *Options {
 	if fileutil.FileExists(defaultConfigLocation) && !fileutil.FileExists(defaultProviderConfigLocation) {
 		gologger.Info().Msgf("Detected old %s config file, trying to migrate providers to %s\n", defaultConfigLocation, defaultProviderConfigLocation)
 		if err := migrateToProviderConfig(defaultConfigLocation, defaultProviderConfigLocation); err != nil {
-			gologger.Fatal().Msgf("Could not migrate providers from existing config (%s) to provider config (%s): %s\n", defaultConfigLocation, defaultProviderConfigLocation, err)
+			gologger.Warning().Msgf("Could not migrate providers from existing config (%s) to provider config (%s): %s\n", defaultConfigLocation, defaultProviderConfigLocation, err)
 		} else {
 			//cleanup the existing config file post migration
 			os.Remove(defaultConfigLocation)
@@ -138,7 +138,8 @@ func ParseOptions() *Options {
 	}
 
 	if options.Config != defaultConfigLocation {
-		if err := flagSet.MergeConfigFile(options.Config); err != nil {
+		// An empty source file is not a fatal error
+		if err := flagSet.MergeConfigFile(options.Config); err != nil && !errors.Is(err, io.EOF) {
 			gologger.Fatal().Msgf("Could not read config: %s\n", err)
 		}
 	}
