@@ -31,3 +31,31 @@ archives:
 
 checksum:
   algorithm: sha256
+
+snapcrafts:
+  - id: subfinder
+    replacements:
+      darwin: macOS
+    name: subfinder
+    publish: false
+    summary: Fast passive subdomain enumeration tool.
+    description: |
+      Subfinder is a subdomain discovery tool that discovers valid subdomains for websites by using passive online sources. It has a simple modular architecture and is optimized for speed. subfinder is built for doing one thing only - passive subdomain enumeration, and it does that very well.
+      We have designed subfinder to comply with all passive sources licenses, and usage restrictions, as well as maintained a consistently passive model to make it useful to both penetration testers and bug bounty hunters alike.
+    grade: stable
+    confinement: strict
+    license: MIT
+    base: core18
+    apps:
+      subfinder:
+        command: subfinder
+        plugs:
+          - home
+          - network
+          - removable-media
+          - dot-subfinder
+    plugs:
+      dot-subfinder:
+        interface: personal-files
+        write:
+          - $HOME/.config/subfinder
