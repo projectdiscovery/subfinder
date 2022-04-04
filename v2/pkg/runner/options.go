@@ -60,18 +60,17 @@ type Options struct {
 	Proxy          string                        // HTTP proxy
 	RateLimit      int                           // Maximum number of HTTP requests to send per second
 	// YAMLConfig contains the unmarshalled yaml config file
-	Providers *Providers
+	Providers  *Providers
+	ExcludeIps bool
 }
 
 // ParseOptions parses the command line flags provided by a user
 func ParseOptions() *Options {
-	showBanner()
-
 	// Migrate config to provider config
 	if fileutil.FileExists(defaultConfigLocation) && !fileutil.FileExists(defaultProviderConfigLocation) {
 		gologger.Info().Msgf("Detected old %s config file, trying to migrate providers to %s\n", defaultConfigLocation, defaultProviderConfigLocation)
 		if err := migrateToProviderConfig(defaultConfigLocation, defaultProviderConfigLocation); err != nil {
-			gologger.Fatal().Msgf("Could not migrate providers from existing config (%s) to provider config (%s): %s\n", defaultConfigLocation, defaultProviderConfigLocation, err)
+			gologger.Warning().Msgf("Could not migrate providers from existing config (%s) to provider config (%s): %s\n", defaultConfigLocation, defaultProviderConfigLocation, err)
 		} else {
 			//cleanup the existing config file post migration
 			os.Remove(defaultConfigLocation)
@@ -80,6 +79,7 @@ func ParseOptions() *Options {
 	}
 
 	options := &Options{}
+
 	var err error
 	flagSet := goflags.NewFlagSet()
 	flagSet.SetDescription(`Subfinder is a subdomain discovery tool that discovers subdomains for websites by using passive online sources.`)
@@ -116,6 +116,7 @@ func ParseOptions() *Options {
 		flagSet.StringVarP(&options.ResolverList, "rlist", "rL", "", "file containing list of resolvers to use"),
 		flagSet.BoolVarP(&options.RemoveWildcard, "active", "nW", false, "display active subdomains only"),
 		flagSet.StringVar(&options.Proxy, "proxy", "", "http proxy to use with subfinder"),
+		flagSet.BoolVarP(&options.ExcludeIps, "exclude-ip", "ei", false, "Exclude ips from the list of domains"),
 	)
 
 	createGroup(flagSet, "debug", "Debug",
@@ -137,7 +138,8 @@ func ParseOptions() *Options {
 	}
 
 	if options.Config != defaultConfigLocation {
-		if err := flagSet.MergeConfigFile(options.Config); err != nil {
+		// An empty source file is not a fatal error
+		if err := flagSet.MergeConfigFile(options.Config); err != nil && !errors.Is(err, io.EOF) {
 			gologger.Fatal().Msgf("Could not read config: %s\n", err)
 		}
 	}
@@ -171,6 +173,10 @@ func ParseOptions() *Options {
 	}
 
 	options.preProcessOptions()
+
+	if !options.Silent {
+		showBanner()
+	}
 
 	// Validate the options passed by the user and if any
 	// invalid options have been used, exit.

@@ -1,6 +1,9 @@
 package runner
 
 import (
+	"errors"
+	"os"
+
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
@@ -11,11 +14,11 @@ const banner = `
    _______  __/ /_  / __(_)___  ____/ /__  _____
   / ___/ / / / __ \/ /_/ / __ \/ __  / _ \/ ___/
  (__  ) /_/ / /_/ / __/ / / / / /_/ /  __/ /    
-/____/\__,_/_.___/_/ /_/_/ /_/\__,_/\___/_/ v2.5.0
+/____/\__,_/_.___/_/ /_/_/ /_/\__,_/\___/_/ v2.5.1
 `
 
 // Version is the current version of subfinder
-const Version = `v2.5.0`
+const Version = `v2.5.1`
 
 // showBanner is used to show the banner to the user
 func showBanner() {
@@ -44,7 +47,9 @@ func (options *Options) loadProvidersFrom(location string) {
 	}
 
 	options.Providers = &Providers{}
-	if err := options.Providers.UnmarshalFrom(location); isFatalErr(err) {
+	// We skip bailing out if file doesn't exist because we'll create it
+	// at the end of options parsing from default via goflags.
+	if err := options.Providers.UnmarshalFrom(location); isFatalErr(err) && !errors.Is(err, os.ErrNotExist) {
 		gologger.Fatal().Msgf("Could not read providers from %s: %s\n", location, err)
 	}
 }

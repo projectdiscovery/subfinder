@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -71,9 +72,11 @@ func (r *Runner) RunEnumeration(ctx context.Context) error {
 // We keep enumerating subdomains for a given domain until we reach an error
 func (r *Runner) EnumerateMultipleDomains(ctx context.Context, reader io.Reader, outputs []io.Writer) error {
 	scanner := bufio.NewScanner(reader)
+	ip, _ := regexp.Compile(`^([0-9\.]+$)`)
 	for scanner.Scan() {
 		domain, err := sanitize(scanner.Text())
-		if errors.Is(err, ErrEmptyInput) {
+		isIp := ip.MatchString(domain)
+		if errors.Is(err, ErrEmptyInput) || (r.options.ExcludeIps && isIp) {
 			continue
 		}
 
