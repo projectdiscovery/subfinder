@@ -1,6 +1,9 @@
 package runner
 
 import (
+	"errors"
+	"os"
+
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
@@ -44,7 +47,9 @@ func (options *Options) loadProvidersFrom(location string) {
 	}
 
 	options.Providers = &Providers{}
-	if err := options.Providers.UnmarshalFrom(location); isFatalErr(err) {
+	// We skip bailing out if file doesn't exist because we'll create it
+	// at the end of options parsing from default via goflags.
+	if err := options.Providers.UnmarshalFrom(location); isFatalErr(err) && !errors.Is(err, os.ErrNotExist) {
 		gologger.Fatal().Msgf("Could not read providers from %s: %s\n", location, err)
 	}
 }
