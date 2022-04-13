@@ -205,7 +205,7 @@ docker pull projectdiscovery/subfinder:latest
 Running subfinder using docker image:
 
 ```sh
-docker -t projectdiscovery/subfinder:latest -d hackerone.com
+docker run -t projectdiscovery/subfinder:latest -d hackerone.com
 ```
 
 Running subfinder using docker image with local config file:
