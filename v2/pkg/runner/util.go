@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"math/rand"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -34,4 +35,21 @@ func sanitize(data string) (string, error) {
 		return "", ErrEmptyInput
 	}
 	return data, nil
+}
+
+func randomEntry(entries []string) string {
+	n := rand.Intn(len(entries))
+	return entries[n]
+}
+
+func multipartKey(key string) (keyPartA, keyPartB string, ok bool) {
+	parts := strings.Split(key, ":")
+	ok = len(parts) == MultipleKeyPartsLength
+
+	if ok {
+		keyPartA = parts[0]
+		keyPartB = parts[1]
+	}
+
+	return
 }

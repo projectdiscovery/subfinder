@@ -1,12 +1,11 @@
 package runner
 
 import (
-	"math/rand"
 	"os"
-	"strings"
+
+	"gopkg.in/yaml.v3"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
-	"gopkg.in/yaml.v3"
 )
 
 // MultipleKeyPartsLength is the max length for multiple keys
@@ -87,102 +86,97 @@ func (c *Providers) GetKeys() subscraping.Keys {
 	keys := subscraping.Keys{}
 
 	if len(c.Binaryedge) > 0 {
-		keys.Binaryedge = c.Binaryedge[rand.Intn(len(c.Binaryedge))]
+		keys.Binaryedge = randomEntry(c.Binaryedge)
 	}
 	if len(c.C99) > 0 {
-		keys.C99 = c.C99[rand.Intn(len(c.C99))]
+		keys.C99 = randomEntry(c.C99)
 	}
 
 	if len(c.Bufferover) > 0 {
-		keys.Bufferover = c.Bufferover[rand.Intn(len(c.Bufferover))]
+		keys.Bufferover = randomEntry(c.Bufferover)
 	}
 
 	if len(c.Censys) > 0 {
-		censysKeys := c.Censys[rand.Intn(len(c.Censys))]
-		parts := strings.Split(censysKeys, ":")
-		if len(parts) == MultipleKeyPartsLength {
-			keys.CensysToken = parts[0]
-			keys.CensysSecret = parts[1]
+		censysKeys := randomEntry(c.Censys)
+		if keyPartA, keyPartB, ok := multipartKey(censysKeys); ok {
+			keys.CensysToken = keyPartA
+			keys.CensysSecret = keyPartB
 		}
 	}
 
 	if len(c.Certspotter) > 0 {
-		keys.Certspotter = c.Certspotter[rand.Intn(len(c.Certspotter))]
+		keys.Certspotter = randomEntry(c.Certspotter)
 	}
 	if len(c.Chaos) > 0 {
-		keys.Chaos = c.Chaos[rand.Intn(len(c.Chaos))]
+		keys.Chaos = randomEntry(c.Chaos)
 	}
 	if len(c.Chinaz) > 0 {
-		keys.Chinaz = c.Chinaz[rand.Intn(len(c.Chinaz))]
+		keys.Chinaz = randomEntry(c.Chinaz)
 	}
 	if (len(c.DNSDB)) > 0 {
-		keys.DNSDB = c.DNSDB[rand.Intn(len(c.DNSDB))]
+		keys.DNSDB = randomEntry(c.DNSDB)
 	}
 	if (len(c.GitHub)) > 0 {
 		keys.GitHub = c.GitHub
 	}
 
 	if len(c.IntelX) > 0 {
-		intelxKeys := c.IntelX[rand.Intn(len(c.IntelX))]
-		parts := strings.Split(intelxKeys, ":")
-		if len(parts) == MultipleKeyPartsLength {
-			keys.IntelXHost = parts[0]
-			keys.IntelXKey = parts[1]
+		intelxKeys := randomEntry(c.IntelX)
+		if keyPartA, keyPartB, ok := multipartKey(intelxKeys); ok {
+			keys.IntelXHost = keyPartA
+			keys.IntelXKey = keyPartB
 		}
 	}
 
 	if len(c.PassiveTotal) > 0 {
-		passiveTotalKeys := c.PassiveTotal[rand.Intn(len(c.PassiveTotal))]
-		parts := strings.Split(passiveTotalKeys, ":")
-		if len(parts) == MultipleKeyPartsLength {
-			keys.PassiveTotalUsername = parts[0]
-			keys.PassiveTotalPassword = parts[1]
+		passiveTotalKeys := randomEntry(c.PassiveTotal)
+		if keyPartA, keyPartB, ok := multipartKey(passiveTotalKeys); ok {
+			keys.PassiveTotalUsername = keyPartA
+			keys.PassiveTotalPassword = keyPartB
 		}
 	}
 
 	if len(c.Robtex) > 0 {
-		keys.Robtex = c.Robtex[rand.Intn(len(c.Robtex))]
+		keys.Robtex = randomEntry(c.Robtex)
 	}
 
 	if len(c.SecurityTrails) > 0 {
-		keys.Securitytrails = c.SecurityTrails[rand.Intn(len(c.SecurityTrails))]
+		keys.Securitytrails = randomEntry(c.SecurityTrails)
 	}
 	if len(c.Shodan) > 0 {
-		keys.Shodan = c.Shodan[rand.Intn(len(c.Shodan))]
+		keys.Shodan = randomEntry(c.Shodan)
 	}
 	if len(c.Spyse) > 0 {
-		keys.Spyse = c.Spyse[rand.Intn(len(c.Spyse))]
+		keys.Spyse = randomEntry(c.Spyse)
 	}
 	if len(c.ThreatBook) > 0 {
-		keys.ThreatBook = c.ThreatBook[rand.Intn(len(c.ThreatBook))]
+		keys.ThreatBook = randomEntry(c.ThreatBook)
 	}
 	if len(c.URLScan) > 0 {
-		keys.URLScan = c.URLScan[rand.Intn(len(c.URLScan))]
+		keys.URLScan = randomEntry(c.URLScan)
 	}
 	if len(c.Virustotal) > 0 {
-		keys.Virustotal = c.Virustotal[rand.Intn(len(c.Virustotal))]
+		keys.Virustotal = randomEntry(c.Virustotal)
 	}
 	if len(c.ZoomEye) > 0 {
-		zoomEyeKeys := c.ZoomEye[rand.Intn(len(c.ZoomEye))]
-		parts := strings.Split(zoomEyeKeys, ":")
-		if len(parts) == MultipleKeyPartsLength {
-			keys.ZoomEyeUsername = parts[0]
-			keys.ZoomEyePassword = parts[1]
+		zoomEyeKeys := randomEntry(c.ZoomEye)
+		if keyPartA, keyPartB, ok := multipartKey(zoomEyeKeys); ok {
+			keys.ZoomEyeUsername = keyPartA
+			keys.ZoomEyePassword = keyPartB
 		}
 	}
 	if len(c.ZoomEyeApi) > 0 {
-		keys.ZoomEyeKey = c.ZoomEyeApi[rand.Intn(len(c.ZoomEyeApi))]
+		keys.ZoomEyeKey = randomEntry(c.ZoomEyeApi)
 	}
 	if len(c.Fofa) > 0 {
-		fofaKeys := c.Fofa[rand.Intn(len(c.Fofa))]
-		parts := strings.Split(fofaKeys, ":")
-		if len(parts) == MultipleKeyPartsLength {
-			keys.FofaUsername = parts[0]
-			keys.FofaSecret = parts[1]
+		fofaKeys := randomEntry(c.Fofa)
+		if keyPartA, keyPartB, ok := multipartKey(fofaKeys); ok {
+			keys.FofaUsername = keyPartA
+			keys.FofaSecret = keyPartB
 		}
 	}
 	if len(c.FullHunt) > 0 {
-		keys.FullHunt = c.FullHunt[rand.Intn(len(c.FullHunt))]
+		keys.FullHunt = randomEntry(c.FullHunt)
 	}
 	return keys
 }
