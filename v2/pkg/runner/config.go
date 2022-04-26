@@ -5,6 +5,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
+	"github.com/projectdiscovery/sliceutil"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
@@ -86,18 +87,18 @@ func (c *Providers) GetKeys() subscraping.Keys {
 	keys := subscraping.Keys{}
 
 	if len(c.Binaryedge) > 0 {
-		keys.Binaryedge = randomEntry(c.Binaryedge)
+		keys.Binaryedge = sliceutil.PickRandom(c.Binaryedge)
 	}
 	if len(c.C99) > 0 {
-		keys.C99 = randomEntry(c.C99)
+		keys.C99 = sliceutil.PickRandom(c.C99)
 	}
 
 	if len(c.Bufferover) > 0 {
-		keys.Bufferover = randomEntry(c.Bufferover)
+		keys.Bufferover = sliceutil.PickRandom(c.Bufferover)
 	}
 
 	if len(c.Censys) > 0 {
-		censysKeys := randomEntry(c.Censys)
+		censysKeys := sliceutil.PickRandom(c.Censys)
 		if keyPartA, keyPartB, ok := multipartKey(censysKeys); ok {
 			keys.CensysToken = keyPartA
 			keys.CensysSecret = keyPartB
@@ -105,23 +106,23 @@ func (c *Providers) GetKeys() subscraping.Keys {
 	}
 
 	if len(c.Certspotter) > 0 {
-		keys.Certspotter = randomEntry(c.Certspotter)
+		keys.Certspotter = sliceutil.PickRandom(c.Certspotter)
 	}
 	if len(c.Chaos) > 0 {
-		keys.Chaos = randomEntry(c.Chaos)
+		keys.Chaos = sliceutil.PickRandom(c.Chaos)
 	}
 	if len(c.Chinaz) > 0 {
-		keys.Chinaz = randomEntry(c.Chinaz)
+		keys.Chinaz = sliceutil.PickRandom(c.Chinaz)
 	}
 	if (len(c.DNSDB)) > 0 {
-		keys.DNSDB = randomEntry(c.DNSDB)
+		keys.DNSDB = sliceutil.PickRandom(c.DNSDB)
 	}
 	if (len(c.GitHub)) > 0 {
 		keys.GitHub = c.GitHub
 	}
 
 	if len(c.IntelX) > 0 {
-		intelxKeys := randomEntry(c.IntelX)
+		intelxKeys := sliceutil.PickRandom(c.IntelX)
 		if keyPartA, keyPartB, ok := multipartKey(intelxKeys); ok {
 			keys.IntelXHost = keyPartA
 			keys.IntelXKey = keyPartB
@@ -129,7 +130,7 @@ func (c *Providers) GetKeys() subscraping.Keys {
 	}
 
 	if len(c.PassiveTotal) > 0 {
-		passiveTotalKeys := randomEntry(c.PassiveTotal)
+		passiveTotalKeys := sliceutil.PickRandom(c.PassiveTotal)
 		if keyPartA, keyPartB, ok := multipartKey(passiveTotalKeys); ok {
 			keys.PassiveTotalUsername = keyPartA
 			keys.PassiveTotalPassword = keyPartB
@@ -137,46 +138,46 @@ func (c *Providers) GetKeys() subscraping.Keys {
 	}
 
 	if len(c.Robtex) > 0 {
-		keys.Robtex = randomEntry(c.Robtex)
+		keys.Robtex = sliceutil.PickRandom(c.Robtex)
 	}
 
 	if len(c.SecurityTrails) > 0 {
-		keys.Securitytrails = randomEntry(c.SecurityTrails)
+		keys.Securitytrails = sliceutil.PickRandom(c.SecurityTrails)
 	}
 	if len(c.Shodan) > 0 {
-		keys.Shodan = randomEntry(c.Shodan)
+		keys.Shodan = sliceutil.PickRandom(c.Shodan)
 	}
 	if len(c.Spyse) > 0 {
-		keys.Spyse = randomEntry(c.Spyse)
+		keys.Spyse = sliceutil.PickRandom(c.Spyse)
 	}
 	if len(c.ThreatBook) > 0 {
-		keys.ThreatBook = randomEntry(c.ThreatBook)
+		keys.ThreatBook = sliceutil.PickRandom(c.ThreatBook)
 	}
 	if len(c.URLScan) > 0 {
-		keys.URLScan = randomEntry(c.URLScan)
+		keys.URLScan = sliceutil.PickRandom(c.URLScan)
 	}
 	if len(c.Virustotal) > 0 {
-		keys.Virustotal = randomEntry(c.Virustotal)
+		keys.Virustotal = sliceutil.PickRandom(c.Virustotal)
 	}
 	if len(c.ZoomEye) > 0 {
-		zoomEyeKeys := randomEntry(c.ZoomEye)
+		zoomEyeKeys := sliceutil.PickRandom(c.ZoomEye)
 		if keyPartA, keyPartB, ok := multipartKey(zoomEyeKeys); ok {
 			keys.ZoomEyeUsername = keyPartA
 			keys.ZoomEyePassword = keyPartB
 		}
 	}
 	if len(c.ZoomEyeApi) > 0 {
-		keys.ZoomEyeKey = randomEntry(c.ZoomEyeApi)
+		keys.ZoomEyeKey = sliceutil.PickRandom(c.ZoomEyeApi)
 	}
 	if len(c.Fofa) > 0 {
-		fofaKeys := randomEntry(c.Fofa)
+		fofaKeys := sliceutil.PickRandom(c.Fofa)
 		if keyPartA, keyPartB, ok := multipartKey(fofaKeys); ok {
 			keys.FofaUsername = keyPartA
 			keys.FofaSecret = keyPartB
 		}
 	}
 	if len(c.FullHunt) > 0 {
-		keys.FullHunt = randomEntry(c.FullHunt)
+		keys.FullHunt = sliceutil.PickRandom(c.FullHunt)
 	}
 	return keys
 }

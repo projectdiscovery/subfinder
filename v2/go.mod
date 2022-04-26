@@ -12,6 +12,7 @@ require (
 	github.com/projectdiscovery/fdmax v0.0.3
 	github.com/projectdiscovery/fileutil v0.0.0-20210928100737-cab279c5d4b5
 	github.com/projectdiscovery/gologger v1.1.4
+	github.com/projectdiscovery/sliceutil v0.0.0-20220426000009-1d2b7c02f65c
 	github.com/rs/xid v1.3.0
 	github.com/spyse-com/go-spyse v1.2.3
 	github.com/stretchr/testify v1.7.0
