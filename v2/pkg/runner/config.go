@@ -29,7 +29,6 @@ type Providers struct {
 	Robtex         []string `yaml:"robtex"`
 	SecurityTrails []string `yaml:"securitytrails"`
 	Shodan         []string `yaml:"shodan"`
-	Spyse          []string `yaml:"spyse"`
 	ThreatBook     []string `yaml:"threatbook"`
 	URLScan        []string `yaml:"urlscan"`
 	Virustotal     []string `yaml:"virustotal"`
@@ -146,9 +145,6 @@ func (c *Providers) GetKeys() subscraping.Keys {
 	}
 	if len(c.Shodan) > 0 {
 		keys.Shodan = sliceutil.PickRandom(c.Shodan)
-	}
-	if len(c.Spyse) > 0 {
-		keys.Spyse = sliceutil.PickRandom(c.Spyse)
 	}
 	if len(c.ThreatBook) > 0 {
 		keys.ThreatBook = sliceutil.PickRandom(c.ThreatBook)
