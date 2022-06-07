@@ -4,11 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand"
 	"os"
 	"os/user"
 	"path/filepath"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/goflags"
@@ -66,6 +68,9 @@ type Options struct {
 
 // ParseOptions parses the command line flags provided by a user
 func ParseOptions() *Options {
+	// Seed default random number generator
+	rand.Seed(time.Now().UnixNano())
+
 	// Migrate config to provider config
 	if fileutil.FileExists(defaultConfigLocation) && !fileutil.FileExists(defaultProviderConfigLocation) {
 		gologger.Info().Msgf("Detected old %s config file, trying to migrate providers to %s\n", defaultConfigLocation, defaultProviderConfigLocation)

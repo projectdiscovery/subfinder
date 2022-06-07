@@ -35,3 +35,15 @@ func sanitize(data string) (string, error) {
 	}
 	return data, nil
 }
+
+func multipartKey(key string) (keyPartA, keyPartB string, ok bool) {
+	parts := strings.Split(key, ":")
+	ok = len(parts) == MultipleKeyPartsLength
+
+	if ok {
+		keyPartA = parts[0]
+		keyPartB = parts[1]
+	}
+
+	return
+}

@@ -56,7 +56,6 @@ type Keys struct {
 	Robtex               string   `json:"robtex"`
 	Securitytrails       string   `json:"securitytrails"`
 	Shodan               string   `json:"shodan"`
-	Spyse                string   `json:"spyse"`
 	ThreatBook           string   `json:"threatbook"`
 	URLScan              string   `json:"urlscan"`
 	Virustotal           string   `json:"virustotal"`
