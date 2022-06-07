@@ -90,9 +90,9 @@ func ParseOptions() *Options {
 	)
 
 	createGroup(flagSet, "source", "Source",
-		flagSet.NormalizedStringSliceVarP(&options.Sources, "sources", "s", []string{}, "specific sources to use for discovery (-s crtsh,github"),
+		flagSet.NormalizedStringSliceVarP(&options.Sources, "sources", "s", []string{}, "specific sources to use for discovery (-s crtsh,github)"),
 		flagSet.BoolVar(&options.OnlyRecursive, "recursive", false, "use only recursive sources"),
-		flagSet.BoolVar(&options.All, "all", false, "Use all sources (slow) for enumeration"),
+		flagSet.BoolVar(&options.All, "all", false, "use all sources for enumeration (slow)"),
 		flagSet.NormalizedStringSliceVarP(&options.ExcludeSources, "exclude-sources", "es", []string{}, "sources to exclude from enumeration (-es archiveis,zoomeye)"),
 	)
 
@@ -116,7 +116,7 @@ func ParseOptions() *Options {
 		flagSet.StringVarP(&options.ResolverList, "rlist", "rL", "", "file containing list of resolvers to use"),
 		flagSet.BoolVarP(&options.RemoveWildcard, "active", "nW", false, "display active subdomains only"),
 		flagSet.StringVar(&options.Proxy, "proxy", "", "http proxy to use with subfinder"),
-		flagSet.BoolVarP(&options.ExcludeIps, "exclude-ip", "ei", false, "Exclude ips from the list of domains"),
+		flagSet.BoolVarP(&options.ExcludeIps, "exclude-ip", "ei", false, "exclude IPs from the list of domains"),
 	)
 
 	createGroup(flagSet, "debug", "Debug",
