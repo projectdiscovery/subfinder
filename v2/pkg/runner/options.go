@@ -38,29 +38,29 @@ type Options struct {
 	Version        bool // Version specifies if we should just show version and exit
 	OnlyRecursive  bool // Recursive specifies whether to use only recursive subdomain enumeration sources
 	// Recrusive contains the list of recursive subdomain enum sources
-	Recursive goflags.NormalizedStringSlice `yaml:"recursive,omitempty"`
-	All       bool                          // All specifies whether to use all (slow) sources.
+	Recursive goflags.StringSlice `yaml:"recursive,omitempty"`
+	All       bool                // All specifies whether to use all (slow) sources.
 	// AllSources contains the list of all sources for enumeration (slow)
-	AllSources         goflags.NormalizedStringSlice `yaml:"all-sources,omitempty"`
-	Threads            int                           // Thread controls the number of threads to use for active enumerations
-	Timeout            int                           // Timeout is the seconds to wait for sources to respond
-	MaxEnumerationTime int                           // MaxEnumerationTime is the maximum amount of time in mins to wait for enumeration
-	Domain             goflags.NormalizedStringSlice // Domain is the domain to find subdomains for
-	DomainsFile        string                        // DomainsFile is the file containing list of domains to find subdomains for
+	AllSources         goflags.StringSlice `yaml:"all-sources,omitempty"`
+	Threads            int                 // Thread controls the number of threads to use for active enumerations
+	Timeout            int                 // Timeout is the seconds to wait for sources to respond
+	MaxEnumerationTime int                 // MaxEnumerationTime is the maximum amount of time in mins to wait for enumeration
+	Domain             goflags.StringSlice // Domain is the domain to find subdomains for
+	DomainsFile        string              // DomainsFile is the file containing list of domains to find subdomains for
 	Output             io.Writer
 	OutputFile         string // Output is the file to write found subdomains to.
 	OutputDirectory    string // OutputDirectory is the directory to write results to in case list of domains is given
 	// Sources contains a comma-separated list of sources to use for enumeration
-	Sources goflags.NormalizedStringSlice `yaml:"sources,omitempty"`
+	Sources goflags.StringSlice `yaml:"sources,omitempty"`
 	// ExcludeSources contains the comma-separated sources to not include in the enumeration process
-	ExcludeSources goflags.NormalizedStringSlice `yaml:"exclude-sources,omitempty"`
+	ExcludeSources goflags.StringSlice `yaml:"exclude-sources,omitempty"`
 	// Resolvers is the comma-separated resolvers to use for enumeration
-	Resolvers      goflags.NormalizedStringSlice `yaml:"resolvers,omitempty"`
-	ResolverList   string                        // ResolverList is a text file containing list of resolvers to use for enumeration
-	Config         string                        // Config contains the location of the config file
-	ProviderConfig string                        // ProviderConfig contains the location of the provider config file
-	Proxy          string                        // HTTP proxy
-	RateLimit      int                           // Maximum number of HTTP requests to send per second
+	Resolvers      goflags.StringSlice `yaml:"resolvers,omitempty"`
+	ResolverList   string              // ResolverList is a text file containing list of resolvers to use for enumeration
+	Config         string              // Config contains the location of the config file
+	ProviderConfig string              // ProviderConfig contains the location of the provider config file
+	Proxy          string              // HTTP proxy
+	RateLimit      int                 // Maximum number of HTTP requests to send per second
 	// YAMLConfig contains the unmarshalled yaml config file
 	Providers  *Providers
 	ExcludeIps bool
@@ -90,15 +90,15 @@ func ParseOptions() *Options {
 	flagSet.SetDescription(`Subfinder is a subdomain discovery tool that discovers subdomains for websites by using passive online sources.`)
 
 	createGroup(flagSet, "input", "Input",
-		flagSet.NormalizedStringSliceVarP(&options.Domain, "domain", "d", []string{}, "domains to find subdomains for"),
+		flagSet.StringSliceVarP(&options.Domain, "domain", "d", []string{}, "domains to find subdomains for", goflags.NormalizedStringSliceOptions),
 		flagSet.StringVarP(&options.DomainsFile, "list", "dL", "", "file containing list of domains for subdomain discovery"),
 	)
 
 	createGroup(flagSet, "source", "Source",
-		flagSet.NormalizedStringSliceVarP(&options.Sources, "sources", "s", []string{}, "specific sources to use for discovery (-s crtsh,github)"),
+		flagSet.StringSliceVarP(&options.Sources, "sources", "s", []string{}, "specific sources to use for discovery (-s crtsh,github)", goflags.NormalizedStringSliceOptions),
 		flagSet.BoolVar(&options.OnlyRecursive, "recursive", false, "use only recursive sources"),
 		flagSet.BoolVar(&options.All, "all", false, "use all sources for enumeration (slow)"),
-		flagSet.NormalizedStringSliceVarP(&options.ExcludeSources, "exclude-sources", "es", []string{}, "sources to exclude from enumeration (-es archiveis,zoomeye)"),
+		flagSet.StringSliceVarP(&options.ExcludeSources, "exclude-sources", "es", []string{}, "sources to exclude from enumeration (-es archiveis,zoomeye)", goflags.NormalizedStringSliceOptions),
 	)
 
 	createGroup(flagSet, "rate-limit", "Rate-limit",
@@ -117,7 +117,7 @@ func ParseOptions() *Options {
 	createGroup(flagSet, "configuration", "Configuration",
 		flagSet.StringVar(&options.Config, "config", defaultConfigLocation, "flag config file"),
 		flagSet.StringVarP(&options.ProviderConfig, "provider-config", "pc", defaultProviderConfigLocation, "provider config file"),
-		flagSet.NormalizedStringSliceVar(&options.Resolvers, "r", []string{}, "comma separated list of resolvers to use"),
+		flagSet.StringSliceVar(&options.Resolvers, "r", []string{}, "comma separated list of resolvers to use", goflags.NormalizedStringSliceOptions),
 		flagSet.StringVarP(&options.ResolverList, "rlist", "rL", "", "file containing list of resolvers to use"),
 		flagSet.BoolVarP(&options.RemoveWildcard, "active", "nW", false, "display active subdomains only"),
 		flagSet.StringVar(&options.Proxy, "proxy", "", "http proxy to use with subfinder"),
