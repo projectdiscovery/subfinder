@@ -14,7 +14,7 @@ require (
 	github.com/projectdiscovery/gologger v1.1.4
 	github.com/projectdiscovery/sliceutil v0.0.0-20220426000009-1d2b7c02f65c
 	github.com/rs/xid v1.4.0
-	github.com/stretchr/testify v1.7.3
+	github.com/stretchr/testify v1.8.0
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
 	go.uber.org/ratelimit v0.2.0
 	gopkg.in/yaml.v3 v3.0.1
