@@ -13,7 +13,7 @@ github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAE
 github.com/OneOfOne/xxhash v1.2.8/go.mod h1:eZbhyaAYD41SGSSsnmcpxVoRiQ/MPUTjUdIIOT9Um7Q=
 github.com/Shopify/goreferrer v0.0.0-20181106222321-ec9c9a553398/go.mod h1:a1uqRtAwp2Xwc6WNPJEufxJ7fx3npB4UV/JOLmbu5I0=
 github.com/ajg/form v1.5.1/go.mod h1:uL1WgH+h2mgNtvBq0339dVnzXdBETtL2LeUXaIv25UY=
-github.com/akrylysov/pogreb v0.10.0/go.mod h1:pNs6QmpQ1UlTJKDezuRWmaqkgUE2TuU0YTWyqJZ7+lI=
+github.com/akrylysov/pogreb v0.10.1/go.mod h1:pNs6QmpQ1UlTJKDezuRWmaqkgUE2TuU0YTWyqJZ7+lI=
 github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129 h1:MzBOUgng9orim59UnfUTLRjMpd09C5uEVQ6RPGeCaVI=
 github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129/go.mod h1:rFgpPQZYZ8vdbc+48xibu8ALc3yeyd64IhHS+PU6Yyg=
 github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6/go.mod h1:grANhF5doyWs3UAsr3K4I6qtAmlQcZDesFNEHPZAzj8=
@@ -206,8 +206,8 @@ github.com/projectdiscovery/blackrock v0.0.0-20210903102120-5a9d2412d21d/go.mod 
 github.com/projectdiscovery/chaos-client v0.2.0 h1:a6B0HGAUdlpU4YR0o7j70GaY/PkEdtrP9VsRacfEeng=
 github.com/projectdiscovery/chaos-client v0.2.0/go.mod h1:6A43jvxrzIS93GZXUlrHfqr8jDZO4g/QCr6At1h9r2U=
 github.com/projectdiscovery/clistats v0.0.8/go.mod h1:lV6jUHAv2bYWqrQstqW8iVIydKJhWlVaLl3Xo9ioVGg=
-github.com/projectdiscovery/dnsx v1.1.0 h1:Wjtx4BJQBemIk+Jaibf6bmisPHgovXfX+V1iH+pJ2YU=
-github.com/projectdiscovery/dnsx v1.1.0/go.mod h1:TtcjQcFABuFIN7C+jOQ00PX41UnXp6aU3V9/O1hc0YE=
+github.com/projectdiscovery/dnsx v1.1.0 h1:nHyAI4+1HXevex0ilADtOmhvx7BxctCVmbj91YaV3Vo=
+github.com/projectdiscovery/dnsx v1.1.0/go.mod h1:gWtUhnqycbb/g+We7O977ZXDN0bZZf3twZBZcv9R61I=
 github.com/projectdiscovery/fdmax v0.0.3 h1:FM6lv9expZ/rEEBI9tkRh6tx3DV0gtpwzdc0h7bGPqg=
 github.com/projectdiscovery/fdmax v0.0.3/go.mod h1:NWRcaR7JTO7fC27H4jCl9n7Z+KIredwpgw1fV+4KrKI=
 github.com/projectdiscovery/fileutil v0.0.0-20210926202739-6050d0acf73c/go.mod h1:U+QCpQnX8o2N2w0VUGyAzjM3yBAe4BKedVElxiImsx0=
@@ -222,7 +222,7 @@ github.com/projectdiscovery/gologger v1.0.1/go.mod h1:Ok+axMqK53bWNwDSU1nTNwITLY
 github.com/projectdiscovery/gologger v1.1.4 h1:qWxGUq7ukHWT849uGPkagPKF3yBPYAsTtMKunQ8O2VI=
 github.com/projectdiscovery/gologger v1.1.4/go.mod h1:Bhb6Bdx2PV1nMaFLoXNBmHIU85iROS9y1tBuv7T5pMY=
 github.com/projectdiscovery/hmap v0.0.1/go.mod h1:VDEfgzkKQdq7iGTKz8Ooul0NuYHQ8qiDs6r8bPD1Sb0=
-github.com/projectdiscovery/hmap v0.0.2-0.20220308104318-929a45d8e775/go.mod h1:RWJgRqpBPJW1R9CzcEH3zmiqPFEOfcbn6lLvHD9xrKE=
+github.com/projectdiscovery/hmap v0.0.2/go.mod h1:YU3TeNTDmLW2dtb4LvuEtDsPTsQ06XMnmOeD3KOuU6c=
 github.com/projectdiscovery/httputil v0.0.0-20210906072657-f3a099cb20bc h1:C0L6pUvVI+sPJSBaPQJEG/HjPtg8Mgs2vEpsdrl064A=
 github.com/projectdiscovery/httputil v0.0.0-20210906072657-f3a099cb20bc/go.mod h1:BueJPSPWAX11IFS6bdAqTkekiIz5Fgco5LVc1kqO9L4=
 github.com/projectdiscovery/ipranger v0.0.2/go.mod h1:kcAIk/lo5rW+IzUrFkeYyXnFJ+dKwYooEOHGVPP/RWE=
