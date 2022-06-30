@@ -6,7 +6,7 @@ require (
 	github.com/corpix/uarand v0.1.1
 	github.com/hako/durafmt v0.0.0-20210316092057-3a2c319c1acd
 	github.com/json-iterator/go v1.1.10
-	github.com/lib/pq v1.10.0
+	github.com/lib/pq v1.10.6
 	github.com/projectdiscovery/chaos-client v0.1.8
 	github.com/projectdiscovery/dnsx v1.0.3
 	github.com/projectdiscovery/fdmax v0.0.3
