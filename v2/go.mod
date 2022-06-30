@@ -8,7 +8,7 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/lib/pq v1.10.6
 	github.com/projectdiscovery/chaos-client v0.2.0
-	github.com/projectdiscovery/dnsx v1.1.0
+	github.com/projectdiscovery/dnsx v1.0.9
 	github.com/projectdiscovery/fdmax v0.0.3
 	github.com/projectdiscovery/fileutil v0.0.0-20220308101036-16c79af1cf5d
 	github.com/projectdiscovery/gologger v1.1.4
