@@ -24,7 +24,6 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
-	github.com/karrick/godirwalk v1.17.0 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.18 // indirect
 	github.com/projectdiscovery/blackrock v0.0.0-20210903102120-5a9d2412d21d // indirect
 	github.com/projectdiscovery/httputil v0.0.0-20210906072657-f3a099cb20bc // indirect
@@ -53,5 +52,4 @@ require (
 	github.com/projectdiscovery/stringsutil v0.0.0-20220612082425-0037ce9f89f3 // indirect
 	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
