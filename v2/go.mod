@@ -8,9 +8,9 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/lib/pq v1.10.6
 	github.com/projectdiscovery/chaos-client v0.2.0
-	github.com/projectdiscovery/dnsx v1.0.3
+	github.com/projectdiscovery/dnsx v1.1.0
 	github.com/projectdiscovery/fdmax v0.0.3
-	github.com/projectdiscovery/fileutil v0.0.0-20210928100737-cab279c5d4b5
+	github.com/projectdiscovery/fileutil v0.0.0-20220308101036-16c79af1cf5d
 	github.com/projectdiscovery/gologger v1.1.4
 	github.com/projectdiscovery/sliceutil v0.0.0-20220426000009-1d2b7c02f65c
 	github.com/rs/xid v1.4.0
@@ -21,10 +21,17 @@ require (
 )
 
 require (
+	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
 	github.com/karrick/godirwalk v1.16.1 // indirect
+	github.com/projectdiscovery/blackrock v0.0.0-20210903102120-5a9d2412d21d // indirect
 	github.com/projectdiscovery/httputil v0.0.0-20210906072657-f3a099cb20bc // indirect
+	github.com/projectdiscovery/iputil v0.0.0-20210804143329-3a30fcde43f3 // indirect
+	github.com/projectdiscovery/mapcidr v0.0.8 // indirect
 	github.com/projectdiscovery/retryablehttp-go v1.0.2 // indirect
-	golang.org/x/text v0.3.6 // indirect
+	golang.org/x/mod v0.5.1 // indirect
+	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/tools v0.1.9 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 )
 
 require (
@@ -32,15 +39,15 @@ require (
 	github.com/cnf/structhash v0.0.0-20201127153200-e1b16c1ebc08 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
-	github.com/miekg/dns v1.1.41 // indirect
+	github.com/miekg/dns v1.1.46 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/projectdiscovery/goflags v0.0.8-0.20220328195035-cc76049ee216
-	github.com/projectdiscovery/retryabledns v1.0.12-0.20210419174848-eec3ac17d61e // indirect
-	github.com/projectdiscovery/stringsutil v0.0.0-20210804142656-fd3c28dbaafe // indirect
-	golang.org/x/net v0.0.0-20210521195947-fe42d452be8f // indirect
-	golang.org/x/sys v0.0.0-20210423082822-04245dca01da // indirect
+	github.com/projectdiscovery/retryabledns v1.0.13 // indirect
+	github.com/projectdiscovery/stringsutil v0.0.0-20220208075244-7c05502ca8e9 // indirect
+	golang.org/x/net v0.0.0-20220121210141-e204ce36a2ba // indirect
+	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
