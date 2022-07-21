@@ -30,14 +30,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		// DNS data does not rely on an API key.
-		s.getData(ctx, fmt.Sprintf("https://dns.bufferover.run/dns?q=.%s", domain), "", session, results)
-
 		if session.Keys.Bufferover == "" {
 			return
 		}
 
-		// TLS data relies on an API key.
 		s.getData(ctx, fmt.Sprintf("https://tls.bufferover.run/dns?q=.%s", domain), session.Keys.Bufferover, session, results)
 	}()
 
