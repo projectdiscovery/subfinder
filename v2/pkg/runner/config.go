@@ -23,6 +23,8 @@ type Providers struct {
 	Chaos          []string `yaml:"chaos"`
 	Chinaz         []string `yaml:"chinaz"`
 	DNSDB          []string `yaml:"dnsdb"`
+	Fofa           []string `yaml:"fofa"`
+	FullHunt       []string `json:"fullhunt"`
 	GitHub         []string `yaml:"github"`
 	IntelX         []string `yaml:"intelx"`
 	PassiveTotal   []string `yaml:"passivetotal"`
@@ -34,8 +36,6 @@ type Providers struct {
 	Virustotal     []string `yaml:"virustotal"`
 	ZoomEye        []string `yaml:"zoomeye"`
 	ZoomEyeApi     []string `yaml:"zoomeyeapi"`
-	Fofa           []string `yaml:"fofa"`
-	FullHunt       []string `json:"fullhunt"`
 }
 
 // GetConfigDirectory gets the subfinder config directory for a user

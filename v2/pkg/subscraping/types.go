@@ -48,6 +48,9 @@ type Keys struct {
 	Chaos                string   `json:"chaos"`
 	Chinaz               string   `json:"chinaz"`
 	DNSDB                string   `json:"dnsdb"`
+	FofaUsername         string   `json:"fofa_username"`
+	FofaSecret           string   `json:"fofa_secret"`
+	FullHunt             string   `json:"fullhunt"`
 	GitHub               []string `json:"github"`
 	IntelXHost           string   `json:"intelXHost"`
 	IntelXKey            string   `json:"intelXKey"`
@@ -62,9 +65,6 @@ type Keys struct {
 	ZoomEyeUsername      string   `json:"zoomeye_username"`
 	ZoomEyePassword      string   `json:"zoomeye_password"`
 	ZoomEyeKey           string   `json:"zoomeye_key"`
-	FofaUsername         string   `json:"fofa_username"`
-	FofaSecret           string   `json:"fofa_secret"`
-	FullHunt             string   `json:"fullhunt"`
 }
 
 // Result is a result structure returned by a source

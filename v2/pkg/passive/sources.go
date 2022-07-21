@@ -51,6 +51,8 @@ var DefaultSources = []string{
 	"chinaz",
 	"crtsh",
 	"dnsdumpster",
+	"fofa",
+	"fullhunt",
 	"hackertarget",
 	"intelx",
 	"passivetotal",
@@ -62,8 +64,6 @@ var DefaultSources = []string{
 	"threatcrowd",
 	"threatminer",
 	"virustotal",
-	"fofa",
-	"fullhunt",
 }
 
 // DefaultRecursiveSources contains list of default recursive sources
@@ -97,6 +97,8 @@ var DefaultAllSources = []string{
 	"crtsh",
 	"dnsdumpster",
 	"dnsdb",
+	"fofa",
+	"fullhunt",
 	"github",
 	"hackertarget",
 	"intelx",
@@ -116,8 +118,6 @@ var DefaultAllSources = []string{
 	"waybackarchive",
 	"zoomeye",
 	"zoomeyeapi",
-	"fofa",
-	"fullhunt",
 }
 
 // Agent is a struct for running passive subdomain enumeration
