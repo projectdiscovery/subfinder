@@ -64,6 +64,8 @@ type Options struct {
 	// YAMLConfig contains the unmarshalled yaml config file
 	Providers  *Providers
 	ExcludeIps bool
+	Match      goflags.StringSlice
+	Filter     goflags.StringSlice
 }
 
 // ParseOptions parses the command line flags provided by a user
@@ -122,6 +124,8 @@ func ParseOptions() *Options {
 		flagSet.BoolVarP(&options.RemoveWildcard, "active", "nW", false, "display active subdomains only"),
 		flagSet.StringVar(&options.Proxy, "proxy", "", "http proxy to use with subfinder"),
 		flagSet.BoolVarP(&options.ExcludeIps, "exclude-ip", "ei", false, "exclude IPs from the list of domains"),
+		flagSet.StringSliceVarP(&options.Match, "match", "m", []string{}, " list of matchers to use (file or comma separated)", goflags.NormalizedStringSliceOptions),
+		flagSet.StringSliceVarP(&options.Filter, "filter", "f", []string{}, " list of filters to use (file or comma separated)./s", goflags.NormalizedStringSliceOptions),
 	)
 
 	createGroup(flagSet, "debug", "Debug",

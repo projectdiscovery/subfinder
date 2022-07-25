@@ -34,6 +34,10 @@ func (options *Options) validateOptions() error {
 		return errors.New("hostip flag must be used with RemoveWildcard option")
 	}
 
+	// Match or Filter are not allowed together
+	if options.Match != nil && options.Filter != nil {
+		return errors.New("match and filter can not be used together")
+	}
 	return nil
 }
 
