@@ -9,6 +9,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"strings"
 	"time"
 
@@ -62,10 +63,12 @@ type Options struct {
 	Proxy          string              // HTTP proxy
 	RateLimit      int                 // Maximum number of HTTP requests to send per second
 	// YAMLConfig contains the unmarshalled yaml config file
-	Providers  *Providers
-	ExcludeIps bool
-	Match      goflags.StringSlice
-	Filter     goflags.StringSlice
+	Providers     *Providers
+	ExcludeIps    bool
+	Match         goflags.StringSlice
+	Filter        goflags.StringSlice
+	matchRegexes  []*regexp.Regexp
+	filterRegexes []*regexp.Regexp
 }
 
 // ParseOptions parses the command line flags provided by a user

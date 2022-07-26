@@ -2,9 +2,7 @@ package runner
 
 import (
 	"context"
-	"fmt"
 	"io"
-	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -144,39 +142,24 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain string, outpu
 	} else {
 		gologger.Info().Msgf("Found %d subdomains for %s in %s\n", len(uniqueMap), domain, duration)
 	}
-
 	return nil
 }
-func (r *Runner) findMatchingSubdomain(pattern, value string) (bool, error) {
-	pattern = strings.ReplaceAll(pattern, ".", "\\.")
-	pattern = strings.ReplaceAll(pattern, "*", ".*")
-	re, err := regexp.Compile(fmt.Sprintf("^(%s)+$", pattern))
-	if err != nil {
-		return false, err
-	}
-	return re.MatchString(value), nil
-}
+
 func (r *Runner) filterAndMatchSubdomain(subdomain string) bool {
-	if r.options.Match != nil {
-		anyMatch := false
-		for _, pattern := range r.options.Match {
-			if match, err := r.findMatchingSubdomain(pattern, subdomain); err != nil {
-				gologger.Error().Msgf("Could not parse match pattern for %s: %s\n", pattern, err)
-			} else if match {
-				anyMatch = true
+	if r.options.filterRegexes != nil {
+		for _, filter := range r.options.filterRegexes {
+			if m := filter.MatchString(subdomain); m {
+				return false
 			}
 		}
-		return anyMatch
-	} else if r.options.Filter != nil {
-		anyMatch := true
-		for _, pattern := range r.options.Filter {
-			if match, err := r.findMatchingSubdomain(pattern, subdomain); err != nil {
-				gologger.Error().Msgf("Could not parse filter pattern for %s: %s\n", pattern, err)
-			} else if match {
-				anyMatch = false
+	}
+	if r.options.matchRegexes != nil {
+		for _, match := range r.options.matchRegexes {
+			if m := match.MatchString(subdomain); m {
+				return true
 			}
 		}
-		return anyMatch
+		return false
 	}
 	return true
 }
