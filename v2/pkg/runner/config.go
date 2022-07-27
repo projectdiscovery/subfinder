@@ -34,6 +34,7 @@ type Providers struct {
 	ThreatBook     []string `yaml:"threatbook"`
 	URLScan        []string `yaml:"urlscan"`
 	Virustotal     []string `yaml:"virustotal"`
+	WhoisXMLAPI    []string `yaml:"whoisxmlapi"`
 	ZoomEye        []string `yaml:"zoomeye"`
 	ZoomEyeApi     []string `yaml:"zoomeyeapi"`
 }
@@ -155,6 +156,9 @@ func (c *Providers) GetKeys() subscraping.Keys {
 	if len(c.Virustotal) > 0 {
 		keys.Virustotal = sliceutil.PickRandom(c.Virustotal)
 	}
+	if len(c.WhoisXMLAPI) > 0 {
+                keys.WhoisXMLAPI = sliceutil.PickRandom(c.WhoisXMLAPI)
+        }
 	if len(c.ZoomEye) > 0 {
 		zoomEyeKeys := sliceutil.PickRandom(c.ZoomEye)
 		if keyPartA, keyPartB, ok := multipartKey(zoomEyeKeys); ok {
