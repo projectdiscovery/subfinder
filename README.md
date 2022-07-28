@@ -81,7 +81,7 @@ CONFIGURATION:
    -pc, -provider-config string  provider config file (default "$HOME/.config/subfinder/provider-config.yaml")
    -r string[]                   comma separated list of resolvers to use
    -rL, -rlist string            file containing list of resolvers to use
-   -nW, -active                  display active subdomains only
+   -nW, -active                  display active subdomains only (remove wildcard)
    -proxy string                 http proxy to use with subfinder
 
 DEBUG:
