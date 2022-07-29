@@ -62,6 +62,7 @@ type Keys struct {
 	ThreatBook           string   `json:"threatbook"`
 	URLScan              string   `json:"urlscan"`
 	Virustotal           string   `json:"virustotal"`
+	WhoisXMLAPI          string   `json:"whoisxmlapi"`
 	ZoomEyeUsername      string   `json:"zoomeye_username"`
 	ZoomEyePassword      string   `json:"zoomeye_password"`
 	ZoomEyeKey           string   `json:"zoomeye_key"`
