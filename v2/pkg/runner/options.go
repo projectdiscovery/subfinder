@@ -106,6 +106,11 @@ func ParseOptions() *Options {
 		flagSet.StringSliceVarP(&options.ExcludeSources, "exclude-sources", "es", []string{}, "sources to exclude from enumeration (-es archiveis,zoomeye)", goflags.NormalizedStringSliceOptions),
 	)
 
+	createGroup(flagSet, "filter", "Filter",
+		flagSet.StringSliceVarP(&options.Match, "match", "m", []string{}, "subdomain or list of subdomain to match (file or comma separated)", goflags.FileNormalizedStringSliceOptions),
+		flagSet.StringSliceVarP(&options.Filter, "filter", "f", []string{}, " subdomain or list of subdomain to filter (file or comma separated)", goflags.FileNormalizedStringSliceOptions),
+	)
+
 	createGroup(flagSet, "rate-limit", "Rate-limit",
 		flagSet.IntVarP(&options.RateLimit, "rate-limit", "rl", 0, "maximum number of http requests to send per second"),
 		flagSet.IntVar(&options.Threads, "t", 10, "number of concurrent goroutines for resolving (-active only)"),
@@ -127,8 +132,6 @@ func ParseOptions() *Options {
 		flagSet.BoolVarP(&options.RemoveWildcard, "active", "nW", false, "display active subdomains only"),
 		flagSet.StringVar(&options.Proxy, "proxy", "", "http proxy to use with subfinder"),
 		flagSet.BoolVarP(&options.ExcludeIps, "exclude-ip", "ei", false, "exclude IPs from the list of domains"),
-		flagSet.StringSliceVarP(&options.Match, "match", "m", []string{}, " list of matchers to use (file or comma separated)", goflags.FileNormalizedStringSliceOptions),
-		flagSet.StringSliceVarP(&options.Filter, "filter", "f", []string{}, " list of filters to use (file or comma separated)", goflags.FileNormalizedStringSliceOptions),
 	)
 
 	createGroup(flagSet, "debug", "Debug",
