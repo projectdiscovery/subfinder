@@ -1,10 +1,9 @@
 package runner
 
 import (
+	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestConfigGetDirectory(t *testing.T) {
@@ -18,5 +17,5 @@ func TestConfigGetDirectory(t *testing.T) {
 	}
 	config := home + "/.config/subfinder"
 
-	assert.Equal(t, directory, config, "Directory and config should be equal")
+	require.Equal(t, directory, config, "Directory and config should be equal")
 }
