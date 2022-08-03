@@ -23,6 +23,8 @@ type Providers struct {
 	Chaos          []string `yaml:"chaos"`
 	Chinaz         []string `yaml:"chinaz"`
 	DNSDB          []string `yaml:"dnsdb"`
+	Fofa           []string `yaml:"fofa"`
+	FullHunt       []string `json:"fullhunt"`
 	GitHub         []string `yaml:"github"`
 	IntelX         []string `yaml:"intelx"`
 	PassiveTotal   []string `yaml:"passivetotal"`
@@ -32,10 +34,9 @@ type Providers struct {
 	ThreatBook     []string `yaml:"threatbook"`
 	URLScan        []string `yaml:"urlscan"`
 	Virustotal     []string `yaml:"virustotal"`
+	WhoisXMLAPI    []string `yaml:"whoisxmlapi"`
 	ZoomEye        []string `yaml:"zoomeye"`
 	ZoomEyeApi     []string `yaml:"zoomeyeapi"`
-	Fofa           []string `yaml:"fofa"`
-	FullHunt       []string `json:"fullhunt"`
 }
 
 // GetConfigDirectory gets the subfinder config directory for a user
@@ -155,6 +156,9 @@ func (c *Providers) GetKeys() subscraping.Keys {
 	if len(c.Virustotal) > 0 {
 		keys.Virustotal = sliceutil.PickRandom(c.Virustotal)
 	}
+	if len(c.WhoisXMLAPI) > 0 {
+                keys.WhoisXMLAPI = sliceutil.PickRandom(c.WhoisXMLAPI)
+        }
 	if len(c.ZoomEye) > 0 {
 		zoomEyeKeys := sliceutil.PickRandom(c.ZoomEye)
 		if keyPartA, keyPartB, ok := multipartKey(zoomEyeKeys); ok {
