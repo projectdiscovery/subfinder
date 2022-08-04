@@ -29,12 +29,12 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sonarsearch"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sublist3r"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatcrowd"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatminer"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/whoisxmlapi"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeye"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeyeapi"
 )
@@ -60,10 +60,10 @@ var DefaultSources = []string{
 	"riddler",
 	"securitytrails",
 	"shodan",
-	"sublist3r",
 	"threatcrowd",
 	"threatminer",
 	"virustotal",
+	"whoisxmlapi",
 }
 
 // DefaultRecursiveSources contains list of default recursive sources
@@ -78,7 +78,6 @@ var DefaultRecursiveSources = []string{
 	"passivetotal",
 	"securitytrails",
 	"sonarsearch",
-	"sublist3r",
 	"virustotal",
 }
 
@@ -110,12 +109,12 @@ var DefaultAllSources = []string{
 	"shodan",
 	"sitedossier",
 	"sonarsearch",
-	"sublist3r",
 	"threatbook",
 	"threatcrowd",
 	"threatminer",
 	"virustotal",
 	"waybackarchive",
+	"whoisxmlapi",
 	"zoomeye",
 	"zoomeyeapi",
 }
@@ -192,8 +191,6 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &sitedossier.Source{}
 		case "sonarsearch":
 			a.sources[source] = &sonarsearch.Source{}
-		case "sublist3r":
-			a.sources[source] = &sublist3r.Source{}
 		case "threatbook":
 			a.sources[source] = &threatbook.Source{}
 		case "threatcrowd":
@@ -204,6 +201,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &virustotal.Source{}
 		case "waybackarchive":
 			a.sources[source] = &waybackarchive.Source{}
+		case "whoisxmlapi":
+			a.sources[source] = &whoisxmlapi.Source{}
 		case "zoomeye":
 			a.sources[source] = &zoomeye.Source{}
 		case "zoomeyeapi":

@@ -1,13 +1,29 @@
-// Package sublist3r logic
-package sublist3r
+// Package virustotal logic
+package whoisxmlapi
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
+
+type response struct {
+	Search string `json:"search"`
+	Result Result `json:"result"`
+}
+
+type Result struct {
+	Count int `json:"count"`
+	Records []Record `json:"records"`
+}
+
+type Record struct {
+	Domain string `json:"domain"`
+	FirstSeen int `json:"firstSeen"`
+	LastSeen int `json:"lastSeen"`
+}
 
 // Source is the passive scraping agent
 type Source struct{}
@@ -19,15 +35,19 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://api.sublist3r.com/search.php?domain=%s", domain))
+		if session.Keys.WhoisXMLAPI == "" {
+			return
+		}
+
+		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://subdomains.whoisxmlapi.com/api/v1?apiKey=%s&domainName=%s", session.Keys.WhoisXMLAPI, domain))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
 
-		var subdomains []string
-		err = json.NewDecoder(resp.Body).Decode(&subdomains)
+		var data response
+		err = jsoniter.NewDecoder(resp.Body).Decode(&data)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
@@ -36,8 +56,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		resp.Body.Close()
 
-		for _, subdomain := range subdomains {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+		for _, record := range data.Result.Records {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Domain}
 		}
 	}()
 
@@ -46,5 +66,5 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 // Name returns the name of the source
 func (s *Source) Name() string {
-	return "sublist3r"
+	return "whoisxmlapi"
 }
