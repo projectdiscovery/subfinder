@@ -29,7 +29,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sonarsearch"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sublist3r"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatcrowd"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatminer"
@@ -61,7 +60,6 @@ var DefaultSources = []string{
 	"riddler",
 	"securitytrails",
 	"shodan",
-	"sublist3r",
 	"threatcrowd",
 	"threatminer",
 	"virustotal",
@@ -80,7 +78,6 @@ var DefaultRecursiveSources = []string{
 	"passivetotal",
 	"securitytrails",
 	"sonarsearch",
-	"sublist3r",
 	"virustotal",
 }
 
@@ -112,7 +109,6 @@ var DefaultAllSources = []string{
 	"shodan",
 	"sitedossier",
 	"sonarsearch",
-	"sublist3r",
 	"threatbook",
 	"threatcrowd",
 	"threatminer",
@@ -195,8 +191,6 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &sitedossier.Source{}
 		case "sonarsearch":
 			a.sources[source] = &sonarsearch.Source{}
-		case "sublist3r":
-			a.sources[source] = &sublist3r.Source{}
 		case "threatbook":
 			a.sources[source] = &threatbook.Source{}
 		case "threatcrowd":
