@@ -24,7 +24,7 @@ type Providers struct {
 	Chinaz         []string `yaml:"chinaz"`
 	DNSDB          []string `yaml:"dnsdb"`
 	Fofa           []string `yaml:"fofa"`
-	FullHunt       []string `json:"fullhunt"`
+	FullHunt       []string `yaml:"fullhunt"`
 	GitHub         []string `yaml:"github"`
 	IntelX         []string `yaml:"intelx"`
 	PassiveTotal   []string `yaml:"passivetotal"`
@@ -157,8 +157,8 @@ func (c *Providers) GetKeys() subscraping.Keys {
 		keys.Virustotal = sliceutil.PickRandom(c.Virustotal)
 	}
 	if len(c.WhoisXMLAPI) > 0 {
-                keys.WhoisXMLAPI = sliceutil.PickRandom(c.WhoisXMLAPI)
-        }
+		keys.WhoisXMLAPI = sliceutil.PickRandom(c.WhoisXMLAPI)
+	}
 	if len(c.ZoomEye) > 0 {
 		zoomEyeKeys := sliceutil.PickRandom(c.ZoomEye)
 		if keyPartA, keyPartB, ok := multipartKey(zoomEyeKeys); ok {
