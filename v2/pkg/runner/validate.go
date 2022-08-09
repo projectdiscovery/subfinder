@@ -2,6 +2,7 @@ package runner
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -59,7 +60,7 @@ func (options *Options) validateOptions() error {
 func stripRegexString(val string) string {
 	val = strings.ReplaceAll(val, ".", "\\.")
 	val = strings.ReplaceAll(val, "*", ".*")
-	return val
+	return fmt.Sprint("^", val, "$")
 }
 
 // configureOutput configures the output on the screen

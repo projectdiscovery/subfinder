@@ -119,4 +119,26 @@ func TestFilterAndMatchSubdomain(t *testing.T) {
 			require.False(t, match, "Expecting a boolean False value ")
 		}
 	})
+
+	t.Run("Filter and Match", func(t *testing.T) {
+		options.Filter = []string{"example.com"}
+		options.Match = []string{"www.example.com"}
+		err := options.validateOptions()
+		if err != nil {
+			t.Fatalf("Expected nil got %v while validation\n", err)
+		}
+		runner, err := NewRunner(options)
+		if err != nil {
+			t.Fatalf("Expected nil got %v while creating runner\n", err)
+		}
+		subdomain := map[string]string{"filter": "example.com", "match": "www.example.com"}
+		for key, sub := range subdomain {
+			result := runner.filterAndMatchSubdomain(sub)
+			if key == "filter" {
+				require.False(t, result, "Expecting a boolean False value ")
+			} else {
+				require.True(t, result, "Expecting a boolean True value ")
+			}
+		}
+	})
 }
