@@ -92,6 +92,7 @@ var DefaultAllSources = []string{
 	"censys",
 	"certspotter",
 	"chaos",
+	"chinaz",
 	"commoncrawl",
 	"crtsh",
 	"dnsdumpster",
