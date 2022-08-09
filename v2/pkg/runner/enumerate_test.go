@@ -1,9 +1,10 @@
 package runner
 
 import (
-	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestFilterAndMatchSubdomain(t *testing.T) {
@@ -120,7 +121,7 @@ func TestFilterAndMatchSubdomain(t *testing.T) {
 		}
 	})
 
-	t.Run("Filter and Match", func(t *testing.T) {
+	t.Run("Filter and Match - Same Root Domain", func(t *testing.T) {
 		options.Filter = []string{"example.com"}
 		options.Match = []string{"www.example.com"}
 		err := options.validateOptions()
