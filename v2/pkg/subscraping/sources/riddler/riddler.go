@@ -47,3 +47,15 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 func (s *Source) Name() string {
 	return "riddler"
 }
+
+func (s *Source) IsDefault() bool {
+	return true
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return false
+}
+
+func (s *Source) NeedsKey() bool {
+	return false
+}

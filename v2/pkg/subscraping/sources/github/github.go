@@ -15,9 +15,10 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 
+	"github.com/tomnomnom/linkheader"
+
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
-	"github.com/tomnomnom/linkheader"
 )
 
 type textMatch struct {
@@ -189,4 +190,16 @@ func domainRegexp(domain string) *regexp.Regexp {
 // Name returns the name of the source
 func (s *Source) Name() string {
 	return "github"
+}
+
+func (s *Source) IsDefault() bool {
+	return false
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return false
+}
+
+func (s *Source) NeedsKey() bool {
+	return true
 }

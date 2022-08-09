@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	jsoniter "github.com/json-iterator/go"
+
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
@@ -117,6 +118,18 @@ func (s *Source) enumerate(ctx context.Context, session *subscraping.Session, ba
 // Name returns the name of the source
 func (s *Source) Name() string {
 	return "binaryedge"
+}
+
+func (s *Source) IsDefault() bool {
+	return false
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return true
+}
+
+func (s *Source) NeedsKey() bool {
+	return true
 }
 
 func isV2(ctx context.Context, session *subscraping.Session, authHeader map[string]string) bool {

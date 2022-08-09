@@ -7,8 +7,11 @@ import (
 	"regexp"
 
 	jsoniter "github.com/json-iterator/go"
+
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
+
+var passiveTotalFilterRegex = regexp.MustCompile(`^(?:\d{1,3}\.){3}\d{1,3}\\032`)
 
 type response struct {
 	Subdomains []string `json:"subdomains"`
@@ -73,4 +76,14 @@ func (s *Source) Name() string {
 	return "passivetotal"
 }
 
-var passiveTotalFilterRegex *regexp.Regexp = regexp.MustCompile(`^(?:\d{1,3}\.){3}\d{1,3}\\032`)
+func (s *Source) IsDefault() bool {
+	return true
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return true
+}
+
+func (s *Source) NeedsKey() bool {
+	return true
+}

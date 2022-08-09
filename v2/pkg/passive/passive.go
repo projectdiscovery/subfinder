@@ -26,22 +26,22 @@ func (a *Agent) EnumerateSubdomains(domain string, keys *subscraping.Keys, proxy
 
 		wg := &sync.WaitGroup{}
 		// Run each source in parallel on the target domain
-		for source, runner := range a.sources {
+		for _, runner := range a.sources {
 			wg.Add(1)
 
 			now := time.Now()
-			go func(source string, runner subscraping.Source) {
-				for resp := range runner.Run(ctx, domain, session) {
+			go func(source subscraping.Source) {
+				for resp := range source.Run(ctx, domain, session) {
 					results <- resp
 				}
 
 				duration := time.Since(now)
 				timeTakenMutex.Lock()
-				timeTaken[source] = fmt.Sprintf("Source took %s for enumeration\n", duration)
+				timeTaken[source.Name()] = fmt.Sprintf("Source took %s for enumeration\n", duration)
 				timeTakenMutex.Unlock()
 
 				wg.Done()
-			}(source, runner)
+			}(runner)
 		}
 		wg.Wait()
 

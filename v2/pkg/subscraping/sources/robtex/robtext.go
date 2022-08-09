@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	jsoniter "github.com/json-iterator/go"
+
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
@@ -93,4 +94,16 @@ func enumerate(ctx context.Context, session *subscraping.Session, targetURL stri
 // Name returns the name of the source
 func (s *Source) Name() string {
 	return "robtex"
+}
+
+func (s *Source) IsDefault() bool {
+	return true
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return false
+}
+
+func (s *Source) NeedsKey() bool {
+	return true
 }

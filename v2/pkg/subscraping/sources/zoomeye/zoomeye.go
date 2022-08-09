@@ -123,3 +123,15 @@ func doLogin(ctx context.Context, session *subscraping.Session) (string, error) 
 func (s *Source) Name() string {
 	return "zoomeye"
 }
+
+func (s *Source) IsDefault() bool {
+	return false
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return false
+}
+
+func (s *Source) NeedsKey() bool {
+	return true
+}

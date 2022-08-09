@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
@@ -32,8 +33,8 @@ func NewRunner(options *Options) (*Runner, error) {
 	// Initialize the passive subdomain enumeration engine
 	runner.initializePassiveEngine()
 
-	// Initialize the active subdomain enumeration engine
-	err := runner.initializeActiveEngine()
+	// Initialize the subdomain resolver
+	err := runner.initializeResolver()
 	if err != nil {
 		return nil, err
 	}

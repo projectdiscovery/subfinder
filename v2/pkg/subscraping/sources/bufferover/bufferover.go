@@ -86,3 +86,15 @@ func (s *Source) getData(ctx context.Context, sourceURL string, apiKey string, s
 func (s *Source) Name() string {
 	return "bufferover"
 }
+
+func (s *Source) IsDefault() bool {
+	return true
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return true
+}
+
+func (s *Source) NeedsKey() bool {
+	return true
+}

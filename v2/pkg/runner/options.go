@@ -12,10 +12,13 @@ import (
 	"strings"
 	"time"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
-	"gopkg.in/yaml.v3"
+	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
+	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
 )
 
 var (
@@ -26,44 +29,36 @@ var (
 // Options contains the configuration options for tuning
 // the subdomain enumeration process.
 type Options struct {
-	Verbose        bool // Verbose flag indicates whether to show verbose output or not
-	NoColor        bool // No-Color disables the colored output
-	JSON           bool // JSON specifies whether to use json for output format or text file
-	HostIP         bool // HostIP specifies whether to write subdomains in host:ip format
-	Silent         bool // Silent suppresses any extra text and only writes subdomains to screen
-	ListSources    bool // ListSources specifies whether to list all available sources
-	RemoveWildcard bool // RemoveWildcard specifies whether to remove potential wildcard or dead subdomains from the results.
-	CaptureSources bool // CaptureSources specifies whether to save all sources that returned a specific domains or just the first source
-	Stdin          bool // Stdin specifies whether stdin input was given to the process
-	Version        bool // Version specifies if we should just show version and exit
-	OnlyRecursive  bool // Recursive specifies whether to use only recursive subdomain enumeration sources
-	// Recrusive contains the list of recursive subdomain enum sources
-	Recursive goflags.StringSlice `yaml:"recursive,omitempty"`
-	All       bool                // All specifies whether to use all (slow) sources.
-	// AllSources contains the list of all sources for enumeration (slow)
-	AllSources         goflags.StringSlice `yaml:"all-sources,omitempty"`
-	Threads            int                 // Thread controls the number of threads to use for active enumerations
+	Verbose            bool                // Verbose flag indicates whether to show verbose output or not
+	NoColor            bool                // NoColor disables the colored output
+	JSON               bool                // JSON specifies whether to use json for output format or text file
+	HostIP             bool                // HostIP specifies whether to write subdomains in host:ip format
+	Silent             bool                // Silent suppresses any extra text and only writes subdomains to screen
+	ListSources        bool                // ListSources specifies whether to list all available sources
+	RemoveWildcard     bool                // RemoveWildcard specifies whether to remove potential wildcard or dead subdomains from the results.
+	CaptureSources     bool                // CaptureSources specifies whether to save all sources that returned a specific domains or just the first source
+	Stdin              bool                // Stdin specifies whether stdin input was given to the process
+	Version            bool                // Version specifies if we should just show version and exit
+	OnlyRecursive      bool                // Recursive specifies whether to use only recursive subdomain enumeration sources
+	All                bool                // All specifies whether to use all (slow) sources.
+	Threads            int                 // Threads controls the number of threads to use for active enumerations
 	Timeout            int                 // Timeout is the seconds to wait for sources to respond
-	MaxEnumerationTime int                 // MaxEnumerationTime is the maximum amount of time in mins to wait for enumeration
+	MaxEnumerationTime int                 // MaxEnumerationTime is the maximum amount of time in minutes to wait for enumeration
 	Domain             goflags.StringSlice // Domain is the domain to find subdomains for
 	DomainsFile        string              // DomainsFile is the file containing list of domains to find subdomains for
 	Output             io.Writer
-	OutputFile         string // Output is the file to write found subdomains to.
-	OutputDirectory    string // OutputDirectory is the directory to write results to in case list of domains is given
-	// Sources contains a comma-separated list of sources to use for enumeration
-	Sources goflags.StringSlice `yaml:"sources,omitempty"`
-	// ExcludeSources contains the comma-separated sources to not include in the enumeration process
-	ExcludeSources goflags.StringSlice `yaml:"exclude-sources,omitempty"`
-	// Resolvers is the comma-separated resolvers to use for enumeration
-	Resolvers      goflags.StringSlice `yaml:"resolvers,omitempty"`
-	ResolverList   string              // ResolverList is a text file containing list of resolvers to use for enumeration
-	Config         string              // Config contains the location of the config file
-	ProviderConfig string              // ProviderConfig contains the location of the provider config file
-	Proxy          string              // HTTP proxy
-	RateLimit      int                 // Maximum number of HTTP requests to send per second
-	// YAMLConfig contains the unmarshalled yaml config file
-	Providers  *Providers
-	ExcludeIps bool
+	OutputFile         string              // Output is the file to write found subdomains to.
+	OutputDirectory    string              // OutputDirectory is the directory to write results to in case list of domains is given
+	Sources            goflags.StringSlice `yaml:"sources,omitempty"`         // Sources contains a comma-separated list of sources to use for enumeration
+	ExcludeSources     goflags.StringSlice `yaml:"exclude-sources,omitempty"` // ExcludeSources contains the comma-separated sources to not include in the enumeration process
+	Resolvers          goflags.StringSlice `yaml:"resolvers,omitempty"`       // Resolvers is the comma-separated resolvers to use for enumeration
+	ResolverList       string              // ResolverList is a text file containing list of resolvers to use for enumeration
+	Config             string              // Config contains the location of the config file
+	ProviderConfig     string              // ProviderConfig contains the location of the provider config file
+	Proxy              string              // HTTP proxy
+	RateLimit          int                 // Maximum number of HTTP requests to send per second
+	Providers          *Providers
+	ExcludeIps         bool
 }
 
 // ParseOptions parses the command line flags provided by a user
@@ -77,8 +72,8 @@ func ParseOptions() *Options {
 		if err := migrateToProviderConfig(defaultConfigLocation, defaultProviderConfigLocation); err != nil {
 			gologger.Warning().Msgf("Could not migrate providers from existing config (%s) to provider config (%s): %s\n", defaultConfigLocation, defaultProviderConfigLocation, err)
 		} else {
-			//cleanup the existing config file post migration
-			os.Remove(defaultConfigLocation)
+			// cleanup the existing config file post migration
+			_ = os.Remove(defaultConfigLocation)
 			gologger.Info().Msgf("Migrated %s to %s successfully\n", defaultConfigLocation, defaultProviderConfigLocation)
 		}
 	}
@@ -96,7 +91,7 @@ func ParseOptions() *Options {
 
 	createGroup(flagSet, "source", "Source",
 		flagSet.StringSliceVarP(&options.Sources, "sources", "s", []string{}, "specific sources to use for discovery (-s crtsh,github)", goflags.NormalizedStringSliceOptions),
-		flagSet.BoolVar(&options.OnlyRecursive, "recursive", false, "use only recursive sources"),
+		flagSet.BoolVar(&options.OnlyRecursive, "recursive", false, "use only sources that can handle subdomains recursively (e.g. subdomain.domain.tld vs domain.tld)"),
 		flagSet.BoolVar(&options.All, "all", false, "use all sources for enumeration (slow)"),
 		flagSet.StringSliceVarP(&options.ExcludeSources, "exclude-sources", "es", []string{}, "sources to exclude from enumeration (-es archiveis,zoomeye)", goflags.NormalizedStringSliceOptions),
 	)
@@ -193,6 +188,21 @@ func ParseOptions() *Options {
 	return options
 }
 
+// loadProvidersFrom runs the app with source config
+func (options *Options) loadProvidersFrom(location string) {
+	// todo: move elsewhere
+	if len(options.Resolvers) == 0 {
+		options.Resolvers = resolve.DefaultResolvers
+	}
+
+	options.Providers = &Providers{}
+	// We skip bailing out if file doesn't exist because we'll create it
+	// at the end of options parsing from default via goflags.
+	if err := options.Providers.UnmarshalFrom(location); isFatalErr(err) && !errors.Is(err, os.ErrNotExist) {
+		gologger.Fatal().Msgf("Could not read providers from %s: %s\n", location, err)
+	}
+}
+
 func migrateToProviderConfig(source, dest string) error {
 	fileSource, err := os.Open(source)
 	if err != nil {
@@ -233,9 +243,9 @@ func hasStdin() bool {
 }
 
 func listSources(options *Options) {
-	gologger.Info().Msgf("Current list of available sources. [%d]\n", len(options.AllSources))
+	gologger.Info().Msgf("Current list of available sources. [%d]\n", len(passive.AllSources))
 	gologger.Info().Msgf("Sources marked with an * needs key or token in order to work.\n")
-	gologger.Info().Msgf("You can modify %s to configure your keys / tokens.\n\n", options.ProviderConfig)
+	gologger.Info().Msgf("You can modify '%s' to configure your keys/tokens.\n\n", options.ProviderConfig)
 
 	keys := options.Providers.GetKeys()
 	needsKey := make(map[string]interface{})
@@ -244,12 +254,13 @@ func listSources(options *Options) {
 		needsKey[strings.ToLower(keysElem.Type().Field(i).Name)] = keysElem.Field(i).Interface()
 	}
 
-	for _, source := range options.AllSources {
+	for _, source := range passive.AllSources {
 		message := "%s\n"
-		if _, ok := needsKey[source]; ok {
+		sourceName := source.Name()
+		if _, ok := needsKey[sourceName]; ok {
 			message = "%s *\n"
 		}
-		gologger.Silent().Msgf(message, source)
+		gologger.Silent().Msgf(message, sourceName)
 	}
 }
 

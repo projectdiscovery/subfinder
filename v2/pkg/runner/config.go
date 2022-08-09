@@ -15,8 +15,8 @@ const MultipleKeyPartsLength = 2
 // Providers contains the providers stored in the configuration file
 type Providers struct {
 	// API keys for different sources
-	Bufferover     []string `yaml:"bufferover"`
 	Binaryedge     []string `yaml:"binaryedge"`
+	Bufferover     []string `yaml:"bufferover"`
 	C99            []string `yaml:"c99"`
 	Censys         []string `yaml:"censys"`
 	Certspotter    []string `yaml:"certspotter"`
@@ -32,7 +32,7 @@ type Providers struct {
 	SecurityTrails []string `yaml:"securitytrails"`
 	Shodan         []string `yaml:"shodan"`
 	ThreatBook     []string `yaml:"threatbook"`
-	URLScan        []string `yaml:"urlscan"`
+	URLScan        []string `yaml:"urlscan"` // TODO either implement or delete
 	Virustotal     []string `yaml:"virustotal"`
 	WhoisXMLAPI    []string `yaml:"whoisxmlapi"`
 	ZoomEye        []string `yaml:"zoomeye"`
@@ -69,7 +69,7 @@ func (c *Providers) MarshalTo(file string) error {
 	return yaml.NewEncoder(f).Encode(c)
 }
 
-// MarshalTo writes the marshaled yaml config to disk
+// UnmarshalFrom writes the marshaled yaml config to disk
 func (c *Providers) UnmarshalFrom(file string) error {
 	f, err := os.Open(file)
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	jsoniter "github.com/json-iterator/go"
+
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
@@ -76,4 +77,16 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 // Name returns the name of the source
 func (s *Source) Name() string {
 	return "threatbook"
+}
+
+func (s *Source) IsDefault() bool {
+	return false
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return false
+}
+
+func (s *Source) NeedsKey() bool {
+	return true
 }

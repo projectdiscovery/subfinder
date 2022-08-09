@@ -50,3 +50,15 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 	return results
 }
+
+func (s *Source) IsDefault() bool {
+	return false
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return false
+}
+
+func (s *Source) NeedsKey() bool {
+	return false
+}
