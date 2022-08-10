@@ -121,9 +121,7 @@ func New(sourceNames, excludedSourceNames []string, useAllSources, useSourcesSup
 
 	if len(excludedSourceNames) > 0 {
 		for _, sourceName := range excludedSourceNames {
-			if _, ok := sources[sourceName]; ok {
-				delete(sources, sourceName)
-			}
+			delete(sources, sourceName)
 		}
 	}
 
