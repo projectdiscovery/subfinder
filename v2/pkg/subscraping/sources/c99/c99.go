@@ -14,6 +14,8 @@ import (
 // Source is the passive scraping agent
 type Source struct{}
 
+var apiKeys []string
+
 type dnsdbLookupResponse struct {
 	Success    bool `json:"success"`
 	Subdomains []struct {
@@ -31,11 +33,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		if session.Keys.C99 == "" {
+		randomApiKey := subscraping.PickRandom(apiKeys)
+		if randomApiKey == "" {
 			return
 		}
 
-		searchURL := fmt.Sprintf("https://api.c99.nl/subdomainfinder?key=%s&domain=%s&json", session.Keys.C99, domain)
+		searchURL := fmt.Sprintf("https://api.c99.nl/subdomainfinder?key=%s&domain=%s&json", randomApiKey, domain)
 		resp, err := session.SimpleGet(ctx, searchURL)
 		if err != nil {
 			session.DiscardHTTPResponse(resp)
@@ -81,4 +84,8 @@ func (s *Source) HasRecursiveSupport() bool {
 
 func (s *Source) NeedsKey() bool {
 	return true
+}
+
+func (s *Source) AddApiKeys(keys []string) {
+	apiKeys = keys
 }

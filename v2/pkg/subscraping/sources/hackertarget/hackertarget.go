@@ -60,3 +60,7 @@ func (s *Source) HasRecursiveSupport() bool {
 func (s *Source) NeedsKey() bool {
 	return false
 }
+
+func (s *Source) AddApiKeys(_ []string) {
+	// no key needed
+}

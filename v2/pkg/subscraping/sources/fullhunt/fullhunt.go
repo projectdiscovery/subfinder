@@ -19,13 +19,20 @@ type fullHuntResponse struct {
 // Source is the passive scraping agent
 type Source struct{}
 
+var apiKeys []string
+
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		resp, err := session.Get(ctx, fmt.Sprintf("https://fullhunt.io/api/v1/domain/%s/subdomains", domain), "", map[string]string{"X-API-KEY": session.Keys.FullHunt})
+		randomApiKey := subscraping.PickRandom(apiKeys)
+		if randomApiKey == "" {
+			return
+		}
+
+		resp, err := session.Get(ctx, fmt.Sprintf("https://fullhunt.io/api/v1/domain/%s/subdomains", domain), "", map[string]string{"X-API-KEY": randomApiKey})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
@@ -62,4 +69,8 @@ func (s *Source) HasRecursiveSupport() bool {
 
 func (s *Source) NeedsKey() bool {
 	return true
+}
+
+func (s *Source) AddApiKeys(keys []string) {
+	apiKeys = keys
 }

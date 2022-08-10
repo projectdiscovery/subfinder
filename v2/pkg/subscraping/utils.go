@@ -1,9 +1,13 @@
 package subscraping
 
 import (
+	"math/rand"
 	"regexp"
+	"strings"
 	"sync"
 )
+
+const MultipleKeyPartsLength = 2
 
 var subdomainExtractorMutex = &sync.Mutex{}
 
@@ -19,12 +23,33 @@ func NewSubdomainExtractor(domain string) (*regexp.Regexp, error) {
 	return extractor, nil
 }
 
-// Exists check if a key exist in a slice
-func Exists(values []string, key string) bool {
-	for _, v := range values {
-		if v == key {
-			return true
+func PickRandom[T any](v []T) T {
+	var result T
+	length := len(v)
+	if length == 0 {
+		return result
+	}
+	return v[rand.Intn(length)]
+}
+
+func CreateApiKeys[T any](keys []string, provider func(k, v string) T) []T {
+	var result []T
+	for _, key := range keys {
+		if keyPartA, keyPartB, ok := createMultiPartKey(key); ok {
+			result = append(result, provider(keyPartA, keyPartB))
 		}
 	}
-	return false
+	return result
+}
+
+func createMultiPartKey(key string) (keyPartA, keyPartB string, ok bool) {
+	parts := strings.Split(key, ":")
+	ok = len(parts) == MultipleKeyPartsLength
+
+	if ok {
+		keyPartA = parts[0]
+		keyPartB = parts[1]
+	}
+
+	return
 }

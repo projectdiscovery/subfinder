@@ -28,6 +28,13 @@ type response struct {
 // Source is the passive scraping agent
 type Source struct{}
 
+var apiKeys []apiKey
+
+type apiKey struct {
+	token  string
+	secret string
+}
+
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
@@ -35,7 +42,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		if session.Keys.CensysToken == "" || session.Keys.CensysSecret == "" {
+		randomApiKey := subscraping.PickRandom(apiKeys)
+		if randomApiKey.token == "" || randomApiKey.secret == "" {
 			return
 		}
 
@@ -50,7 +58,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				"",
 				map[string]string{"Content-Type": "application/json", "Accept": "application/json"},
 				bytes.NewReader(request),
-				subscraping.BasicAuth{Username: session.Keys.CensysToken, Password: session.Keys.CensysSecret},
+				subscraping.BasicAuth{Username: randomApiKey.token, Password: randomApiKey.secret},
 			)
 
 			if err != nil {
@@ -105,4 +113,10 @@ func (s *Source) HasRecursiveSupport() bool {
 
 func (s *Source) NeedsKey() bool {
 	return true
+}
+
+func (s *Source) AddApiKeys(keys []string) {
+	apiKeys = subscraping.CreateApiKeys(keys, func(k, v string) apiKey {
+		return apiKey{k, v}
+	})
 }

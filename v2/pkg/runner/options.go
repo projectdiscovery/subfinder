@@ -8,11 +8,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
-	"reflect"
-	"strings"
 	"time"
-
-	"gopkg.in/yaml.v3"
 
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/goflags"
@@ -57,7 +53,6 @@ type Options struct {
 	ProviderConfig     string              // ProviderConfig contains the location of the provider config file
 	Proxy              string              // HTTP proxy
 	RateLimit          int                 // Maximum number of HTTP requests to send per second
-	Providers          *Providers
 	ExcludeIps         bool
 }
 
@@ -195,10 +190,9 @@ func (options *Options) loadProvidersFrom(location string) {
 		options.Resolvers = resolve.DefaultResolvers
 	}
 
-	options.Providers = &Providers{}
 	// We skip bailing out if file doesn't exist because we'll create it
 	// at the end of options parsing from default via goflags.
-	if err := options.Providers.UnmarshalFrom(location); isFatalErr(err) && !errors.Is(err, os.ErrNotExist) {
+	if err := UnmarshalFrom(location); isFatalErr(err) && !errors.Is(err, os.ErrNotExist) {
 		gologger.Fatal().Msgf("Could not read providers from %s: %s\n", location, err)
 	}
 }
@@ -210,20 +204,7 @@ func migrateToProviderConfig(source, dest string) error {
 	}
 	defer fileSource.Close()
 
-	providers := &Providers{}
-
-	// create empty template at destination, so in case of failure, the file is generated
-	if err := providers.MarshalTo(dest); err != nil {
-		return err
-	}
-
-	// unmarshal fields to migrate into temporary struct
-	if err := yaml.NewDecoder(fileSource).Decode(providers); isFatalErr(err) {
-		return err
-	}
-
-	// re-marshal to destination
-	return providers.MarshalTo(dest)
+	return CreateProviderConfigYAML(dest)
 }
 
 func isFatalErr(err error) bool {
@@ -247,17 +228,10 @@ func listSources(options *Options) {
 	gologger.Info().Msgf("Sources marked with an * needs key or token in order to work.\n")
 	gologger.Info().Msgf("You can modify '%s' to configure your keys/tokens.\n\n", options.ProviderConfig)
 
-	keys := options.Providers.GetKeys()
-	needsKey := make(map[string]interface{})
-	keysElem := reflect.ValueOf(&keys).Elem()
-	for i := 0; i < keysElem.NumField(); i++ {
-		needsKey[strings.ToLower(keysElem.Type().Field(i).Name)] = keysElem.Field(i).Interface()
-	}
-
 	for _, source := range passive.AllSources {
 		message := "%s\n"
 		sourceName := source.Name()
-		if _, ok := needsKey[sourceName]; ok {
+		if source.NeedsKey() {
 			message = "%s *\n"
 		}
 		gologger.Silent().Msgf(message, sourceName)

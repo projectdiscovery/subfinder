@@ -39,6 +39,13 @@ type requestBody struct {
 // Source is the passive scraping agent
 type Source struct{}
 
+var apiKeys []apiKey
+
+type apiKey struct {
+	host string
+	key  string
+}
+
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
@@ -46,11 +53,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		if session.Keys.IntelXKey == "" || session.Keys.IntelXHost == "" {
+		randomApiKey := subscraping.PickRandom(apiKeys)
+		if randomApiKey.host == "" || randomApiKey.key == "" {
 			return
 		}
 
-		searchURL := fmt.Sprintf("https://%s/phonebook/search?k=%s", session.Keys.IntelXHost, session.Keys.IntelXKey)
+		searchURL := fmt.Sprintf("https://%s/phonebook/search?k=%s", randomApiKey.host, randomApiKey.key)
 		reqBody := requestBody{
 			Term:       domain,
 			Maxresults: 100000,
@@ -82,7 +90,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		resp.Body.Close()
 
-		resultsURL := fmt.Sprintf("https://%s/phonebook/search/result?k=%s&id=%s&limit=10000", session.Keys.IntelXHost, session.Keys.IntelXKey, response.ID)
+		resultsURL := fmt.Sprintf("https://%s/phonebook/search/result?k=%s&id=%s&limit=10000", randomApiKey.host, randomApiKey.key, response.ID)
 		status := 0
 		for status == 0 || status == 3 {
 			resp, err = session.Get(ctx, resultsURL, "", nil)
@@ -132,4 +140,10 @@ func (s *Source) HasRecursiveSupport() bool {
 
 func (s *Source) NeedsKey() bool {
 	return true
+}
+
+func (s *Source) AddApiKeys(keys []string) {
+	apiKeys = subscraping.CreateApiKeys(keys, func(k, v string) apiKey {
+		return apiKey{k, v}
+	})
 }

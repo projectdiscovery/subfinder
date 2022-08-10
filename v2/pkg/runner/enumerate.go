@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hako/durafmt"
+
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -18,10 +19,6 @@ const maxNumCount = 2
 // EnumerateSingleDomain performs subdomain enumeration against a single domain
 func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain string, outputs []io.Writer) error {
 	gologger.Info().Msgf("Enumerating subdomains for %s\n", domain)
-
-	// Get the API keys for sources from the configuration
-	// and also create the active resolving engine for the domain.
-	keys := r.options.Providers.GetKeys()
 
 	// Check if the user has asked to remove wildcards explicitly.
 	// If yes, create the resolution pool and get the wildcards for the current domain
@@ -37,7 +34,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain string, outpu
 
 	// Run the passive subdomain enumeration
 	now := time.Now()
-	passiveResults := r.passiveAgent.EnumerateSubdomains(domain, &keys, r.options.Proxy, r.options.RateLimit, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute)
+	passiveResults := r.passiveAgent.EnumerateSubdomains(domain, r.options.Proxy, r.options.RateLimit, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)

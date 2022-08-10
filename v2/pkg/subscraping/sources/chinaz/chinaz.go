@@ -14,6 +14,8 @@ import (
 // Source is the passive scraping agent
 type Source struct{}
 
+var apiKeys []string
+
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
@@ -21,11 +23,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		if session.Keys.Chinaz == "" {
+		randomApiKey := subscraping.PickRandom(apiKeys)
+		if randomApiKey == "" {
 			return
 		}
 
-		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://apidatav2.chinaz.com/single/alexa?key=%s&domain=%s", session.Keys.Chinaz, domain))
+		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://apidatav2.chinaz.com/single/alexa?key=%s&domain=%s", randomApiKey, domain))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
@@ -68,4 +71,8 @@ func (s *Source) HasRecursiveSupport() bool {
 
 func (s *Source) NeedsKey() bool {
 	return true
+}
+
+func (s *Source) AddApiKeys(keys []string) {
+	apiKeys = keys
 }

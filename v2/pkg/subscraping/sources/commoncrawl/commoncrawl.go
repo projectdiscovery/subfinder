@@ -88,6 +88,10 @@ func (s *Source) NeedsKey() bool {
 	return false
 }
 
+func (s *Source) AddApiKeys(_ []string) {
+	// no key needed
+}
+
 func (s *Source) getSubdomains(ctx context.Context, searchURL, domain string, session *subscraping.Session, results chan subscraping.Result) bool {
 	for {
 		select {

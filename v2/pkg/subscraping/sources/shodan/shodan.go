@@ -13,6 +13,8 @@ import (
 // Source is the passive scraping agent
 type Source struct{}
 
+var apiKeys []string
+
 type dnsdbLookupResponse struct {
 	Domain     string   `json:"domain"`
 	Subdomains []string `json:"subdomains"`
@@ -27,11 +29,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		if session.Keys.Shodan == "" {
+		randomApiKey := subscraping.PickRandom(apiKeys)
+		if randomApiKey == "" {
 			return
 		}
 
-		searchURL := fmt.Sprintf("https://api.shodan.io/dns/domain/%s?key=%s", domain, session.Keys.Shodan)
+		searchURL := fmt.Sprintf("https://api.shodan.io/dns/domain/%s?key=%s", domain, randomApiKey)
 		resp, err := session.SimpleGet(ctx, searchURL)
 		if err != nil {
 			session.DiscardHTTPResponse(resp)
@@ -75,4 +78,8 @@ func (s *Source) HasRecursiveSupport() bool {
 
 func (s *Source) NeedsKey() bool {
 	return true
+}
+
+func (s *Source) AddApiKeys(keys []string) {
+	apiKeys = keys
 }

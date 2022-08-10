@@ -10,12 +10,13 @@ import (
 	"time"
 
 	"github.com/corpix/uarand"
-	"github.com/projectdiscovery/gologger"
 	"go.uber.org/ratelimit"
+
+	"github.com/projectdiscovery/gologger"
 )
 
 // NewSession creates a new session object for a domain
-func NewSession(domain string, keys *Keys, proxy string, rateLimit, timeout int) (*Session, error) {
+func NewSession(domain string, proxy string, rateLimit, timeout int) (*Session, error) {
 	Transport := &http.Transport{
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 100,
@@ -28,7 +29,7 @@ func NewSession(domain string, keys *Keys, proxy string, rateLimit, timeout int)
 	if proxy != "" {
 		proxyURL, _ := url.Parse(proxy)
 		if proxyURL == nil {
-			// Log warning but continue anyways
+			// Log warning but continue anyway
 			gologger.Warning().Msgf("Invalid proxy '%s' provided", proxy)
 		} else {
 			Transport.Proxy = http.ProxyURL(proxyURL)
@@ -40,10 +41,7 @@ func NewSession(domain string, keys *Keys, proxy string, rateLimit, timeout int)
 		Timeout:   time.Duration(timeout) * time.Second,
 	}
 
-	session := &Session{
-		Client: client,
-		Keys:   keys,
-	}
+	session := &Session{Client: client}
 
 	// Initiate rate limit instance
 	if rateLimit > 0 {

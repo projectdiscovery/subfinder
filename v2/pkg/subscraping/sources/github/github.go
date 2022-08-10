@@ -39,6 +39,8 @@ type response struct {
 // Source is the passive scraping agent
 type Source struct{}
 
+var apiKeys []string
+
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
@@ -46,11 +48,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		if len(session.Keys.GitHub) == 0 {
+		if len(apiKeys) == 0 {
 			return
 		}
 
-		tokens := NewTokenManager(session.Keys.GitHub)
+		tokens := NewTokenManager(apiKeys)
 
 		searchURL := fmt.Sprintf("https://api.github.com/search/code?per_page=100&q=%s&sort=created&order=asc", domain)
 		s.enumerate(ctx, searchURL, domainRegexp(domain), tokens, session, results)
@@ -202,4 +204,8 @@ func (s *Source) HasRecursiveSupport() bool {
 
 func (s *Source) NeedsKey() bool {
 	return true
+}
+
+func (s *Source) AddApiKeys(keys []string) {
+	apiKeys = keys
 }

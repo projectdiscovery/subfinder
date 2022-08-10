@@ -12,6 +12,8 @@ import (
 // Source is the passive scraping agent
 type Source struct{}
 
+var apiKeys []string
+
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
@@ -19,11 +21,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		if session.Keys.Chaos == "" {
+		randomApiKey := subscraping.PickRandom(apiKeys)
+		if randomApiKey == "" {
 			return
 		}
 
-		chaosClient := chaos.New(session.Keys.Chaos)
+		chaosClient := chaos.New(randomApiKey)
 		for result := range chaosClient.GetSubdomains(&chaos.SubdomainsRequest{
 			Domain: domain,
 		}) {
@@ -53,4 +56,8 @@ func (s *Source) HasRecursiveSupport() bool {
 
 func (s *Source) NeedsKey() bool {
 	return true
+}
+
+func (s *Source) AddApiKeys(keys []string) {
+	apiKeys = keys
 }
