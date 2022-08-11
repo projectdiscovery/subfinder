@@ -100,7 +100,7 @@ func New(sourceNames, excludedSourceNames []string, useAllSources, useSourcesSup
 	sources := make(map[string]subscraping.Source, len(AllSources))
 
 	if useAllSources {
-		sources = NameSourceMap
+		maps.Copy(sources, NameSourceMap)
 	} else {
 		if len(sourceNames) > 0 {
 			for _, source := range sourceNames {

@@ -130,8 +130,8 @@ func Test(t *testing.T) {
 	}{
 		{someSources, someExclusions, false, false, len(someSources) - len(someExclusions)},
 		{someSources, someExclusions, false, true, 1},
-		//{someSources, someExclusions, true, false, len(AllSources) - len(someExclusions)}, // TODO figure out why these test cases break the whole suite
-		//{someSources, someExclusions, true, true, 9},
+		{someSources, someExclusions, true, false, len(AllSources) - len(someExclusions)},
+		{someSources, someExclusions, true, true, 9},
 
 		{someSources, []string{}, false, false, len(someSources)},
 		{someSources, []string{}, true, false, len(AllSources)},
