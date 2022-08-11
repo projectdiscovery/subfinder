@@ -24,7 +24,7 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
-	github.com/microcosm-cc/bluemonday v1.0.18 // indirect
+	github.com/microcosm-cc/bluemonday v1.0.19 // indirect
 	github.com/projectdiscovery/blackrock v0.0.0-20210903102120-5a9d2412d21d // indirect
 	github.com/projectdiscovery/httputil v0.0.0-20210906072657-f3a099cb20bc // indirect
 	github.com/projectdiscovery/iputil v0.0.0-20210804143329-3a30fcde43f3 // indirect
