@@ -14,6 +14,7 @@ var (
 		"alienvault",
 		"anubis",
 		"archiveis",
+		"bevigil",
 		"binaryedge",
 		"bufferover",
 		"c99",
@@ -51,6 +52,7 @@ var (
 	expectedDefaultSources = []string{
 		"alienvault",
 		"anubis",
+		"bevigil",
 		"bufferover",
 		"c99",
 		"certspotter",
