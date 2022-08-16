@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"regexp"
 	"time"
 
 	"github.com/projectdiscovery/fileutil"
@@ -54,6 +55,10 @@ type Options struct {
 	Proxy              string              // HTTP proxy
 	RateLimit          int                 // Maximum number of HTTP requests to send per second
 	ExcludeIps         bool
+	Match              goflags.StringSlice
+	Filter             goflags.StringSlice
+	matchRegexes       []*regexp.Regexp
+	filterRegexes      []*regexp.Regexp
 }
 
 // ParseOptions parses the command line flags provided by a user
@@ -89,6 +94,11 @@ func ParseOptions() *Options {
 		flagSet.BoolVar(&options.OnlyRecursive, "recursive", false, "use only sources that can handle subdomains recursively (e.g. subdomain.domain.tld vs domain.tld)"),
 		flagSet.BoolVar(&options.All, "all", false, "use all sources for enumeration (slow)"),
 		flagSet.StringSliceVarP(&options.ExcludeSources, "exclude-sources", "es", []string{}, "sources to exclude from enumeration (-es archiveis,zoomeye)", goflags.NormalizedStringSliceOptions),
+	)
+
+	createGroup(flagSet, "filter", "Filter",
+		flagSet.StringSliceVarP(&options.Match, "match", "m", []string{}, "subdomain or list of subdomain to match (file or comma separated)", goflags.FileNormalizedStringSliceOptions),
+		flagSet.StringSliceVarP(&options.Filter, "filter", "f", []string{}, " subdomain or list of subdomain to filter (file or comma separated)", goflags.FileNormalizedStringSliceOptions),
 	)
 
 	createGroup(flagSet, "rate-limit", "Rate-limit",

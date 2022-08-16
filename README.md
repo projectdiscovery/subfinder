@@ -65,6 +65,11 @@ SOURCE:
    -all                            Use all sources (slow) for enumeration
    -es, -exclude-sources string[]  sources to exclude from enumeration (-es archiveis,zoomeye)
 
+FILTER:
+   -m, -match string[]   subdomain or list of subdomain to match (file or comma separated)
+   -f, -filter string[]   subdomain or list of subdomain to filter (file or comma separated)
+
+
 RATE-LIMIT:
    -rl, -rate-limit int  maximum number of http requests to send per second
    -t int                number of concurrent goroutines for resolving (-active only) (default 10)
