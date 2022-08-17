@@ -1,6 +1,9 @@
 package passive
 
 import (
+	"fmt"
+	"strings"
+
 	"golang.org/x/exp/maps"
 
 	"github.com/projectdiscovery/gologger"
@@ -132,6 +135,10 @@ func New(sourceNames, excludedSourceNames []string, useAllSources, useSourcesSup
 			}
 		}
 	}
+
+	gologger.Debug().MsgFunc(func() string {
+		return fmt.Sprintf("Selected source(s) for this search: %s", strings.Join(maps.Keys(sources), ", "))
+	})
 
 	// Create the agent, insert the sources and remove the excluded sources
 	agent := &Agent{sources: maps.Values(sources)}
