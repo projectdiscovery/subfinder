@@ -87,7 +87,7 @@ var NameSourceMap = make(map[string]subscraping.Source, len(AllSources))
 
 func init() {
 	for _, currentSource := range AllSources {
-		NameSourceMap[currentSource.Name()] = currentSource
+		NameSourceMap[strings.ToLower(currentSource.Name())] = currentSource
 	}
 }
 

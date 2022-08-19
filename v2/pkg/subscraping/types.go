@@ -20,7 +20,7 @@ type Source interface {
 	// which contains the extractor for subdomains, http client
 	// and other stuff.
 	Run(context.Context, string, *Session) <-chan Result
-	// Name returns the name of the source.
+	// Name returns the name of the source. It is preferred to use lower case names.
 	Name() string
 
 	// IsDefault returns true if the current source should be

@@ -68,7 +68,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 // Name returns the name of the source
 func (s *Source) Name() string {
-	return "DNSDB"
+	return "dnsdb"
 }
 
 func (s *Source) IsDefault() bool {
