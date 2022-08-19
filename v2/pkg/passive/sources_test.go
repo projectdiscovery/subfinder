@@ -24,7 +24,7 @@ var (
 		"commoncrawl",
 		"crtsh",
 		"dnsdumpster",
-		"DNSDB",
+		"dnsdb",
 		"fofa",
 		"fullhunt",
 		"github",
