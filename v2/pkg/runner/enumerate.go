@@ -1,7 +1,6 @@
 package runner
 
 import (
-	"context"
 	"io"
 	"strings"
 	"sync"
@@ -28,7 +27,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain string, outpu
 		err := resolutionPool.InitWildcards(domain)
 		if err != nil {
 			// Log the error but don't quit.
-			gologger.Warning().Msgf("Could not get wildcards for domain %s: %s\n", domain, err)
+			gologger.Warning().Msgf("Could not get wildcards for domain '%s': %s\n", domain, err)
 		}
 	}
 
@@ -47,7 +46,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain string, outpu
 		for result := range passiveResults {
 			switch result.Type {
 			case subscraping.Error:
-				gologger.Warning().Msgf("Could not run source %s: %s\n", result.Source, result.Error)
+				gologger.Warning().Msgf("Could not run source '%s': %s\n", result.Source, result.Error)
 			case subscraping.Subdomain:
 				// Validate the subdomain found and remove wildcards from
 				if !strings.HasSuffix(result.Value, "."+domain) {
@@ -100,7 +99,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain string, outpu
 		for result := range resolutionPool.Results {
 			switch result.Type {
 			case resolve.Error:
-				gologger.Warning().Msgf("Could not resolve host: %s\n", result.Error)
+				gologger.Warning().Msgf("Could not resolve host: '%s'\n", result.Error)
 			case resolve.Subdomain:
 				// Add the found subdomain to a map.
 				if _, ok := foundResults[result.Host]; !ok {
@@ -128,18 +127,22 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain string, outpu
 			}
 		}
 		if err != nil {
-			gologger.Error().Msgf("Could not verbose results for %s: %s\n", domain, err)
+			gologger.Error().Msgf("Could not write results for '%s': %s\n", domain, err)
 			return err
 		}
 	}
 
 	// Show found subdomain count in any case.
 	duration := durafmt.Parse(time.Since(now)).LimitFirstN(maxNumCount).String()
+	var numberOfSubDomains int
 	if r.options.RemoveWildcard {
-		gologger.Info().Msgf("Found %d subdomains for %s in %s\n", len(foundResults), domain, duration)
+		numberOfSubDomains = len(foundResults)
 	} else {
-		gologger.Info().Msgf("Found %d subdomains for %s in %s\n", len(uniqueMap), domain, duration)
+		numberOfSubDomains = len(uniqueMap)
 	}
+
+	gologger.Info().Msgf("Found %d subdomains for '%s' in %s\n", numberOfSubDomains, domain, duration)
+
 	return nil
 }
 

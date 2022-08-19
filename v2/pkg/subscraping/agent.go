@@ -31,7 +31,7 @@ func NewSession(domain string, proxy string, rateLimit, timeout int) (*Session, 
 		proxyURL, _ := url.Parse(proxy)
 		if proxyURL == nil {
 			// Log warning but continue anyway
-			gologger.Warning().Msgf("Invalid proxy '%s' provided", proxy)
+			gologger.Warning().Msgf("Invalid proxy provided: '%s'", proxy)
 		} else {
 			Transport.Proxy = http.ProxyURL(proxyURL)
 		}
