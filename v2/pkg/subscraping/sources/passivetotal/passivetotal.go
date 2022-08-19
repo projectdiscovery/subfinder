@@ -34,7 +34,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(apiKeys)
+		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
 		if randomApiKey.username == "" || randomApiKey.password == "" {
 			return
 		}

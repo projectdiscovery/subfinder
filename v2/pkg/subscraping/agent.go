@@ -1,6 +1,7 @@
 package subscraping
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"fmt"
@@ -119,14 +120,20 @@ func (s *Session) DiscardHTTPResponse(response *http.Response) {
 }
 
 func httpRequestWrapper(client *http.Client, request *http.Request) (*http.Response, error) {
-	resp, err := client.Do(request)
+	response, err := client.Do(request)
 	if err != nil {
 		return nil, err
 	}
 
-	if resp.StatusCode != http.StatusOK {
+	if response.StatusCode != http.StatusOK {
 		requestURL, _ := url.QueryUnescape(request.URL.String())
-		return resp, fmt.Errorf("unexpected status code %d received from %s", resp.StatusCode, requestURL)
+
+		gologger.Debug().MsgFunc(func() string {
+			buffer := new(bytes.Buffer)
+			_, _ = buffer.ReadFrom(response.Body)
+			return fmt.Sprintf("Response for failed request against '%s':\n%s", requestURL, buffer.String())
+		})
+		return response, fmt.Errorf("unexpected status code %d received from '%s'", response.StatusCode, requestURL)
 	}
-	return resp, nil
+	return response, nil
 }
