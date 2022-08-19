@@ -16,8 +16,8 @@ import (
 const maxNumCount = 2
 
 // EnumerateSingleDomain performs subdomain enumeration against a single domain
-func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain string, outputs []io.Writer) error {
-	gologger.Info().Msgf("Enumerating subdomains for %s\n", domain)
+func (r *Runner) EnumerateSingleDomain(domain string, writers []io.Writer) error {
+	gologger.Info().Msgf("Enumerating subdomains for '%s'\n", domain)
 
 	// Check if the user has asked to remove wildcards explicitly.
 	// If yes, create the resolution pool and get the wildcards for the current domain
@@ -109,20 +109,20 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain string, outpu
 		}
 	}
 	wg.Wait()
-	outputter := NewOutputter(r.options.JSON)
+	outputWriter := NewOutputWriter(r.options.JSON)
 	// Now output all results in output writers
 	var err error
-	for _, w := range outputs {
+	for _, writer := range writers {
 		if r.options.HostIP {
-			err = outputter.WriteHostIP(domain, foundResults, w)
+			err = outputWriter.WriteHostIP(domain, foundResults, writer)
 		} else {
 			if r.options.RemoveWildcard {
-				err = outputter.WriteHostNoWildcard(domain, foundResults, w)
+				err = outputWriter.WriteHostNoWildcard(domain, foundResults, writer)
 			} else {
 				if r.options.CaptureSources {
-					err = outputter.WriteSourceHost(domain, sourceMap, w)
+					err = outputWriter.WriteSourceHost(domain, sourceMap, writer)
 				} else {
-					err = outputter.WriteHost(domain, uniqueMap, w)
+					err = outputWriter.WriteHost(domain, uniqueMap, writer)
 				}
 			}
 		}

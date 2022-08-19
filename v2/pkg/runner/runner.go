@@ -2,7 +2,6 @@ package runner
 
 import (
 	"bufio"
-	"context"
 	"io"
 	"os"
 	"path"
@@ -43,12 +42,12 @@ func NewRunner(options *Options) (*Runner, error) {
 }
 
 // RunEnumeration runs the subdomain enumeration flow on the targets specified
-func (r *Runner) RunEnumeration(ctx context.Context) error {
+func (r *Runner) RunEnumeration() error {
 	outputs := []io.Writer{r.options.Output}
 
 	if len(r.options.Domain) > 0 {
 		domainsReader := strings.NewReader(strings.Join(r.options.Domain, "\n"))
-		return r.EnumerateMultipleDomains(ctx, domainsReader, outputs)
+		return r.EnumerateMultipleDomains(domainsReader, outputs)
 	}
 
 	// If we have multiple domains as input,
@@ -57,21 +56,21 @@ func (r *Runner) RunEnumeration(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		err = r.EnumerateMultipleDomains(ctx, f, outputs)
+		err = r.EnumerateMultipleDomains(f, outputs)
 		f.Close()
 		return err
 	}
 
 	// If we have STDIN input, treat it as multiple domains
 	if r.options.Stdin {
-		return r.EnumerateMultipleDomains(ctx, os.Stdin, outputs)
+		return r.EnumerateMultipleDomains(os.Stdin, outputs)
 	}
 	return nil
 }
 
 // EnumerateMultipleDomains enumerates subdomains for multiple domains
 // We keep enumerating subdomains for a given domain until we reach an error
-func (r *Runner) EnumerateMultipleDomains(ctx context.Context, reader io.Reader, outputs []io.Writer) error {
+func (r *Runner) EnumerateMultipleDomains(reader io.Reader, writers []io.Writer) error {
 	scanner := bufio.NewScanner(reader)
 	ip, _ := regexp.Compile(`^([0-9\.]+$)`)
 	for scanner.Scan() {
@@ -86,14 +85,14 @@ func (r *Runner) EnumerateMultipleDomains(ctx context.Context, reader io.Reader,
 		// of creating a new output file for each domain. Else create a new file
 		// for each domain in the directory.
 		if r.options.OutputFile != "" {
-			outputter := NewOutputter(r.options.JSON)
-			file, err = outputter.createFile(r.options.OutputFile, true)
+			outputWriter := NewOutputWriter(r.options.JSON)
+			file, err = outputWriter.createFile(r.options.OutputFile, true)
 			if err != nil {
 				gologger.Error().Msgf("Could not create file %s for %s: %s\n", r.options.OutputFile, r.options.Domain, err)
 				return err
 			}
 
-			err = r.EnumerateSingleDomain(ctx, domain, append(outputs, file))
+			err = r.EnumerateSingleDomain(domain, append(writers, file))
 
 			file.Close()
 		} else if r.options.OutputDirectory != "" {
@@ -104,18 +103,18 @@ func (r *Runner) EnumerateMultipleDomains(ctx context.Context, reader io.Reader,
 				outputFile += ".txt"
 			}
 
-			outputter := NewOutputter(r.options.JSON)
-			file, err = outputter.createFile(outputFile, false)
+			outputWriter := NewOutputWriter(r.options.JSON)
+			file, err = outputWriter.createFile(outputFile, false)
 			if err != nil {
 				gologger.Error().Msgf("Could not create file %s for %s: %s\n", r.options.OutputFile, r.options.Domain, err)
 				return err
 			}
 
-			err = r.EnumerateSingleDomain(ctx, domain, append(outputs, file))
+			err = r.EnumerateSingleDomain(domain, append(writers, file))
 
 			file.Close()
 		} else {
-			err = r.EnumerateSingleDomain(ctx, domain, outputs)
+			err = r.EnumerateSingleDomain(domain, writers)
 		}
 		if err != nil {
 			return err
