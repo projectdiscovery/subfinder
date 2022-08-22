@@ -29,22 +29,15 @@ func GetConfigDirectory() (string, error) {
 	return config, nil
 }
 
-// CreateProviderConfigYAML writes the marshaled yaml config to disk
-func CreateProviderConfigYAML(file string) error {
-	f, err := os.Create(file)
+// CreateProviderConfigYAML marshals the input map to the given location on the disk
+func CreateProviderConfigYAML(configFilePath string, sourcesRequiringApiKeysMap map[string][]string) error {
+	configFile, err := os.Create(configFilePath)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer configFile.Close()
 
-	sourcesRequiringApiKey := make(map[string][]string)
-	for _, source := range passive.AllSources {
-		if source.NeedsKey() {
-			sourcesRequiringApiKey[strings.ToLower(source.Name())] = []string{}
-		}
-	}
-
-	return yaml.NewEncoder(f).Encode(sourcesRequiringApiKey)
+	return yaml.NewEncoder(configFile).Encode(sourcesRequiringApiKeysMap)
 }
 
 // UnmarshalFrom writes the marshaled yaml config to disk

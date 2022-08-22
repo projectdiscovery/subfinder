@@ -9,7 +9,10 @@ import (
 	"os/user"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
+
+	"gopkg.in/yaml.v3"
 
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/goflags"
@@ -207,14 +210,43 @@ func (options *Options) loadProvidersFrom(location string) {
 	}
 }
 
-func migrateToProviderConfig(source, dest string) error {
-	fileSource, err := os.Open(source)
+func migrateToProviderConfig(defaultConfigLocation, defaultProviderLocation string) error {
+	configs, err := unMarshalToLowerCaseMap(defaultConfigLocation)
 	if err != nil {
 		return err
 	}
-	defer fileSource.Close()
 
-	return CreateProviderConfigYAML(dest)
+	sourcesRequiringApiKeysMap := make(map[string][]string)
+	for _, source := range passive.AllSources {
+		if source.NeedsKey() {
+			sourceName := strings.ToLower(source.Name())
+			if sourceKeys, ok := configs[sourceName]; ok {
+				sourcesRequiringApiKeysMap[sourceName] = sourceKeys
+			} else {
+				sourcesRequiringApiKeysMap[sourceName] = []string{}
+			}
+		}
+	}
+
+	return CreateProviderConfigYAML(defaultProviderLocation, sourcesRequiringApiKeysMap)
+}
+
+func unMarshalToLowerCaseMap(defaultConfigLocation string) (map[string][]string, error) {
+	defaultConfigFile, err := os.Open(defaultConfigLocation)
+	if err != nil {
+		return nil, err
+	}
+	defer defaultConfigFile.Close()
+
+	configs := map[string][]string{}
+	if err := yaml.NewDecoder(defaultConfigFile).Decode(configs); isFatalErr(err) {
+		return nil, err
+	}
+
+	for k, v := range configs {
+		configs[strings.ToLower(k)] = v
+	}
+	return configs, nil
 }
 
 func isFatalErr(err error) bool {
