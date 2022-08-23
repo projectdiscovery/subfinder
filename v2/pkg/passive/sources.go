@@ -7,6 +7,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/archiveis"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/binaryedge"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/bufferover"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/c99"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/censys"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/certspotter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/chaos"
@@ -16,27 +17,27 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdb"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdumpster"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fofa"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fullhunt"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/github"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hackertarget"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/passivetotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/quake"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rapiddns"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/recon"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/riddler"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/robtex"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sonarsearch"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/spyse"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sublist3r"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatcrowd"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatminer"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/whoisxmlapi"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeye"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeyeapi"
 )
 
 // DefaultSources contains the list of fast sources used by default.
@@ -44,26 +45,27 @@ var DefaultSources = []string{
 	"alienvault",
 	"anubis",
 	"bufferover",
+	"c99",
 	"certspotter",
 	"censys",
 	"chaos",
 	"chinaz",
 	"crtsh",
 	"dnsdumpster",
+	"fofa",
+	"fullhunt",
 	"hackertarget",
 	"intelx",
 	"passivetotal",
+	"quake",
 	"robtex",
 	"riddler",
 	"securitytrails",
 	"shodan",
-	"spyse",
-	"sublist3r",
 	"threatcrowd",
 	"threatminer",
 	"virustotal",
-	"quake",
-	"fofa",
+	"whoisxmlapi",
 }
 
 // DefaultRecursiveSources contains list of default recursive sources
@@ -78,7 +80,6 @@ var DefaultRecursiveSources = []string{
 	"passivetotal",
 	"securitytrails",
 	"sonarsearch",
-	"sublist3r",
 	"virustotal",
 }
 
@@ -89,6 +90,7 @@ var DefaultAllSources = []string{
 	"archiveis",
 	"binaryedge",
 	"bufferover",
+	"c99",
 	"censys",
 	"certspotter",
 	"chaos",
@@ -96,27 +98,27 @@ var DefaultAllSources = []string{
 	"crtsh",
 	"dnsdumpster",
 	"dnsdb",
+	"fofa",
+	"fullhunt",
 	"github",
 	"hackertarget",
 	"intelx",
 	"passivetotal",
 	"rapiddns",
 	"riddler",
-	"recon",
 	"robtex",
 	"securitytrails",
 	"shodan",
 	"sitedossier",
 	"sonarsearch",
-	"spyse",
-	"sublist3r",
 	"threatbook",
 	"threatcrowd",
 	"threatminer",
 	"virustotal",
 	"waybackarchive",
+	"whoisxmlapi",
 	"zoomeye",
-	"fofa",
+	"zoomeyeapi",
 }
 
 // Agent is a struct for running passive subdomain enumeration
@@ -151,6 +153,8 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &binaryedge.Source{}
 		case "bufferover":
 			a.sources[source] = &bufferover.Source{}
+		case "c99":
+			a.sources[source] = &c99.Source{}
 		case "censys":
 			a.sources[source] = &censys.Source{}
 		case "certspotter":
@@ -175,10 +179,10 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &intelx.Source{}
 		case "passivetotal":
 			a.sources[source] = &passivetotal.Source{}
+		case "quake":
+			a.sources[source] = &quake.Source{}
 		case "rapiddns":
 			a.sources[source] = &rapiddns.Source{}
-		case "recon":
-			a.sources[source] = &recon.Source{}
 		case "riddler":
 			a.sources[source] = &riddler.Source{}
 		case "robtex":
@@ -191,10 +195,6 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &sitedossier.Source{}
 		case "sonarsearch":
 			a.sources[source] = &sonarsearch.Source{}
-		case "spyse":
-			a.sources[source] = &spyse.Source{}
-		case "sublist3r":
-			a.sources[source] = &sublist3r.Source{}
 		case "threatbook":
 			a.sources[source] = &threatbook.Source{}
 		case "threatcrowd":
@@ -205,12 +205,16 @@ func (a *Agent) addSources(sources []string) {
 			a.sources[source] = &virustotal.Source{}
 		case "waybackarchive":
 			a.sources[source] = &waybackarchive.Source{}
+		case "whoisxmlapi":
+			a.sources[source] = &whoisxmlapi.Source{}
 		case "zoomeye":
 			a.sources[source] = &zoomeye.Source{}
-		case "quake":
-			a.sources[source] = &quake.Source{}
+		case "zoomeyeapi":
+			a.sources[source] = &zoomeyeapi.Source{}
 		case "fofa":
 			a.sources[source] = &fofa.Source{}
+		case "fullhunt":
+			a.sources[source] = &fullhunt.Source{}
 		}
 	}
 }

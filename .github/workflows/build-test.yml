@@ -4,24 +4,37 @@ on:
   pull_request:
   workflow_dispatch:
 
-
 jobs:  
   build:
     name: Test Builds
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.15
+          go-version: 1.18
 
       - name: Check out code
-        uses: actions/checkout@v2
-
-      - name: Test
-        run: go test .
-        working-directory: v2/cmd/subfinder/
+        uses: actions/checkout@v3
 
       - name: Build
-        run: go build .
-        working-directory: v2/cmd/subfinder/
+        run: go build ./...
+        working-directory: v2/
+
+      - name: Test
+        run: go test ./...
+        working-directory: v2/
+
+      # Todo
+      # - name: Integration Tests
+      #   env:
+      #     GH_ACTION: true
+      #   run: bash run.sh
+      #   working-directory: integration_tests/
+
+      - name: Race Condition Tests
+        run: go build -race ./...
+        working-directory: v2/

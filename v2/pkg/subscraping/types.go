@@ -25,7 +25,7 @@ type Source interface {
 }
 
 // Session is the option passed to the source, an option is created
-// uniquely for eac source.
+// uniquely for each source.
 type Session struct {
 	// Extractor is the regex for subdomains created for each domain
 	Extractor *regexp.Regexp
@@ -40,30 +40,33 @@ type Session struct {
 // Keys contains the current API Keys we have in store
 type Keys struct {
 	Binaryedge           string   `json:"binaryedge"`
+	Bufferover           string   `json:"bufferover"`
+	C99                  string   `json:"c99"`
 	CensysToken          string   `json:"censysUsername"`
 	CensysSecret         string   `json:"censysPassword"`
 	Certspotter          string   `json:"certspotter"`
 	Chaos                string   `json:"chaos"`
 	Chinaz               string   `json:"chinaz"`
 	DNSDB                string   `json:"dnsdb"`
+	FofaUsername         string   `json:"fofa_username"`
+	FofaSecret           string   `json:"fofa_secret"`
+	FullHunt             string   `json:"fullhunt"`
 	GitHub               []string `json:"github"`
 	IntelXHost           string   `json:"intelXHost"`
 	IntelXKey            string   `json:"intelXKey"`
 	PassiveTotalUsername string   `json:"passivetotal_username"`
 	PassiveTotalPassword string   `json:"passivetotal_password"`
-	Recon                string   `json:"recon"`
+	Quake                string   `json:"quake"`
 	Robtex               string   `json:"robtex"`
 	Securitytrails       string   `json:"securitytrails"`
 	Shodan               string   `json:"shodan"`
-	Spyse                string   `json:"spyse"`
 	ThreatBook           string   `json:"threatbook"`
 	URLScan              string   `json:"urlscan"`
 	Virustotal           string   `json:"virustotal"`
+	WhoisXMLAPI          string   `json:"whoisxmlapi"`
 	ZoomEyeUsername      string   `json:"zoomeye_username"`
 	ZoomEyePassword      string   `json:"zoomeye_password"`
-	Quake                string   `json:"quake"`
-	FofaUsername         string   `json:"fofa_username"`
-	FofaSecret           string   `json:"fofa_secret"`
+	ZoomEyeKey           string   `json:"zoomeye_key"`
 }
 
 // Result is a result structure returned by a source

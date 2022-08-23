@@ -1,20 +1,28 @@
-// Package recon logic
-package recon
+// Package virustotal logic
+package whoisxmlapi
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-type subdomain struct {
-	Domains    []string `json:"domains"`
-	Ip         string   `json:"ip"`
-	RawDomains []string `json:"rawDomains"`
-	RawPort    string   `json:"rawPort"`
-	RawIp      string   `json:"rawIp"`
+type response struct {
+	Search string `json:"search"`
+	Result Result `json:"result"`
+}
+
+type Result struct {
+	Count int `json:"count"`
+	Records []Record `json:"records"`
+}
+
+type Record struct {
+	Domain string `json:"domain"`
+	FirstSeen int `json:"firstSeen"`
+	LastSeen int `json:"lastSeen"`
 }
 
 // Source is the passive scraping agent
@@ -27,30 +35,29 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		if session.Keys.Recon == "" {
+		if session.Keys.WhoisXMLAPI == "" {
 			return
 		}
 
-		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://recon.dev/api/search?key=%s&domain=%s", session.Keys.Recon, domain))
+		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://subdomains.whoisxmlapi.com/api/v1?apiKey=%s&domainName=%s", session.Keys.WhoisXMLAPI, domain))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
 
-		var subdomains []subdomain
-		err = json.NewDecoder(resp.Body).Decode(&subdomains)
+		var data response
+		err = jsoniter.NewDecoder(resp.Body).Decode(&data)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
 			return
 		}
+
 		resp.Body.Close()
 
-		for _, subdomain := range subdomains {
-			for _, dmn := range subdomain.RawDomains {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: dmn}
-			}
+		for _, record := range data.Result.Records {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Domain}
 		}
 	}()
 
@@ -59,5 +66,5 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 // Name returns the name of the source
 func (s *Source) Name() string {
-	return "recon"
+	return "whoisxmlapi"
 }

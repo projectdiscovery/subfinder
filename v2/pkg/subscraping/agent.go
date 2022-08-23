@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
@@ -112,7 +111,7 @@ func (s *Session) HTTPRequest(ctx context.Context, method, requestURL, cookies s
 // DiscardHTTPResponse discards the response content by demand
 func (s *Session) DiscardHTTPResponse(response *http.Response) {
 	if response != nil {
-		_, err := io.Copy(ioutil.Discard, response.Body)
+		_, err := io.Copy(io.Discard, response.Body)
 		if err != nil {
 			gologger.Warning().Msgf("Could not discard response body: %s\n", err)
 			return

@@ -6,7 +6,10 @@ import (
 	"io"
 	"os"
 	"path"
+	"regexp"
+	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
@@ -42,22 +45,9 @@ func NewRunner(options *Options) (*Runner, error) {
 func (r *Runner) RunEnumeration(ctx context.Context) error {
 	outputs := []io.Writer{r.options.Output}
 
-	// Check if only a single domain is sent as input. Process the domain now.
-	if r.options.Domain != "" {
-		// If output file specified, create file
-		if r.options.OutputFile != "" {
-			outputter := NewOutputter(r.options.JSON)
-			file, err := outputter.createFile(r.options.OutputFile, false)
-			if err != nil {
-				gologger.Error().Msgf("Could not create file %s for %s: %s\n", r.options.OutputFile, r.options.Domain, err)
-				return err
-			}
-			defer file.Close()
-
-			outputs = append(outputs, file)
-		}
-
-		return r.EnumerateSingleDomain(ctx, r.options.Domain, outputs)
+	if len(r.options.Domain) > 0 {
+		domainsReader := strings.NewReader(strings.Join(r.options.Domain, "\n"))
+		return r.EnumerateMultipleDomains(ctx, domainsReader, outputs)
 	}
 
 	// If we have multiple domains as input,
@@ -82,13 +72,14 @@ func (r *Runner) RunEnumeration(ctx context.Context) error {
 // We keep enumerating subdomains for a given domain until we reach an error
 func (r *Runner) EnumerateMultipleDomains(ctx context.Context, reader io.Reader, outputs []io.Writer) error {
 	scanner := bufio.NewScanner(reader)
+	ip, _ := regexp.Compile(`^([0-9\.]+$)`)
 	for scanner.Scan() {
-		domain := scanner.Text()
-		if domain == "" {
+		domain, err := sanitize(scanner.Text())
+		isIp := ip.MatchString(domain)
+		if errors.Is(err, ErrEmptyInput) || (r.options.ExcludeIps && isIp) {
 			continue
 		}
 
-		var err error
 		var file *os.File
 		// If the user has specified an output file, use that output file instead
 		// of creating a new output file for each domain. Else create a new file

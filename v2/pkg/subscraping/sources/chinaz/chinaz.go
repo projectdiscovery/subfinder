@@ -1,11 +1,13 @@
 package chinaz
+
 // chinaz  http://my.chinaz.com/ChinazAPI/DataCenter/MyDataApi
 import (
 	"context"
 	"fmt"
+	"io"
+
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
-	"io/ioutil"
 )
 
 // Source is the passive scraping agent
@@ -29,16 +31,16 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 
 		resp.Body.Close()
 
-		SubdomainList :=jsoniter.Get(body, "Result").Get("ContributingSubdomainList")
+		SubdomainList := jsoniter.Get(body, "Result").Get("ContributingSubdomainList")
 
 		if SubdomainList.ToBool() {
 			_data := []byte(SubdomainList.ToString())
-			for i := 0 ; i< SubdomainList.Size() ; i++{
-				subdomain := jsoniter.Get(_data,i,"DataUrl").ToString()
+			for i := 0; i < SubdomainList.Size(); i++ {
+				subdomain := jsoniter.Get(_data, i, "DataUrl").ToString()
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 			}
 		} else {

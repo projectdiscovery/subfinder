@@ -4,7 +4,7 @@ package dnsdumpster
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/url"
 	"regexp"
 	"strings"
@@ -53,7 +53,7 @@ func postForm(ctx context.Context, session *subscraping.Session, token, domain s
 	}
 
 	// Now, grab the entire page
-	in, err := ioutil.ReadAll(resp.Body)
+	in, err := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	return string(in), err
 }
@@ -75,7 +75,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()

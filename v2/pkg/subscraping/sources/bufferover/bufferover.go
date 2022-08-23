@@ -28,18 +28,21 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
-		// Run enumeration on subdomain dataset for historical SONAR datasets
-		s.getData(ctx, fmt.Sprintf("https://dns.bufferover.run/dns?q=.%s", domain), session, results)
-		s.getData(ctx, fmt.Sprintf("https://tls.bufferover.run/dns?q=.%s", domain), session, results)
+		defer close(results)
 
-		close(results)
+		if session.Keys.Bufferover == "" {
+			return
+		}
+
+		s.getData(ctx, fmt.Sprintf("https://tls.bufferover.run/dns?q=.%s", domain), session.Keys.Bufferover, session, results)
 	}()
 
 	return results
 }
 
-func (s *Source) getData(ctx context.Context, sourceURL string, session *subscraping.Session, results chan subscraping.Result) {
-	resp, err := session.SimpleGet(ctx, sourceURL)
+func (s *Source) getData(ctx context.Context, sourceURL string, apiKey string, session *subscraping.Session, results chan subscraping.Result) {
+	resp, err := session.Get(ctx, sourceURL, "", map[string]string{"x-api-key": apiKey})
+
 	if err != nil && resp == nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		session.DiscardHTTPResponse(resp)
