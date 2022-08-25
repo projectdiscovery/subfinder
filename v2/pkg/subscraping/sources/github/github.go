@@ -37,9 +37,9 @@ type response struct {
 }
 
 // Source is the passive scraping agent
-type Source struct{}
-
-var apiKeys []string
+type Source struct {
+	apiKeys []string
+}
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
@@ -48,12 +48,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		if len(apiKeys) == 0 {
+		if len(s.apiKeys) == 0 {
 			gologger.Debug().Msgf("Cannot use the '%s' source because there was no key defined for it.", s.Name())
 			return
 		}
 
-		tokens := NewTokenManager(apiKeys)
+		tokens := NewTokenManager(s.apiKeys)
 
 		searchURL := fmt.Sprintf("https://api.github.com/search/code?per_page=100&q=%s&sort=created&order=asc", domain)
 		s.enumerate(ctx, searchURL, domainRegexp(domain), tokens, session, results)
@@ -208,5 +208,5 @@ func (s *Source) NeedsKey() bool {
 }
 
 func (s *Source) AddApiKeys(keys []string) {
-	apiKeys = keys
+	s.apiKeys = keys
 }

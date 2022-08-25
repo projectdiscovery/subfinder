@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/projectdiscovery/gologger"
 )
@@ -12,6 +13,10 @@ import (
 const MultipleKeyPartsLength = 2
 
 var subdomainExtractorMutex = &sync.Mutex{}
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 // NewSubdomainExtractor creates a new regular expression to extract
 // subdomains from text based on the given domain.

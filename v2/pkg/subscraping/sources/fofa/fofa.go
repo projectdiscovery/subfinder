@@ -20,9 +20,9 @@ type fofaResponse struct {
 }
 
 // Source is the passive scraping agent
-type Source struct{}
-
-var apiKeys []apiKey
+type Source struct {
+	apiKeys []apiKey
+}
 
 type apiKey struct {
 	username string
@@ -36,7 +36,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
 		if randomApiKey.username == "" || randomApiKey.secret == "" {
 			return
 		}
@@ -95,7 +95,7 @@ func (s *Source) NeedsKey() bool {
 }
 
 func (s *Source) AddApiKeys(keys []string) {
-	apiKeys = subscraping.CreateApiKeys(keys, func(k, v string) apiKey {
+	s.apiKeys = subscraping.CreateApiKeys(keys, func(k, v string) apiKey {
 		return apiKey{k, v}
 	})
 }

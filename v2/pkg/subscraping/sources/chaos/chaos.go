@@ -10,9 +10,9 @@ import (
 )
 
 // Source is the passive scraping agent
-type Source struct{}
-
-var apiKeys []string
+type Source struct {
+	apiKeys []string
+}
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(_ context.Context, domain string, _ *subscraping.Session) <-chan subscraping.Result {
@@ -21,7 +21,7 @@ func (s *Source) Run(_ context.Context, domain string, _ *subscraping.Session) <
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
 		if randomApiKey == "" {
 			return
 		}
@@ -59,5 +59,5 @@ func (s *Source) NeedsKey() bool {
 }
 
 func (s *Source) AddApiKeys(keys []string) {
-	apiKeys = keys
+	s.apiKeys = keys
 }
