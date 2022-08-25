@@ -1,8 +1,6 @@
 package main
 
 import (
-	"context"
-
 	// Attempts to increase the OS file descriptors - Fail silently
 	_ "github.com/projectdiscovery/fdmax/autofdmax"
 	"github.com/projectdiscovery/gologger"
@@ -18,7 +16,7 @@ func main() {
 		gologger.Fatal().Msgf("Could not create runner: %s\n", err)
 	}
 
-	err = newRunner.RunEnumeration(context.Background())
+	err = newRunner.RunEnumeration()
 	if err != nil {
 		gologger.Fatal().Msgf("Could not run enumeration: %s\n", err)
 	}

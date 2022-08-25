@@ -31,7 +31,14 @@ type zoomeyeResults struct {
 }
 
 // Source is the passive scraping agent
-type Source struct{}
+type Source struct {
+	apiKeys []apiKey
+}
+
+type apiKey struct {
+	username string
+	password string
+}
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
@@ -40,11 +47,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		if session.Keys.ZoomEyeUsername == "" || session.Keys.ZoomEyePassword == "" {
+		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		if randomApiKey.username == "" || randomApiKey.password == "" {
 			return
 		}
 
-		jwt, err := doLogin(ctx, session)
+		jwt, err := doLogin(ctx, session, randomApiKey)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			return
@@ -94,10 +102,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // doLogin performs authentication on the ZoomEye API
-func doLogin(ctx context.Context, session *subscraping.Session) (string, error) {
+func doLogin(ctx context.Context, session *subscraping.Session, randomApiKey apiKey) (string, error) {
 	creds := &zoomAuth{
-		User: session.Keys.ZoomEyeUsername,
-		Pass: session.Keys.ZoomEyePassword,
+		User: randomApiKey.username,
+		Pass: randomApiKey.password,
 	}
 	body, err := json.Marshal(&creds)
 	if err != nil {
@@ -122,4 +130,22 @@ func doLogin(ctx context.Context, session *subscraping.Session) (string, error) 
 // Name returns the name of the source
 func (s *Source) Name() string {
 	return "zoomeye"
+}
+
+func (s *Source) IsDefault() bool {
+	return false
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return false
+}
+
+func (s *Source) NeedsKey() bool {
+	return true
+}
+
+func (s *Source) AddApiKeys(keys []string) {
+	s.apiKeys = subscraping.CreateApiKeys(keys, func(k, v string) apiKey {
+		return apiKey{k, v}
+	})
 }

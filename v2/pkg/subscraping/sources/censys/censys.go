@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	jsoniter "github.com/json-iterator/go"
+
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
@@ -25,7 +26,14 @@ type response struct {
 }
 
 // Source is the passive scraping agent
-type Source struct{}
+type Source struct {
+	apiKeys []apiKey
+}
+
+type apiKey struct {
+	token  string
+	secret string
+}
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
@@ -34,7 +42,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		if session.Keys.CensysToken == "" || session.Keys.CensysSecret == "" {
+		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		if randomApiKey.token == "" || randomApiKey.secret == "" {
 			return
 		}
 
@@ -49,7 +58,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				"",
 				map[string]string{"Content-Type": "application/json", "Accept": "application/json"},
 				bytes.NewReader(request),
-				subscraping.BasicAuth{Username: session.Keys.CensysToken, Password: session.Keys.CensysSecret},
+				subscraping.BasicAuth{Username: randomApiKey.token, Password: randomApiKey.secret},
 			)
 
 			if err != nil {
@@ -92,4 +101,22 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 // Name returns the name of the source
 func (s *Source) Name() string {
 	return "censys"
+}
+
+func (s *Source) IsDefault() bool {
+	return true
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return false
+}
+
+func (s *Source) NeedsKey() bool {
+	return true
+}
+
+func (s *Source) AddApiKeys(keys []string) {
+	s.apiKeys = subscraping.CreateApiKeys(keys, func(k, v string) apiKey {
+		return apiKey{k, v}
+	})
 }

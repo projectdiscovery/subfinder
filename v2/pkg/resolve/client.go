@@ -7,7 +7,7 @@ import (
 // DefaultResolvers contains the default list of resolvers known to be good
 var DefaultResolvers = []string{
 	"1.1.1.1:53",        // Cloudflare primary
-	"1.0.0.1:53",        // Cloudlfare secondary
+	"1.0.0.1:53",        // Cloudflare secondary
 	"8.8.8.8:53",        // Google primary
 	"8.8.4.4:53",        // Google secondary
 	"9.9.9.9:53",        // Quad9 Primary

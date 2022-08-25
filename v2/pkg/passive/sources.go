@@ -1,10 +1,17 @@
 package passive
 
 import (
+	"fmt"
+	"strings"
+
+	"golang.org/x/exp/maps"
+
+	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/alienvault"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/anubis"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/archiveis"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/bevigil"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/binaryedge"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/bufferover"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/c99"
@@ -39,185 +46,102 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeyeapi"
 )
 
-// DefaultSources contains the list of fast sources used by default.
-var DefaultSources = []string{
-	"alienvault",
-	"anubis",
-	"bufferover",
-	"c99",
-	"certspotter",
-	"censys",
-	"chaos",
-	"chinaz",
-	"crtsh",
-	"dnsdumpster",
-	"fofa",
-	"fullhunt",
-	"hackertarget",
-	"intelx",
-	"passivetotal",
-	"robtex",
-	"riddler",
-	"securitytrails",
-	"shodan",
-	"threatcrowd",
-	"threatminer",
-	"virustotal",
-	"whoisxmlapi",
+var AllSources = [...]subscraping.Source{
+	&alienvault.Source{},
+	&anubis.Source{},
+	&archiveis.Source{},
+	&bevigil.Source{},
+	&binaryedge.Source{},
+	&bufferover.Source{},
+	&c99.Source{},
+	&censys.Source{},
+	&certspotter.Source{},
+	&chaos.Source{},
+	&chinaz.Source{},
+	&commoncrawl.Source{},
+	&crtsh.Source{},
+	&dnsdb.Source{},
+	&dnsdumpster.Source{},
+	&fofa.Source{},
+	&fullhunt.Source{},
+	&github.Source{},
+	&hackertarget.Source{},
+	&intelx.Source{},
+	&passivetotal.Source{},
+	&rapiddns.Source{},
+	&riddler.Source{},
+	&robtex.Source{},
+	&securitytrails.Source{},
+	&shodan.Source{},
+	&sitedossier.Source{},
+	&sonarsearch.Source{},
+	&threatbook.Source{},
+	&threatcrowd.Source{},
+	&threatminer.Source{},
+	&virustotal.Source{},
+	&waybackarchive.Source{},
+	&whoisxmlapi.Source{},
+	&zoomeye.Source{},
+	&zoomeyeapi.Source{},
 }
 
-// DefaultRecursiveSources contains list of default recursive sources
-var DefaultRecursiveSources = []string{
-	"alienvault",
-	"binaryedge",
-	"bufferover",
-	"certspotter",
-	"crtsh",
-	"dnsdumpster",
-	"hackertarget",
-	"passivetotal",
-	"securitytrails",
-	"sonarsearch",
-	"virustotal",
-}
+var NameSourceMap = make(map[string]subscraping.Source, len(AllSources))
 
-// DefaultAllSources contains list of all sources
-var DefaultAllSources = []string{
-	"alienvault",
-	"anubis",
-	"archiveis",
-	"binaryedge",
-	"bufferover",
-	"c99",
-	"censys",
-	"certspotter",
-	"chaos",
-	"commoncrawl",
-	"crtsh",
-	"dnsdumpster",
-	"dnsdb",
-	"fofa",
-	"fullhunt",
-	"github",
-	"hackertarget",
-	"intelx",
-	"passivetotal",
-	"rapiddns",
-	"riddler",
-	"robtex",
-	"securitytrails",
-	"shodan",
-	"sitedossier",
-	"sonarsearch",
-	"threatbook",
-	"threatcrowd",
-	"threatminer",
-	"virustotal",
-	"waybackarchive",
-	"whoisxmlapi",
-	"zoomeye",
-	"zoomeyeapi",
+func init() {
+	for _, currentSource := range AllSources {
+		NameSourceMap[strings.ToLower(currentSource.Name())] = currentSource
+	}
 }
 
 // Agent is a struct for running passive subdomain enumeration
 // against a given host. It wraps subscraping package and provides
 // a layer to build upon.
 type Agent struct {
-	sources map[string]subscraping.Source
+	sources []subscraping.Source
 }
 
 // New creates a new agent for passive subdomain discovery
-func New(sources, exclusions []string) *Agent {
-	// Create the agent, insert the sources and remove the excluded sources
-	agent := &Agent{sources: make(map[string]subscraping.Source)}
+func New(sourceNames, excludedSourceNames []string, useAllSources, useSourcesSupportingRecurse bool) *Agent {
+	sources := make(map[string]subscraping.Source, len(AllSources))
 
-	agent.addSources(sources)
-	agent.removeSources(exclusions)
-
-	return agent
-}
-
-// addSources adds the given list of sources to the source array
-func (a *Agent) addSources(sources []string) {
-	for _, source := range sources {
-		switch source {
-		case "alienvault":
-			a.sources[source] = &alienvault.Source{}
-		case "anubis":
-			a.sources[source] = &anubis.Source{}
-		case "archiveis":
-			a.sources[source] = &archiveis.Source{}
-		case "binaryedge":
-			a.sources[source] = &binaryedge.Source{}
-		case "bufferover":
-			a.sources[source] = &bufferover.Source{}
-		case "c99":
-			a.sources[source] = &c99.Source{}
-		case "censys":
-			a.sources[source] = &censys.Source{}
-		case "certspotter":
-			a.sources[source] = &certspotter.Source{}
-		case "chaos":
-			a.sources[source] = &chaos.Source{}
-		case "chinaz":
-			a.sources[source] = &chinaz.Source{}
-		case "commoncrawl":
-			a.sources[source] = &commoncrawl.Source{}
-		case "crtsh":
-			a.sources[source] = &crtsh.Source{}
-		case "dnsdumpster":
-			a.sources[source] = &dnsdumpster.Source{}
-		case "dnsdb":
-			a.sources[source] = &dnsdb.Source{}
-		case "github":
-			a.sources[source] = &github.Source{}
-		case "hackertarget":
-			a.sources[source] = &hackertarget.Source{}
-		case "intelx":
-			a.sources[source] = &intelx.Source{}
-		case "passivetotal":
-			a.sources[source] = &passivetotal.Source{}
-		case "rapiddns":
-			a.sources[source] = &rapiddns.Source{}
-		case "riddler":
-			a.sources[source] = &riddler.Source{}
-		case "robtex":
-			a.sources[source] = &robtex.Source{}
-		case "securitytrails":
-			a.sources[source] = &securitytrails.Source{}
-		case "shodan":
-			a.sources[source] = &shodan.Source{}
-		case "sitedossier":
-			a.sources[source] = &sitedossier.Source{}
-		case "sonarsearch":
-			a.sources[source] = &sonarsearch.Source{}
-		case "threatbook":
-			a.sources[source] = &threatbook.Source{}
-		case "threatcrowd":
-			a.sources[source] = &threatcrowd.Source{}
-		case "threatminer":
-			a.sources[source] = &threatminer.Source{}
-		case "virustotal":
-			a.sources[source] = &virustotal.Source{}
-		case "waybackarchive":
-			a.sources[source] = &waybackarchive.Source{}
-		case "whoisxmlapi":
-			a.sources[source] = &whoisxmlapi.Source{}
-		case "zoomeye":
-			a.sources[source] = &zoomeye.Source{}
-		case "zoomeyeapi":
-			a.sources[source] = &zoomeyeapi.Source{}
-		case "fofa":
-			a.sources[source] = &fofa.Source{}
-		case "fullhunt":
-			a.sources[source] = &fullhunt.Source{}
+	if useAllSources {
+		maps.Copy(sources, NameSourceMap)
+	} else {
+		if len(sourceNames) > 0 {
+			for _, source := range sourceNames {
+				if NameSourceMap[source] == nil {
+					gologger.Warning().Msgf("There is no source with the name: '%s'", source)
+				} else {
+					sources[source] = NameSourceMap[source]
+				}
+			}
+		} else {
+			for _, currentSource := range AllSources {
+				if currentSource.IsDefault() {
+					sources[currentSource.Name()] = currentSource
+				}
+			}
 		}
 	}
-}
 
-// removeSources deletes the given sources from the source map
-func (a *Agent) removeSources(sources []string) {
-	for _, source := range sources {
-		delete(a.sources, source)
+	if len(excludedSourceNames) > 0 {
+		for _, sourceName := range excludedSourceNames {
+			delete(sources, sourceName)
+		}
 	}
+
+	if useSourcesSupportingRecurse {
+		for sourceName, source := range sources {
+			if !source.HasRecursiveSupport() {
+				delete(sources, sourceName)
+			}
+		}
+	}
+
+	gologger.Debug().Msgf(fmt.Sprintf("Selected source(s) for this search: %s", strings.Join(maps.Keys(sources), ", ")))
+
+	// Create the agent, insert the sources and remove the excluded sources
+	agent := &Agent{sources: maps.Values(sources)}
+
+	return agent
 }
