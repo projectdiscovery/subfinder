@@ -15,6 +15,7 @@ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/dsnet/compress v0.0.1 h1:PlZu0n3Tuv04TzpfPbrnI0HW/YwodEXDS+oPKahKF0Q=
 github.com/dsnet/compress v0.0.1/go.mod h1:Aw8dCMJ7RioblQeTqt88akK31OvO8Dhf5JflhBbQEHo=
 github.com/dsnet/golib v0.0.0-20171103203638-1ea166775780/go.mod h1:Lj+Z9rebOhdfkVLjJ8T6VcRQv3SXugXy999NBtR9aFY=
+github.com/frankban/quicktest v1.11.3 h1:8sXhOn0uLys67V8EsXLc6eszDs8VXWxL3iRvebPhedY=
 github.com/frankban/quicktest v1.11.3/go.mod h1:wRf/ReqHper53s+kmmSZizM8NamnL3IM0I9ntUbOk+k=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
@@ -24,6 +25,7 @@ github.com/golang/snappy v0.0.3/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEW
 github.com/golang/snappy v0.0.4 h1:yAGX7huGHXlcLOEtBnF4w7FQwA26wojNCwOYAEhLjQM=
 github.com/golang/snappy v0.0.4/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
 github.com/google/go-cmp v0.5.4/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
+github.com/google/go-cmp v0.5.8 h1:e6P7q2lk1O+qJJb4BtCQXlK8vWEO8V1ZeuEdJNOqZyg=
 github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
 github.com/gorilla/css v1.0.0 h1:BQqNyPTi50JCFMTw/b67hByjMVXZRwGha6wxVGkeihY=
 github.com/gorilla/css v1.0.0/go.mod h1:Dn721qIggHpt4+EFCcTLTU/vk5ySda2ReITrtgBl60c=
@@ -75,8 +77,8 @@ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZN
 github.com/projectdiscovery/blackrock v0.0.0-20210415162320-b38689ae3a2e/go.mod h1:/IsapnEYiWG+yEDPXp0e8NWj3npzB9Ccy9lXEUJwMZs=
 github.com/projectdiscovery/blackrock v0.0.0-20210903102120-5a9d2412d21d h1:1Q94movG4VMVo+qf781ttXXt2bxBOIGMenmuCAJDLfE=
 github.com/projectdiscovery/blackrock v0.0.0-20210903102120-5a9d2412d21d/go.mod h1:/IsapnEYiWG+yEDPXp0e8NWj3npzB9Ccy9lXEUJwMZs=
-github.com/projectdiscovery/chaos-client v0.2.0 h1:a6B0HGAUdlpU4YR0o7j70GaY/PkEdtrP9VsRacfEeng=
-github.com/projectdiscovery/chaos-client v0.2.0/go.mod h1:6A43jvxrzIS93GZXUlrHfqr8jDZO4g/QCr6At1h9r2U=
+github.com/projectdiscovery/chaos-client v0.3.0 h1:A4NgOYRCrlsSZUBTCT2HAT/uTEJly17+nWcXHRXR+Ko=
+github.com/projectdiscovery/chaos-client v0.3.0/go.mod h1:AWx/KZgtBE5SULpsgyQLLfb+SQgVtCih83gvRtTpwl4=
 github.com/projectdiscovery/dnsx v1.1.0 h1:Wjtx4BJQBemIk+Jaibf6bmisPHgovXfX+V1iH+pJ2YU=
 github.com/projectdiscovery/dnsx v1.1.0/go.mod h1:TtcjQcFABuFIN7C+jOQ00PX41UnXp6aU3V9/O1hc0YE=
 github.com/projectdiscovery/fdmax v0.0.3 h1:FM6lv9expZ/rEEBI9tkRh6tx3DV0gtpwzdc0h7bGPqg=
@@ -87,7 +89,6 @@ github.com/projectdiscovery/fileutil v0.0.0-20220625080234-94e882ca56cb/go.mod h
 github.com/projectdiscovery/goflags v0.0.9 h1:bPsYIPE1LvdgYaM3XNX0YmS68e6huv22W22rKh5IscI=
 github.com/projectdiscovery/goflags v0.0.9/go.mod h1:t/dEhv2VDOzayugXZCkbkX8n+pPeVmRD+WgQRSgReeI=
 github.com/projectdiscovery/gologger v1.0.1/go.mod h1:Ok+axMqK53bWNwDSU1nTNwITLYMXMdZtRc8/y1c7sWE=
-github.com/projectdiscovery/gologger v1.1.4 h1:qWxGUq7ukHWT849uGPkagPKF3yBPYAsTtMKunQ8O2VI=
 github.com/projectdiscovery/gologger v1.1.4/go.mod h1:Bhb6Bdx2PV1nMaFLoXNBmHIU85iROS9y1tBuv7T5pMY=
 github.com/projectdiscovery/gologger v1.1.5-0.20220817095646-8663411b1b0b h1:sncWNStu8+oT3vDvKKFncr5FxEui5Bs0ET2Qkj0AVBo=
 github.com/projectdiscovery/gologger v1.1.5-0.20220817095646-8663411b1b0b/go.mod h1:6fC5JFfw/DPbkaNFb13402F4eha0Yntc2F87gHtIdkA=
@@ -105,8 +106,6 @@ github.com/projectdiscovery/retryabledns v1.0.13 h1:Ogfv0fl3Nszb+Nq2S2qQmE+PJDlS
 github.com/projectdiscovery/retryabledns v1.0.13/go.mod h1:EeqHcAPp0g2GljT4qkxKSAE47Dj0ZrJQ46R9ct3Muhk=
 github.com/projectdiscovery/retryablehttp-go v1.0.2 h1:LV1/KAQU+yeWhNVlvveaYFsjBYRwXlNEq0PvrezMV0U=
 github.com/projectdiscovery/retryablehttp-go v1.0.2/go.mod h1:dx//aY9V247qHdsRf0vdWHTBZuBQ2vm6Dq5dagxrDYI=
-github.com/projectdiscovery/sliceutil v0.0.0-20220426000009-1d2b7c02f65c h1:bdZ81T+C9W5b12RL2ndggctrTaOk1bveFG6UfuOck94=
-github.com/projectdiscovery/sliceutil v0.0.0-20220426000009-1d2b7c02f65c/go.mod h1:QHXvznfPfA5f0AZUIBkbLapoUJJlsIDgUlkKva6dOr4=
 github.com/projectdiscovery/stringsutil v0.0.0-20210823090203-2f5f137e8e1d/go.mod h1:oTRc18WBv9t6BpaN9XBY+QmG28PUpsyDzRht56Qf49I=
 github.com/projectdiscovery/stringsutil v0.0.0-20220422150559-b54fb5dc6833/go.mod h1:oTRc18WBv9t6BpaN9XBY+QmG28PUpsyDzRht56Qf49I=
 github.com/projectdiscovery/stringsutil v0.0.0-20220612082425-0037ce9f89f3 h1:EbP+rVR7NPsFKfwhzshmXP2GMjqBpaMZurJzQ5PYvbY=
