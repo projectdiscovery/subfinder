@@ -7,15 +7,25 @@ import (
 	"regexp"
 
 	jsoniter "github.com/json-iterator/go"
+
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
+
+var passiveTotalFilterRegex = regexp.MustCompile(`^(?:\d{1,3}\.){3}\d{1,3}\\032`)
 
 type response struct {
 	Subdomains []string `json:"subdomains"`
 }
 
 // Source is the passive scraping agent
-type Source struct{}
+type Source struct {
+	apiKeys []apiKey
+}
+
+type apiKey struct {
+	username string
+	password string
+}
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
@@ -24,7 +34,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		if session.Keys.PassiveTotalUsername == "" || session.Keys.PassiveTotalPassword == "" {
+		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		if randomApiKey.username == "" || randomApiKey.password == "" {
 			return
 		}
 
@@ -38,7 +49,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			"",
 			map[string]string{"Content-Type": "application/json"},
 			bytes.NewBuffer(request),
-			subscraping.BasicAuth{Username: session.Keys.PassiveTotalUsername, Password: session.Keys.PassiveTotalPassword},
+			subscraping.BasicAuth{Username: randomApiKey.username, Password: randomApiKey.password},
 		)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -73,4 +84,20 @@ func (s *Source) Name() string {
 	return "passivetotal"
 }
 
-var passiveTotalFilterRegex *regexp.Regexp = regexp.MustCompile(`^(?:\d{1,3}\.){3}\d{1,3}\\032`)
+func (s *Source) IsDefault() bool {
+	return true
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return true
+}
+
+func (s *Source) NeedsKey() bool {
+	return true
+}
+
+func (s *Source) AddApiKeys(keys []string) {
+	s.apiKeys = subscraping.CreateApiKeys(keys, func(k, v string) apiKey {
+		return apiKey{k, v}
+	})
+}

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	jsoniter "github.com/json-iterator/go"
+
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
@@ -17,10 +18,7 @@ type quakeResults struct {
 	Data    []struct {
 		Service struct {
 			HTTP struct {
-				// Title           string `json:"title"`
 				Host string `json:"host"`
-				// StatusCode int    `json:"status_code"`
-				// ResponseHeaders string `json:"response_headers"`
 			} `json:"http"`
 		}
 	}
@@ -32,7 +30,9 @@ type quakeResults struct {
 }
 
 // Source is the passive scraping agent
-type Source struct{}
+type Source struct {
+	apiKeys []string
+}
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
@@ -40,13 +40,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		if session.Keys.Quake == "" {
+		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		if randomApiKey == "" {
 			return
 		}
 
 		// quake api doc https://quake.360.cn/quake/#/help
-		var requestBody = []byte(`{"query":"domain: *.` + domain + `", "start":0, "size":1000}`)
-		resp, err := session.Post(ctx, "https://quake.360.cn/api/v3/search/quake_service", "", map[string]string{"Content-Type": "application/json", "X-QuakeToken": session.Keys.Quake}, bytes.NewReader(requestBody))
+		var requestBody = []byte(fmt.Sprintf(`{"query":"domain: *.%s", "start":0, "size":1000}`, domain))
+		resp, err := session.Post(ctx, "https://quake.360.cn/api/v3/search/quake_service", "", map[string]string{"Content-Type": "application/json", "X-QuakeToken": randomApiKey}, bytes.NewReader(requestBody))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
@@ -84,4 +85,20 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 // Name returns the name of the source
 func (s *Source) Name() string {
 	return "quake"
+}
+
+func (s *Source) IsDefault() bool {
+	return true
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return false
+}
+
+func (s *Source) NeedsKey() bool {
+	return true
+}
+
+func (s *Source) AddApiKeys(keys []string) {
+	s.apiKeys = keys
 }

@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	jsoniter "github.com/json-iterator/go"
+
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
@@ -18,7 +19,9 @@ const (
 )
 
 // Source is the passive scraping agent
-type Source struct{}
+type Source struct {
+	apiKeys []string
+}
 
 type result struct {
 	Rrname string `json:"rrname"`
@@ -33,13 +36,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		if session.Keys.Robtex == "" {
+		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		if randomApiKey == "" {
 			return
 		}
 
 		headers := map[string]string{"Content-Type": "application/x-ndjson"}
 
-		ips, err := enumerate(ctx, session, fmt.Sprintf("%s/forward/%s?key=%s", baseURL, domain, session.Keys.Robtex), headers)
+		ips, err := enumerate(ctx, session, fmt.Sprintf("%s/forward/%s?key=%s", baseURL, domain, randomApiKey), headers)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			return
@@ -47,7 +51,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		for _, result := range ips {
 			if result.Rrtype == addrRecord || result.Rrtype == iPv6AddrRecord {
-				domains, err := enumerate(ctx, session, fmt.Sprintf("%s/reverse/%s?key=%s", baseURL, result.Rrdata, session.Keys.Robtex), headers)
+				domains, err := enumerate(ctx, session, fmt.Sprintf("%s/reverse/%s?key=%s", baseURL, result.Rrdata, randomApiKey), headers)
 				if err != nil {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 					return
@@ -93,4 +97,20 @@ func enumerate(ctx context.Context, session *subscraping.Session, targetURL stri
 // Name returns the name of the source
 func (s *Source) Name() string {
 	return "robtex"
+}
+
+func (s *Source) IsDefault() bool {
+	return true
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return false
+}
+
+func (s *Source) NeedsKey() bool {
+	return true
+}
+
+func (s *Source) AddApiKeys(keys []string) {
+	s.apiKeys = keys
 }
