@@ -11,38 +11,11 @@ import (
 
 // initializePassiveEngine creates the passive engine and loads sources etc
 func (r *Runner) initializePassiveEngine() {
-	var sources, exclusions []string
-
-	if r.options.ExcludeSources != "" {
-		exclusions = append(exclusions, strings.Split(r.options.ExcludeSources, ",")...)
-	} else {
-		exclusions = append(exclusions, r.options.YAMLConfig.ExcludeSources...)
-	}
-
-	// Use all sources if asked by the user
-	if r.options.All {
-		sources = append(sources, r.options.YAMLConfig.AllSources...)
-	}
-
-	// If only recursive sources are wanted, use them only.
-	if r.options.Recursive {
-		sources = append(sources, r.options.YAMLConfig.Recursive...)
-	}
-
-	// If there are any sources from CLI, only use them
-	// Otherwise, use the yaml file sources
-	if !r.options.All && !r.options.Recursive {
-		if r.options.Sources != "" {
-			sources = append(sources, strings.Split(r.options.Sources, ",")...)
-		} else {
-			sources = append(sources, r.options.YAMLConfig.Sources...)
-		}
-	}
-	r.passiveAgent = passive.New(sources, exclusions)
+	r.passiveAgent = passive.New(r.options.Sources, r.options.ExcludeSources, r.options.All, r.options.OnlyRecursive)
 }
 
-// initializeActiveEngine creates the resolver used to resolve the found subdomains
-func (r *Runner) initializeActiveEngine() error {
+// initializeResolver creates the resolver used to resolve the found subdomains
+func (r *Runner) initializeResolver() error {
 	var resolvers []string
 
 	// If the file has been provided, read resolvers from the file
@@ -54,10 +27,8 @@ func (r *Runner) initializeActiveEngine() error {
 		}
 	}
 
-	if r.options.Resolvers != "" {
-		resolvers = append(resolvers, strings.Split(r.options.Resolvers, ",")...)
-	} else if len(r.options.YAMLConfig.Resolvers) > 0 {
-		resolvers = append(resolvers, r.options.YAMLConfig.Resolvers...)
+	if len(r.options.Resolvers) > 0 {
+		resolvers = append(resolvers, r.options.Resolvers...)
 	} else {
 		resolvers = append(resolvers, resolve.DefaultResolvers...)
 	}

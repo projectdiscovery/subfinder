@@ -7,7 +7,7 @@
 
 
 <p align="center">
-<a href="https://goreportcard.com/report/github.com/projectdiscovery/subfinder"><img src="https://goreportcard.com/badge/github.com/projectdiscovery/subfinder"></a>
+<a href="https://goreportcard.com/report/github.com/projectdiscovery/subfinder/v2"><img src="https://goreportcard.com/badge/github.com/projectdiscovery/subfinder"></a>
 <a href="https://github.com/projectdiscovery/subfinder/issues"><img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat"></a>
 <a href="https://github.com/projectdiscovery/subfinder/releases"><img src="https://img.shields.io/github/release/projectdiscovery/subfinder"></a>
 <a href="https://twitter.com/pdiscoveryio"><img src="https://img.shields.io/twitter/follow/pdiscoveryio.svg?logo=twitter"></a>
@@ -28,7 +28,7 @@
 
 Subfinder is a subdomain discovery tool that discovers valid subdomains for websites by using passive online sources. It has a simple modular architecture and is optimized for speed. subfinder is built for doing one thing only - passive subdomain enumeration, and it does that very well.
 
-We have designed subfinder to comply with all passive sources licenses, and usage restrictions, as well as maintained a consistently passive model to make it useful to both penetration testers and bug bounty hunters alike.
+We have designed `subfinder` to comply with all passive sources licenses, and usage restrictions, as well as maintained a consistently passive model to make it useful to both penetration testers and bug bounty hunters alike.
 
 
 # Features
@@ -53,38 +53,57 @@ subfinder -h
 ```
 This will display help for the tool. Here are all the switches it supports.
 
-| Flag             | Description                                                | Example                                     |
-| ---------------- | ---------------------------------------------------------- | --------------------------------------------|
-| -all             | Use all sources (slow) for enumeration                     | subfinder -d uber.com -all                  |
-| -b               | IP address to be used as local bind                        | subfinder -b 172.16.0.1                |
-| -config          | Configuration file for API Keys, etc                       | subfinder -config config.yaml               |
-| -d               | Domain to find subdomains for                              | subfinder -d uber.com                       |
-| -dL              | File containing list of domains to enumerate               | subfinder -dL hackerone-hosts.txt           |
-| -exclude-sources | List of sources to exclude from enumeration                | subfinder -exclude-sources archiveis        |
-| -max-time        | Minutes to wait for enumeration results (default 10)       | subfinder -max-time 1                       |
-| -nC              | Don't Use colors in output                                 | subfinder -nC                               |
-| -nW              | Remove Wildcard & Dead Subdomains from output              | subfinder -nW                               |
-| -ls              | List all available sources                                 | subfinder -ls                               |
-| -o               | File to write output to (optional)                         | subfinder -o output.txt                     |
-| -oD              | Directory to write enumeration results to (optional)       | subfinder -oD ~/outputs                     |
-| -oI              | Write output in Host,IP format                             | subfinder -oI                               |
-| -oJ              | Write output in JSON lines Format                          | subfinder -oJ                               |
-| -r               | Comma-separated list of resolvers to use                   | subfinder -r 1.1.1.1,1.0.0.1                |
-| -rL              | Text file containing list of resolvers to use              | subfinder -rL resolvers.txt                 |
-| -recursive       | Enumeration recursive subdomains                           | subfinder -d news.yahoo.com -recursive      |
-| -silent          | Show only subdomains in output                             | subfinder -silent                           |
-| -sources         | Comma separated list of sources to use                     | subfinder -sources shodan,censys            |
-| -t               | Number of concurrent goroutines for resolving (default 10) | subfinder -t 100                            |
-| -timeout         | Seconds to wait before timing out (default 30)             | subfinder -timeout 30                       |
-| -proxy           | HTTP proxy to use with subfinder                           | subfinder -proxy http://localhost:3128      |
-| -rate-limit      | Maximum number of HTTP requests to send per second         | subfinder -rate-limit 10                    |
-| -v               | Show Verbose output                                        | subfinder -v                                |
-| -version         | Show current program version                               | subfinder -version                          |
+```yaml
+Flags:
+INPUT:
+   -d, -domain string[]  domains to find subdomains for
+   -dL, -list string     file containing list of domains for subdomain discovery
 
+SOURCE:
+   -s, -sources string[]           sources to use for discovery (-s crtsh,github)
+   -recursive                      use only recursive sources
+   -all                            Use all sources (slow) for enumeration
+   -es, -exclude-sources string[]  sources to exclude from enumeration (-es archiveis,zoomeye)
+
+FILTER:
+   -m, -match string[]   subdomain or list of subdomain to match (file or comma separated)
+   -f, -filter string[]   subdomain or list of subdomain to filter (file or comma separated)
+
+
+RATE-LIMIT:
+   -rl, -rate-limit int  maximum number of http requests to send per second
+   -t int                number of concurrent goroutines for resolving (-active only) (default 10)
+
+OUTPUT:
+   -o, -output string       file to write output to
+   -oJ, -json               write output in JSONL(ines) format
+   -oD, -output-dir string  directory to write output (-dL only)
+   -cs, -collect-sources    include all sources in the output (-json only)
+   -oI, -ip                 include host IP in output (-active only)
+
+CONFIGURATION:
+   -config string                flag config file (default "$HOME/.config/subfinder/config.yaml")
+   -pc, -provider-config string  provider config file (default "$HOME/.config/subfinder/provider-config.yaml")
+   -r string[]                   comma separated list of resolvers to use
+   -rL, -rlist string            file containing list of resolvers to use
+   -nW, -active                  display active subdomains only (remove wildcard)
+   -proxy string                 http proxy to use with subfinder
+
+DEBUG:
+   -ls       list all available sources
+   -silent   show only subdomains in output
+   -version  show version of subfinder
+   -v        show verbose output
+   -nc, -no-color      disable color in output
+
+OPTIMIZATION:
+   -timeout int   seconds to wait before timing out (default 30)
+   -max-time int  minutes to wait for enumeration results (default 10)
+```
 
 # Installation
 
-Subfinder requires **go1.17** to install successfully. Run the following command to get the repo -
+Subfinder requires **go1.17** to install successfully. Run the following command to install the latest version:
 
 ```sh
 go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
@@ -95,24 +114,15 @@ go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 
 Subfinder will work after using the installation instructions however to configure Subfinder to work with certain services, you will need to have setup API keys. The following services do not work without an API key:
 
-[Binaryedge](https://binaryedge.io), [C99](https://api.c99.nl/), [Certspotter](https://sslmate.com/certspotter/api/), [Chinaz](http://my.chinaz.com/ChinazAPI/DataCenter/MyDataApi), [Censys](https://censys.io), [Chaos](https://chaos.projectdiscovery.io), [DnsDB](https://api.dnsdb.info), [Fofa](https://fofa.so/static_pages/api_help), [Github](https://github.com), [Intelx](https://intelx.io), [Passivetotal](http://passivetotal.org), [Recon.dev](https://recon.dev), [Robtex](https://www.robtex.com/api/), [SecurityTrails](http://securitytrails.com), [Shodan](https://shodan.io), [Spyse](https://spyse.com), [Threatbook](https://x.threatbook.cn/en), [Virustotal](https://www.virustotal.com), [Zoomeye](https://www.zoomeye.org)
+[BeVigil](https://bevigil.com/osint-api), [Binaryedge](https://binaryedge.io), [C99](https://api.c99.nl/), [Certspotter](https://sslmate.com/certspotter/api/), [Chinaz](http://my.chinaz.com/ChinazAPI/DataCenter/MyDataApi), [Censys](https://censys.io), [Chaos](https://chaos.projectdiscovery.io), [DnsDB](https://api.dnsdb.info), [Fofa](https://fofa.info/static_pages/api_help), [Github](https://github.com), [Intelx](https://intelx.io), [Passivetotal](http://passivetotal.org), [Robtex](https://www.robtex.com/api/), [SecurityTrails](http://securitytrails.com), [Shodan](https://shodan.io), [Threatbook](https://x.threatbook.cn/en), [Virustotal](https://www.virustotal.com), [WhoisXML API](https://whoisxmlapi.com/), [Zoomeye](https://www.zoomeye.org)
 
-Theses values are stored in the `$HOME/.config/subfinder/config.yaml` file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys can be specified for each of these services from which one of them will be used for enumeration.
+These values are stored in the `$HOME/.config/subfinder/provider-config.yaml` file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys can be specified for each of these services from which one of them will be used for enumeration.
 
 For sources that require multiple keys, namely `Censys`, `Passivetotal`, they can be added by separating them via a colon (:).
 
-An example config file -
+An example provider config file -
 
 ```yaml
-resolvers:
-  - 1.1.1.1
-  - 1.0.0.1
-sources:
-  - binaryedge
-  - bufferover
-  - censys
-  - passivetotal
-  - sitedossier
 binaryedge:
   - 0bf8919b-aab9-42e4-9574-d3b639324597
   - ac244e2f-b635-4581-878a-33f4e79a2c13
@@ -125,15 +135,15 @@ securitytrails: []
 shodan:
   - AAAAClP1bJJSRMEYJazgwhJKrggRwKA
 github:
-  - d23a554bbc1aabb208c9acfbd2dd41ce7fc9db39
-  - asdsd54bbc1aabb208c9acfbd2dd41ce7fc9db39
+  - ghp_lkyJGU3jv1xmwk4SDXavrLDJ4dl2pSJMzj4X
+  - ghp_gkUuhkIYdQPj13ifH4KA3cXRn8JD2lqir2d4
 ```
 
 # Running Subfinder
 
 To run the tool on a target, just use the following command.
 
-```sh
+```console
 subfinder -d hackerone.com
 
                __    _____           __         
@@ -174,7 +184,7 @@ events.hackerone.com
 
 The subdomains discovered can be piped to other tools too. For example, you can pipe the subdomains discovered by subfinder to httpx [httpx](https://github.com/projectdiscovery/httpx) which will then find running http servers on the host.
 
-```sh
+```console
 echo hackerone.com | subfinder -silent | httpx -silent
 
 http://hackerone.com
@@ -183,31 +193,6 @@ http://docs.hackerone.com
 http://api.hackerone.com
 https://docs.hackerone.com
 http://mta-sts.managed.hackerone.com
-```
-
-If your enterprise uses source routing to choose network output, or your computer has many public network interfaces (eg: public Wi-Fi + 4G connection + Ethernet Wire + VPN), you might want to choose your output network by binding IP source. In this case, you can use `-b` option.
-In the example below, we have 3 network interfaces able to communicate to the Internet through 3 different outputs. Each output is chosen by binding one source IP with `-b` option.
-
-```console
-ip addr
-
-[...]
-3: wlp3s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
-    link/ether e8:b1:fc:50:90:a0 brd ff:ff:ff:ff:ff:ff
-    inet 192.168.1.87/24 brd 192.168.1.255 scope global dynamic noprefixroute wlp3s0
-       valid_lft 62538sec preferred_lft 62538sec
-4: tun0: <POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UNKNOWN group default qlen 100
-    link/none
-    inet 192.168.254.70 peer 192.168.254.69/32 scope global tun0
-       valid_lft forever preferred_lft forever
-5: enx0c5b8f279a64: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
-    link/ether 0c:5b:8f:a5:63:25 brd ff:ff:ff:ff:ff:ff
-    inet 192.168.8.100/24 brd 192.168.8.255 scope global dynamic noprefixroute enx0c5b8f279a64
-       valid_lft 86396sec preferred_lft 86396sec
-```
-
-```sh
-subfinder -d hackerone.com -b 192.168.1.87
 ```
 
 <table>
@@ -225,7 +210,7 @@ docker pull projectdiscovery/subfinder:latest
 Running subfinder using docker image:
 
 ```sh
-docker -t projectdiscovery/subfinder:latest -d hackerone.com
+docker run projectdiscovery/subfinder:latest -d hackerone.com
 ```
 
 Running subfinder using docker image with local config file:
@@ -262,23 +247,16 @@ import (
 )
 
 func main() {
-	config := runner.ConfigFile{
-		// Use the default list of resolvers by marshaling it to the config
-		Resolvers: resolve.DefaultResolvers,
-		// Use the default list of passive sources
-		Sources: passive.DefaultSources,
-		// Use the default list of all passive sources
-		AllSources: passive.DefaultAllSources,
-		// Use the default list of recursive sources
-		Recursive: passive.DefaultRecursiveSources,
-	}
-
 	runnerInstance, err := runner.NewRunner(&runner.Options{
 		Threads:            10, // Thread controls the number of threads to use for active enumerations
 		Timeout:            30, // Timeout is the seconds to wait for sources to respond
 		MaxEnumerationTime: 10, // MaxEnumerationTime is the maximum amount of time in mins to wait for enumeration
-		YAMLConfig:         config,
-	})
+		Resolvers:          resolve.DefaultResolvers, // Use the default list of resolvers by marshaling it to the config
+		Sources:            passive.DefaultSources, // Use the default list of passive sources
+		AllSources:         passive.DefaultAllSources, // Use the default list of all passive sources
+		Recursive:          passive.DefaultRecursiveSources,	// Use the default list of recursive sources
+		Providers:          &runner.Providers{}, // Use empty api keys for all providers
+  })
 
 	buf := bytes.Buffer{}
 	err = runnerInstance.EnumerateSingleDomain(context.Background(), "projectdiscovery.io", []io.Writer{&buf})
@@ -305,6 +283,6 @@ func main() {
 
 # License
 
-subfinder is made with 🖤 by the [projectdiscovery](https://projectdiscovery.io) team. Community contributions have made the project what it is. See the **[Thanks.md](https://github.com/projectdiscovery/subfinder/blob/master/THANKS.md)** file for more details.
+`subfinder` is made with 🖤 by the [projectdiscovery](https://projectdiscovery.io) team. Community contributions have made the project what it is. See the **[Thanks.md](https://github.com/projectdiscovery/subfinder/blob/master/THANKS.md)** file for more details.
 
 Read the disclaimer for usage at [DISCLAIMER.md](https://github.com/projectdiscovery/subfinder/blob/master/DISCLAIMER.md) and [contact us](mailto:contact@projectdiscovery.io) for any API removal.

@@ -3,12 +3,17 @@ GOCMD=go
 GOBUILD=$(GOCMD) build
 GOMOD=$(GOCMD) mod
 GOTEST=$(GOCMD) test
-GOGET=$(GOCMD) get
+GOFLAGS := -v 
+LDFLAGS := -s -w
+
+ifneq ($(shell go env GOOS),darwin)
+LDFLAGS := -extldflags "-static"
+endif
     
 all: build
 build:
-		$(GOBUILD) -v -ldflags="-extldflags=-static" -o "subfinder" cmd/subfinder/main.go
+	$(GOBUILD) $(GOFLAGS) -ldflags '$(LDFLAGS)' -o "subfinder" cmd/subfinder/main.go
 test: 
-		$(GOTEST) -v ./...
+	$(GOTEST) $(GOFLAGS) ./...
 tidy:
-		$(GOMOD) tidy
+	$(GOMOD) tidy

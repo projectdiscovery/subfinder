@@ -15,9 +15,10 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 
+	"github.com/tomnomnom/linkheader"
+
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
-	"github.com/tomnomnom/linkheader"
 )
 
 type textMatch struct {
@@ -36,7 +37,9 @@ type response struct {
 }
 
 // Source is the passive scraping agent
-type Source struct{}
+type Source struct {
+	apiKeys []string
+}
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
@@ -45,11 +48,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		if len(session.Keys.GitHub) == 0 {
+		if len(s.apiKeys) == 0 {
+			gologger.Debug().Msgf("Cannot use the '%s' source because there was no key defined for it.", s.Name())
 			return
 		}
 
-		tokens := NewTokenManager(session.Keys.GitHub)
+		tokens := NewTokenManager(s.apiKeys)
 
 		searchURL := fmt.Sprintf("https://api.github.com/search/code?per_page=100&q=%s&sort=created&order=asc", domain)
 		s.enumerate(ctx, searchURL, domainRegexp(domain), tokens, session, results)
@@ -189,4 +193,20 @@ func domainRegexp(domain string) *regexp.Regexp {
 // Name returns the name of the source
 func (s *Source) Name() string {
 	return "github"
+}
+
+func (s *Source) IsDefault() bool {
+	return false
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return false
+}
+
+func (s *Source) NeedsKey() bool {
+	return true
+}
+
+func (s *Source) AddApiKeys(keys []string) {
+	s.apiKeys = keys
 }

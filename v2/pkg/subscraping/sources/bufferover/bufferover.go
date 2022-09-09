@@ -21,25 +21,31 @@ type response struct {
 }
 
 // Source is the passive scraping agent
-type Source struct{}
+type Source struct {
+	apiKeys []string
+}
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
-		// Run enumeration on subdomain dataset for historical SONAR datasets
-		s.getData(ctx, fmt.Sprintf("https://dns.bufferover.run/dns?q=.%s", domain), session, results)
-		s.getData(ctx, fmt.Sprintf("https://tls.bufferover.run/dns?q=.%s", domain), session, results)
+		defer close(results)
 
-		close(results)
+		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		if randomApiKey == "" {
+			return
+		}
+
+		s.getData(ctx, fmt.Sprintf("https://tls.bufferover.run/dns?q=.%s", domain), randomApiKey, session, results)
 	}()
 
 	return results
 }
 
-func (s *Source) getData(ctx context.Context, sourceURL string, session *subscraping.Session, results chan subscraping.Result) {
-	resp, err := session.SimpleGet(ctx, sourceURL)
+func (s *Source) getData(ctx context.Context, sourceURL string, apiKey string, session *subscraping.Session, results chan subscraping.Result) {
+	resp, err := session.Get(ctx, sourceURL, "", map[string]string{"x-api-key": apiKey})
+
 	if err != nil && resp == nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		session.DiscardHTTPResponse(resp)
@@ -82,4 +88,20 @@ func (s *Source) getData(ctx context.Context, sourceURL string, session *subscra
 // Name returns the name of the source
 func (s *Source) Name() string {
 	return "bufferover"
+}
+
+func (s *Source) IsDefault() bool {
+	return true
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return true
+}
+
+func (s *Source) NeedsKey() bool {
+	return true
+}
+
+func (s *Source) AddApiKeys(keys []string) {
+	s.apiKeys = keys
 }

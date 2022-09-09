@@ -1,9 +1,9 @@
-// Package fofa logic
-package fofa
+// Package quake logic
+package quake
 
 import (
+	"bytes"
 	"context"
-	"encoding/base64"
 	"fmt"
 	"strings"
 
@@ -12,45 +12,49 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-type fofaResponse struct {
-	Error   bool     `json:"error"`
-	ErrMsg  string   `json:"errmsg"`
-	Size    int      `json:"size"`
-	Results []string `json:"results"`
+type quakeResults struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    []struct {
+		Service struct {
+			HTTP struct {
+				Host string `json:"host"`
+			} `json:"http"`
+		}
+	} `json:"data"`
+	Meta struct {
+		Pagination struct {
+			Total int `json:"total"`
+		} `json:"pagination"`
+	} `json:"meta"`
 }
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys []apiKey
-}
-
-type apiKey struct {
-	username string
-	secret   string
+	apiKeys []string
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-
 	go func() {
 		defer close(results)
 
 		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
-		if randomApiKey.username == "" || randomApiKey.secret == "" {
+		if randomApiKey == "" {
 			return
 		}
 
-		// fofa api doc https://fofa.info/static_pages/api_help
-		qbase64 := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("domain=\"%s\"", domain)))
-		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://fofa.info/api/v1/search/all?full=true&fields=host&page=1&size=10000&email=%s&key=%s&qbase64=%s", randomApiKey.username, randomApiKey.secret, qbase64))
-		if err != nil && resp == nil {
+		// quake api doc https://quake.360.cn/quake/#/help
+		var requestBody = []byte(fmt.Sprintf(`{"query":"domain: *.%s", "start":0, "size":500}`, domain))
+		resp, err := session.Post(ctx, "https://quake.360.cn/api/v3/search/quake_service", "", map[string]string{"Content-Type": "application/json", "X-QuakeToken": randomApiKey}, bytes.NewReader(requestBody))
+		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
 
-		var response fofaResponse
+		var response quakeResults
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -59,15 +63,16 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 		resp.Body.Close()
 
-		if response.Error {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.ErrMsg)}
+		if response.Code != 0 {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.Message)}
 			return
 		}
 
-		if response.Size > 0 {
-			for _, subdomain := range response.Results {
-				if strings.HasPrefix(strings.ToLower(subdomain), "http://") || strings.HasPrefix(strings.ToLower(subdomain), "https://") {
-					subdomain = subdomain[strings.Index(subdomain, "//")+2:]
+		if response.Meta.Pagination.Total > 0 {
+			for _, quakeDomain := range response.Data {
+				subdomain := quakeDomain.Service.HTTP.Host
+				if strings.ContainsAny(subdomain, "暂无权限") {
+					subdomain = ""
 				}
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 			}
@@ -79,7 +84,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 // Name returns the name of the source
 func (s *Source) Name() string {
-	return "fofa"
+	return "quake"
 }
 
 func (s *Source) IsDefault() bool {
@@ -95,7 +100,5 @@ func (s *Source) NeedsKey() bool {
 }
 
 func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = subscraping.CreateApiKeys(keys, func(k, v string) apiKey {
-		return apiKey{k, v}
-	})
+	s.apiKeys = keys
 }

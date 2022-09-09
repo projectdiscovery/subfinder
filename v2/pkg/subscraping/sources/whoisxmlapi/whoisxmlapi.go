@@ -1,5 +1,5 @@
-// Package virustotal logic
-package virustotal
+// Package whoisxmlapi logic
+package whoisxmlapi
 
 import (
 	"context"
@@ -11,7 +11,19 @@ import (
 )
 
 type response struct {
-	Subdomains []string `json:"subdomains"`
+	Search string `json:"search"`
+	Result Result `json:"result"`
+}
+
+type Result struct {
+	Count   int      `json:"count"`
+	Records []Record `json:"records"`
+}
+
+type Record struct {
+	Domain    string `json:"domain"`
+	FirstSeen int    `json:"firstSeen"`
+	LastSeen  int    `json:"lastSeen"`
 }
 
 // Source is the passive scraping agent
@@ -31,7 +43,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://www.virustotal.com/vtapi/v2/domain/report?apikey=%s&domain=%s", randomApiKey, domain))
+		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://subdomains.whoisxmlapi.com/api/v1?apiKey=%s&domainName=%s", randomApiKey, domain))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
@@ -48,8 +60,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		resp.Body.Close()
 
-		for _, subdomain := range data.Subdomains {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+		for _, record := range data.Result.Records {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Domain}
 		}
 	}()
 
@@ -58,7 +70,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 // Name returns the name of the source
 func (s *Source) Name() string {
-	return "virustotal"
+	return "whoisxmlapi"
 }
 
 func (s *Source) IsDefault() bool {
@@ -66,7 +78,7 @@ func (s *Source) IsDefault() bool {
 }
 
 func (s *Source) HasRecursiveSupport() bool {
-	return true
+	return false
 }
 
 func (s *Source) NeedsKey() bool {

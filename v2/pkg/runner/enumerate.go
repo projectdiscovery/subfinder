@@ -1,13 +1,13 @@
 package runner
 
 import (
-	"context"
 	"io"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/hako/durafmt"
+
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -16,12 +16,8 @@ import (
 const maxNumCount = 2
 
 // EnumerateSingleDomain performs subdomain enumeration against a single domain
-func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain string, outputs []io.Writer) error {
-	gologger.Info().Msgf("Enumerating subdomains for %s\n", domain)
-
-	// Get the API keys for sources from the configuration
-	// and also create the active resolving engine for the domain.
-	keys := r.options.YAMLConfig.GetKeys()
+func (r *Runner) EnumerateSingleDomain(domain string, writers []io.Writer) error {
+	gologger.Info().Msgf("Enumerating subdomains for '%s'\n", domain)
 
 	// Check if the user has asked to remove wildcards explicitly.
 	// If yes, create the resolution pool and get the wildcards for the current domain
@@ -31,13 +27,13 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain string, outpu
 		err := resolutionPool.InitWildcards(domain)
 		if err != nil {
 			// Log the error but don't quit.
-			gologger.Warning().Msgf("Could not get wildcards for domain %s: %s\n", domain, err)
+			gologger.Warning().Msgf("Could not get wildcards for domain '%s': %s\n", domain, err)
 		}
 	}
 
 	// Run the passive subdomain enumeration
 	now := time.Now()
-	passiveResults := r.passiveAgent.EnumerateSubdomains(domain, &keys, r.options.Proxy, r.options.RateLimit, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute, r.options.LocalIP)
+	passiveResults := r.passiveAgent.EnumerateSubdomains(domain, r.options.Proxy, r.options.RateLimit, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
@@ -50,7 +46,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain string, outpu
 		for result := range passiveResults {
 			switch result.Type {
 			case subscraping.Error:
-				gologger.Warning().Msgf("Could not run source %s: %s\n", result.Source, result.Error)
+				gologger.Warning().Msgf("Could not run source '%s': %s\n", result.Source, result.Error)
 			case subscraping.Subdomain:
 				// Validate the subdomain found and remove wildcards from
 				if !strings.HasSuffix(result.Value, "."+domain) {
@@ -58,32 +54,33 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain string, outpu
 				}
 				subdomain := strings.ReplaceAll(strings.ToLower(result.Value), "*.", "")
 
-				if _, ok := uniqueMap[subdomain]; !ok {
-					sourceMap[subdomain] = make(map[string]struct{})
-				}
+				if matchSubdomain := r.filterAndMatchSubdomain(subdomain); matchSubdomain {
+					if _, ok := uniqueMap[subdomain]; !ok {
+						sourceMap[subdomain] = make(map[string]struct{})
+					}
 
-				// Log the verbose message about the found subdomain per source
-				if _, ok := sourceMap[subdomain][result.Source]; !ok {
-					gologger.Verbose().Label(result.Source).Msg(subdomain)
-				}
+					// Log the verbose message about the found subdomain per source
+					if _, ok := sourceMap[subdomain][result.Source]; !ok {
+						gologger.Verbose().Label(result.Source).Msg(subdomain)
+					}
 
-				sourceMap[subdomain][result.Source] = struct{}{}
+					sourceMap[subdomain][result.Source] = struct{}{}
 
-				// Check if the subdomain is a duplicate. If not,
-				// send the subdomain for resolution.
-				if _, ok := uniqueMap[subdomain]; ok {
-					continue
-				}
+					// Check if the subdomain is a duplicate. If not,
+					// send the subdomain for resolution.
+					if _, ok := uniqueMap[subdomain]; ok {
+						continue
+					}
 
-				hostEntry := resolve.HostEntry{Host: subdomain, Source: result.Source}
+					hostEntry := resolve.HostEntry{Host: subdomain, Source: result.Source}
 
-				uniqueMap[subdomain] = hostEntry
-
-				// If the user asked to remove wildcard then send on the resolve
-				// queue. Otherwise, if mode is not verbose print the results on
-				// the screen as they are discovered.
-				if r.options.RemoveWildcard {
-					resolutionPool.Tasks <- hostEntry
+					uniqueMap[subdomain] = hostEntry
+					// If the user asked to remove wildcard then send on the resolve
+					// queue. Otherwise, if mode is not verbose print the results on
+					// the screen as they are discovered.
+					if r.options.RemoveWildcard {
+						resolutionPool.Tasks <- hostEntry
+					}
 				}
 			}
 		}
@@ -102,7 +99,7 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain string, outpu
 		for result := range resolutionPool.Results {
 			switch result.Type {
 			case resolve.Error:
-				gologger.Warning().Msgf("Could not resolve host: %s\n", result.Error)
+				gologger.Warning().Msgf("Could not resolve host: '%s'\n", result.Error)
 			case resolve.Subdomain:
 				// Add the found subdomain to a map.
 				if _, ok := foundResults[result.Host]; !ok {
@@ -112,38 +109,58 @@ func (r *Runner) EnumerateSingleDomain(ctx context.Context, domain string, outpu
 		}
 	}
 	wg.Wait()
-
-	outputter := NewOutputter(r.options.JSON)
-
+	outputWriter := NewOutputWriter(r.options.JSON)
 	// Now output all results in output writers
 	var err error
-	for _, w := range outputs {
+	for _, writer := range writers {
 		if r.options.HostIP {
-			err = outputter.WriteHostIP(foundResults, w)
+			err = outputWriter.WriteHostIP(domain, foundResults, writer)
 		} else {
 			if r.options.RemoveWildcard {
-				err = outputter.WriteHostNoWildcard(foundResults, w)
+				err = outputWriter.WriteHostNoWildcard(domain, foundResults, writer)
 			} else {
 				if r.options.CaptureSources {
-					err = outputter.WriteSourceHost(sourceMap, w)
+					err = outputWriter.WriteSourceHost(domain, sourceMap, writer)
 				} else {
-					err = outputter.WriteHost(uniqueMap, w)
+					err = outputWriter.WriteHost(domain, uniqueMap, writer)
 				}
 			}
 		}
 		if err != nil {
-			gologger.Error().Msgf("Could not verbose results for %s: %s\n", domain, err)
+			gologger.Error().Msgf("Could not write results for '%s': %s\n", domain, err)
 			return err
 		}
 	}
 
 	// Show found subdomain count in any case.
 	duration := durafmt.Parse(time.Since(now)).LimitFirstN(maxNumCount).String()
+	var numberOfSubDomains int
 	if r.options.RemoveWildcard {
-		gologger.Info().Msgf("Found %d subdomains for %s in %s\n", len(foundResults), domain, duration)
+		numberOfSubDomains = len(foundResults)
 	} else {
-		gologger.Info().Msgf("Found %d subdomains for %s in %s\n", len(uniqueMap), domain, duration)
+		numberOfSubDomains = len(uniqueMap)
 	}
 
+	gologger.Info().Msgf("Found %d subdomains for '%s' in %s\n", numberOfSubDomains, domain, duration)
+
 	return nil
+}
+
+func (r *Runner) filterAndMatchSubdomain(subdomain string) bool {
+	if r.options.filterRegexes != nil {
+		for _, filter := range r.options.filterRegexes {
+			if m := filter.MatchString(subdomain); m {
+				return false
+			}
+		}
+	}
+	if r.options.matchRegexes != nil {
+		for _, match := range r.options.matchRegexes {
+			if m := match.MatchString(subdomain); m {
+				return true
+			}
+		}
+		return false
+	}
+	return true
 }

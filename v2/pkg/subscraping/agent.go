@@ -1,43 +1,37 @@
 package subscraping
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"net/url"
 	"time"
 
 	"github.com/corpix/uarand"
-	"github.com/projectdiscovery/gologger"
 	"go.uber.org/ratelimit"
+
+	"github.com/projectdiscovery/gologger"
 )
 
 // NewSession creates a new session object for a domain
-func NewSession(domain string, keys *Keys, proxy string, rateLimit, timeout int, localIP net.IP) (*Session, error) {
-	dialer := &net.Dialer{
-		LocalAddr: &net.TCPAddr{
-			IP: localIP,
-		},
-	}
-
+func NewSession(domain string, proxy string, rateLimit, timeout int) (*Session, error) {
 	Transport := &http.Transport{
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 100,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
-		DialContext: dialer.DialContext,
 	}
 
 	// Add proxy
 	if proxy != "" {
 		proxyURL, _ := url.Parse(proxy)
 		if proxyURL == nil {
-			// Log warning but continue anyways
-			gologger.Warning().Msgf("Invalid proxy '%s' provided", proxy)
+			// Log warning but continue anyway
+			gologger.Warning().Msgf("Invalid proxy provided: '%s'", proxy)
 		} else {
 			Transport.Proxy = http.ProxyURL(proxyURL)
 		}
@@ -48,10 +42,7 @@ func NewSession(domain string, keys *Keys, proxy string, rateLimit, timeout int,
 		Timeout:   time.Duration(timeout) * time.Second,
 	}
 
-	session := &Session{
-		Client: client,
-		Keys:   keys,
-	}
+	session := &Session{Client: client}
 
 	// Initiate rate limit instance
 	if rateLimit > 0 {
@@ -129,14 +120,20 @@ func (s *Session) DiscardHTTPResponse(response *http.Response) {
 }
 
 func httpRequestWrapper(client *http.Client, request *http.Request) (*http.Response, error) {
-	resp, err := client.Do(request)
+	response, err := client.Do(request)
 	if err != nil {
 		return nil, err
 	}
 
-	if resp.StatusCode != http.StatusOK {
+	if response.StatusCode != http.StatusOK {
 		requestURL, _ := url.QueryUnescape(request.URL.String())
-		return resp, fmt.Errorf("unexpected status code %d received from %s", resp.StatusCode, requestURL)
+
+		gologger.Debug().MsgFunc(func() string {
+			buffer := new(bytes.Buffer)
+			_, _ = buffer.ReadFrom(response.Body)
+			return fmt.Sprintf("Response for failed request against '%s':\n%s", requestURL, buffer.String())
+		})
+		return response, fmt.Errorf("unexpected status code %d received from '%s'", response.StatusCode, requestURL)
 	}
-	return resp, nil
+	return response, nil
 }
