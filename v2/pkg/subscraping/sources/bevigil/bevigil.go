@@ -31,7 +31,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		getUrl := fmt.Sprintf("https://osint.bevigil.com/api/%s/subdomains/", domain)
 
-		resp, err := session.Get(ctx, getUrl, "", map[string]string{"X-Access-Token": randomApiKey})
+		resp, err := session.Get(ctx, getUrl, "", map[string]string{"X-Access-Token": randomApiKey, "User-Agent": "subfinder"})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
