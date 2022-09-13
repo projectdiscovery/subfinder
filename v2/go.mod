@@ -10,7 +10,7 @@ require (
 	github.com/projectdiscovery/chaos-client v0.3.0
 	github.com/projectdiscovery/dnsx v1.1.0
 	github.com/projectdiscovery/fdmax v0.0.3
-	github.com/projectdiscovery/fileutil v0.0.0-20220625080234-94e882ca56cb
+	github.com/projectdiscovery/fileutil v0.0.0-20220705195237-01becc2a8963
 	github.com/projectdiscovery/gologger v1.1.5-0.20220817095646-8663411b1b0b
 	github.com/rs/xid v1.4.0
 	github.com/stretchr/testify v1.8.0
@@ -27,7 +27,7 @@ require (
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/mholt/archiver v3.1.1+incompatible // indirect
-	github.com/microcosm-cc/bluemonday v1.0.18 // indirect
+	github.com/microcosm-cc/bluemonday v1.0.20 // indirect
 	github.com/nwaples/rardecode v1.1.0 // indirect
 	github.com/pierrec/lz4 v2.6.0+incompatible // indirect
 	github.com/projectdiscovery/blackrock v0.0.0-20210903102120-5a9d2412d21d // indirect
@@ -55,9 +55,9 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/projectdiscovery/goflags v0.0.9
+	github.com/projectdiscovery/goflags v0.1.0
 	github.com/projectdiscovery/retryabledns v1.0.13 // indirect
-	github.com/projectdiscovery/stringsutil v0.0.0-20220612082425-0037ce9f89f3 // indirect
-	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e // indirect
-	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
+	github.com/projectdiscovery/stringsutil v0.0.1 // indirect
+	golang.org/x/net v0.0.0-20220909164309-bea034e7d591 // indirect
+	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
 )
