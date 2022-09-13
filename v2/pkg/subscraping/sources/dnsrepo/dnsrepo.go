@@ -2,26 +2,34 @@ package dnsrepo
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"regexp"
 	"strings"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
 // Source is the passive scraping agent
-type Source struct{}
+type Source struct {
+	apiKeys []string
+}
 
-var reNext = regexp.MustCompile(`<a href=[\"\'](\/\?domain=)[\"\']*.*>(<]+|.*?)?<\/a>`)
-var reSubNext = regexp.MustCompile(`[\"\'](\/\?domain=)\w+.*[\"\']`)
+type DnsRepoResponse []struct {
+	Domain string
+}
 
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
-		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://dnsrepo.noc.org/?search=%s", domain))
+
+		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		if randomApiKey == "" {
+			return
+		}
+		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://dnsrepo.noc.org/api/?apikey=%s&search=%s", randomApiKey, domain))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
@@ -34,13 +42,15 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 		resp.Body.Close()
-		src := string(responseData)
-		for _, match := range reNext.FindAllStringSubmatch(src, len(src)) {
-			for _, subMatch := range reSubNext.FindAllStringSubmatch(match[0], len(match[0])) {
-				splt := strings.Split(subMatch[0], "=")[1]
-				splt = strings.Trim(splt, `".`)
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: splt}
-			}
+		var result DnsRepoResponse
+		err = json.Unmarshal(responseData, &result)
+		if err != nil {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			session.DiscardHTTPResponse(resp)
+			return
+		}
+		for _, sub := range result {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: strings.TrimSuffix(sub.Domain, ".")}
 		}
 
 	}()
@@ -50,4 +60,20 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 // Name returns the name of the source
 func (s *Source) Name() string {
 	return "dnsrepo"
+}
+
+func (s *Source) IsDefault() bool {
+	return true
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return false
+}
+
+func (s *Source) NeedsKey() bool {
+	return true
+}
+
+func (s *Source) AddApiKeys(keys []string) {
+	s.apiKeys = keys
 }

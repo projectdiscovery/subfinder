@@ -45,6 +45,8 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/whoisxmlapi"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeye"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeyeapi"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsrepo"
+
 )
 
 var AllSources = [...]subscraping.Source{
@@ -85,6 +87,7 @@ var AllSources = [...]subscraping.Source{
 	&whoisxmlapi.Source{},
 	&zoomeye.Source{},
 	&zoomeyeapi.Source{},
+	&dnsrepo.Source{},
 }
 
 var NameSourceMap = make(map[string]subscraping.Source, len(AllSources))
