@@ -61,12 +61,6 @@ func execute(source string, testCase testutils.TestCase) (error, string) {
 	return nil, ""
 }
 
-func expectResultsEqualCount(results []string, expectedNumber int) error {
-	if len(results) != expectedNumber {
-		return fmt.Errorf("incorrect number of results: %d (expected) vs %d (actual)", expectedNumber, len(results))
-	}
-	return nil
-}
 func expectResultsGreaterThanCount(results []string, expectedNumber int) error {
 	if len(results) > expectedNumber {
 		return nil
@@ -89,9 +83,4 @@ func toMap(slice []string) map[string]struct{} {
 		}
 	}
 	return result
-}
-
-func contains(input map[string]struct{}, value string) bool {
-	_, ok := input[value]
-	return ok
 }

@@ -21,7 +21,10 @@ func (h dnsrepoTestcases) Execute() error {
 		return err
 	}
 	defer os.RemoveAll(file.Name())
-	file.WriteString(dnsToken)
+	_, err = file.WriteString(dnsToken)
+	if err != nil {
+		return err
+	}
 	results, err := testutils.RunSubfinderAndGetResults(debug, "hackerone.com", "-s", "dnsrepo", "-provider-config", file.Name())
 	if err != nil {
 		return err
