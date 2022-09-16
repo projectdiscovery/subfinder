@@ -28,12 +28,12 @@ jobs:
         run: go test ./...
         working-directory: v2/
 
-      # Todo
-      # - name: Integration Tests
-      #   env:
-      #     GH_ACTION: true
-      #   run: bash run.sh
-      #   working-directory: integration_tests/
+      - name: Integration Tests
+        env:
+          GH_ACTION: true
+          DNSREPO_API_KEY: ${{secrets.DNSREPO_API}}
+        run: bash run.sh
+        working-directory: v2/cmd/integration-test/
 
       - name: Race Condition Tests
         run: go build -race ./...
