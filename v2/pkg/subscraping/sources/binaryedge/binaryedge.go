@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	jsoniter "github.com/json-iterator/go"
+
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
@@ -34,7 +35,9 @@ type subdomainsResponse struct {
 }
 
 // Source is the passive scraping agent
-type Source struct{}
+type Source struct {
+	apiKeys []string
+}
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
@@ -43,18 +46,19 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		if session.Keys.Binaryedge == "" {
+		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		if randomApiKey == "" {
 			return
 		}
 
 		var baseURL string
 
-		authHeader := map[string]string{"X-Key": session.Keys.Binaryedge}
+		authHeader := map[string]string{"X-Key": randomApiKey}
 
 		if isV2(ctx, session, authHeader) {
 			baseURL = fmt.Sprintf(baseAPIURLFmt, v2, domain)
 		} else {
-			authHeader = map[string]string{"X-Token": session.Keys.Binaryedge}
+			authHeader = map[string]string{"X-Token": randomApiKey}
 			v1URLWithPageSize, err := addURLParam(fmt.Sprintf(baseAPIURLFmt, v1, domain), v1PageSizeParam, strconv.Itoa(maxV1PageSize))
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -117,6 +121,22 @@ func (s *Source) enumerate(ctx context.Context, session *subscraping.Session, ba
 // Name returns the name of the source
 func (s *Source) Name() string {
 	return "binaryedge"
+}
+
+func (s *Source) IsDefault() bool {
+	return false
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return true
+}
+
+func (s *Source) NeedsKey() bool {
+	return true
+}
+
+func (s *Source) AddApiKeys(keys []string) {
+	s.apiKeys = keys
 }
 
 func isV2(ctx context.Context, session *subscraping.Session, authHeader map[string]string) bool {

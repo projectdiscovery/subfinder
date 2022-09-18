@@ -10,20 +10,23 @@ import (
 )
 
 // Source is the passive scraping agent
-type Source struct{}
+type Source struct {
+	apiKeys []string
+}
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (s *Source) Run(_ context.Context, domain string, _ *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		if session.Keys.Chaos == "" {
+		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		if randomApiKey == "" {
 			return
 		}
 
-		chaosClient := chaos.New(session.Keys.Chaos)
+		chaosClient := chaos.New(randomApiKey)
 		for result := range chaosClient.GetSubdomains(&chaos.SubdomainsRequest{
 			Domain: domain,
 		}) {
@@ -41,4 +44,20 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 // Name returns the name of the source
 func (s *Source) Name() string {
 	return "chaos"
+}
+
+func (s *Source) IsDefault() bool {
+	return true
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return false
+}
+
+func (s *Source) NeedsKey() bool {
+	return true
+}
+
+func (s *Source) AddApiKeys(keys []string) {
+	s.apiKeys = keys
 }

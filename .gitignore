@@ -1,6 +1,9 @@
 .DS_Store
 cmd/subfinder/subfinder
+# subfinder binary when built with `go build`
 v2/cmd/subfinder/subfinder
+# subfinder binary when built with `make`
+v2/subfinder
 vendor/
 .idea
 .devcontainer

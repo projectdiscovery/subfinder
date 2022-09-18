@@ -11,29 +11,11 @@ import (
 
 // initializePassiveEngine creates the passive engine and loads sources etc
 func (r *Runner) initializePassiveEngine() {
-	var sources, exclusions []string
-
-	if len(r.options.ExcludeSources) > 0 {
-		exclusions = r.options.ExcludeSources
-	}
-
-	switch {
-	// Use all sources if asked by the user
-	case r.options.All:
-		sources = append(sources, r.options.AllSources...)
-	// If only recursive sources are wanted, use them only.
-	case r.options.OnlyRecursive:
-		sources = append(sources, r.options.Recursive...)
-	// Otherwise, use the CLI/YAML sources
-	default:
-		sources = append(sources, r.options.Sources...)
-	}
-
-	r.passiveAgent = passive.New(sources, exclusions)
+	r.passiveAgent = passive.New(r.options.Sources, r.options.ExcludeSources, r.options.All, r.options.OnlyRecursive)
 }
 
-// initializeActiveEngine creates the resolver used to resolve the found subdomains
-func (r *Runner) initializeActiveEngine() error {
+// initializeResolver creates the resolver used to resolve the found subdomains
+func (r *Runner) initializeResolver() error {
 	var resolvers []string
 
 	// If the file has been provided, read resolvers from the file

@@ -10,6 +10,7 @@ import (
 
 	// postgres driver
 	_ "github.com/lib/pq"
+
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
@@ -103,4 +104,20 @@ func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, sessi
 // Name returns the name of the source
 func (s *Source) Name() string {
 	return "crtsh"
+}
+
+func (s *Source) IsDefault() bool {
+	return true
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return true
+}
+
+func (s *Source) NeedsKey() bool {
+	return false
+}
+
+func (s *Source) AddApiKeys(_ []string) {
+	// no key needed
 }

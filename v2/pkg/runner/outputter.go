@@ -9,11 +9,12 @@ import (
 	"strings"
 
 	jsoniter "github.com/json-iterator/go"
+
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
 )
 
-// OutPutter outputs content to writers.
-type OutPutter struct {
+// OutputWriter outputs content to writers.
+type OutputWriter struct {
 	JSON bool
 }
 
@@ -36,12 +37,12 @@ type jsonSourcesResult struct {
 	Sources []string `json:"sources"`
 }
 
-// NewOutputter creates a new Outputter
-func NewOutputter(json bool) *OutPutter {
-	return &OutPutter{JSON: json}
+// NewOutputWriter creates a new OutputWriter
+func NewOutputWriter(json bool) *OutputWriter {
+	return &OutputWriter{JSON: json}
 }
 
-func (o *OutPutter) createFile(filename string, appendtoFile bool) (*os.File, error) {
+func (o *OutputWriter) createFile(filename string, appendToFile bool) (*os.File, error) {
 	if filename == "" {
 		return nil, errors.New("empty filename")
 	}
@@ -59,7 +60,7 @@ func (o *OutPutter) createFile(filename string, appendtoFile bool) (*os.File, er
 
 	var file *os.File
 	var err error
-	if appendtoFile {
+	if appendToFile {
 		file, err = os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	} else {
 		file, err = os.Create(filename)
@@ -72,7 +73,7 @@ func (o *OutPutter) createFile(filename string, appendtoFile bool) (*os.File, er
 }
 
 // WriteHostIP writes the output list of subdomain to an io.Writer
-func (o *OutPutter) WriteHostIP(input string, results map[string]resolve.Result, writer io.Writer) error {
+func (o *OutputWriter) WriteHostIP(input string, results map[string]resolve.Result, writer io.Writer) error {
 	var err error
 	if o.JSON {
 		err = writeJSONHostIP(input, results, writer)
@@ -124,7 +125,7 @@ func writeJSONHostIP(input string, results map[string]resolve.Result, writer io.
 }
 
 // WriteHostNoWildcard writes the output list of subdomain with nW flag to an io.Writer
-func (o *OutPutter) WriteHostNoWildcard(input string, results map[string]resolve.Result, writer io.Writer) error {
+func (o *OutputWriter) WriteHostNoWildcard(input string, results map[string]resolve.Result, writer io.Writer) error {
 	hosts := make(map[string]resolve.HostEntry)
 	for host, result := range results {
 		hosts[host] = resolve.HostEntry{Host: result.Host, Source: result.Source}
@@ -134,7 +135,7 @@ func (o *OutPutter) WriteHostNoWildcard(input string, results map[string]resolve
 }
 
 // WriteHost writes the output list of subdomain to an io.Writer
-func (o *OutPutter) WriteHost(input string, results map[string]resolve.HostEntry, writer io.Writer) error {
+func (o *OutputWriter) WriteHost(input string, results map[string]resolve.HostEntry, writer io.Writer) error {
 	var err error
 	if o.JSON {
 		err = writeJSONHost(input, results, writer)
@@ -179,7 +180,7 @@ func writeJSONHost(input string, results map[string]resolve.HostEntry, writer io
 }
 
 // WriteSourceHost writes the output list of subdomain to an io.Writer
-func (o *OutPutter) WriteSourceHost(input string, sourceMap map[string]map[string]struct{}, writer io.Writer) error {
+func (o *OutputWriter) WriteSourceHost(input string, sourceMap map[string]map[string]struct{}, writer io.Writer) error {
 	var err error
 	if o.JSON {
 		err = writeSourceJSONHost(input, sourceMap, writer)
