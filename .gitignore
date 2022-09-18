@@ -3,3 +3,4 @@ cmd/subfinder/subfinder
 v2/cmd/subfinder/subfinder
 vendor/
 .idea
+.devcontainer
