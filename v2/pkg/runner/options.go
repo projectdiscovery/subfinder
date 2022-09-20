@@ -166,6 +166,12 @@ func ParseOptions() *Options {
 		os.Exit(0)
 	}
 
+	options.preProcessOptions()
+
+	if !options.Silent {
+		showBanner()
+	}
+
 	// Check if the application loading with any provider configuration, then take it
 	// Otherwise load the default provider config
 	if fileutil.FileExists(options.ProviderConfig) {
@@ -178,12 +184,6 @@ func ParseOptions() *Options {
 	if options.ListSources {
 		listSources(options)
 		os.Exit(0)
-	}
-
-	options.preProcessOptions()
-
-	if !options.Silent {
-		showBanner()
 	}
 
 	// Validate the options passed by the user and if any
