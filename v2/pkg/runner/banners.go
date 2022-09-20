@@ -40,7 +40,7 @@ func (options *Options) loadProvidersFrom(location string) {
 	}
 	// todo: move elsewhere
 	if len(options.Resolvers) == 0 {
-		options.Recursive = resolve.DefaultResolvers
+		options.Resolvers = resolve.DefaultResolvers
 	}
 	if len(options.Sources) == 0 {
 		options.Sources = passive.DefaultSources
