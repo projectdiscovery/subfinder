@@ -2,6 +2,8 @@ package hackertarget_test
 
 import (
 	"context"
+	"net/url"
+	"reflect"
 	"testing"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -9,59 +11,34 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestHackerTargetWithActualDomain(t *testing.T) {
-	//given
-	ctx := context.Background()
-	domain := "projectdiscovery.io"
-	keys := &subscraping.Keys{}
-	session, err := subscraping.NewSession(domain, keys, "", 0, 10)
-	if err != nil {
-		t.Fatalf("Expected nil got %v while creating session\n", err)
+func TestHackerTarget(t *testing.T) {
+	var tests = []struct {
+		name     string
+		domain   string
+		timeout  int
+		expected subscraping.Result
+	}{
+		{"TestWithActualDomain", "projectdiscovery.io", 10, subscraping.Result{Type: subscraping.Subdomain, Source: "hackertarget", Value: "projectdiscovery.io", Error: nil}},
+		{"TestWithShortTimeout", "projectdiscovery.io", 1, subscraping.Result{Type: subscraping.Error, Source: "hackertarget", Value: "", Error: &url.Error{}}},
+		{"TestWithEmptyDomain", "", 10, subscraping.Result{Type: subscraping.Subdomain, Source: "", Value: "", Error: nil}},
 	}
 
-	hackertarget := hackertarget.Source{}
+	for _, test := range tests {
 
-	//when
-	result := <-hackertarget.Run(ctx, domain, session)
+		t.Run(test.name, func(t *testing.T) {
+			ctx := context.Background()
+			session, err := subscraping.NewSession(test.domain, "", 0, test.timeout)
+			if err != nil {
+				t.Fatalf("Expected nil got %v while creating session\n", err)
+			}
 
-	//expect
-	assert.NotNil(t, result.Value)
-}
+			hackertarget := hackertarget.Source{}
+			result := <-hackertarget.Run(ctx, test.domain, session)
 
-func TestHackerTargetWithShortTimeout(t *testing.T) {
-	//given
-	ctx := context.Background()
-	domain := "projectdiscovery.io"
-	keys := &subscraping.Keys{}
-	session, err := subscraping.NewSession(domain, keys, "", 0, 1)
-	if err != nil {
-		t.Fatalf("Expected nil got %v while creating session\n", err)
+			assert.Equal(t, test.expected.Type, result.Type)
+			assert.Equal(t, test.expected.Source, result.Source)
+			assert.Equal(t, reflect.TypeOf(test.expected.Error), reflect.TypeOf(result.Error))
+			assert.Contains(t, result.Value, test.expected.Value)
+		})
 	}
-
-	hackertarget := hackertarget.Source{}
-
-	//when
-	result := <-hackertarget.Run(ctx, domain, session)
-
-	//expect
-	assert.Equal(t, result.Value, "")
-}
-
-func TestHackerTargetWithEmptyDomain(t *testing.T) {
-	//given
-	ctx := context.Background()
-	domain := ""
-	keys := &subscraping.Keys{}
-	session, err := subscraping.NewSession(domain, keys, "", 0, 10)
-	if err != nil {
-		t.Fatalf("Expected nil got %v while creating session\n", err)
-	}
-
-	hackertarget := hackertarget.Source{}
-
-	//when
-	result := <-hackertarget.Run(ctx, domain, session)
-
-	//expect
-	assert.Equal(t, result.Value, "")
 }
