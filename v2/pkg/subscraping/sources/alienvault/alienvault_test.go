@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAlientVault(t *testing.T) {
+func TestAlienVault(t *testing.T) {
 	var tests = []struct {
 		name     string
 		domain   string
