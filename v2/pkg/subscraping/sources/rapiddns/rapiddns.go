@@ -3,6 +3,7 @@ package rapiddns
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -17,6 +18,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 	go func() {
 		defer close(results)
+
+		if domain == "" {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Value: "", Error: fmt.Errorf("empty domain error")}
+			return
+		}
 
 		resp, err := session.SimpleGet(ctx, "https://rapiddns.io/subdomain/"+domain+"?full=1")
 		if err != nil {
