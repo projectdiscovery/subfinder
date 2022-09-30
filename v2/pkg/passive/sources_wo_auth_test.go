@@ -2,47 +2,49 @@ package passive
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/projectdiscovery/gologger"
+	"github.com/projectdiscovery/gologger/levels"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-func TestSourcesWithoutAuth(t *testing.T) {
-	var tests = []struct {
-		name     string
-		domain   string
-		timeout  int
-		expected subscraping.Result
-	}{
-		{"TestWithActualDomain", "hackerone.com", 10, subscraping.Result{Type: subscraping.Subdomain, Source: "", Value: "hackerone.com", Error: nil}},
-		{"TestWithEmptyDomain", "", 10, subscraping.Result{Type: subscraping.Error, Source: "", Value: "", Error: errors.New("")}},
-	}
+func TestSourcesWithoutKeys(t *testing.T) {
+	domain := "hackerone.com"
+	timeout := 15
+
+	gologger.DefaultLogger.SetMaxLevel(levels.LevelDebug)
+
+	ctx := context.Background()
+	session, err := subscraping.NewSession(domain, "", 0, timeout)
+	assert.Nil(t, err)
+
+	var expected = subscraping.Result{Type: subscraping.Subdomain, Value: domain, Error: nil}
 
 	for _, source := range AllSources {
 		if source.NeedsKey() {
 			continue
 		}
 
-		for _, test := range tests {
-			t.Run(fmt.Sprintf("%s/%s", source.Name(), test.name), func(t *testing.T) {
-				ctx := context.Background()
-				session, err := subscraping.NewSession(test.domain, "", 0, test.timeout)
-				if err != nil {
-					t.Fatalf("Expected nil got %v while creating session\n", err)
-				}
+		t.Run(source.Name(), func(t *testing.T) {
+			var results []subscraping.Result
 
-				result := <-source.Run(ctx, test.domain, session)
+			for result := range source.Run(ctx, domain, session) {
+				results = append(results, result)
 
-				assert.Equal(t, test.expected.Type, result.Type)
 				assert.Equal(t, source.Name(), result.Source)
-				assert.Equal(t, reflect.TypeOf(test.expected.Error), reflect.TypeOf(result.Error))
-				assert.Contains(t, result.Value, test.expected.Value)
-			})
-		}
-	}
 
+				assert.Equal(t, expected.Type, result.Type)
+				assert.Equal(t, reflect.TypeOf(expected.Error), reflect.TypeOf(result.Error), result.Error)
+
+				assert.True(t, strings.HasSuffix(strings.ToLower(result.Value), strings.ToLower(expected.Value)))
+			}
+
+			assert.GreaterOrEqual(t, len(results), 1)
+		})
+	}
 }

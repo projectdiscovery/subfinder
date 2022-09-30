@@ -73,11 +73,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	}
 
 	go func() {
-		if domain == "" {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Value: "", Error: fmt.Errorf("empty domain error")}
-			return
-		}
-
 		a.enumerate(ctx, fmt.Sprintf("http://www.sitedossier.com/parentdomain/%s", domain))
 		close(a.results)
 	}()

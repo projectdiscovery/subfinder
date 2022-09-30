@@ -26,11 +26,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		if domain == "" {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Value: "", Error: fmt.Errorf("empty domain error")}
-			return
-		}
-
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://api.threatminer.org/v2/domain.php?q=%s&rt=5", domain))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
