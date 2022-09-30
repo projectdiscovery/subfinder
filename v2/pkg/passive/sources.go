@@ -10,7 +10,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/alienvault"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/anubis"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/archiveis"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/bevigil"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/binaryedge"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/bufferover"
@@ -23,6 +22,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtsh"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdb"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdumpster"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsrepo"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fofa"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fullhunt"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/github"
@@ -45,14 +45,11 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/whoisxmlapi"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeye"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeyeapi"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsrepo"
-
 )
 
 var AllSources = [...]subscraping.Source{
 	&alienvault.Source{},
 	&anubis.Source{},
-	&archiveis.Source{},
 	&bevigil.Source{},
 	&binaryedge.Source{},
 	&bufferover.Source{},

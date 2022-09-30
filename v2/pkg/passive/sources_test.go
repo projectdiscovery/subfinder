@@ -13,7 +13,6 @@ var (
 	expectedAllSources = []string{
 		"alienvault",
 		"anubis",
-		"archiveis",
 		"bevigil",
 		"binaryedge",
 		"bufferover",
