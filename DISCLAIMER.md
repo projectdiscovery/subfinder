@@ -7,7 +7,7 @@ Subfinder leverages multiple open APIs, it is developed for individuals to help 
 - certspotter: https://sslmate.com/terms
 - dnsdumpster: https://hackertarget.com/terms
 - Google Transparency: https://policies.google.com/terms
-- Threatcrowd: https://www.alienvault.com/terms/website-terms-of-use07may2018
+- Alienvault: https://www.alienvault.com/terms/website-terms-of-use07may2018
 
 ---
 
