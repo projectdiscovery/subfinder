@@ -8,9 +8,9 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/lib/pq v1.10.7
 	github.com/projectdiscovery/chaos-client v0.3.0
-	github.com/projectdiscovery/dnsx v1.1.0
+	github.com/projectdiscovery/dnsx v1.1.1
 	github.com/projectdiscovery/fdmax v0.0.3
-	github.com/projectdiscovery/fileutil v0.0.0-20220625080234-94e882ca56cb
+	github.com/projectdiscovery/fileutil v0.0.1
 	github.com/projectdiscovery/gologger v1.1.5-0.20220817095646-8663411b1b0b
 	github.com/rs/xid v1.4.0
 	github.com/stretchr/testify v1.8.0
@@ -30,18 +30,22 @@ require (
 	github.com/microcosm-cc/bluemonday v1.0.20 // indirect
 	github.com/nwaples/rardecode v1.1.0 // indirect
 	github.com/pierrec/lz4 v2.6.0+incompatible // indirect
-	github.com/projectdiscovery/blackrock v0.0.0-20210903102120-5a9d2412d21d // indirect
+	github.com/projectdiscovery/blackrock v0.0.0-20220628111055-35616c71b2dc // indirect
+	github.com/projectdiscovery/cdncheck v0.0.3 // indirect
 	github.com/projectdiscovery/httputil v0.0.0-20210906072657-f3a099cb20bc // indirect
-	github.com/projectdiscovery/iputil v0.0.0-20210804143329-3a30fcde43f3 // indirect
-	github.com/projectdiscovery/mapcidr v0.0.8 // indirect
+	github.com/projectdiscovery/iputil v0.0.0-20220712175312-b9406f31cdd8 // indirect
+	github.com/projectdiscovery/mapcidr v1.0.1 // indirect
 	github.com/projectdiscovery/retryablehttp-go v1.0.2 // indirect
+	github.com/projectdiscovery/sliceutil v0.0.0-20220625085859-c3a4ecb669f4 // indirect
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
 	github.com/ulikunitz/xz v0.5.7 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
-	golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3 // indirect
+	github.com/yl2chen/cidranger v1.0.2 // indirect
+	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/multierr v1.8.0 // indirect
+	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	golang.org/x/tools v0.1.10 // indirect
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	golang.org/x/tools v0.1.12 // indirect
 	gopkg.in/djherbis/times.v1 v1.2.0 // indirect
 )
 
@@ -50,14 +54,14 @@ require (
 	github.com/cnf/structhash v0.0.0-20201127153200-e1b16c1ebc08 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible
-	github.com/miekg/dns v1.1.46 // indirect
+	github.com/miekg/dns v1.1.50 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/projectdiscovery/goflags v0.0.9
-	github.com/projectdiscovery/retryabledns v1.0.13 // indirect
-	github.com/projectdiscovery/stringsutil v0.0.0-20220612082425-0037ce9f89f3 // indirect
-	golang.org/x/net v0.0.0-20220826154423-83b083e8dc8b // indirect
-	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
+	github.com/projectdiscovery/goflags v0.1.0
+	github.com/projectdiscovery/retryabledns v1.0.15 // indirect
+	github.com/projectdiscovery/stringsutil v0.0.1 // indirect
+	golang.org/x/net v0.0.0-20220927171203-f486391704dc // indirect
+	golang.org/x/sys v0.0.0-20220731174439-a90be440212d // indirect
 )

@@ -63,7 +63,7 @@ SOURCE:
    -s, -sources string[]           sources to use for discovery (-s crtsh,github)
    -recursive                      use only recursive sources
    -all                            Use all sources (slow) for enumeration
-   -es, -exclude-sources string[]  sources to exclude from enumeration (-es archiveis,zoomeye)
+   -es, -exclude-sources string[]  sources to exclude from enumeration (-es alienvault,zoomeye)
 
 FILTER:
    -m, -match string[]   subdomain or list of subdomain to match (file or comma separated)
