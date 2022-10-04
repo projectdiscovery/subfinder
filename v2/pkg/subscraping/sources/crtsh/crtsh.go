@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -96,7 +97,9 @@ func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, sessi
 	resp.Body.Close()
 
 	for _, subdomain := range subdomains {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain.NameValue}
+		for _, sub := range strings.Split(subdomain.NameValue, "\n") {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: sub}
+		}
 	}
 
 	return true
