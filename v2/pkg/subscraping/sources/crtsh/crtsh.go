@@ -28,6 +28,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 	go func() {
 		defer close(results)
+
 		count := s.getSubdomainsFromSQL(domain, results)
 		if count > 0 {
 			return
