@@ -12,10 +12,10 @@ require (
 	github.com/projectdiscovery/fdmax v0.0.3
 	github.com/projectdiscovery/fileutil v0.0.1
 	github.com/projectdiscovery/gologger v1.1.5-0.20220817095646-8663411b1b0b
+	github.com/projectdiscovery/ratelimit v0.0.0-20221004232058-7b82379157fa
 	github.com/rs/xid v1.4.0
 	github.com/stretchr/testify v1.8.0
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
-	go.uber.org/ratelimit v0.2.0
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -50,7 +50,6 @@ require (
 )
 
 require (
-	github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129 // indirect
 	github.com/cnf/structhash v0.0.0-20201127153200-e1b16c1ebc08 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible

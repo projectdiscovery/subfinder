@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/corpix/uarand"
-	"go.uber.org/ratelimit"
+	"github.com/projectdiscovery/ratelimit"
 
 	"github.com/projectdiscovery/gologger"
 )
@@ -46,9 +46,9 @@ func NewSession(domain string, proxy string, rateLimit, timeout int) (*Session, 
 
 	// Initiate rate limit instance
 	if rateLimit > 0 {
-		session.RateLimiter = ratelimit.New(rateLimit)
+		session.RateLimiter = ratelimit.New(context.Background(), rateLimit, time.Second)
 	} else {
-		session.RateLimiter = ratelimit.NewUnlimited()
+		session.RateLimiter = ratelimit.NewUnlimited(context.Background())
 	}
 
 	// Create a new extractor object for the current domain
