@@ -60,15 +60,14 @@ INPUT:
    -dL, -list string     file containing list of domains for subdomain discovery
 
 SOURCE:
-   -s, -sources string[]           sources to use for discovery (-s crtsh,github)
-   -recursive                      use only recursive sources
-   -all                            Use all sources (slow) for enumeration
+   -s, -sources string[]           specific sources to use for discovery (-s crtsh,github). Use -ls to display all available sources.
+   -recursive                      use only sources that can handle subdomains recursively (e.g. subdomain.domain.tld vs domain.tld)
+   -all                            use all sources for enumeration (slow)
    -es, -exclude-sources string[]  sources to exclude from enumeration (-es alienvault,zoomeye)
 
 FILTER:
    -m, -match string[]   subdomain or list of subdomain to match (file or comma separated)
    -f, -filter string[]   subdomain or list of subdomain to filter (file or comma separated)
-
 
 RATE-LIMIT:
    -rl, -rate-limit int  maximum number of http requests to send per second
@@ -86,15 +85,16 @@ CONFIGURATION:
    -pc, -provider-config string  provider config file (default "$HOME/.config/subfinder/provider-config.yaml")
    -r string[]                   comma separated list of resolvers to use
    -rL, -rlist string            file containing list of resolvers to use
-   -nW, -active                  display active subdomains only (remove wildcard)
+   -nW, -active                  display active subdomains only
    -proxy string                 http proxy to use with subfinder
+   -ei, -exclude-ip              exclude IPs from the list of domains
 
 DEBUG:
-   -ls       list all available sources
-   -silent   show only subdomains in output
-   -version  show version of subfinder
-   -v        show verbose output
+   -silent             show only subdomains in output
+   -version            show version of subfinder
+   -v                  show verbose output
    -nc, -no-color      disable color in output
+   -ls, -list-sources  list all available sources
 
 OPTIMIZATION:
    -timeout int   seconds to wait before timing out (default 30)
