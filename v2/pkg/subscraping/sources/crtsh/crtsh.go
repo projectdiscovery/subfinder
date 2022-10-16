@@ -5,11 +5,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	jsoniter "github.com/json-iterator/go"
 
 	// postgres driver
 	_ "github.com/lib/pq"
+
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
@@ -27,6 +29,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 	go func() {
 		defer close(results)
+
 		count := s.getSubdomainsFromSQL(domain, results)
 		if count > 0 {
 			return
@@ -94,7 +97,9 @@ func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, sessi
 	resp.Body.Close()
 
 	for _, subdomain := range subdomains {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain.NameValue}
+		for _, sub := range strings.Split(subdomain.NameValue, "\n") {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: sub}
+		}
 	}
 
 	return true
@@ -103,4 +108,20 @@ func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, sessi
 // Name returns the name of the source
 func (s *Source) Name() string {
 	return "crtsh"
+}
+
+func (s *Source) IsDefault() bool {
+	return true
+}
+
+func (s *Source) HasRecursiveSupport() bool {
+	return true
+}
+
+func (s *Source) NeedsKey() bool {
+	return false
+}
+
+func (s *Source) AddApiKeys(_ []string) {
+	// no key needed
 }

@@ -1,25 +1,24 @@
-// Package virustotal logic
-package virustotal
+package dnsrepo
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-
-	jsoniter "github.com/json-iterator/go"
+	"io"
+	"strings"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
-
-type response struct {
-	Subdomains []string `json:"subdomains"`
-}
 
 // Source is the passive scraping agent
 type Source struct {
 	apiKeys []string
 }
 
-// Run function returns all subdomains found with the service
+type DnsRepoResponse []struct {
+	Domain string
+}
+
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
@@ -30,35 +29,37 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		if randomApiKey == "" {
 			return
 		}
-
-		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://www.virustotal.com/vtapi/v2/domain/report?apikey=%s&domain=%s", randomApiKey, domain))
+		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://dnsrepo.noc.org/api/?apikey=%s&search=%s", randomApiKey, domain))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
-
-		var data response
-		err = jsoniter.NewDecoder(resp.Body).Decode(&data)
+		responseData, err := io.ReadAll(resp.Body)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			resp.Body.Close()
+			session.DiscardHTTPResponse(resp)
 			return
 		}
-
 		resp.Body.Close()
-
-		for _, subdomain := range data.Subdomains {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+		var result DnsRepoResponse
+		err = json.Unmarshal(responseData, &result)
+		if err != nil {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			session.DiscardHTTPResponse(resp)
+			return
 		}
-	}()
+		for _, sub := range result {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: strings.TrimSuffix(sub.Domain, ".")}
+		}
 
+	}()
 	return results
 }
 
 // Name returns the name of the source
 func (s *Source) Name() string {
-	return "virustotal"
+	return "dnsrepo"
 }
 
 func (s *Source) IsDefault() bool {
@@ -66,7 +67,7 @@ func (s *Source) IsDefault() bool {
 }
 
 func (s *Source) HasRecursiveSupport() bool {
-	return true
+	return false
 }
 
 func (s *Source) NeedsKey() bool {

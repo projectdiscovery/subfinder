@@ -60,10 +60,14 @@ INPUT:
    -dL, -list string     file containing list of domains for subdomain discovery
 
 SOURCE:
-   -s, -sources string[]           sources to use for discovery (-s crtsh,github)
-   -recursive                      use only recursive sources
-   -all                            Use all sources (slow) for enumeration
-   -es, -exclude-sources string[]  sources to exclude from enumeration (-es archiveis,zoomeye)
+   -s, -sources string[]           specific sources to use for discovery (-s crtsh,github). Use -ls to display all available sources.
+   -recursive                      use only sources that can handle subdomains recursively (e.g. subdomain.domain.tld vs domain.tld)
+   -all                            use all sources for enumeration (slow)
+   -es, -exclude-sources string[]  sources to exclude from enumeration (-es alienvault,zoomeye)
+
+FILTER:
+   -m, -match string[]   subdomain or list of subdomain to match (file or comma separated)
+   -f, -filter string[]   subdomain or list of subdomain to filter (file or comma separated)
 
 RATE-LIMIT:
    -rl, -rate-limit int  maximum number of http requests to send per second
@@ -81,15 +85,16 @@ CONFIGURATION:
    -pc, -provider-config string  provider config file (default "$HOME/.config/subfinder/provider-config.yaml")
    -r string[]                   comma separated list of resolvers to use
    -rL, -rlist string            file containing list of resolvers to use
-   -nW, -active                  display active subdomains only (remove wildcard)
+   -nW, -active                  display active subdomains only
    -proxy string                 http proxy to use with subfinder
+   -ei, -exclude-ip              exclude IPs from the list of domains
 
 DEBUG:
-   -ls       list all available sources
-   -silent   show only subdomains in output
-   -version  show version of subfinder
-   -v        show verbose output
+   -silent             show only subdomains in output
+   -version            show version of subfinder
+   -v                  show verbose output
    -nc, -no-color      disable color in output
+   -ls, -list-sources  list all available sources
 
 OPTIMIZATION:
    -timeout int   seconds to wait before timing out (default 30)
@@ -109,7 +114,7 @@ go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 
 Subfinder will work after using the installation instructions however to configure Subfinder to work with certain services, you will need to have setup API keys. The following services do not work without an API key:
 
-[Binaryedge](https://binaryedge.io), [C99](https://api.c99.nl/), [Certspotter](https://sslmate.com/certspotter/api/), [Chinaz](http://my.chinaz.com/ChinazAPI/DataCenter/MyDataApi), [Censys](https://censys.io), [Chaos](https://chaos.projectdiscovery.io), [DnsDB](https://api.dnsdb.info), [Fofa](https://fofa.info/static_pages/api_help), [Github](https://github.com), [Intelx](https://intelx.io), [Passivetotal](http://passivetotal.org), [Robtex](https://www.robtex.com/api/), [SecurityTrails](http://securitytrails.com), [Shodan](https://shodan.io), [Threatbook](https://x.threatbook.cn/en), [Virustotal](https://www.virustotal.com), [WhoisXML API](https://whoisxmlapi.com/), [Zoomeye](https://www.zoomeye.org)
+[BeVigil](https://bevigil.com/osint-api), [Binaryedge](https://binaryedge.io), [C99](https://api.c99.nl/), [Certspotter](https://sslmate.com/certspotter/api/), [Chinaz](http://my.chinaz.com/ChinazAPI/DataCenter/MyDataApi), [Censys](https://censys.io), [Chaos](https://chaos.projectdiscovery.io), [DnsDB](https://api.dnsdb.info), [Fofa](https://fofa.info/static_pages/api_help), [Github](https://github.com), [Intelx](https://intelx.io), [Passivetotal](http://passivetotal.org), [Robtex](https://www.robtex.com/api/), [SecurityTrails](http://securitytrails.com), [Shodan](https://shodan.io), [Threatbook](https://x.threatbook.cn/en), [Virustotal](https://www.virustotal.com), [WhoisXML API](https://whoisxmlapi.com/), [Zoomeye](https://www.zoomeye.org)
 
 These values are stored in the `$HOME/.config/subfinder/provider-config.yaml` file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys can be specified for each of these services from which one of them will be used for enumeration.
 

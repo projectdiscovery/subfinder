@@ -2,6 +2,9 @@ package runner
 
 import (
 	"errors"
+	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/gologger/formatter"
@@ -34,7 +37,30 @@ func (options *Options) validateOptions() error {
 		return errors.New("hostip flag must be used with RemoveWildcard option")
 	}
 
+	if options.Match != nil {
+		options.matchRegexes = make([]*regexp.Regexp, len(options.Match))
+		var err error
+		for i, re := range options.Match {
+			if options.matchRegexes[i], err = regexp.Compile(stripRegexString(re)); err != nil {
+				return errors.New("invalid value for match regex option")
+			}
+		}
+	}
+	if options.Filter != nil {
+		options.filterRegexes = make([]*regexp.Regexp, len(options.Filter))
+		var err error
+		for i, re := range options.Filter {
+			if options.filterRegexes[i], err = regexp.Compile(stripRegexString(re)); err != nil {
+				return errors.New("invalid value for filter regex option")
+			}
+		}
+	}
 	return nil
+}
+func stripRegexString(val string) string {
+	val = strings.ReplaceAll(val, ".", "\\.")
+	val = strings.ReplaceAll(val, "*", ".*")
+	return fmt.Sprint("^", val, "$")
 }
 
 // configureOutput configures the output on the screen
