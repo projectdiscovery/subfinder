@@ -17,6 +17,8 @@ func (a *Agent) EnumerateSubdomains(domain string, proxy string, rateLimit, time
 		session, err := subscraping.NewSession(domain, proxy, rateLimit, timeout)
 		if err != nil {
 			results <- subscraping.Result{Type: subscraping.Error, Error: fmt.Errorf("could not init passive session for %s: %s", domain, err)}
+			close(results)
+			return
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), maxEnumTime)
@@ -52,6 +54,5 @@ func (a *Agent) EnumerateSubdomains(domain string, proxy string, rateLimit, time
 		close(results)
 		cancel()
 	}()
-
 	return results
 }
