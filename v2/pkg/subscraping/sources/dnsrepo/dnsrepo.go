@@ -1,26 +1,27 @@
-// Package bevigil logic
-package bevigil
+package dnsrepo
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-
-	jsoniter "github.com/json-iterator/go"
+	"io"
+	"strings"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-type Response struct {
-	Domain     string   `json:"domain"`
-	Subdomains []string `json:"subdomains"`
-}
-
+// Source is the passive scraping agent
 type Source struct {
 	apiKeys []string
 }
 
+type DnsRepoResponse []struct {
+	Domain string
+}
+
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
+
 	go func() {
 		defer close(results)
 
@@ -28,41 +29,37 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		if randomApiKey == "" {
 			return
 		}
-
-		getUrl := fmt.Sprintf("https://osint.bevigil.com/api/%s/subdomains/", domain)
-
-		resp, err := session.Get(ctx, getUrl, "", map[string]string{"X-Access-Token": randomApiKey, "User-Agent": "subfinder"})
+		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://dnsrepo.noc.org/api/?apikey=%s&search=%s", randomApiKey, domain))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
-
-		var subdomains []string
-		var response Response
-		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
+		responseData, err := io.ReadAll(resp.Body)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			resp.Body.Close()
+			session.DiscardHTTPResponse(resp)
 			return
 		}
-
 		resp.Body.Close()
-
-		if len(response.Subdomains) > 0 {
-			subdomains = response.Subdomains
+		var result DnsRepoResponse
+		err = json.Unmarshal(responseData, &result)
+		if err != nil {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			session.DiscardHTTPResponse(resp)
+			return
+		}
+		for _, sub := range result {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: strings.TrimSuffix(sub.Domain, ".")}
 		}
 
-		for _, subdomain := range subdomains {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-		}
 	}()
-
 	return results
 }
 
+// Name returns the name of the source
 func (s *Source) Name() string {
-	return "bevigil"
+	return "dnsrepo"
 }
 
 func (s *Source) IsDefault() bool {

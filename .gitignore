@@ -6,3 +6,4 @@ v2/cmd/subfinder/subfinder
 v2/subfinder
 vendor/
 .idea
+.devcontainer

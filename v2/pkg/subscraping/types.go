@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"regexp"
 
-	"go.uber.org/ratelimit"
+	"github.com/projectdiscovery/ratelimit"
 )
 
 // BasicAuth request's Authorization header
@@ -46,7 +46,7 @@ type Session struct {
 	// Client is the current http client
 	Client *http.Client
 	// Rate limit instance
-	RateLimiter ratelimit.Limiter
+	RateLimiter *ratelimit.Limiter
 }
 
 // Result is a result structure returned by a source

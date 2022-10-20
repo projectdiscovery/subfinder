@@ -13,7 +13,6 @@ var (
 	expectedAllSources = []string{
 		"alienvault",
 		"anubis",
-		"archiveis",
 		"bevigil",
 		"binaryedge",
 		"bufferover",
@@ -26,6 +25,7 @@ var (
 		"crtsh",
 		"dnsdumpster",
 		"dnsdb",
+		"dnsrepo",
 		"fofa",
 		"fullhunt",
 		"github",
@@ -41,7 +41,6 @@ var (
 		"sitedossier",
 		"sonarsearch",
 		"threatbook",
-		"threatcrowd",
 		"threatminer",
 		"virustotal",
 		"waybackarchive",
@@ -62,6 +61,7 @@ var (
 		"chinaz",
 		"crtsh",
 		"dnsdumpster",
+		"dnsrepo",
 		"fofa",
 		"fullhunt",
 		"hackertarget",
@@ -72,7 +72,6 @@ var (
 		"riddler",
 		"securitytrails",
 		"shodan",
-		"threatcrowd",
 		"threatminer",
 		"virustotal",
 		"whoisxmlapi",
@@ -112,7 +111,7 @@ func TestSourceCategorization(t *testing.T) {
 	assert.ElementsMatch(t, expectedAllSources, maps.Keys(NameSourceMap))
 }
 
-func Test(t *testing.T) {
+func TestSourceFiltering(t *testing.T) {
 	someSources := []string{
 		"alienvault",
 		"sonarsearch",
@@ -146,7 +145,7 @@ func Test(t *testing.T) {
 		{[]string{}, []string{}, true, true, len(expectedDefaultRecursiveSources)},
 	}
 	for index, test := range tests {
-		t.Run(strconv.Itoa(index), func(t *testing.T) {
+		t.Run(strconv.Itoa(index+1), func(t *testing.T) {
 			agent := New(test.sources, test.exclusions, test.withAllSources, test.withRecursion)
 
 			for _, v := range agent.sources {
