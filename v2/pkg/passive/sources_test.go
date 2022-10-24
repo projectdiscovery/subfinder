@@ -47,6 +47,7 @@ var (
 		"whoisxmlapi",
 		"zoomeye",
 		"zoomeyeapi",
+		"hunter",
 	}
 
 	expectedDefaultSources = []string{
@@ -75,6 +76,7 @@ var (
 		"threatminer",
 		"virustotal",
 		"whoisxmlapi",
+		"hunter",
 	}
 
 	expectedDefaultRecursiveSources = []string{

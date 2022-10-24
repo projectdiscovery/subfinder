@@ -27,6 +27,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fullhunt"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/github"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hackertarget"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hunter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/passivetotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/quake"
@@ -83,6 +84,7 @@ var AllSources = [...]subscraping.Source{
 	&zoomeye.Source{},
 	&zoomeyeapi.Source{},
 	&dnsrepo.Source{},
+	&hunter.Source{},
 }
 
 var NameSourceMap = make(map[string]subscraping.Source, len(AllSources))
