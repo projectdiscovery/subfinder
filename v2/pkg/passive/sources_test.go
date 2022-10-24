@@ -30,6 +30,7 @@ var (
 		"fullhunt",
 		"github",
 		"hackertarget",
+		"hunter",
 		"intelx",
 		"passivetotal",
 		"quake",
@@ -66,6 +67,7 @@ var (
 		"fofa",
 		"fullhunt",
 		"hackertarget",
+		"hunter",
 		"intelx",
 		"passivetotal",
 		"quake",
@@ -137,13 +139,13 @@ func TestSourceFiltering(t *testing.T) {
 		{someSources, someExclusions, false, false, len(someSources) - len(someExclusions)},
 		{someSources, someExclusions, false, true, 1},
 		{someSources, someExclusions, true, false, len(AllSources) - len(someExclusions)},
-		{someSources, someExclusions, true, true, 10},
+		{someSources, someExclusions, true, true, 11},
 
 		{someSources, []string{}, false, false, len(someSources)},
 		{someSources, []string{}, true, false, len(AllSources)},
 
 		{[]string{}, []string{}, false, false, len(expectedDefaultSources)},
-		{[]string{}, []string{}, false, true, 10},
+		{[]string{}, []string{}, false, true, 11},
 		{[]string{}, []string{}, true, false, len(AllSources)},
 		{[]string{}, []string{}, true, true, len(expectedDefaultRecursiveSources)},
 	}
