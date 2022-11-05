@@ -47,6 +47,7 @@ var (
 		"whoisxmlapi",
 		"zoomeye",
 		"zoomeyeapi",
+		"hunter",
 		"reconcloud",
 	}
 
@@ -76,6 +77,7 @@ var (
 		"threatminer",
 		"virustotal",
 		"whoisxmlapi",
+		"hunter",
 		"reconcloud",
 	}
 
