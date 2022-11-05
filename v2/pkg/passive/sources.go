@@ -31,6 +31,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/passivetotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/quake"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rapiddns"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/reconcloud"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/riddler"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/robtex"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/securitytrails"
@@ -83,6 +84,7 @@ var AllSources = [...]subscraping.Source{
 	&zoomeye.Source{},
 	&zoomeyeapi.Source{},
 	&dnsrepo.Source{},
+	&reconcloud.Source{},
 }
 
 var NameSourceMap = make(map[string]subscraping.Source, len(AllSources))
