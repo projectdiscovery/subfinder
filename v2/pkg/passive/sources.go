@@ -26,6 +26,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fofa"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fullhunt"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/github"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/gitlab"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hackertarget"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/passivetotal"
@@ -64,6 +65,7 @@ var AllSources = [...]subscraping.Source{
 	&fofa.Source{},
 	&fullhunt.Source{},
 	&github.Source{},
+	&gitlab.Source{},
 	&hackertarget.Source{},
 	&intelx.Source{},
 	&passivetotal.Source{},
