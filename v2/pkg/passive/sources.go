@@ -20,6 +20,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/chinaz"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/commoncrawl"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtsh"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitorus"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdb"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdumpster"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsrepo"
@@ -59,6 +60,7 @@ var AllSources = [...]subscraping.Source{
 	&chinaz.Source{},
 	&commoncrawl.Source{},
 	&crtsh.Source{},
+	&digitorus.Source{},
 	&dnsdb.Source{},
 	&dnsdumpster.Source{},
 	&fofa.Source{},
