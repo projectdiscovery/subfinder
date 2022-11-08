@@ -62,7 +62,11 @@ type Options struct {
 	Filter             goflags.StringSlice
 	matchRegexes       []*regexp.Regexp
 	filterRegexes      []*regexp.Regexp
+	OnResult           OnResultCallback // OnResult callback
 }
+
+// OnResultCallback (hostResult)
+type OnResultCallback func(result *resolve.HostEntry)
 
 // ParseOptions parses the command line flags provided by a user
 func ParseOptions() *Options {
