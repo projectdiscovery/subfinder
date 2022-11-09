@@ -39,7 +39,6 @@ var (
 		"securitytrails",
 		"shodan",
 		"sitedossier",
-		"sonarsearch",
 		"threatbook",
 		"threatminer",
 		"virustotal",
@@ -91,7 +90,6 @@ var (
 		"hackertarget",
 		"passivetotal",
 		"securitytrails",
-		"sonarsearch",
 		"virustotal",
 		"reconcloud",
 	}
@@ -119,7 +117,6 @@ func TestSourceCategorization(t *testing.T) {
 func TestSourceFiltering(t *testing.T) {
 	someSources := []string{
 		"alienvault",
-		"sonarsearch",
 		"chaos",
 		"virustotal",
 	}
