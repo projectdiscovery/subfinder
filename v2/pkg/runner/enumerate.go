@@ -141,9 +141,9 @@ func (r *Runner) EnumerateSingleDomain(domain string, writers []io.Writer) error
 		numberOfSubDomains = len(uniqueMap)
 	}
 
-	if r.options.OnResult != nil {
+	if r.options.ResultCallback != nil {
 		for _, v := range uniqueMap {
-			r.options.OnResult(&v)
+			r.options.ResultCallback(&v)
 		}
 	}
 	gologger.Info().Msgf("Found %d subdomains for '%s' in %s\n", numberOfSubDomains, domain, duration)

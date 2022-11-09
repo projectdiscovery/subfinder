@@ -62,7 +62,7 @@ type Options struct {
 	Filter             goflags.StringSlice
 	matchRegexes       []*regexp.Regexp
 	filterRegexes      []*regexp.Regexp
-	OnResult           OnResultCallback // OnResult callback
+	ResultCallback     OnResultCallback // OnResult callback
 }
 
 // OnResultCallback (hostResult)
