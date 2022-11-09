@@ -39,7 +39,6 @@ var (
 		"securitytrails",
 		"shodan",
 		"sitedossier",
-		"sonarsearch",
 		"threatbook",
 		"threatminer",
 		"virustotal",
@@ -47,6 +46,8 @@ var (
 		"whoisxmlapi",
 		"zoomeye",
 		"zoomeyeapi",
+		"hunter",
+		"reconcloud",
 	}
 
 	expectedDefaultSources = []string{
@@ -75,6 +76,8 @@ var (
 		"threatminer",
 		"virustotal",
 		"whoisxmlapi",
+		"hunter",
+		"reconcloud",
 	}
 
 	expectedDefaultRecursiveSources = []string{
@@ -87,8 +90,8 @@ var (
 		"hackertarget",
 		"passivetotal",
 		"securitytrails",
-		"sonarsearch",
 		"virustotal",
+		"reconcloud",
 	}
 )
 
@@ -114,7 +117,6 @@ func TestSourceCategorization(t *testing.T) {
 func TestSourceFiltering(t *testing.T) {
 	someSources := []string{
 		"alienvault",
-		"sonarsearch",
 		"chaos",
 		"crtsh",
 		"virustotal",
@@ -135,13 +137,13 @@ func TestSourceFiltering(t *testing.T) {
 		{someSources, someExclusions, false, false, len(someSources) - len(someExclusions)},
 		{someSources, someExclusions, false, true, 1},
 		{someSources, someExclusions, true, false, len(AllSources) - len(someExclusions)},
-		{someSources, someExclusions, true, true, 8},
+		{someSources, someExclusions, true, true, 9},
 
 		{someSources, []string{}, false, false, len(someSources)},
 		{someSources, []string{}, true, false, len(AllSources)},
 
 		{[]string{}, []string{}, false, false, len(expectedDefaultSources)},
-		{[]string{}, []string{}, false, true, 9},
+		{[]string{}, []string{}, false, true, 10},
 		{[]string{}, []string{}, true, false, len(AllSources)},
 		{[]string{}, []string{}, true, true, len(expectedDefaultRecursiveSources)},
 	}

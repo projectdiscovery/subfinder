@@ -30,7 +30,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		defer close(results)
 
-		count := s.getSubdomainsFromSQL(domain, results)
+		count := s.getSubdomainsFromSQL(domain, session, results)
 		if count > 0 {
 			return
 		}
@@ -40,7 +40,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	return results
 }
 
-func (s *Source) getSubdomainsFromSQL(domain string, results chan subscraping.Result) int {
+func (s *Source) getSubdomainsFromSQL(domain string, session *subscraping.Session, results chan subscraping.Result) int {
 	db, err := sql.Open("postgres", "host=crt.sh user=guest dbname=certwatch sslmode=disable binary_parameters=yes")
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -73,7 +73,7 @@ func (s *Source) getSubdomainsFromSQL(domain string, results chan subscraping.Re
 			return count
 		}
 		count++
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: data}
+		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: session.Extractor.FindString(data)}
 	}
 	return count
 }
@@ -98,7 +98,7 @@ func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, sessi
 
 	for _, subdomain := range subdomains {
 		for _, sub := range strings.Split(subdomain.NameValue, "\n") {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: sub}
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: session.Extractor.FindString(sub)}
 		}
 	}
 
