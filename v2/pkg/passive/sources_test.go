@@ -118,6 +118,7 @@ func TestSourceFiltering(t *testing.T) {
 	someSources := []string{
 		"alienvault",
 		"chaos",
+		"crtsh",
 		"virustotal",
 	}
 
@@ -136,7 +137,7 @@ func TestSourceFiltering(t *testing.T) {
 		{someSources, someExclusions, false, false, len(someSources) - len(someExclusions)},
 		{someSources, someExclusions, false, true, 1},
 		{someSources, someExclusions, true, false, len(AllSources) - len(someExclusions)},
-		{someSources, someExclusions, true, true, 10},
+		{someSources, someExclusions, true, true, 9},
 
 		{someSources, []string{}, false, false, len(someSources)},
 		{someSources, []string{}, true, false, len(AllSources)},
