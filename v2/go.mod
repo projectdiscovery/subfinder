@@ -9,7 +9,7 @@ require (
 	github.com/lib/pq v1.10.7
 	github.com/projectdiscovery/chaos-client v0.3.0
 	github.com/projectdiscovery/dnsx v1.1.1
-	github.com/projectdiscovery/fdmax v0.0.3
+	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/fileutil v0.0.3
 	github.com/projectdiscovery/gologger v1.1.5-0.20220817095646-8663411b1b0b
 	github.com/projectdiscovery/ratelimit v0.0.1
@@ -62,5 +62,5 @@ require (
 	github.com/projectdiscovery/retryabledns v1.0.15 // indirect
 	github.com/projectdiscovery/stringsutil v0.0.2 // indirect
 	golang.org/x/net v0.1.0 // indirect
-	golang.org/x/sys v0.1.0 // indirect
+	golang.org/x/sys v0.2.0 // indirect
 )
