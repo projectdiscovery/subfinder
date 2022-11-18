@@ -17,19 +17,23 @@ type dnsdbResponse struct {
 	Name string `json:"rrname"`
 }
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []string
+// DnsDB is the KeyApiSource that handles access to the DnsDB data source.
+type DnsDB struct {
+	*subscraping.KeyApiSource
+}
+
+func NewDnsDB() *DnsDB {
+	return &DnsDB{KeyApiSource: &subscraping.KeyApiSource{}}
 }
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (d *DnsDB) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(d.ApiKeys(), d.Name())
 		if randomApiKey == "" {
 			return
 		}
@@ -42,7 +46,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		resp, err := session.Get(ctx, fmt.Sprintf("https://api.dnsdb.info/lookup/rrset/name/*.%s?limit=1000000000000", domain), "", headers)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -56,10 +60,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			var response dnsdbResponse
 			err = jsoniter.NewDecoder(bytes.NewBufferString(line)).Decode(&response)
 			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				results <- subscraping.Result{Source: d.Name(), Type: subscraping.Error, Error: err}
 				return
 			}
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: strings.TrimSuffix(response.Name, ".")}
+			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Subdomain, Value: strings.TrimSuffix(response.Name, ".")}
 		}
 		resp.Body.Close()
 	}()
@@ -67,22 +71,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (d *DnsDB) Name() string {
 	return "dnsdb"
 }
 
-func (s *Source) IsDefault() bool {
-	return false
-}
-
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (d *DnsDB) SourceType() string {
+	return subscraping.TYPE_API
 }

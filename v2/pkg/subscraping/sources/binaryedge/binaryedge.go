@@ -34,19 +34,23 @@ type subdomainsResponse struct {
 	Total      int         `json:"total"`
 }
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []string
+// BinaryEdge is the KeyApiSource that handles access to the BinaryEdge data source.
+type BinaryEdge struct {
+	*subscraping.KeyApiSource
+}
+
+func NewBinaryEdge() *BinaryEdge {
+	return &BinaryEdge{KeyApiSource: &subscraping.KeyApiSource{}}
 }
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (b *BinaryEdge) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(b.ApiKeys(), b.Name())
 		if randomApiKey == "" {
 			return
 		}
@@ -61,24 +65,24 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			authHeader = map[string]string{"X-Token": randomApiKey}
 			v1URLWithPageSize, err := addURLParam(fmt.Sprintf(baseAPIURLFmt, v1, domain), v1PageSizeParam, strconv.Itoa(maxV1PageSize))
 			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				results <- subscraping.Result{Source: b.Name(), Type: subscraping.Error, Error: err}
 				return
 			}
 			baseURL = v1URLWithPageSize.String()
 		}
 
 		if baseURL == "" {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("can't get API URL")}
+			results <- subscraping.Result{Source: b.Name(), Type: subscraping.Error, Error: fmt.Errorf("can't get API URL")}
 			return
 		}
 
-		s.enumerate(ctx, session, baseURL, firstPage, authHeader, results)
+		b.enumerate(ctx, session, baseURL, firstPage, authHeader, results)
 	}()
 
 	return results
 }
 
-func (s *Source) enumerate(ctx context.Context, session *subscraping.Session, baseURL string, page int, authHeader map[string]string, results chan subscraping.Result) {
+func (s *BinaryEdge) enumerate(ctx context.Context, session *subscraping.Session, baseURL string, page int, authHeader map[string]string, results chan subscraping.Result) {
 	pageURL, err := addURLParam(baseURL, pageParam, strconv.Itoa(page))
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -119,24 +123,16 @@ func (s *Source) enumerate(ctx context.Context, session *subscraping.Session, ba
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (b *BinaryEdge) Name() string {
 	return "binaryedge"
 }
 
-func (s *Source) IsDefault() bool {
-	return false
-}
-
-func (s *Source) HasRecursiveSupport() bool {
+func (b *BinaryEdge) HasRecursiveSupport() bool {
 	return true
 }
 
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (b *BinaryEdge) SourceType() string {
+	return subscraping.TYPE_API
 }
 
 func isV2(ctx context.Context, session *subscraping.Session, authHeader map[string]string) bool {

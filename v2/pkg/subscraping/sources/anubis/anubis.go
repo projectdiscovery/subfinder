@@ -10,11 +10,17 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-// Source is the passive scraping agent
-type Source struct{}
+// Anubis is the Source that handles access to the Anubis data source.
+type Anubis struct {
+	*subscraping.Source
+}
+
+func NewAnubis() *Anubis {
+	return &Anubis{Source: &subscraping.Source{}}
+}
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (a *Anubis) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
@@ -22,7 +28,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://jonlu.ca/anubis/subdomains/%s", domain))
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: a.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -30,7 +36,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		var subdomains []string
 		err = jsoniter.NewDecoder(resp.Body).Decode(&subdomains)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: a.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
 			return
 		}
@@ -38,7 +44,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		resp.Body.Close()
 
 		for _, record := range subdomains {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record}
+			results <- subscraping.Result{Source: a.Name(), Type: subscraping.Subdomain, Value: record}
 		}
 	}()
 
@@ -46,22 +52,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (a *Anubis) Name() string {
 	return "anubis"
 }
 
-func (s *Source) IsDefault() bool {
+func (a *Anubis) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return false
-}
-
-func (s *Source) AddApiKeys(_ []string) {
-	// no key needed
+func (a *Anubis) SourceType() string {
+	return subscraping.TYPE_API
 }

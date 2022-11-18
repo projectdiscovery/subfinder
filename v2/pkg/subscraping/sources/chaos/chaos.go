@@ -9,19 +9,23 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []string
+// Chaos is the KeyApiSource that handles access to the Chaos data source.
+type Chaos struct {
+	*subscraping.KeyApiSource
+}
+
+func NewChaos() *Chaos {
+	return &Chaos{KeyApiSource: &subscraping.KeyApiSource{}}
 }
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(_ context.Context, domain string, _ *subscraping.Session) <-chan subscraping.Result {
+func (c *Chaos) Run(_ context.Context, domain string, _ *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(c.ApiKeys(), c.Name())
 		if randomApiKey == "" {
 			return
 		}
@@ -31,10 +35,10 @@ func (s *Source) Run(_ context.Context, domain string, _ *subscraping.Session) <
 			Domain: domain,
 		}) {
 			if result.Error != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: result.Error}
+				results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: result.Error}
 				break
 			}
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: fmt.Sprintf("%s.%s", result.Subdomain, domain)}
+			results <- subscraping.Result{Source: c.Name(), Type: subscraping.Subdomain, Value: fmt.Sprintf("%s.%s", result.Subdomain, domain)}
 		}
 	}()
 
@@ -42,22 +46,14 @@ func (s *Source) Run(_ context.Context, domain string, _ *subscraping.Session) <
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (c *Chaos) Name() string {
 	return "chaos"
 }
 
-func (s *Source) IsDefault() bool {
+func (c *Chaos) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (c *Chaos) SourceType() string {
+	return subscraping.TYPE_API
 }

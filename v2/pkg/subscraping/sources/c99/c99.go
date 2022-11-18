@@ -11,9 +11,9 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []string
+// C99 is the KeyApiSource that handles access to the C99 data source.
+type C99 struct {
+	*subscraping.KeyApiSource
 }
 
 type dnsdbLookupResponse struct {
@@ -26,14 +26,18 @@ type dnsdbLookupResponse struct {
 	Error string `json:"error"`
 }
 
+func NewC99() *C99 {
+	return &C99{KeyApiSource: &subscraping.KeyApiSource{}}
+}
+
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (c *C99) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(c.ApiKeys(), c.Name())
 		if randomApiKey == "" {
 			return
 		}
@@ -50,18 +54,18 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		var response dnsdbLookupResponse
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
 			return
 		}
 
 		if response.Error != "" {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%v", response.Error)}
+			results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: fmt.Errorf("%v", response.Error)}
 			return
 		}
 
 		for _, data := range response.Subdomains {
 			if !strings.HasPrefix(data.Subdomain, ".") {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: data.Subdomain}
+				results <- subscraping.Result{Source: c.Name(), Type: subscraping.Subdomain, Value: data.Subdomain}
 			}
 		}
 	}()
@@ -70,22 +74,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (c *C99) Name() string {
 	return "c99"
 }
 
-func (s *Source) IsDefault() bool {
+func (c *C99) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (c *C99) SourceType() string {
+	return subscraping.TYPE_API
 }

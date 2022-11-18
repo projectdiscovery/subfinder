@@ -33,7 +33,7 @@ func (a *Agent) EnumerateSubdomains(domain string, proxy string, rateLimit, time
 			wg.Add(1)
 
 			now := time.Now()
-			go func(source subscraping.Source) {
+			go func(source subscraping.ISource) {
 				for resp := range source.Run(ctx, domain, session) {
 					results <- resp
 				}

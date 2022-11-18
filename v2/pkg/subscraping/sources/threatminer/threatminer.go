@@ -16,11 +16,17 @@ type response struct {
 	Results       []string `json:"results"`
 }
 
-// Source is the passive scraping agent
-type Source struct{}
+// ThreatMiner is the Source that handles access to the ThreatMiner data source.
+type ThreatMiner struct {
+	*subscraping.Source
+}
+
+func NewThreatMiner() *ThreatMiner {
+	return &ThreatMiner{Source: &subscraping.Source{}}
+}
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (t *ThreatMiner) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
@@ -28,7 +34,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://api.threatminer.org/v2/domain.php?q=%s&rt=5", domain))
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: t.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -38,12 +44,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		var data response
 		err = jsoniter.NewDecoder(resp.Body).Decode(&data)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: t.Name(), Type: subscraping.Error, Error: err}
 			return
 		}
 
 		for _, subdomain := range data.Results {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+			results <- subscraping.Result{Source: t.Name(), Type: subscraping.Subdomain, Value: subdomain}
 		}
 	}()
 
@@ -51,22 +57,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (t *ThreatMiner) Name() string {
 	return "threatminer"
 }
 
-func (s *Source) IsDefault() bool {
+func (t *ThreatMiner) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return false
-}
-
-func (s *Source) AddApiKeys(_ []string) {
-	// no key needed
+func (t *ThreatMiner) SourceType() string {
+	return subscraping.TYPE_API
 }

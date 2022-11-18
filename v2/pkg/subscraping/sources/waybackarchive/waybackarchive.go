@@ -11,11 +11,17 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-// Source is the passive scraping agent
-type Source struct{}
+// WaybackArchive is the Source that handles access to the WaybackArchive data source.
+type WaybackArchive struct {
+	*subscraping.Source
+}
+
+func NewWaybackArchive() *WaybackArchive {
+	return &WaybackArchive{Source: &subscraping.Source{}}
+}
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (w *WaybackArchive) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
@@ -23,7 +29,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("http://web.archive.org/cdx/search/cdx?url=*.%s/*&output=txt&fl=original&collapse=urlkey", domain))
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: w.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -44,7 +50,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				subdomain = strings.TrimPrefix(subdomain, "25")
 				subdomain = strings.TrimPrefix(subdomain, "2f")
 
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				results <- subscraping.Result{Source: w.Name(), Type: subscraping.Subdomain, Value: subdomain}
 			}
 		}
 	}()
@@ -53,22 +59,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (w *WaybackArchive) Name() string {
 	return "waybackarchive"
 }
 
-func (s *Source) IsDefault() bool {
-	return false
-}
-
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return false
-}
-
-func (s *Source) AddApiKeys(_ []string) {
-	// no key needed
+func (w *WaybackArchive) SourceType() string {
+	return subscraping.TYPE_ARCHIVE
 }

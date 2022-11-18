@@ -58,11 +58,17 @@ func postForm(ctx context.Context, session *subscraping.Session, token, domain s
 	return string(in), err
 }
 
-// Source is the passive scraping agent
-type Source struct{}
+// DnsDumpster is the Source that handles access to the DnsDumpster data source.
+type DnsDumpster struct {
+	*subscraping.Source
+}
+
+func NewDnsDumpster() *DnsDumpster {
+	return &DnsDumpster{Source: &subscraping.Source{}}
+}
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (d *DnsDumpster) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
@@ -70,14 +76,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		resp, err := session.SimpleGet(ctx, "https://dnsdumpster.com/")
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
 
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
 			return
 		}
@@ -86,12 +92,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		csrfToken := getCSRFToken(string(body))
 		data, err := postForm(ctx, session, csrfToken, domain)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Error, Error: err}
 			return
 		}
 
 		for _, subdomain := range session.Extractor.FindAllString(data, -1) {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Subdomain, Value: subdomain}
 		}
 	}()
 
@@ -99,22 +105,18 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (d *DnsDumpster) Name() string {
 	return "dnsdumpster"
 }
 
-func (s *Source) IsDefault() bool {
+func (d *DnsDumpster) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
+func (d *DnsDumpster) HasRecursiveSupport() bool {
 	return true
 }
 
-func (s *Source) NeedsKey() bool {
-	return false
-}
-
-func (s *Source) AddApiKeys(_ []string) {
-	// no key needed
+func (d *DnsDumpster) SourceType() string {
+	return subscraping.TYPE_SCRAPE
 }

@@ -3,9 +3,9 @@ package alienvault
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
@@ -17,11 +17,17 @@ type alienvaultResponse struct {
 	} `json:"passive_dns"`
 }
 
-// Source is the passive scraping agent
-type Source struct{}
+// AlienVault is the Source that handles access to the AlienVault data source.
+type AlienVault struct {
+	*subscraping.Source
+}
+
+func NewAlienVault() *AlienVault {
+	return &AlienVault{Source: &subscraping.Source{}}
+}
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (a *AlienVault) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
@@ -29,28 +35,28 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://otx.alienvault.com/api/v1/indicators/domain/%s/passive_dns", domain))
 		if err != nil && resp == nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: a.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
 
 		var response alienvaultResponse
 		// Get the response body and decode
-		err = json.NewDecoder(resp.Body).Decode(&response)
+		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: a.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
 			return
 		}
 		resp.Body.Close()
 
 		if response.Error != "" {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s, %s", response.Detail, response.Error)}
+			results <- subscraping.Result{Source: a.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s, %s", response.Detail, response.Error)}
 			return
 		}
 
 		for _, record := range response.PassiveDNS {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Hostname}
+			results <- subscraping.Result{Source: a.Name(), Type: subscraping.Subdomain, Value: record.Hostname}
 		}
 	}()
 
@@ -58,22 +64,18 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (a *AlienVault) Name() string {
 	return "alienvault"
 }
 
-func (s *Source) IsDefault() bool {
+func (a *AlienVault) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
+func (a *AlienVault) HasRecursiveSupport() bool {
 	return true
 }
 
-func (s *Source) NeedsKey() bool {
-	return false
-}
-
-func (s *Source) AddApiKeys(_ []string) {
-	// no key needed
+func (a *AlienVault) SourceType() string {
+	return subscraping.TYPE_API
 }

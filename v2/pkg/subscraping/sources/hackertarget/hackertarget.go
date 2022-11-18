@@ -9,11 +9,17 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-// Source is the passive scraping agent
-type Source struct{}
+// HackerTarget is the Source that handles access to the HackerTarget data source.
+type HackerTarget struct {
+	*subscraping.Source
+}
+
+func NewHackerTarget() *HackerTarget {
+	return &HackerTarget{Source: &subscraping.Source{}}
+}
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (h *HackerTarget) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
@@ -21,7 +27,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("http://api.hackertarget.com/hostsearch/?q=%s", domain))
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: h.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -36,7 +42,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 			match := session.Extractor.FindAllString(line, -1)
 			for _, subdomain := range match {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				results <- subscraping.Result{Source: h.Name(), Type: subscraping.Subdomain, Value: subdomain}
 			}
 		}
 	}()
@@ -45,22 +51,18 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (h *HackerTarget) Name() string {
 	return "hackertarget"
 }
 
-func (s *Source) IsDefault() bool {
+func (h *HackerTarget) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
+func (h *HackerTarget) HasRecursiveSupport() bool {
 	return true
 }
 
-func (s *Source) NeedsKey() bool {
-	return false
-}
-
-func (s *Source) AddApiKeys(_ []string) {
-	// no key needed
+func (h *HackerTarget) SourceType() string {
+	return subscraping.TYPE_API
 }

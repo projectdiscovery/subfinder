@@ -15,19 +15,23 @@ type certspotterObject struct {
 	DNSNames []string `json:"dns_names"`
 }
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []string
+// CertSpotter is the KeyApiSource that handles access to the CertSpotter data source.
+type CertSpotter struct {
+	*subscraping.KeyApiSource
+}
+
+func NewCertSpotter() *CertSpotter {
+	return &CertSpotter{KeyApiSource: &subscraping.KeyApiSource{}}
 }
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (c *CertSpotter) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(c.ApiKeys(), c.Name())
 		if randomApiKey == "" {
 			return
 		}
@@ -37,7 +41,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		resp, err := session.Get(ctx, fmt.Sprintf("https://api.certspotter.com/v1/issuances?domain=%s&include_subdomains=true&expand=dns_names", domain), cookies, headers)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -45,7 +49,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		var response []certspotterObject
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
 			return
 		}
@@ -53,7 +57,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		for _, cert := range response {
 			for _, subdomain := range cert.DNSNames {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				results <- subscraping.Result{Source: c.Name(), Type: subscraping.Subdomain, Value: subdomain}
 			}
 		}
 
@@ -68,14 +72,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			resp, err := session.Get(ctx, reqURL, cookies, headers)
 			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
 				return
 			}
 
 			var response []certspotterObject
 			err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
 				resp.Body.Close()
 				return
 			}
@@ -87,7 +91,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			for _, cert := range response {
 				for _, subdomain := range cert.DNSNames {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+					results <- subscraping.Result{Source: c.Name(), Type: subscraping.Subdomain, Value: subdomain}
 				}
 			}
 
@@ -99,22 +103,18 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (c *CertSpotter) Name() string {
 	return "certspotter"
 }
 
-func (s *Source) IsDefault() bool {
+func (c *CertSpotter) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
+func (c *CertSpotter) HasRecursiveSupport() bool {
 	return true
 }
 
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (c *CertSpotter) SourceType() string {
+	return subscraping.TYPE_CERT
 }

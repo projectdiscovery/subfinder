@@ -47,48 +47,47 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeyeapi"
 )
 
-var AllSources = [...]subscraping.Source{
-	&alienvault.Source{},
-	&anubis.Source{},
-	&bevigil.Source{},
-	&binaryedge.Source{},
-	&bufferover.Source{},
-	&c99.Source{},
-	&censys.Source{},
-	&certspotter.Source{},
-	&chaos.Source{},
-	&chinaz.Source{},
-	&commoncrawl.Source{},
-	&crtsh.Source{},
-	&dnsdb.Source{},
-	&dnsdumpster.Source{},
-	&fofa.Source{},
-	&fullhunt.Source{},
-	&github.Source{},
-	&hackertarget.Source{},
-	&intelx.Source{},
-	&passivetotal.Source{},
-	&quake.Source{},
-	&rapiddns.Source{},
-	&riddler.Source{},
-	&robtex.Source{},
-	&securitytrails.Source{},
-	&shodan.Source{},
-	&sitedossier.Source{},
-	&threatbook.Source{},
-	&threatminer.Source{},
-	&virustotal.Source{},
-	&waybackarchive.Source{},
-	&whoisxmlapi.Source{},
-	&zoomeye.Source{},
-	&zoomeyeapi.Source{},
-	&dnsrepo.Source{},
-	&hunter.Source{},
-	&reconcloud.Source{},
-
+var AllSources = [...]subscraping.ISource{
+	alienvault.NewAlienVault(),
+	anubis.NewAnubis(),
+	bevigil.NewBevigil(),
+	binaryedge.NewBinaryEdge(),
+	bufferover.NewBufferOver(),
+	c99.NewC99(),
+	censys.NewCensys(),
+	certspotter.NewCertSpotter(),
+	chaos.NewChaos(),
+	chinaz.NewChinaz(),
+	commoncrawl.NewCommonCrawl(),
+	crtsh.NewCrtsh(),
+	dnsdb.NewDnsDB(),
+	dnsdumpster.NewDnsDumpster(),
+	dnsrepo.NewDnsRepo(),
+	fofa.NewFofa(),
+	fullhunt.NewFullHunt(),
+	github.NewGitHub(),
+	hackertarget.NewHackerTarget(),
+	hunter.NewHunter(),
+	intelx.NewIntelX(),
+	passivetotal.NewPassiveTotal(),
+	quake.NewQuake(),
+	rapiddns.NewRapidDns(),
+	reconcloud.NewReconCloud(),
+	riddler.NewRiddler(),
+	robtex.NewRobtex(),
+	securitytrails.NewSecurityTrails(),
+	shodan.NewShodan(),
+	sitedossier.NewSiteDossier(),
+	threatbook.NewThreatBook(),
+	threatminer.NewThreatMiner(),
+	virustotal.NewVirusTotal(),
+	waybackarchive.NewWaybackArchive(),
+	whoisxmlapi.NewWhoIsXmlApi(),
+	zoomeye.NewZoomEye(),
+	zoomeyeapi.NewZoomEyeApi(),
 }
 
-var NameSourceMap = make(map[string]subscraping.Source, len(AllSources))
+var NameSourceMap = make(map[string]subscraping.ISource, len(AllSources))
 
 func init() {
 	for _, currentSource := range AllSources {
@@ -100,12 +99,12 @@ func init() {
 // against a given host. It wraps subscraping package and provides
 // a layer to build upon.
 type Agent struct {
-	sources []subscraping.Source
+	sources []subscraping.ISource
 }
 
 // New creates a new agent for passive subdomain discovery
 func New(sourceNames, excludedSourceNames []string, useAllSources, useSourcesSupportingRecurse bool) *Agent {
-	sources := make(map[string]subscraping.Source, len(AllSources))
+	sources := make(map[string]subscraping.ISource, len(AllSources))
 
 	if useAllSources {
 		maps.Copy(sources, NameSourceMap)

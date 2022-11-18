@@ -26,26 +26,30 @@ type Record struct {
 	LastSeen  int    `json:"lastSeen"`
 }
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []string
+// WhoIsXmlApi is the KeyApiSource that handles access to the WhoIsXmlApi data source.
+type WhoIsXmlApi struct {
+	*subscraping.KeyApiSource
+}
+
+func NewWhoIsXmlApi() *WhoIsXmlApi {
+	return &WhoIsXmlApi{KeyApiSource: &subscraping.KeyApiSource{}}
 }
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (w *WhoIsXmlApi) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(w.ApiKeys(), w.Name())
 		if randomApiKey == "" {
 			return
 		}
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://subdomains.whoisxmlapi.com/api/v1?apiKey=%s&domainName=%s", randomApiKey, domain))
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: w.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -53,7 +57,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		var data response
 		err = jsoniter.NewDecoder(resp.Body).Decode(&data)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: w.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
 			return
 		}
@@ -61,7 +65,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		resp.Body.Close()
 
 		for _, record := range data.Result.Records {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Domain}
+			results <- subscraping.Result{Source: w.Name(), Type: subscraping.Subdomain, Value: record.Domain}
 		}
 	}()
 
@@ -69,22 +73,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (w *WhoIsXmlApi) Name() string {
 	return "whoisxmlapi"
 }
 
-func (s *Source) IsDefault() bool {
+func (w *WhoIsXmlApi) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (w *WhoIsXmlApi) SourceType() string {
+	return subscraping.TYPE_API
 }

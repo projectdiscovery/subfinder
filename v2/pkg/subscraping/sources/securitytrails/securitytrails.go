@@ -15,19 +15,23 @@ type response struct {
 	Subdomains []string `json:"subdomains"`
 }
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []string
+// SecurityTrails is the KeyApiSource that handles access to the SecurityTrails data source.
+type SecurityTrails struct {
+	*subscraping.KeyApiSource
+}
+
+func NewSecurityTrails() *SecurityTrails {
+	return &SecurityTrails{KeyApiSource: &subscraping.KeyApiSource{}}
 }
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (s *SecurityTrails) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(s.ApiKeys(), s.Name())
 		if randomApiKey == "" {
 			return
 		}
@@ -64,22 +68,18 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (s *SecurityTrails) Name() string {
 	return "securitytrails"
 }
 
-func (s *Source) IsDefault() bool {
+func (s *SecurityTrails) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
+func (s *SecurityTrails) HasRecursiveSupport() bool {
 	return true
 }
 
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (s *SecurityTrails) SourceType() string {
+	return subscraping.TYPE_API
 }

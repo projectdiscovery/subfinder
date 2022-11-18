@@ -10,11 +10,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []string
-}
-
 type dnsdbLookupResponse struct {
 	Domain     string   `json:"domain"`
 	Subdomains []string `json:"subdomains"`
@@ -22,14 +17,23 @@ type dnsdbLookupResponse struct {
 	Error      string   `json:"error"`
 }
 
+// Shodan is the KeyApiSource that handles access to the Shodan data source.
+type Shodan struct {
+	*subscraping.KeyApiSource
+}
+
+func NewShodan() *Shodan {
+	return &Shodan{KeyApiSource: &subscraping.KeyApiSource{}}
+}
+
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (s *Shodan) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(s.ApiKeys(), s.Name())
 		if randomApiKey == "" {
 			return
 		}
@@ -64,22 +68,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (s *Shodan) Name() string {
 	return "shodan"
 }
 
-func (s *Source) IsDefault() bool {
+func (s *Shodan) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (s *Shodan) SourceType() string {
+	return subscraping.TYPE_API
 }

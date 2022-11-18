@@ -11,26 +11,30 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []string
+// Chinaz is the KeyApiSource that handles access to the Chinaz data source.
+type Chinaz struct {
+	*subscraping.KeyApiSource
+}
+
+func NewChinaz() *Chinaz {
+	return &Chinaz{KeyApiSource: &subscraping.KeyApiSource{}}
 }
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (c *Chinaz) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(c.ApiKeys(), c.Name())
 		if randomApiKey == "" {
 			return
 		}
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://apidatav2.chinaz.com/single/alexa?key=%s&domain=%s", randomApiKey, domain))
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -45,10 +49,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			_data := []byte(SubdomainList.ToString())
 			for i := 0; i < SubdomainList.Size(); i++ {
 				subdomain := jsoniter.Get(_data, i, "DataUrl").ToString()
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				results <- subscraping.Result{Source: c.Name(), Type: subscraping.Subdomain, Value: subdomain}
 			}
 		} else {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
 			return
 		}
 	}()
@@ -57,22 +61,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (c *Chinaz) Name() string {
 	return "chinaz"
 }
 
-func (s *Source) IsDefault() bool {
+func (c *Chinaz) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (c *Chinaz) SourceType() string {
+	return subscraping.TYPE_API
 }

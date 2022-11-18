@@ -60,11 +60,17 @@ func (a *agent) enumerate(ctx context.Context, baseURL string) {
 	}
 }
 
-// Source is the passive scraping agent
-type Source struct{}
+// SiteDossier is the Source that handles access to the SiteDossier data source.
+type SiteDossier struct {
+	*subscraping.Source
+}
+
+func NewSiteDossier() *SiteDossier {
+	return &SiteDossier{Source: &subscraping.Source{}}
+}
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (s *SiteDossier) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	a := agent{
@@ -81,22 +87,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (s *SiteDossier) Name() string {
 	return "sitedossier"
 }
 
-func (s *Source) IsDefault() bool {
-	return false
-}
-
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return false
-}
-
-func (s *Source) AddApiKeys(_ []string) {
-	// no key needed
+func (s *SiteDossier) SourceType() string {
+	return subscraping.TYPE_SCRAPE
 }

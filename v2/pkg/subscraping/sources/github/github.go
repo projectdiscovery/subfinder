@@ -36,33 +36,37 @@ type response struct {
 	Items      []item `json:"items"`
 }
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []string
+// GitHub is the KeyApiSource that handles access to the GitHub data source.
+type GitHub struct {
+	*subscraping.KeyApiSource
+}
+
+func NewGitHub() *GitHub {
+	return &GitHub{KeyApiSource: &subscraping.KeyApiSource{}}
 }
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (g *GitHub) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		if len(s.apiKeys) == 0 {
-			gologger.Debug().Msgf("Cannot use the '%s' source because there was no key defined for it.", s.Name())
+		if len(g.ApiKeys()) == 0 {
+			gologger.Debug().Msgf("Cannot use the '%s' source because there was no key defined for it.", g.Name())
 			return
 		}
 
-		tokens := NewTokenManager(s.apiKeys)
+		tokens := NewTokenManager(g.ApiKeys())
 
 		searchURL := fmt.Sprintf("https://api.github.com/search/code?per_page=100&q=%s&sort=created&order=asc", domain)
-		s.enumerate(ctx, searchURL, domainRegexp(domain), tokens, session, results)
+		g.enumerate(ctx, searchURL, domainRegexp(domain), tokens, session, results)
 	}()
 
 	return results
 }
 
-func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *regexp.Regexp, tokens *Tokens, session *subscraping.Session, results chan subscraping.Result) {
+func (s *GitHub) enumerate(ctx context.Context, searchURL string, domainRegexp *regexp.Regexp, tokens *Tokens, session *subscraping.Session, results chan subscraping.Result) {
 	select {
 	case <-ctx.Done():
 		return
@@ -191,22 +195,10 @@ func domainRegexp(domain string) *regexp.Regexp {
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (g *GitHub) Name() string {
 	return "github"
 }
 
-func (s *Source) IsDefault() bool {
-	return false
-}
-
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (g *GitHub) SourceType() string {
+	return subscraping.TYPE_API
 }

@@ -20,30 +20,34 @@ type response struct {
 	Results []string `json:"Results"`
 }
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []string
+// BufferOver is the KeyApiSource that handles access to the BufferOver data source.
+type BufferOver struct {
+	*subscraping.KeyApiSource
+}
+
+func NewBufferOver() *BufferOver {
+	return &BufferOver{KeyApiSource: &subscraping.KeyApiSource{}}
 }
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (b *BufferOver) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(b.ApiKeys(), b.Name())
 		if randomApiKey == "" {
 			return
 		}
 
-		s.getData(ctx, fmt.Sprintf("https://tls.bufferover.run/dns?q=.%s", domain), randomApiKey, session, results)
+		b.getData(ctx, fmt.Sprintf("https://tls.bufferover.run/dns?q=.%s", domain), randomApiKey, session, results)
 	}()
 
 	return results
 }
 
-func (s *Source) getData(ctx context.Context, sourceURL string, apiKey string, session *subscraping.Session, results chan subscraping.Result) {
+func (s *BufferOver) getData(ctx context.Context, sourceURL string, apiKey string, session *subscraping.Session, results chan subscraping.Result) {
 	resp, err := session.Get(ctx, sourceURL, "", map[string]string{"x-api-key": apiKey})
 
 	if err != nil && resp == nil {
@@ -86,22 +90,18 @@ func (s *Source) getData(ctx context.Context, sourceURL string, apiKey string, s
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (b *BufferOver) Name() string {
 	return "bufferover"
 }
 
-func (s *Source) IsDefault() bool {
+func (b *BufferOver) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
+func (b *BufferOver) HasRecursiveSupport() bool {
 	return true
 }
 
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (b *BufferOver) SourceType() string {
+	return subscraping.TYPE_API
 }

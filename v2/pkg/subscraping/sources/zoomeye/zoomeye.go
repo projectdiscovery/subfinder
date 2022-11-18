@@ -30,36 +30,35 @@ type zoomeyeResults struct {
 	} `json:"matches"`
 }
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []apiKey
+// ZoomEye is the CredsKeyApiSource that handles access to the ZoomEye data source.
+type ZoomEye struct {
+	*subscraping.MultiPartKeyApiSource
 }
 
-type apiKey struct {
-	username string
-	password string
+func NewZoomEye() *ZoomEye {
+	return &ZoomEye{MultiPartKeyApiSource: &subscraping.MultiPartKeyApiSource{}}
 }
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (z *ZoomEye) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
-		if randomApiKey.username == "" || randomApiKey.password == "" {
+		randomApiKey := subscraping.PickRandom(z.ApiKeys(), z.Name())
+		if randomApiKey.Username == "" || randomApiKey.Password == "" {
 			return
 		}
 
 		jwt, err := doLogin(ctx, session, randomApiKey)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: z.Name(), Type: subscraping.Error, Error: err}
 			return
 		}
 		// check if jwt is null
 		if jwt == "" {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: errors.New("could not log into zoomeye")}
+			results <- subscraping.Result{Source: z.Name(), Type: subscraping.Error, Error: errors.New("could not log into zoomeye")}
 			return
 		}
 
@@ -74,7 +73,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			isForbidden := resp != nil && resp.StatusCode == http.StatusForbidden
 			if err != nil {
 				if !isForbidden && currentPage == 0 {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+					results <- subscraping.Result{Source: z.Name(), Type: subscraping.Error, Error: err}
 					session.DiscardHTTPResponse(resp)
 				}
 				return
@@ -83,16 +82,16 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			var res zoomeyeResults
 			err = json.NewDecoder(resp.Body).Decode(&res)
 			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				results <- subscraping.Result{Source: z.Name(), Type: subscraping.Error, Error: err}
 				resp.Body.Close()
 				return
 			}
 			resp.Body.Close()
 
 			for _, r := range res.Matches {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: r.Site}
+				results <- subscraping.Result{Source: z.Name(), Type: subscraping.Subdomain, Value: r.Site}
 				for _, domain := range r.Domains {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: domain}
+					results <- subscraping.Result{Source: z.Name(), Type: subscraping.Subdomain, Value: domain}
 				}
 			}
 		}
@@ -102,10 +101,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // doLogin performs authentication on the ZoomEye API
-func doLogin(ctx context.Context, session *subscraping.Session, randomApiKey apiKey) (string, error) {
+func doLogin(ctx context.Context, session *subscraping.Session, randomApiKey subscraping.BasicAuth) (string, error) {
 	creds := &zoomAuth{
-		User: randomApiKey.username,
-		Pass: randomApiKey.password,
+		User: randomApiKey.Username,
+		Pass: randomApiKey.Password,
 	}
 	body, err := json.Marshal(&creds)
 	if err != nil {
@@ -128,24 +127,10 @@ func doLogin(ctx context.Context, session *subscraping.Session, randomApiKey api
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (z *ZoomEye) Name() string {
 	return "zoomeye"
 }
 
-func (s *Source) IsDefault() bool {
-	return false
-}
-
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = subscraping.CreateApiKeys(keys, func(k, v string) apiKey {
-		return apiKey{k, v}
-	})
+func (z *ZoomEye) SourceType() string {
+	return subscraping.TYPE_API
 }

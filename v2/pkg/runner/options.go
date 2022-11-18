@@ -14,6 +14,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
+	"github.com/logrusorgru/aurora"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
@@ -275,12 +276,14 @@ func listSources(options *Options) {
 	gologger.Info().Msgf("You can modify '%s' to configure your keys/tokens.\n\n", options.ProviderConfig)
 
 	for _, source := range passive.AllSources {
-		message := "%s\n"
-		sourceName := source.Name()
+		needsKey := ""
+		name := source.Name()
+		sourceType := aurora.Cyan(fmt.Sprintf("[%s type]", strings.ToUpper(source.SourceType()))).String()
 		if source.NeedsKey() {
-			message = "%s *\n"
+			name = fmt.Sprintf("%s *", source.Name())
+			needsKey = aurora.Yellow(fmt.Sprintf("[%s key]", source.KeyType())).String()
 		}
-		gologger.Silent().Msgf(message, sourceName)
+		gologger.Silent().Msgf("%s %s %s\n", name, sourceType, needsKey)
 	}
 }
 

@@ -27,11 +27,17 @@ type indexResponse struct {
 	APIURL string `json:"cdx-api"`
 }
 
-// Source is the passive scraping agent
-type Source struct{}
+// CommonCrawl is the Source that handles access to the CommonCrawl data source.
+type CommonCrawl struct {
+	*subscraping.Source
+}
+
+func NewCommonCrawl() *CommonCrawl {
+	return &CommonCrawl{Source: &subscraping.Source{}}
+}
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (c *CommonCrawl) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
@@ -39,7 +45,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		resp, err := session.SimpleGet(ctx, indexURL)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -47,7 +53,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		var indexes []indexResponse
 		err = jsoniter.NewDecoder(resp.Body).Decode(&indexes)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
 			return
 		}
@@ -71,7 +77,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 
 		for _, apiURL := range searchIndexes {
-			further := s.getSubdomains(ctx, apiURL, domain, session, results)
+			further := c.getSubdomains(ctx, apiURL, domain, session, results)
 			if !further {
 				break
 			}
@@ -82,27 +88,15 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (c *CommonCrawl) Name() string {
 	return "commoncrawl"
 }
 
-func (s *Source) IsDefault() bool {
-	return false
+func (c *CommonCrawl) SourceType() string {
+	return subscraping.TYPE_CRAWL
 }
 
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return false
-}
-
-func (s *Source) AddApiKeys(_ []string) {
-	// no key needed
-}
-
-func (s *Source) getSubdomains(ctx context.Context, searchURL, domain string, session *subscraping.Session, results chan subscraping.Result) bool {
+func (s *CommonCrawl) getSubdomains(ctx context.Context, searchURL, domain string, session *subscraping.Session, results chan subscraping.Result) bool {
 	for {
 		select {
 		case <-ctx.Done():

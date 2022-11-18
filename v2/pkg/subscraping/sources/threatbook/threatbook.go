@@ -23,26 +23,30 @@ type threatBookResponse struct {
 	} `json:"data"`
 }
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []string
+// ThreatBook is the KeyApiSource that handles access to the ThreatBook data source.
+type ThreatBook struct {
+	*subscraping.KeyApiSource
+}
+
+func NewThreatBook() *ThreatBook {
+	return &ThreatBook{KeyApiSource: &subscraping.KeyApiSource{}}
 }
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (t *ThreatBook) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(t.ApiKeys(), t.Name())
 		if randomApiKey == "" {
 			return
 		}
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://api.threatbook.cn/v3/domain/sub_domains?apikey=%s&resource=%s", randomApiKey, domain))
 		if err != nil && resp == nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: t.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -50,26 +54,26 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		var response threatBookResponse
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: t.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
 			return
 		}
 		resp.Body.Close()
 
 		if response.ResponseCode != 0 {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("code %d, %s", response.ResponseCode, response.VerboseMsg)}
+			results <- subscraping.Result{Source: t.Name(), Type: subscraping.Error, Error: fmt.Errorf("code %d, %s", response.ResponseCode, response.VerboseMsg)}
 			return
 		}
 
 		total, err := strconv.ParseInt(response.Data.SubDomains.Total, 10, 64)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: t.Name(), Type: subscraping.Error, Error: err}
 			return
 		}
 
 		if total > 0 {
 			for _, subdomain := range response.Data.SubDomains.Data {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				results <- subscraping.Result{Source: t.Name(), Type: subscraping.Subdomain, Value: subdomain}
 			}
 		}
 	}()
@@ -78,22 +82,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (t *ThreatBook) Name() string {
 	return "threatbook"
 }
 
-func (s *Source) IsDefault() bool {
-	return false
-}
-
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (t *ThreatBook) SourceType() string {
+	return subscraping.TYPE_API
 }

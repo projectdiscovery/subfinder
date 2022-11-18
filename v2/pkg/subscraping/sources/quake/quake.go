@@ -29,18 +29,22 @@ type quakeResults struct {
 	} `json:"meta"`
 }
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []string
+// Quake is the KeyApiSource that handles access to the Quake data source.
+type Quake struct {
+	*subscraping.KeyApiSource
+}
+
+func NewQuake() *Quake {
+	return &Quake{KeyApiSource: &subscraping.KeyApiSource{}}
 }
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (q *Quake) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(q.ApiKeys(), q.Name())
 		if randomApiKey == "" {
 			return
 		}
@@ -49,7 +53,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		var requestBody = []byte(fmt.Sprintf(`{"query":"domain: *.%s", "start":0, "size":500}`, domain))
 		resp, err := session.Post(ctx, "https://quake.360.cn/api/v3/search/quake_service", "", map[string]string{"Content-Type": "application/json", "X-QuakeToken": randomApiKey}, bytes.NewReader(requestBody))
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: q.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -57,14 +61,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		var response quakeResults
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: q.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
 			return
 		}
 		resp.Body.Close()
 
 		if response.Code != 0 {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.Message)}
+			results <- subscraping.Result{Source: q.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.Message)}
 			return
 		}
 
@@ -74,7 +78,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				if strings.ContainsAny(subdomain, "暂无权限") {
 					subdomain = ""
 				}
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				results <- subscraping.Result{Source: q.Name(), Type: subscraping.Subdomain, Value: subdomain}
 			}
 		}
 	}()
@@ -83,22 +87,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (q *Quake) Name() string {
 	return "quake"
 }
 
-func (s *Source) IsDefault() bool {
+func (q *Quake) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (q *Quake) SourceType() string {
+	return subscraping.TYPE_API
 }

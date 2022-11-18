@@ -28,19 +28,23 @@ type hunterData struct {
 	Total   int       `json:"total"`
 }
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []string
+// Hunter is the KeyApiSource that handles access to the Hunter data source.
+type Hunter struct {
+	*subscraping.KeyApiSource
+}
+
+func NewHunter() *Hunter {
+	return &Hunter{KeyApiSource: &subscraping.KeyApiSource{}}
 }
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (h *Hunter) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(h.ApiKeys(), h.Name())
 		if randomApiKey == "" {
 			return
 		}
@@ -51,7 +55,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			qbase64 := base64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("domain=\"%s\"", domain)))
 			resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://hunter.qianxin.com/openApi/search?api-key=%s&search=%s&page=1&page_size=100&is_web=3", randomApiKey, qbase64))
 			if err != nil && resp == nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				results <- subscraping.Result{Source: h.Name(), Type: subscraping.Error, Error: err}
 				session.DiscardHTTPResponse(resp)
 				return
 			}
@@ -59,21 +63,21 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			var response hunterResp
 			err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				results <- subscraping.Result{Source: h.Name(), Type: subscraping.Error, Error: err}
 				resp.Body.Close()
 				return
 			}
 			resp.Body.Close()
 
 			if response.Code == 401 || response.Code == 400 {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.Message)}
+				results <- subscraping.Result{Source: h.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.Message)}
 				return
 			}
 
 			if response.Data.Total > 0 {
 				for _, hunterInfo := range response.Data.InfoArr {
 					subdomain := hunterInfo.Domain
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+					results <- subscraping.Result{Source: h.Name(), Type: subscraping.Subdomain, Value: subdomain}
 				}
 			}
 			pages = int(response.Data.Total/1000) + 1
@@ -84,22 +88,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (h *Hunter) Name() string {
 	return "hunter"
 }
 
-func (s *Source) IsDefault() bool {
+func (h *Hunter) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (h *Hunter) SourceType() string {
+	return subscraping.TYPE_API
 }

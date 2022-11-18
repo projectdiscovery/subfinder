@@ -18,25 +18,29 @@ const (
 	baseURL        = "https://proapi.robtex.com/pdns"
 )
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []string
-}
-
 type result struct {
 	Rrname string `json:"rrname"`
 	Rrdata string `json:"rrdata"`
 	Rrtype string `json:"rrtype"`
 }
 
+// Robtex is the KeyApiSource that handles access to the Robtex data source.
+type Robtex struct {
+	*subscraping.KeyApiSource
+}
+
+func NewRobtex() *Robtex {
+	return &Robtex{KeyApiSource: &subscraping.KeyApiSource{}}
+}
+
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (r *Robtex) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(r.ApiKeys(), r.Name())
 		if randomApiKey == "" {
 			return
 		}
@@ -45,7 +49,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		ips, err := enumerate(ctx, session, fmt.Sprintf("%s/forward/%s?key=%s", baseURL, domain, randomApiKey), headers)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: r.Name(), Type: subscraping.Error, Error: err}
 			return
 		}
 
@@ -53,11 +57,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			if result.Rrtype == addrRecord || result.Rrtype == iPv6AddrRecord {
 				domains, err := enumerate(ctx, session, fmt.Sprintf("%s/reverse/%s?key=%s", baseURL, result.Rrdata, randomApiKey), headers)
 				if err != nil {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+					results <- subscraping.Result{Source: r.Name(), Type: subscraping.Error, Error: err}
 					return
 				}
 				for _, result := range domains {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: result.Rrdata}
+					results <- subscraping.Result{Source: r.Name(), Type: subscraping.Subdomain, Value: result.Rrdata}
 				}
 			}
 		}
@@ -95,22 +99,14 @@ func enumerate(ctx context.Context, session *subscraping.Session, targetURL stri
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (r *Robtex) Name() string {
 	return "robtex"
 }
 
-func (s *Source) IsDefault() bool {
+func (r *Robtex) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (r *Robtex) SourceType() string {
+	return subscraping.TYPE_API
 }

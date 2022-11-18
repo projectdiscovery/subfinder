@@ -23,11 +23,17 @@ type cloudAssetsList struct {
 	CloudProvider string `json:"cloud_provider"`
 }
 
-// Source is the passive scraping agent
-type Source struct{}
+// ReconCloud is the Source that handles access to the ReconCloud data source.
+type ReconCloud struct {
+	*subscraping.Source
+}
+
+func NewReconCloud() *ReconCloud {
+	return &ReconCloud{Source: &subscraping.Source{}}
+}
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (r *ReconCloud) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
@@ -35,7 +41,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://recon.cloud/api/search?domain=%s", domain))
 		if err != nil && resp == nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: r.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -43,7 +49,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		var response reconCloudResponse
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: r.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
 			return
 		}
@@ -51,7 +57,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		if len(response.CloudAssetsList) > 0 {
 			for _, cloudAsset := range response.CloudAssetsList {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: cloudAsset.Domain}
+				results <- subscraping.Result{Source: r.Name(), Type: subscraping.Subdomain, Value: cloudAsset.Domain}
 			}
 		}
 	}()
@@ -60,22 +66,18 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (r *ReconCloud) Name() string {
 	return "reconcloud"
 }
 
-func (s *Source) IsDefault() bool {
+func (r *ReconCloud) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
+func (r *ReconCloud) HasRecursiveSupport() bool {
 	return true
 }
 
-func (s *Source) NeedsKey() bool {
-	return false
-}
-
-func (s *Source) AddApiKeys(_ []string) {
-	// no key needed
+func (r *ReconCloud) SourceType() string {
+	return subscraping.TYPE_API
 }

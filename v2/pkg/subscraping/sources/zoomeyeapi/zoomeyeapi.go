@@ -19,19 +19,23 @@ type zoomeyeResults struct {
 	} `json:"list"`
 }
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []string
+// ZoomEyeApi is the KeyApiSource that handles access to the ZoomEyeApi data source.
+type ZoomEyeApi struct {
+	*subscraping.KeyApiSource
+}
+
+func NewZoomEyeApi() *ZoomEyeApi {
+	return &ZoomEyeApi{KeyApiSource: &subscraping.KeyApiSource{}}
 }
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (z *ZoomEyeApi) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(z.ApiKeys(), z.Name())
 		if randomApiKey == "" {
 			return
 		}
@@ -48,7 +52,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			isForbidden := resp != nil && resp.StatusCode == http.StatusForbidden
 			if err != nil {
 				if !isForbidden {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+					results <- subscraping.Result{Source: z.Name(), Type: subscraping.Error, Error: err}
 					session.DiscardHTTPResponse(resp)
 				}
 				return
@@ -58,14 +62,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			err = json.NewDecoder(resp.Body).Decode(&res)
 
 			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				results <- subscraping.Result{Source: z.Name(), Type: subscraping.Error, Error: err}
 				_ = resp.Body.Close()
 				return
 			}
 			_ = resp.Body.Close()
 			pages = int(res.Total/1000) + 1
 			for _, r := range res.List {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: r.Name}
+				results <- subscraping.Result{Source: z.Name(), Type: subscraping.Subdomain, Value: r.Name}
 			}
 		}
 	}()
@@ -74,22 +78,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (z *ZoomEyeApi) Name() string {
 	return "zoomeyeapi"
 }
 
-func (s *Source) IsDefault() bool {
-	return false
-}
-
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (z *ZoomEyeApi) SourceType() string {
+	return subscraping.TYPE_API
 }

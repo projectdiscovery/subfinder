@@ -17,25 +17,24 @@ type response struct {
 	Subdomains []string `json:"subdomains"`
 }
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []apiKey
+// PassiveTotal is the CredsKeyApiSource that handles access to the PassiveTotal data source.
+type PassiveTotal struct {
+	*subscraping.MultiPartKeyApiSource
 }
 
-type apiKey struct {
-	username string
-	password string
+func NewPassiveTotal() *PassiveTotal {
+	return &PassiveTotal{MultiPartKeyApiSource: &subscraping.MultiPartKeyApiSource{}}
 }
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (p *PassiveTotal) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
-		if randomApiKey.username == "" || randomApiKey.password == "" {
+		randomApiKey := subscraping.PickRandom(p.ApiKeys(), p.Name())
+		if randomApiKey.Username == "" || randomApiKey.Password == "" {
 			return
 		}
 
@@ -49,10 +48,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			"",
 			map[string]string{"Content-Type": "application/json"},
 			bytes.NewBuffer(request),
-			subscraping.BasicAuth{Username: randomApiKey.username, Password: randomApiKey.password},
+			subscraping.BasicAuth{Username: randomApiKey.Username, Password: randomApiKey.Password},
 		)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: p.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -60,7 +59,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		var data response
 		err = jsoniter.NewDecoder(resp.Body).Decode(&data)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: p.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
 			return
 		}
@@ -72,7 +71,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				continue
 			}
 			finalSubdomain := subdomain + "." + domain
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: finalSubdomain}
+			results <- subscraping.Result{Source: p.Name(), Type: subscraping.Subdomain, Value: finalSubdomain}
 		}
 	}()
 
@@ -80,24 +79,18 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (p *PassiveTotal) Name() string {
 	return "passivetotal"
 }
 
-func (s *Source) IsDefault() bool {
+func (p *PassiveTotal) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
+func (p *PassiveTotal) HasRecursiveSupport() bool {
 	return true
 }
 
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = subscraping.CreateApiKeys(keys, func(k, v string) apiKey {
-		return apiKey{k, v}
-	})
+func (p *PassiveTotal) SourceType() string {
+	return subscraping.TYPE_API
 }

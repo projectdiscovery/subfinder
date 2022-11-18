@@ -2,55 +2,59 @@ package dnsrepo
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []string
+// DnsRepo is the KeyApiSource that handles access to the DnsRepo data source.
+type DnsRepo struct {
+	*subscraping.KeyApiSource
+}
+
+func NewDnsRepo() *DnsRepo {
+	return &DnsRepo{KeyApiSource: &subscraping.KeyApiSource{}}
 }
 
 type DnsRepoResponse []struct {
 	Domain string
 }
 
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (d *DnsRepo) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(d.ApiKeys(), d.Name())
 		if randomApiKey == "" {
 			return
 		}
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://dnsrepo.noc.org/api/?apikey=%s&search=%s", randomApiKey, domain))
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
 		responseData, err := io.ReadAll(resp.Body)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
 		resp.Body.Close()
 		var result DnsRepoResponse
-		err = json.Unmarshal(responseData, &result)
+		err = jsoniter.Unmarshal(responseData, &result)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
 		for _, sub := range result {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: strings.TrimSuffix(sub.Domain, ".")}
+			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Subdomain, Value: strings.TrimSuffix(sub.Domain, ".")}
 		}
 
 	}()
@@ -58,22 +62,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (d *DnsRepo) Name() string {
 	return "dnsrepo"
 }
 
-func (s *Source) IsDefault() bool {
+func (d *DnsRepo) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (d *DnsRepo) SourceType() string {
+	return subscraping.TYPE_API
 }

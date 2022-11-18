@@ -16,25 +16,29 @@ type fullHuntResponse struct {
 	Status  int      `json:"status"`
 }
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []string
+// FullHunt is the KeyApiSource that handles access to the FullHunt data source.
+type FullHunt struct {
+	*subscraping.KeyApiSource
 }
 
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func NewFullHunt() *FullHunt {
+	return &FullHunt{KeyApiSource: &subscraping.KeyApiSource{}}
+}
+
+func (f *FullHunt) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(f.ApiKeys(), f.Name())
 		if randomApiKey == "" {
 			return
 		}
 
 		resp, err := session.Get(ctx, fmt.Sprintf("https://fullhunt.io/api/v1/domain/%s/subdomains", domain), "", map[string]string{"X-API-KEY": randomApiKey})
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: f.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -42,35 +46,27 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		var response fullHuntResponse
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: f.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
 			return
 		}
 		resp.Body.Close()
 		for _, record := range response.Hosts {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record}
+			results <- subscraping.Result{Source: f.Name(), Type: subscraping.Subdomain, Value: record}
 		}
 	}()
 	return results
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (f *FullHunt) Name() string {
 	return "fullhunt"
 }
 
-func (s *Source) IsDefault() bool {
+func (f *FullHunt) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (f *FullHunt) SourceType() string {
+	return subscraping.TYPE_API
 }

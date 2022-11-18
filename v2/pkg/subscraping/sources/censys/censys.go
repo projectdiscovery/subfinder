@@ -25,25 +25,24 @@ type response struct {
 	} `json:"metadata"`
 }
 
-// Source is the passive scraping agent
-type Source struct {
-	apiKeys []apiKey
+// Censys is the CredsApiSource that handles access to the Censys data source.
+type Censys struct {
+	*subscraping.MultiPartKeyApiSource
 }
 
-type apiKey struct {
-	token  string
-	secret string
+func NewCensys() *Censys {
+	return &Censys{MultiPartKeyApiSource: &subscraping.MultiPartKeyApiSource{}}
 }
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (c *Censys) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
-		if randomApiKey.token == "" || randomApiKey.secret == "" {
+		randomApiKey := subscraping.PickRandom(c.ApiKeys(), c.Name())
+		if randomApiKey.Username == "" || randomApiKey.Password == "" {
 			return
 		}
 
@@ -58,11 +57,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				"",
 				map[string]string{"Content-Type": "application/json", "Accept": "application/json"},
 				bytes.NewReader(request),
-				subscraping.BasicAuth{Username: randomApiKey.token, Password: randomApiKey.secret},
+				subscraping.BasicAuth{Username: randomApiKey.Username, Password: randomApiKey.Password},
 			)
 
 			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
 				session.DiscardHTTPResponse(resp)
 				return
 			}
@@ -70,7 +69,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			var censysResponse response
 			err = jsoniter.NewDecoder(resp.Body).Decode(&censysResponse)
 			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
 				resp.Body.Close()
 				return
 			}
@@ -79,10 +78,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			for _, res := range censysResponse.Results {
 				for _, part := range res.Data {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: part}
+					results <- subscraping.Result{Source: c.Name(), Type: subscraping.Subdomain, Value: part}
 				}
 				for _, part := range res.Data1 {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: part}
+					results <- subscraping.Result{Source: c.Name(), Type: subscraping.Subdomain, Value: part}
 				}
 			}
 
@@ -99,24 +98,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (c *Censys) Name() string {
 	return "censys"
 }
 
-func (s *Source) IsDefault() bool {
+func (c *Censys) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = subscraping.CreateApiKeys(keys, func(k, v string) apiKey {
-		return apiKey{k, v}
-	})
+func (c *Censys) SourceType() string {
+	return subscraping.TYPE_CERT
 }

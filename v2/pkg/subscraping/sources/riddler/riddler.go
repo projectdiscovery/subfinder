@@ -9,11 +9,17 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-// Source is the passive scraping agent
-type Source struct{}
+// Riddler is the Source that handles access to the Riddler data source.
+type Riddler struct {
+	*subscraping.Source
+}
+
+func NewRiddler() *Riddler {
+	return &Riddler{Source: &subscraping.Source{}}
+}
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (r *Riddler) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
@@ -21,7 +27,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://riddler.io/search?q=pld:%s&view_type=data_table", domain))
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: r.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -34,7 +40,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 			subdomain := session.Extractor.FindString(line)
 			if subdomain != "" {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				results <- subscraping.Result{Source: r.Name(), Type: subscraping.Subdomain, Value: subdomain}
 			}
 		}
 		resp.Body.Close()
@@ -44,22 +50,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (r *Riddler) Name() string {
 	return "riddler"
 }
 
-func (s *Source) IsDefault() bool {
+func (r *Riddler) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return false
-}
-
-func (s *Source) AddApiKeys(_ []string) {
-	// no key needed
+func (r *Riddler) SourceType() string {
+	return subscraping.TYPE_SCRAPE
 }

@@ -15,16 +15,21 @@ type Response struct {
 	Subdomains []string `json:"subdomains"`
 }
 
-type Source struct {
-	apiKeys []string
+// Bevigil is the KeyApiSource that handles access to the Bevigil data source.
+type Bevigil struct {
+	*subscraping.KeyApiSource
 }
 
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func NewBevigil() *Bevigil {
+	return &Bevigil{KeyApiSource: &subscraping.KeyApiSource{}}
+}
+
+func (b *Bevigil) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(b.ApiKeys(), b.Name())
 		if randomApiKey == "" {
 			return
 		}
@@ -33,7 +38,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		resp, err := session.Get(ctx, getUrl, "", map[string]string{"X-Access-Token": randomApiKey, "User-Agent": "subfinder"})
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: b.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -42,7 +47,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		var response Response
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: b.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
 			return
 		}
@@ -54,29 +59,21 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 
 		for _, subdomain := range subdomains {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+			results <- subscraping.Result{Source: b.Name(), Type: subscraping.Subdomain, Value: subdomain}
 		}
 	}()
 
 	return results
 }
 
-func (s *Source) Name() string {
+func (b *Bevigil) Name() string {
 	return "bevigil"
 }
 
-func (s *Source) IsDefault() bool {
+func (b *Bevigil) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (b *Bevigil) SourceType() string {
+	return subscraping.TYPE_API
 }
