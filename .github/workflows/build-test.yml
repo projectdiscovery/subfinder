@@ -29,7 +29,7 @@ jobs:
         with:
           timeout_seconds: 360
           max_attempts: 3
-          command: cd v2/ && go test ./...
+          command: cd v2; && go test ./... -v
 
       - name: Integration Tests
         env:
