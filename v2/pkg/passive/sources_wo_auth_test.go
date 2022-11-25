@@ -16,7 +16,7 @@ import (
 
 func TestSourcesWithoutKeys(t *testing.T) {
 	domain := "hackerone.com"
-	timeout := 60
+	timeout := 120
 
 	gologger.DefaultLogger.SetMaxLevel(levels.LevelDebug)
 
