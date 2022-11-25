@@ -25,11 +25,11 @@ jobs:
         working-directory: v2/
 
       - name: Run tests
-          uses: nick-invision/retry@v2
-          with:
-            timeout_seconds: 30
-            max_attempts: 3
-            command: go test ./...
+        uses: nick-invision/retry@v2
+        with:
+          timeout_seconds: 30
+          max_attempts: 3
+          command: go test ./...
 
       - name: Integration Tests
         env:
