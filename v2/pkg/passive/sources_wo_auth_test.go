@@ -48,7 +48,7 @@ func TestSourcesWithoutKeys(t *testing.T) {
 				}
 			}
 
-			assert.GreaterOrEqual(t, 1, len(results), fmt.Sprintf("No result for %s", source.Name()))
+			assert.GreaterOrEqual(t, len(results), 1, fmt.Sprintf("No result for %s", source.Name()))
 		})
 	}
 }
