@@ -32,14 +32,12 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/passivetotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/quake"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rapiddns"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/reconcloud"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/riddler"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/robtex"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatminer"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/whoisxmlapi"
@@ -58,8 +56,6 @@ var AllSources = [...]subscraping.Source{
 	&certspotter.Source{},
 	&chaos.Source{},
 	&chinaz.Source{},
-	&commoncrawl.Source{},
-	&crtsh.Source{},
 	&dnsdb.Source{},
 	&dnsdumpster.Source{},
 	&fofa.Source{},
@@ -76,7 +72,6 @@ var AllSources = [...]subscraping.Source{
 	&shodan.Source{},
 	&sitedossier.Source{},
 	&threatbook.Source{},
-	&threatminer.Source{},
 	&virustotal.Source{},
 	&waybackarchive.Source{},
 	&whoisxmlapi.Source{},
@@ -84,8 +79,10 @@ var AllSources = [...]subscraping.Source{
 	&zoomeyeapi.Source{},
 	&dnsrepo.Source{},
 	&hunter.Source{},
-	&reconcloud.Source{},
-
+	&crtsh.Source{},
+	&commoncrawl.Source{},
+	// &threatminer.Source{}, // failing  api giving https://api.threatminer.org/v2/domain.php?q=google.com&rt=5
+	// &reconcloud.Source{}, // failing due to cloudflare bot protection
 }
 
 var NameSourceMap = make(map[string]subscraping.Source, len(AllSources))

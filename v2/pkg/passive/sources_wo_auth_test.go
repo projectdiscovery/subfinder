@@ -2,6 +2,7 @@ package passive
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -39,9 +40,11 @@ func TestSourcesWithoutKeys(t *testing.T) {
 				assert.Equal(t, source.Name(), result.Source)
 
 				assert.Equal(t, expected.Type, result.Type)
-				assert.Equal(t, reflect.TypeOf(expected.Error), reflect.TypeOf(result.Error), result.Error)
 
-				assert.True(t, strings.HasSuffix(strings.ToLower(result.Value), strings.ToLower(expected.Value)))
+				if assert.Equal(t, reflect.TypeOf(expected.Error), reflect.TypeOf(result.Error), result.Error) {
+					assert.True(t, strings.HasSuffix(strings.ToLower(result.Value), strings.ToLower(expected.Value)),
+						fmt.Sprintf("result(%s) is not subdomain of %s", strings.ToLower(result.Value), expected.Value))
+				}
 			}
 
 			assert.GreaterOrEqual(t, len(results), 1)
