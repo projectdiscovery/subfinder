@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 
@@ -20,8 +21,16 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 	go func() {
 		defer close(results)
-
-		resp, err := session.SimpleGet(ctx, fmt.Sprintf("http://web.archive.org/cdx/search/cdx?url=*.%s/*&output=txt&fl=original&collapse=urlkey", domain))
+		var resp *http.Response
+		var err error
+		for i := 0; i < 3; i++ {
+			resp, err = session.SimpleGet(ctx, fmt.Sprintf("http://web.archive.org/cdx/search/cdx?url=*.%s/*&output=txt&fl=original&collapse=urlkey", domain))
+			if err != nil && err == context.DeadlineExceeded {
+				continue
+			} else {
+				break
+			}
+		}
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)

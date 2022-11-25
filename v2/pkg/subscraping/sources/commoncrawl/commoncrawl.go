@@ -113,9 +113,11 @@ func (s *Source) getSubdomains(ctx context.Context, searchURL, domain string, se
 			var headers = map[string]string{"Host": "index.commoncrawl.org"}
 			var resp *http.Response
 			var err error
-			for i := 0; i < 3; i++ {
+			for i := 0; i < maxRetries; i++ {
 				resp, err = session.Get(ctx, fmt.Sprintf("%s?url=*.%s", searchURL, domain), "", headers)
-				if err == nil {
+				if err != nil && err == context.DeadlineExceeded {
+					continue
+				} else {
 					break
 				}
 			}
