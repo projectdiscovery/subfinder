@@ -81,7 +81,7 @@ var AllSources = [...]subscraping.Source{
 	&hunter.Source{},
 	&crtsh.Source{},
 	&commoncrawl.Source{},
-	// &threatminer.Source{}, // failing  api giving https://api.threatminer.org/v2/domain.php?q=google.com&rt=5
+	// &threatminer.Source{}, // failing  api
 	// &reconcloud.Source{}, // failing due to cloudflare bot protection
 }
 
