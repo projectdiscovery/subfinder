@@ -27,9 +27,9 @@ jobs:
       - name: Run tests
         uses: nick-invision/retry@v2
         with:
-          timeout_seconds: 30
+          timeout_seconds: 360
           max_attempts: 3
-          command: go test ./...
+          command: cd v2/ && go test ./...
 
       - name: Integration Tests
         env:
