@@ -5,7 +5,6 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
@@ -19,7 +18,6 @@ import (
 const (
 	indexURL     = "https://index.commoncrawl.org/collinfo.json"
 	maxYearsBack = 5
-	maxRetries   = 3 // commoncrawl api request fails and slow
 )
 
 var year = time.Now().Year()
@@ -111,16 +109,7 @@ func (s *Source) getSubdomains(ctx context.Context, searchURL, domain string, se
 			return false
 		default:
 			var headers = map[string]string{"Host": "index.commoncrawl.org"}
-			var resp *http.Response
-			var err error
-			for i := 0; i < maxRetries; i++ {
-				resp, err = session.Get(ctx, fmt.Sprintf("%s?url=*.%s", searchURL, domain), "", headers)
-				if err != nil && err == context.DeadlineExceeded {
-					continue
-				} else {
-					break
-				}
-			}
+			resp, err := session.Get(ctx, fmt.Sprintf("%s?url=*.%s", searchURL, domain), "", headers)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				session.DiscardHTTPResponse(resp)
