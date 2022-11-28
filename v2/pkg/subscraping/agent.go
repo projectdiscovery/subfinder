@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"time"
@@ -24,6 +25,9 @@ func NewSession(domain string, proxy string, rateLimit, timeout int) (*Session, 
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
+		Dial: (&net.Dialer{
+			Timeout: time.Duration(timeout) * time.Second,
+		}).Dial,
 	}
 
 	// Add proxy
