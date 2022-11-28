@@ -3,6 +3,7 @@ package passive
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -15,7 +16,7 @@ import (
 
 func TestSourcesWithoutKeys(t *testing.T) {
 	domain := "hackerone.com"
-	timeout := 120
+	timeout := 60
 
 	gologger.DefaultLogger.SetMaxLevel(levels.LevelDebug)
 
@@ -42,13 +43,11 @@ func TestSourcesWithoutKeys(t *testing.T) {
 					assert.True(t, strings.HasSuffix(strings.ToLower(result.Value), strings.ToLower(expected.Value)),
 						fmt.Sprintf("result(%s) is not subdomain of %s", strings.ToLower(result.Value), expected.Value))
 				} else {
-					// ignoring strict nil match because of commoncrawl, crtsh & waybackarchive
-					// sometimes due to slow response and req gets timeout
-					assert.ErrorContains(t, result.Error, "Client.Timeout", fmt.Sprintf("got error for %s", source.Name()))
+					assert.Equal(t, reflect.TypeOf(expected.Error), reflect.TypeOf(result.Error), fmt.Sprintf("%s: %s", result.Source, result.Error))
 				}
 			}
 
-			assert.GreaterOrEqual(t, len(results), 1, fmt.Sprintf("No result for %s", source.Name()))
+			assert.GreaterOrEqual(t, len(results), 1, fmt.Sprintf("No result found for %s", source.Name()))
 		})
 	}
 }
