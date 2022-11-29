@@ -32,14 +32,12 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/passivetotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/quake"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rapiddns"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/reconcloud"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/riddler"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/robtex"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatminer"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/whoisxmlapi"
@@ -72,14 +70,12 @@ var AllSources = [...]subscraping.ISource{
 	passivetotal.NewPassiveTotal(),
 	quake.NewQuake(),
 	rapiddns.NewRapidDns(),
-	reconcloud.NewReconCloud(),
 	riddler.NewRiddler(),
 	robtex.NewRobtex(),
 	securitytrails.NewSecurityTrails(),
 	shodan.NewShodan(),
 	sitedossier.NewSiteDossier(),
 	threatbook.NewThreatBook(),
-	threatminer.NewThreatMiner(),
 	virustotal.NewVirusTotal(),
 	waybackarchive.NewWaybackArchive(),
 	whoisxmlapi.NewWhoIsXmlApi(),

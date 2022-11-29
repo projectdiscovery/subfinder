@@ -1,6 +1,5 @@
 name: 🔨 Build Test
 on:
-  push:
   pull_request:
   workflow_dispatch:
 
@@ -24,9 +23,12 @@ jobs:
         run: go build ./...
         working-directory: v2/
 
-      - name: Test
-        run: go test ./...
-        working-directory: v2/
+      - name: Run tests
+        uses: nick-invision/retry@v2
+        with:
+          timeout_seconds: 360
+          max_attempts: 3
+          command: cd v2; go test ./... -v
 
       - name: Integration Tests
         env:
