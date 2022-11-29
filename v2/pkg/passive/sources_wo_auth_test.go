@@ -2,6 +2,7 @@ package passive
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -36,15 +37,17 @@ func TestSourcesWithoutKeys(t *testing.T) {
 			for result := range source.Run(ctx, domain, session) {
 				results = append(results, result)
 
-				assert.Equal(t, source.Name(), result.Source)
+				assert.Equal(t, source.Name(), result.Source, "wrong source name")
 
-				assert.Equal(t, expected.Type, result.Type)
-				assert.Equal(t, reflect.TypeOf(expected.Error), reflect.TypeOf(result.Error), result.Error)
-
-				assert.True(t, strings.HasSuffix(strings.ToLower(result.Value), strings.ToLower(expected.Value)))
+				if result.Type != subscraping.Error {
+					assert.True(t, strings.HasSuffix(strings.ToLower(result.Value), strings.ToLower(expected.Value)),
+						fmt.Sprintf("result(%s) is not subdomain of %s", strings.ToLower(result.Value), expected.Value))
+				} else {
+					assert.Equal(t, reflect.TypeOf(expected.Error), reflect.TypeOf(result.Error), fmt.Sprintf("%s: %s", result.Source, result.Error))
+				}
 			}
 
-			assert.GreaterOrEqual(t, len(results), 1)
+			assert.GreaterOrEqual(t, len(results), 1, fmt.Sprintf("No result found for %s", source.Name()))
 		})
 	}
 }

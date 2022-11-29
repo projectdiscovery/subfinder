@@ -28,6 +28,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/github"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/gitlab"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hackertarget"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hunter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/passivetotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/quake"
@@ -37,9 +38,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sonarsearch"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatminer"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/whoisxmlapi"
@@ -58,8 +57,6 @@ var AllSources = [...]subscraping.Source{
 	&certspotter.Source{},
 	&chaos.Source{},
 	&chinaz.Source{},
-	&commoncrawl.Source{},
-	&crtsh.Source{},
 	&dnsdb.Source{},
 	&dnsdumpster.Source{},
 	&fofa.Source{},
@@ -76,15 +73,18 @@ var AllSources = [...]subscraping.Source{
 	&securitytrails.Source{},
 	&shodan.Source{},
 	&sitedossier.Source{},
-	&sonarsearch.Source{},
 	&threatbook.Source{},
-	&threatminer.Source{},
 	&virustotal.Source{},
 	&waybackarchive.Source{},
 	&whoisxmlapi.Source{},
 	&zoomeye.Source{},
 	&zoomeyeapi.Source{},
 	&dnsrepo.Source{},
+	&hunter.Source{},
+	&crtsh.Source{},
+	&commoncrawl.Source{},
+	// &threatminer.Source{}, // failing  api
+	// &reconcloud.Source{}, // failing due to cloudflare bot protection
 }
 
 var NameSourceMap = make(map[string]subscraping.Source, len(AllSources))

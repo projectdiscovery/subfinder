@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="static/subfinder-logo.png" alt="subfinder" width="200px"></a>
+  <img src="static/subfinder-logo.png" alt="subfinder" width="200px">
   <br>
 </h1>
 
@@ -13,7 +13,7 @@
 <a href="https://twitter.com/pdiscoveryio"><img src="https://img.shields.io/twitter/follow/pdiscoveryio.svg?logo=twitter"></a>
 <a href="https://discord.gg/projectdiscovery"><img src="https://img.shields.io/discord/695645237418131507.svg?logo=discord"></a>
 </p>
-      
+
 <p align="center">
   <a href="#features">Features</a> •
   <a href="#installation">Install</a> •
@@ -26,10 +26,11 @@
 ---
 
 
-Subfinder is a subdomain discovery tool that discovers valid subdomains for websites by using passive online sources. It has a simple modular architecture and is optimized for speed. subfinder is built for doing one thing only - passive subdomain enumeration, and it does that very well.
+`subfinder` is a subdomain discovery tool that returns valid subdomains for websites, using passive online sources. It has a simple, modular architecture and is optimized for speed. `subfinder` is built for
+doing one thing only - passive subdomain enumeration, and it does that very well.
 
-We have designed `subfinder` to comply with all passive sources licenses, and usage restrictions, as well as maintained a consistently passive model to make it useful to both penetration testers and bug bounty hunters alike.
-
+We have made it to comply with all the used passive source licenses and usage restrictions. The passive model guarantees speed and stealthiness that can be leveraged by both penetration testers and bug bounty
+hunters alike.
 
 # Features
 
@@ -38,89 +39,93 @@ We have designed `subfinder` to comply with all passive sources licenses, and us
   <br>
 </h1>
 
-
- - Fast and powerful resolution and wildcard elimination module
- - **Curated** passive sources to maximize results
- - Multiple Output formats supported (Json, File, Stdout)
- - Optimized for speed, very fast and **lightweight** on resources
- - **STDIN/OUT** support for integrating in workflows
-
+- Fast and powerful resolution and wildcard elimination modules
+- **Curated** passive sources to maximize results
+- Multiple output formats supported (JSON, file, stdout)
+- Optimized for speed and **lightweight** on resources
+- **STDIN/OUT** support enables easy integration into workflows
 
 # Usage
 
 ```sh
 subfinder -h
 ```
+
 This will display help for the tool. Here are all the switches it supports.
 
 ```yaml
+Usage:
+  ./subfinder [flags]
+
 Flags:
 INPUT:
-   -d, -domain string[]  domains to find subdomains for
-   -dL, -list string     file containing list of domains for subdomain discovery
+  -d, -domain string[]  domains to find subdomains for
+  -dL, -list string     file containing list of domains for subdomain discovery
 
 SOURCE:
-   -s, -sources string[]           specific sources to use for discovery (-s crtsh,github). Use -ls to display all available sources.
-   -recursive                      use only sources that can handle subdomains recursively (e.g. subdomain.domain.tld vs domain.tld)
-   -all                            use all sources for enumeration (slow)
-   -es, -exclude-sources string[]  sources to exclude from enumeration (-es alienvault,zoomeye)
+  -s, -sources string[]           specific sources to use for discovery (-s crtsh,github). Use -ls to display all available sources.
+  -recursive                      use only sources that can handle subdomains recursively (e.g. subdomain.domain.tld vs domain.tld)
+  -all                            use all sources for enumeration (slow)
+  -es, -exclude-sources string[]  sources to exclude from enumeration (-es alienvault,zoomeye)
 
 FILTER:
-   -m, -match string[]   subdomain or list of subdomain to match (file or comma separated)
-   -f, -filter string[]   subdomain or list of subdomain to filter (file or comma separated)
+  -m, -match string[]   subdomain or list of subdomain to match (file or comma separated)
+  -f, -filter string[]   subdomain or list of subdomain to filter (file or comma separated)
 
 RATE-LIMIT:
-   -rl, -rate-limit int  maximum number of http requests to send per second
-   -t int                number of concurrent goroutines for resolving (-active only) (default 10)
+  -rl, -rate-limit int  maximum number of http requests to send per second
+  -t int                number of concurrent goroutines for resolving (-active only) (default 10)
 
 OUTPUT:
-   -o, -output string       file to write output to
-   -oJ, -json               write output in JSONL(ines) format
-   -oD, -output-dir string  directory to write output (-dL only)
-   -cs, -collect-sources    include all sources in the output (-json only)
-   -oI, -ip                 include host IP in output (-active only)
+  -o, -output string       file to write output to
+  -oJ, -json               write output in JSONL(ines) format
+  -oD, -output-dir string  directory to write output (-dL only)
+  -cs, -collect-sources    include all sources in the output (-json only)
+  -oI, -ip                 include host IP in output (-active only)
 
 CONFIGURATION:
-   -config string                flag config file (default "$HOME/.config/subfinder/config.yaml")
-   -pc, -provider-config string  provider config file (default "$HOME/.config/subfinder/provider-config.yaml")
-   -r string[]                   comma separated list of resolvers to use
-   -rL, -rlist string            file containing list of resolvers to use
-   -nW, -active                  display active subdomains only
-   -proxy string                 http proxy to use with subfinder
-   -ei, -exclude-ip              exclude IPs from the list of domains
+  -config string                flag config file (default "$HOME/.config/subfinder/config.yaml")
+  -pc, -provider-config string  provider config file (default "$HOME/.config/subfinder/provider-config.yaml")
+  -r string[]                   comma separated list of resolvers to use
+  -rL, -rlist string            file containing list of resolvers to use
+  -nW, -active                  display active subdomains only
+  -proxy string                 http proxy to use with subfinder
+  -ei, -exclude-ip              exclude IPs from the list of domains
 
 DEBUG:
-   -silent             show only subdomains in output
-   -version            show version of subfinder
-   -v                  show verbose output
-   -nc, -no-color      disable color in output
-   -ls, -list-sources  list all available sources
+  -silent             show only subdomains in output
+  -version            show version of subfinder
+  -v                  show verbose output
+  -nc, -no-color      disable color in output
+  -ls, -list-sources  list all available sources
 
 OPTIMIZATION:
-   -timeout int   seconds to wait before timing out (default 30)
-   -max-time int  minutes to wait for enumeration results (default 10)
+  -timeout int   seconds to wait before timing out (default 30)
+  -max-time int  minutes to wait for enumeration results (default 10)
 ```
 
 # Installation
 
-Subfinder requires **go1.17** to install successfully. Run the following command to install the latest version:
+`subfinder` requires **go1.18** to install successfully. Run the following command to install the latest version:
 
 ```sh
 go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 ```
 
-
 ## Post Installation Instructions
 
-Subfinder will work after using the installation instructions however to configure Subfinder to work with certain services, you will need to have setup API keys. The following services do not work without an API key:
+`subfinder` can be used right after the installation, however the following services require configuring API keys to work:
 
-[BeVigil](https://bevigil.com/osint-api), [Binaryedge](https://binaryedge.io), [C99](https://api.c99.nl/), [Certspotter](https://sslmate.com/certspotter/api/), [Chinaz](http://my.chinaz.com/ChinazAPI/DataCenter/MyDataApi), [Censys](https://censys.io), [Chaos](https://chaos.projectdiscovery.io), [DnsDB](https://api.dnsdb.info), [Fofa](https://fofa.info/static_pages/api_help), [Github](https://github.com), [Intelx](https://intelx.io), [Passivetotal](http://passivetotal.org), [Robtex](https://www.robtex.com/api/), [SecurityTrails](http://securitytrails.com), [Shodan](https://shodan.io), [Threatbook](https://x.threatbook.cn/en), [Virustotal](https://www.virustotal.com), [WhoisXML API](https://whoisxmlapi.com/), [Zoomeye](https://www.zoomeye.org)
+[BeVigil](https://bevigil.com/osint-api), [BinaryEdge](https://binaryedge.io), [BufferOver](https://tls.bufferover.run), [C99](https://api.c99.nl/), [Censys](https://censys.io), [CertSpotter](https://sslmate.com/certspotter/api/), [Chaos](https://chaos.projectdiscovery.io), [Chinaz](http://my.chinaz.com/ChinazAPI/DataCenter/MyDataApi), [DnsDB](https://api.dnsdb.info), [Fofa](https://fofa.info/static_pages/api_help), [FullHunt](https://fullhunt.io), [GitHub](https://github.com), [Intelx](https://intelx.io), [PassiveTotal](http://passivetotal.org), [quake](https://quake.360.cn), [Robtex](https://www.robtex.com/api/), [SecurityTrails](http://securitytrails.com), [Shodan](https://shodan.io), [ThreatBook](https://x.threatbook.cn/en), [VirusTotal](https://www.virustotal.com), [WhoisXML API](https://whoisxmlapi.com/), [ZoomEye](https://www.zoomeye.org), [ZoomEye API](https://api.zoomeye.org), [dnsrepo](https://dnsrepo.noc.org), [Hunter](https://hunter.qianxin.com/)
 
-These values are stored in the `$HOME/.config/subfinder/provider-config.yaml` file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys can be specified for each of these services from which one of them will be used for enumeration.
+You can also use the `subfinder -ls` command to display all the available sources.
 
-For sources that require multiple keys, namely `Censys`, `Passivetotal`, they can be added by separating them via a colon (:).
+These values are stored in the `$HOME/.config/subfinder/provider-config.yaml` file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys
+can be specified for each of these services from which one of them will be used for enumeration.
 
-An example provider config file -
+Composite keys for sources like, `Censys`, `PassiveTotal`, `Fofa`, `Intellix` and `ZoomEye`, need to be separated with a colon (`:`).
+
+An example provider config file:
 
 ```yaml
 binaryedge:
@@ -137,6 +142,8 @@ shodan:
 github:
   - ghp_lkyJGU3jv1xmwk4SDXavrLDJ4dl2pSJMzj4X
   - ghp_gkUuhkIYdQPj13ifH4KA3cXRn8JD2lqir2d4
+zoomeye:
+  - zoomeye_username:zoomeye_password
 ```
 
 # Running Subfinder
@@ -182,7 +189,8 @@ events.hackerone.com
 [INF] Found 18 subdomains for hackerone.com in 3 seconds 672 milliseconds
 ```
 
-The subdomains discovered can be piped to other tools too. For example, you can pipe the subdomains discovered by subfinder to httpx [httpx](https://github.com/projectdiscovery/httpx) which will then find running http servers on the host.
+The subdomains discovered can be piped to other tools too. For example, you can pipe the discovered subdomains to [`httpx`](https://github.com/projectdiscovery/httpx) which will then find
+running HTTP servers on the host.
 
 ```console
 echo hackerone.com | subfinder -silent | httpx -silent
@@ -207,13 +215,13 @@ Pull the latest tagged [subfinder](https://hub.docker.com/r/projectdiscovery/sub
 docker pull projectdiscovery/subfinder:latest
 ```
 
-Running subfinder using docker image:
+Running `subfinder` using the docker image:
 
 ```sh
 docker run projectdiscovery/subfinder:latest -d hackerone.com
 ```
 
-Running subfinder using docker image with local config file:
+Running `subfinder` using the docker image, with a local config file:
 
 ```sh
 docker run -v $HOME/.config/subfinder:/root/.config/subfinder -t projectdiscovery/subfinder -d hackerone.com
@@ -236,30 +244,27 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"log"
 
-	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
 	"github.com/projectdiscovery/subfinder/v2/pkg/runner"
 )
 
 func main() {
 	runnerInstance, err := runner.NewRunner(&runner.Options{
-		Threads:            10, // Thread controls the number of threads to use for active enumerations
-		Timeout:            30, // Timeout is the seconds to wait for sources to respond
-		MaxEnumerationTime: 10, // MaxEnumerationTime is the maximum amount of time in mins to wait for enumeration
+		Threads:            10,                       // Thread controls the number of threads to use for active enumerations
+		Timeout:            30,                       // Timeout is the seconds to wait for sources to respond
+		MaxEnumerationTime: 10,                       // MaxEnumerationTime is the maximum amount of time in mins to wait for enumeration
 		Resolvers:          resolve.DefaultResolvers, // Use the default list of resolvers by marshaling it to the config
-		Sources:            passive.DefaultSources, // Use the default list of passive sources
-		AllSources:         passive.DefaultAllSources, // Use the default list of all passive sources
-		Recursive:          passive.DefaultRecursiveSources,	// Use the default list of recursive sources
-		Providers:          &runner.Providers{}, // Use empty api keys for all providers
-  })
+		ResultCallback: func(s *resolve.HostEntry) {  // Callback function to execute for available host
+			log.Println(s.Host, s.Source)
+		},
+	})
 
 	buf := bytes.Buffer{}
-	err = runnerInstance.EnumerateSingleDomain(context.Background(), "projectdiscovery.io", []io.Writer{&buf})
+	err = runnerInstance.EnumerateSingleDomain("projectdiscovery.io", []io.Writer{&buf})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -283,6 +288,7 @@ func main() {
 
 # License
 
-`subfinder` is made with 🖤 by the [projectdiscovery](https://projectdiscovery.io) team. Community contributions have made the project what it is. See the **[Thanks.md](https://github.com/projectdiscovery/subfinder/blob/master/THANKS.md)** file for more details.
+`subfinder` is made with 🖤 by the [projectdiscovery](https://projectdiscovery.io) team. Community contributions have made the project what it is. See
+the **[THANKS.md](https://github.com/projectdiscovery/subfinder/blob/master/THANKS.md)** file for more details.
 
-Read the disclaimer for usage at [DISCLAIMER.md](https://github.com/projectdiscovery/subfinder/blob/master/DISCLAIMER.md) and [contact us](mailto:contact@projectdiscovery.io) for any API removal.
+Read the usage disclaimer at [DISCLAIMER.md](https://github.com/projectdiscovery/subfinder/blob/master/DISCLAIMER.md) and [contact us](mailto:contact@projectdiscovery.io) for any API removal.
