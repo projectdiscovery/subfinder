@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -72,7 +73,39 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 		return
 	}
 
-	go s.proccesItems(ctx, items, domainRegexp, headers, session, results)
+	var wg sync.WaitGroup
+	wg.Add(len(items))
+
+	for _, it := range items {
+		go func(item item) {
+			// The original item.Path causes 404 error because the Gitlab API is expecting the url encoded path
+			fileUrl := fmt.Sprintf("https://gitlab.com/api/v4/projects/%d/repository/files/%s/raw?ref=%s", item.ProjectId, url.QueryEscape(item.Path), item.Ref)
+			resp, err := session.Get(ctx, fileUrl, "", headers)
+			if err != nil {
+				if resp == nil || (resp != nil && resp.StatusCode != http.StatusNotFound) {
+					session.DiscardHTTPResponse(resp)
+
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+					return
+				}
+			}
+
+			if resp.StatusCode == http.StatusOK {
+				scanner := bufio.NewScanner(resp.Body)
+				for scanner.Scan() {
+					line := scanner.Text()
+					if line == "" {
+						continue
+					}
+					for _, subdomain := range domainRegexp.FindAllString(line, -1) {
+						results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+					}
+				}
+				resp.Body.Close()
+			}
+			defer wg.Done()
+		}(it)
+	}
 
 	// Links header, first, next, last...
 	linksHeader := linkheader.Parse(resp.Header.Get("Link"))
@@ -91,37 +124,8 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 			s.enumerate(ctx, nextURL, domainRegexp, headers, session, results)
 		}
 	}
-}
 
-// proccesItems procceses gitlab response items
-func (s *Source) proccesItems(ctx context.Context, items []item, domainRegexp *regexp.Regexp, headers map[string]string, session *subscraping.Session, results chan<- subscraping.Result) {
-	for _, item := range items {
-		// The original item.Path causes 404 error because the Gitlab API is expecting the url encoded path
-		fileUrl := fmt.Sprintf("https://gitlab.com/api/v4/projects/%d/repository/files/%s/raw?ref=%s", item.ProjectId, url.QueryEscape(item.Path), item.Ref)
-		resp, err := session.Get(ctx, fileUrl, "", headers)
-		if err != nil {
-			if resp == nil || (resp != nil && resp.StatusCode != http.StatusNotFound) {
-				session.DiscardHTTPResponse(resp)
-
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				return
-			}
-		}
-
-		if resp.StatusCode == http.StatusOK {
-			scanner := bufio.NewScanner(resp.Body)
-			for scanner.Scan() {
-				line := scanner.Text()
-				if line == "" {
-					continue
-				}
-				for _, subdomain := range domainRegexp.FindAllString(line, -1) {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-				}
-			}
-			resp.Body.Close()
-		}
-	}
+	wg.Wait()
 }
 
 func domainRegexp(domain string) *regexp.Regexp {
