@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -71,12 +72,35 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 		return
 	}
 
+	go s.proccesItems(ctx, items, domainRegexp, headers, session, results)
+
+	// Links header, first, next, last...
+	linksHeader := linkheader.Parse(resp.Header.Get("Link"))
+	// Process the next link recursively
+	for _, link := range linksHeader {
+		if link.Rel == "next" {
+			nextURL, err := url.QueryUnescape(link.URL)
+			if err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				return
+			}
+
+			// TODO: hardcoded for testing, should be a source internal rate limit #718
+			time.Sleep(2 * time.Second)
+
+			s.enumerate(ctx, nextURL, domainRegexp, headers, session, results)
+		}
+	}
+}
+
+// proccesItems procceses gitlab response items
+func (s *Source) proccesItems(ctx context.Context, items []item, domainRegexp *regexp.Regexp, headers map[string]string, session *subscraping.Session, results chan<- subscraping.Result) {
 	for _, item := range items {
 		// The original item.Path causes 404 error because the Gitlab API is expecting the url encoded path
 		fileUrl := fmt.Sprintf("https://gitlab.com/api/v4/projects/%d/repository/files/%s/raw?ref=%s", item.ProjectId, url.QueryEscape(item.Path), item.Ref)
 		resp, err := session.Get(ctx, fileUrl, "", headers)
 		if err != nil {
-			if resp != nil && resp.StatusCode != http.StatusNotFound {
+			if resp == nil || (resp != nil && resp.StatusCode != http.StatusNotFound) {
 				session.DiscardHTTPResponse(resp)
 
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -96,20 +120,6 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 				}
 			}
 			resp.Body.Close()
-		}
-	}
-
-	// Links header, first, next, last...
-	linksHeader := linkheader.Parse(resp.Header.Get("Link"))
-	// Process the next link recursively
-	for _, link := range linksHeader {
-		if link.Rel == "next" {
-			nextURL, err := url.QueryUnescape(link.URL)
-			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				return
-			}
-			s.enumerate(ctx, nextURL, domainRegexp, headers, session, results)
 		}
 	}
 }
