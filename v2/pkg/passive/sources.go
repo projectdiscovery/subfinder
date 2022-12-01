@@ -20,6 +20,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/chinaz"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/commoncrawl"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtsh"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitorus"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdb"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdumpster"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsrepo"
@@ -56,12 +57,17 @@ var AllSources = [...]subscraping.Source{
 	&certspotter.Source{},
 	&chaos.Source{},
 	&chinaz.Source{},
+	&commoncrawl.Source{},
+	&crtsh.Source{},
+	&digitorus.Source{},
 	&dnsdb.Source{},
 	&dnsdumpster.Source{},
+	&dnsrepo.Source{},
 	&fofa.Source{},
 	&fullhunt.Source{},
 	&github.Source{},
 	&hackertarget.Source{},
+	&hunter.Source{},
 	&intelx.Source{},
 	&passivetotal.Source{},
 	&quake.Source{},
@@ -77,10 +83,6 @@ var AllSources = [...]subscraping.Source{
 	&whoisxmlapi.Source{},
 	&zoomeye.Source{},
 	&zoomeyeapi.Source{},
-	&dnsrepo.Source{},
-	&hunter.Source{},
-	&crtsh.Source{},
-	&commoncrawl.Source{},
 	// &threatminer.Source{}, // failing  api
 	// &reconcloud.Source{}, // failing due to cloudflare bot protection
 }
