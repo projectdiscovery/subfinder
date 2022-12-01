@@ -10,11 +10,17 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-// Source is the passive scraping agent
-type Source struct{}
+// Digitorus is the Source that handles access to the Digitorus data source.
+type Digitorus struct {
+	*subscraping.Source
+}
+
+func NewDigitorus() *Digitorus {
+	return &Digitorus{Source: &subscraping.Source{}}
+}
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (d *Digitorus) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
@@ -22,7 +28,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://certificatedetails.com/%s", domain))
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -37,7 +43,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 			subdomains := session.Extractor.FindAllString(line, -1)
 			for _, subdomain := range subdomains {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: strings.TrimPrefix(subdomain, ".")}
+				results <- subscraping.Result{Source: d.Name(), Type: subscraping.Subdomain, Value: strings.TrimPrefix(subdomain, ".")}
 			}
 		}
 	}()
@@ -46,22 +52,18 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (d *Digitorus) Name() string {
 	return "digitorus"
 }
 
-func (s *Source) IsDefault() bool {
+func (d *Digitorus) IsDefault() bool {
 	return true
 }
 
-func (s *Source) HasRecursiveSupport() bool {
+func (d *Digitorus) HasRecursiveSupport() bool {
 	return true
 }
 
-func (s *Source) NeedsKey() bool {
-	return false
-}
-
-func (s *Source) AddApiKeys(_ []string) {
-	// no key needed
+func (d *Digitorus) SourceType() string {
+	return subscraping.TYPE_CERT
 }
