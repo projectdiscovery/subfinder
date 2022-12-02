@@ -18,7 +18,9 @@ func (a *Agent) EnumerateSubdomains(domain string, proxy string, rateLimit, time
 
 		session, err := subscraping.NewSession(domain, proxy, rateLimit, timeout)
 		if err != nil {
-			results <- subscraping.Result{Type: subscraping.Error, Error: fmt.Errorf("could not init passive session for %s: %s", domain, err)}
+			results <- subscraping.Result{
+				Type: subscraping.Error, Error: fmt.Errorf("could not init passive session for %s: %s", domain, err),
+			}
 			return
 		}
 
@@ -34,11 +36,12 @@ func (a *Agent) EnumerateSubdomains(domain string, proxy string, rateLimit, time
 
 			now := time.Now()
 			go func(source subscraping.Source) {
+				duration := time.Since(now)
 				for resp := range source.Run(ctx, domain, session) {
+					resp.TimeTaken = duration
 					results <- resp
 				}
 
-				duration := time.Since(now)
 				timeTakenMutex.Lock()
 				timeTaken[source.Name()] = fmt.Sprintf("Source took %s for enumeration\n", duration)
 				timeTakenMutex.Unlock()
