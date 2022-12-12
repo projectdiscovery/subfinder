@@ -20,6 +20,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/chinaz"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/commoncrawl"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtsh"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitorus"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdb"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdumpster"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsrepo"
@@ -32,14 +33,12 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/passivetotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/quake"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rapiddns"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/reconcloud"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/riddler"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/robtex"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatminer"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/whoisxmlapi"
@@ -60,12 +59,15 @@ var AllSources = [...]subscraping.Source{
 	&chinaz.Source{},
 	&commoncrawl.Source{},
 	&crtsh.Source{},
+	&digitorus.Source{},
 	&dnsdb.Source{},
 	&dnsdumpster.Source{},
+	&dnsrepo.Source{},
 	&fofa.Source{},
 	&fullhunt.Source{},
 	&github.Source{},
 	&hackertarget.Source{},
+	&hunter.Source{},
 	&intelx.Source{},
 	&passivetotal.Source{},
 	&quake.Source{},
@@ -76,16 +78,13 @@ var AllSources = [...]subscraping.Source{
 	&shodan.Source{},
 	&sitedossier.Source{},
 	&threatbook.Source{},
-	&threatminer.Source{},
 	&virustotal.Source{},
 	&waybackarchive.Source{},
 	&whoisxmlapi.Source{},
 	&zoomeye.Source{},
 	&zoomeyeapi.Source{},
-	&dnsrepo.Source{},
-	&hunter.Source{},
-	&reconcloud.Source{},
-
+	// &threatminer.Source{}, // failing  api
+	// &reconcloud.Source{}, // failing due to cloudflare bot protection
 }
 
 var NameSourceMap = make(map[string]subscraping.Source, len(AllSources))
