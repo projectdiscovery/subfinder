@@ -4,6 +4,7 @@ package bevigil
 import (
 	"context"
 	"fmt"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -16,11 +17,14 @@ type Response struct {
 }
 
 type Source struct {
-	apiKeys []string
+	apiKeys   []string
+	timeTaken time.Duration
 }
 
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
+	startTime := time.Now()
+
 	go func() {
 		defer close(results)
 
@@ -31,7 +35,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		getUrl := fmt.Sprintf("https://osint.bevigil.com/api/%s/subdomains/", domain)
 
-		resp, err := session.Get(ctx, getUrl, "", map[string]string{"X-Access-Token": randomApiKey, "User-Agent": "subfinder"})
+		resp, err := session.Get(ctx, getUrl, "", map[string]string{
+			"X-Access-Token": randomApiKey, "User-Agent": "subfinder",
+		})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
@@ -56,8 +62,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		for _, subdomain := range subdomains {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 		}
-	}()
 
+		s.timeTaken = time.Since(startTime)
+	}()
 	return results
 }
 
@@ -79,4 +86,8 @@ func (s *Source) NeedsKey() bool {
 
 func (s *Source) AddApiKeys(keys []string) {
 	s.apiKeys = keys
+}
+
+func (s *Source) TimeTaken() time.Duration {
+	return s.timeTaken
 }

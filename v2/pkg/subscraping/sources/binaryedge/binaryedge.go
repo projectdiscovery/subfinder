@@ -7,6 +7,7 @@ import (
 	"math"
 	"net/url"
 	"strconv"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -36,12 +37,14 @@ type subdomainsResponse struct {
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys []string
+	apiKeys   []string
+	timeTaken time.Duration
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
+	startTime := time.Now()
 
 	go func() {
 		defer close(results)
@@ -68,13 +71,15 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 
 		if baseURL == "" {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("can't get API URL")}
+			results <- subscraping.Result{
+				Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("can't get API URL"),
+			}
 			return
 		}
 
 		s.enumerate(ctx, session, baseURL, firstPage, authHeader, results)
+		s.timeTaken = time.Since(startTime)
 	}()
-
 	return results
 }
 
@@ -137,6 +142,10 @@ func (s *Source) NeedsKey() bool {
 
 func (s *Source) AddApiKeys(keys []string) {
 	s.apiKeys = keys
+}
+
+func (s *Source) TimeTaken() time.Duration {
+	return s.timeTaken
 }
 
 func isV2(ctx context.Context, session *subscraping.Session, authHeader map[string]string) bool {

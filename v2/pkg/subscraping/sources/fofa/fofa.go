@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"strings"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -21,7 +22,8 @@ type fofaResponse struct {
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys []apiKey
+	apiKeys   []apiKey
+	timeTaken time.Duration
 }
 
 type apiKey struct {
@@ -32,6 +34,7 @@ type apiKey struct {
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
+	startTime := time.Now()
 
 	go func() {
 		defer close(results)
@@ -60,7 +63,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		resp.Body.Close()
 
 		if response.Error {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.ErrMsg)}
+			results <- subscraping.Result{
+				Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.ErrMsg),
+			}
 			return
 		}
 
@@ -72,6 +77,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 			}
 		}
+		s.timeTaken = time.Since(startTime)
 	}()
 
 	return results
@@ -98,4 +104,8 @@ func (s *Source) AddApiKeys(keys []string) {
 	s.apiKeys = subscraping.CreateApiKeys(keys, func(k, v string) apiKey {
 		return apiKey{k, v}
 	})
+}
+
+func (s *Source) TimeTaken() time.Duration {
+	return s.timeTaken
 }

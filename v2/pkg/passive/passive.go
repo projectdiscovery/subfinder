@@ -34,16 +34,13 @@ func (a *Agent) EnumerateSubdomains(domain string, proxy string, rateLimit, time
 		for _, runner := range a.sources {
 			wg.Add(1)
 
-			now := time.Now()
 			go func(source subscraping.Source) {
-				duration := time.Since(now)
 				for resp := range source.Run(ctx, domain, session) {
-					resp.TimeTaken = duration
 					results <- resp
 				}
 
 				timeTakenMutex.Lock()
-				timeTaken[source.Name()] = fmt.Sprintf("Source took %s for enumeration\n", duration)
+				timeTaken[source.Name()] = fmt.Sprintf("Source took %s for enumeration\n", source.TimeTaken())
 				timeTakenMutex.Unlock()
 
 				wg.Done()

@@ -61,11 +61,14 @@ func (a *agent) enumerate(ctx context.Context, baseURL string) {
 }
 
 // Source is the passive scraping agent
-type Source struct{}
+type Source struct {
+	timeTaken time.Duration
+}
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
+	startTime := time.Now()
 
 	a := agent{
 		session: session,
@@ -75,6 +78,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	go func() {
 		a.enumerate(ctx, fmt.Sprintf("http://www.sitedossier.com/parentdomain/%s", domain))
 		close(a.results)
+		s.timeTaken = time.Since(startTime)
 	}()
 
 	return a.results
@@ -99,4 +103,8 @@ func (s *Source) NeedsKey() bool {
 
 func (s *Source) AddApiKeys(_ []string) {
 	// no key needed
+}
+
+func (s *Source) TimeTaken() time.Duration {
+	return s.timeTaken
 }

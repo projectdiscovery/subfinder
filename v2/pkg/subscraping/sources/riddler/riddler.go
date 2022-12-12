@@ -5,16 +5,20 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
 // Source is the passive scraping agent
-type Source struct{}
+type Source struct {
+	timeTaken time.Duration
+}
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
+	startTime := time.Now()
 
 	go func() {
 		defer close(results)
@@ -38,6 +42,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 		}
 		resp.Body.Close()
+		s.timeTaken = time.Since(startTime)
 	}()
 
 	return results
@@ -62,4 +67,8 @@ func (s *Source) NeedsKey() bool {
 
 func (s *Source) AddApiKeys(_ []string) {
 	// no key needed
+}
+
+func (s *Source) TimeTaken() time.Duration {
+	return s.timeTaken
 }

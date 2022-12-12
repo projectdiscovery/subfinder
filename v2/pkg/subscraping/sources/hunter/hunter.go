@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -30,12 +31,14 @@ type hunterData struct {
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys []string
+	apiKeys   []string
+	timeTaken time.Duration
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
+	startTime := time.Now()
 
 	go func() {
 		defer close(results)
@@ -66,7 +69,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			resp.Body.Close()
 
 			if response.Code == 401 || response.Code == 400 {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.Message)}
+				results <- subscraping.Result{
+					Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.Message),
+				}
 				return
 			}
 
@@ -78,6 +83,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 			pages = int(response.Data.Total/1000) + 1
 		}
+		s.timeTaken = time.Since(startTime)
 	}()
 
 	return results
@@ -102,4 +108,8 @@ func (s *Source) NeedsKey() bool {
 
 func (s *Source) AddApiKeys(keys []string) {
 	s.apiKeys = keys
+}
+
+func (s *Source) TimeTaken() time.Duration {
+	return s.timeTaken
 }

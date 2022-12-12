@@ -6,13 +6,15 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys []string
+	apiKeys   []string
+	timeTaken time.Duration
 }
 
 type DnsRepoResponse []struct {
@@ -21,6 +23,7 @@ type DnsRepoResponse []struct {
 
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
+	startTime := time.Now()
 
 	go func() {
 		defer close(results)
@@ -50,10 +53,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 		for _, sub := range result {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: strings.TrimSuffix(sub.Domain, ".")}
+			results <- subscraping.Result{
+				Source: s.Name(), Type: subscraping.Subdomain, Value: strings.TrimSuffix(sub.Domain, "."),
+			}
 		}
 
+		s.timeTaken = time.Since(startTime)
 	}()
+
 	return results
 }
 
@@ -76,4 +83,8 @@ func (s *Source) NeedsKey() bool {
 
 func (s *Source) AddApiKeys(keys []string) {
 	s.apiKeys = keys
+}
+
+func (s *Source) TimeTaken() time.Duration {
+	return s.timeTaken
 }

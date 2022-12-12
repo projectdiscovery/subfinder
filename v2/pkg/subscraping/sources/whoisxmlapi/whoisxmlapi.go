@@ -4,6 +4,7 @@ package whoisxmlapi
 import (
 	"context"
 	"fmt"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -28,12 +29,14 @@ type Record struct {
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys []string
+	apiKeys   []string
+	timeTaken time.Duration
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
+	startTime := time.Now()
 
 	go func() {
 		defer close(results)
@@ -63,6 +66,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		for _, record := range data.Result.Records {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Domain}
 		}
+		s.timeTaken = time.Since(startTime)
 	}()
 
 	return results
@@ -87,4 +91,8 @@ func (s *Source) NeedsKey() bool {
 
 func (s *Source) AddApiKeys(keys []string) {
 	s.apiKeys = keys
+}
+
+func (s *Source) TimeTaken() time.Duration {
+	return s.timeTaken
 }

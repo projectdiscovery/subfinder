@@ -4,6 +4,7 @@ package chaos
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/projectdiscovery/chaos-client/pkg/chaos"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -11,12 +12,14 @@ import (
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys []string
+	apiKeys   []string
+	timeTaken time.Duration
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(_ context.Context, domain string, _ *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
+	startTime := time.Now()
 
 	go func() {
 		defer close(results)
@@ -34,8 +37,11 @@ func (s *Source) Run(_ context.Context, domain string, _ *subscraping.Session) <
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: result.Error}
 				break
 			}
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: fmt.Sprintf("%s.%s", result.Subdomain, domain)}
+			results <- subscraping.Result{
+				Source: s.Name(), Type: subscraping.Subdomain, Value: fmt.Sprintf("%s.%s", result.Subdomain, domain),
+			}
 		}
+		s.timeTaken = time.Since(startTime)
 	}()
 
 	return results
@@ -60,4 +66,8 @@ func (s *Source) NeedsKey() bool {
 
 func (s *Source) AddApiKeys(keys []string) {
 	s.apiKeys = keys
+}
+
+func (s *Source) TimeTaken() time.Duration {
+	return s.timeTaken
 }

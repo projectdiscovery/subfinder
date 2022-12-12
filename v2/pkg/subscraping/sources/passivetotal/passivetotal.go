@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"regexp"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -19,7 +20,8 @@ type response struct {
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys []apiKey
+	apiKeys   []apiKey
+	timeTaken time.Duration
 }
 
 type apiKey struct {
@@ -30,6 +32,7 @@ type apiKey struct {
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
+	startTime := time.Now()
 
 	go func() {
 		defer close(results)
@@ -74,6 +77,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			finalSubdomain := subdomain + "." + domain
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: finalSubdomain}
 		}
+		s.timeTaken = time.Since(startTime)
 	}()
 
 	return results
@@ -100,4 +104,8 @@ func (s *Source) AddApiKeys(keys []string) {
 	s.apiKeys = subscraping.CreateApiKeys(keys, func(k, v string) apiKey {
 		return apiKey{k, v}
 	})
+}
+
+func (s *Source) TimeTaken() time.Duration {
+	return s.timeTaken
 }

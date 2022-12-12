@@ -38,12 +38,14 @@ type response struct {
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys []string
+	apiKeys   []string
+	timeTaken time.Duration
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
+	startTime := time.Now()
 
 	go func() {
 		defer close(results)
@@ -57,6 +59,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		searchURL := fmt.Sprintf("https://api.github.com/search/code?per_page=100&q=%s&sort=created&order=asc", domain)
 		s.enumerate(ctx, searchURL, domainRegexp(domain), tokens, session, results)
+		s.timeTaken = time.Since(startTime)
 	}()
 
 	return results
@@ -80,7 +83,9 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 		}
 	}
 
-	headers := map[string]string{"Accept": "application/vnd.github.v3.text-match+json", "Authorization": "token " + token.Hash}
+	headers := map[string]string{
+		"Accept": "application/vnd.github.v3.text-match+json", "Authorization": "token " + token.Hash,
+	}
 
 	// Initial request to GitHub search
 	resp, err := session.Get(ctx, searchURL, "", headers)
@@ -209,4 +214,8 @@ func (s *Source) NeedsKey() bool {
 
 func (s *Source) AddApiKeys(keys []string) {
 	s.apiKeys = keys
+}
+
+func (s *Source) TimeTaken() time.Duration {
+	return s.timeTaken
 }

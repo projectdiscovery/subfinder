@@ -21,6 +21,7 @@ type Source interface {
 	// which contains the extractor for subdomains, http client
 	// and other stuff.
 	Run(context.Context, string, *Session) <-chan Result
+
 	// Name returns the name of the source. It is preferred to use lower case names.
 	Name() string
 
@@ -37,6 +38,9 @@ type Source interface {
 	NeedsKey() bool
 
 	AddApiKeys([]string)
+
+	// TimeTaken returns the time.Duration for the source to run
+	TimeTaken() time.Duration
 }
 
 // Session is the option passed to the source, an option is created
@@ -52,11 +56,10 @@ type Session struct {
 
 // Result is a result structure returned by a source
 type Result struct {
-	Type      ResultType
-	Source    string
-	Value     string
-	TimeTaken time.Duration
-	Error     error
+	Type   ResultType
+	Source string
+	Value  string
+	Error  error
 }
 
 // ResultType is the type of result returned by the source

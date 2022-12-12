@@ -4,6 +4,7 @@ package anubis
 import (
 	"context"
 	"fmt"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -11,11 +12,14 @@ import (
 )
 
 // Source is the passive scraping agent
-type Source struct{}
+type Source struct {
+	timeTaken time.Duration
+}
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
+	startTime := time.Now()
 
 	go func() {
 		defer close(results)
@@ -40,6 +44,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		for _, record := range subdomains {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record}
 		}
+
+		s.timeTaken = time.Since(startTime)
 	}()
 
 	return results
@@ -64,4 +70,8 @@ func (s *Source) NeedsKey() bool {
 
 func (s *Source) AddApiKeys(_ []string) {
 	// no key needed
+}
+
+func (s *Source) TimeTaken() time.Duration {
+	return s.timeTaken
 }
