@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 	"golang.org/x/exp/maps"
 )
@@ -28,14 +29,14 @@ func printStatistics(stats map[string]subscraping.Statistics) {
 	}
 
 	if len(lines) > 0 {
-		fmt.Printf("\n Source               Duration      Results     Errors\n%s\n", strings.Repeat("─", 56))
-		fmt.Print(strings.Join(lines, "\n"))
-		fmt.Print("\n")
+		gologger.Print().Msgf("\n Source               Duration      Results     Errors\n%s\n", strings.Repeat("─", 56))
+		gologger.Print().Msgf(strings.Join(lines, "\n"))
+		gologger.Print().Msgf("\n")
 	}
 
 	if len(skipped) > 0 {
-		fmt.Printf("\n The following sources were included but skipped...\n\n")
-		fmt.Print(strings.Join(skipped, "\n"))
-		fmt.Print("\n\n")
+		gologger.Print().Msgf("\n The following sources were included but skipped...\n\n")
+		gologger.Print().Msgf(strings.Join(skipped, "\n"))
+		gologger.Print().Msgf("\n\n")
 	}
 }

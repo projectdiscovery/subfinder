@@ -64,7 +64,6 @@ type Source struct {
 	timeTaken time.Duration
 	errors    int
 	results   int
-	skipped   bool
 }
 
 // Run function returns all subdomains found with the service
