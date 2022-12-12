@@ -3,10 +3,10 @@ package passive
 import (
 	"context"
 	"fmt"
+	"sort"
 	"sync"
 	"time"
 
-	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
@@ -26,9 +26,6 @@ func (a *Agent) EnumerateSubdomains(domain string, proxy string, rateLimit, time
 
 		ctx, cancel := context.WithTimeout(context.Background(), maxEnumTime)
 
-		timeTaken := make(map[string]string)
-		timeTakenMutex := &sync.Mutex{}
-
 		wg := &sync.WaitGroup{}
 		// Run each source in parallel on the target domain
 		for _, runner := range a.sources {
@@ -38,21 +35,23 @@ func (a *Agent) EnumerateSubdomains(domain string, proxy string, rateLimit, time
 				for resp := range source.Run(ctx, domain, session) {
 					results <- resp
 				}
-
-				timeTakenMutex.Lock()
-				timeTaken[source.Name()] = fmt.Sprintf("Source took %s for enumeration\n", source.TimeTaken())
-				timeTakenMutex.Unlock()
-
 				wg.Done()
 			}(runner)
 		}
 		wg.Wait()
-
-		for source, data := range timeTaken {
-			gologger.Verbose().Label(source).Msg(data)
-		}
-
 		cancel()
 	}()
 	return results
+}
+
+func (a *Agent) GetStatistics() map[string]subscraping.Statistics {
+	stats := make(map[string]subscraping.Statistics)
+	sort.Slice(a.sources, func(i, j int) bool {
+		return a.sources[i].Name() > a.sources[j].Name()
+	})
+
+	for _, source := range a.sources {
+		stats[source.Name()] = source.Statistics()
+	}
+	return stats
 }

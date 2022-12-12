@@ -23,6 +23,9 @@ const (
 type Source struct {
 	apiKeys   []string
 	timeTaken time.Duration
+	errors    int
+	results   int
+	skipped   bool
 }
 
 type result struct {
@@ -34,13 +37,18 @@ type result struct {
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	startTime := time.Now()
+	s.errors = 0
+	s.results = 0
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			s.timeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
 		if randomApiKey == "" {
+			s.skipped = true
 			return
 		}
 
@@ -49,6 +57,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		ips, err := enumerate(ctx, session, fmt.Sprintf("%s/forward/%s?key=%s", baseURL, domain, randomApiKey), headers)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.errors++
 			return
 		}
 
@@ -57,14 +66,15 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				domains, err := enumerate(ctx, session, fmt.Sprintf("%s/reverse/%s?key=%s", baseURL, result.Rrdata, randomApiKey), headers)
 				if err != nil {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+					s.errors++
 					return
 				}
 				for _, result := range domains {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: result.Rrdata}
+					s.results++
 				}
 			}
 		}
-		s.timeTaken = time.Since(startTime)
 	}()
 
 	return results
@@ -120,6 +130,11 @@ func (s *Source) AddApiKeys(keys []string) {
 	s.apiKeys = keys
 }
 
-func (s *Source) TimeTaken() time.Duration {
-	return s.timeTaken
+func (s *Source) Statistics() subscraping.Statistics {
+	return subscraping.Statistics{
+		Errors:    s.errors,
+		Results:   s.results,
+		TimeTaken: s.timeTaken,
+		Skipped:   s.skipped,
+	}
 }

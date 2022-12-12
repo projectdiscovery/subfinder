@@ -14,18 +14,26 @@ import (
 type Source struct {
 	apiKeys   []string
 	timeTaken time.Duration
+	errors    int
+	results   int
+	skipped   bool
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(_ context.Context, domain string, _ *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	startTime := time.Now()
+	s.errors = 0
+	s.results = 0
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			s.timeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
 		if randomApiKey == "" {
+			s.skipped = true
 			return
 		}
 
@@ -35,13 +43,14 @@ func (s *Source) Run(_ context.Context, domain string, _ *subscraping.Session) <
 		}) {
 			if result.Error != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: result.Error}
+				s.errors++
 				break
 			}
 			results <- subscraping.Result{
 				Source: s.Name(), Type: subscraping.Subdomain, Value: fmt.Sprintf("%s.%s", result.Subdomain, domain),
 			}
+			s.results++
 		}
-		s.timeTaken = time.Since(startTime)
 	}()
 
 	return results
@@ -68,6 +77,11 @@ func (s *Source) AddApiKeys(keys []string) {
 	s.apiKeys = keys
 }
 
-func (s *Source) TimeTaken() time.Duration {
-	return s.timeTaken
+func (s *Source) Statistics() subscraping.Statistics {
+	return subscraping.Statistics{
+		Errors:    s.errors,
+		Results:   s.results,
+		TimeTaken: s.timeTaken,
+		Skipped:   s.skipped,
+	}
 }

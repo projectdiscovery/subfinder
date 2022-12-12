@@ -15,6 +15,14 @@ type BasicAuth struct {
 	Password string
 }
 
+// Statistics contains statistics about the scraping process
+type Statistics struct {
+	TimeTaken time.Duration
+	Errors    int
+	Results   int
+	Skipped   bool
+}
+
 // Source is an interface inherited by each passive source
 type Source interface {
 	// Run takes a domain as argument and a session object
@@ -39,8 +47,8 @@ type Source interface {
 
 	AddApiKeys([]string)
 
-	// TimeTaken returns the time.Duration for the source to run
-	TimeTaken() time.Duration
+	// Statistics returns the scrapping statistics for the source
+	Statistics() Statistics
 }
 
 // Session is the option passed to the source, an option is created

@@ -21,23 +21,32 @@ type fullHuntResponse struct {
 type Source struct {
 	apiKeys   []string
 	timeTaken time.Duration
+	errors    int
+	results   int
+	skipped   bool
 }
 
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	startTime := time.Now()
+	s.errors = 0
+	s.results = 0
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			s.timeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
 		if randomApiKey == "" {
+			s.skipped = true
 			return
 		}
 
 		resp, err := session.Get(ctx, fmt.Sprintf("https://fullhunt.io/api/v1/domain/%s/subdomains", domain), "", map[string]string{"X-API-KEY": randomApiKey})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -46,14 +55,15 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.errors++
 			resp.Body.Close()
 			return
 		}
 		resp.Body.Close()
 		for _, record := range response.Hosts {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record}
+			s.results++
 		}
-		s.timeTaken = time.Since(startTime)
 	}()
 
 	return results
@@ -80,6 +90,11 @@ func (s *Source) AddApiKeys(keys []string) {
 	s.apiKeys = keys
 }
 
-func (s *Source) TimeTaken() time.Duration {
-	return s.timeTaken
+func (s *Source) Statistics() subscraping.Statistics {
+	return subscraping.Statistics{
+		Errors:    s.errors,
+		Results:   s.results,
+		TimeTaken: s.timeTaken,
+		Skipped:   s.skipped,
+	}
 }
