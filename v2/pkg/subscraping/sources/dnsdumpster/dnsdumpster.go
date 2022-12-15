@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
@@ -64,7 +65,7 @@ type DnsDumpster struct {
 }
 
 func NewDnsDumpster() *DnsDumpster {
-	return &DnsDumpster{Source: &subscraping.Source{}}
+	return &DnsDumpster{Source: &subscraping.Source{Errors: 0, Results: 0}}
 }
 
 // Run function returns all subdomains found with the service
@@ -72,11 +73,15 @@ func (d *DnsDumpster) Run(ctx context.Context, domain string, session *subscrapi
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			d.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		resp, err := session.SimpleGet(ctx, "https://dnsdumpster.com/")
 		if err != nil {
 			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Error, Error: err}
+			d.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -84,6 +89,7 @@ func (d *DnsDumpster) Run(ctx context.Context, domain string, session *subscrapi
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Error, Error: err}
+			d.Errors++
 			resp.Body.Close()
 			return
 		}
@@ -93,11 +99,13 @@ func (d *DnsDumpster) Run(ctx context.Context, domain string, session *subscrapi
 		data, err := postForm(ctx, session, csrfToken, domain)
 		if err != nil {
 			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Error, Error: err}
+			d.Errors++
 			return
 		}
 
 		for _, subdomain := range session.Extractor.FindAllString(data, -1) {
 			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Subdomain, Value: subdomain}
+			d.Results++
 		}
 	}()
 

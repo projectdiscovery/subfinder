@@ -21,6 +21,7 @@ var reNext = regexp.MustCompile(`<a href="([A-Za-z0-9/.]+)"><b>`)
 
 type agent struct {
 	results chan subscraping.Result
+	errors  int
 	session *subscraping.Session
 }
 
@@ -35,6 +36,7 @@ func (a *agent) enumerate(ctx context.Context, baseURL string) {
 	isnotfound := resp != nil && resp.StatusCode == http.StatusNotFound
 	if err != nil && !isnotfound {
 		a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
+		a.errors++
 		a.session.DiscardHTTPResponse(resp)
 		return
 	}
@@ -42,6 +44,7 @@ func (a *agent) enumerate(ctx context.Context, baseURL string) {
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
+		a.errors++
 		resp.Body.Close()
 		return
 	}
@@ -66,7 +69,7 @@ type SiteDossier struct {
 }
 
 func NewSiteDossier() *SiteDossier {
-	return &SiteDossier{Source: &subscraping.Source{}}
+	return &SiteDossier{Source: &subscraping.Source{Errors: 0, Results: 0}}
 }
 
 // Run function returns all subdomains found with the service
@@ -79,8 +82,14 @@ func (s *SiteDossier) Run(ctx context.Context, domain string, session *subscrapi
 	}
 
 	go func() {
+		defer func(startTime time.Time) {
+			s.TimeTaken = time.Since(startTime)
+			close(a.results)
+		}(time.Now())
+
 		a.enumerate(ctx, fmt.Sprintf("http://www.sitedossier.com/parentdomain/%s", domain))
-		close(a.results)
+		s.Errors = a.errors
+		s.Results = len(a.results)
 	}()
 
 	return a.results

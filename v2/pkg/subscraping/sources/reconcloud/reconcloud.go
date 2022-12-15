@@ -4,6 +4,7 @@ package reconcloud
 import (
 	"context"
 	"fmt"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -29,7 +30,7 @@ type ReconCloud struct {
 }
 
 func NewReconCloud() *ReconCloud {
-	return &ReconCloud{Source: &subscraping.Source{}}
+	return &ReconCloud{Source: &subscraping.Source{Errors: 0, Results: 0}}
 }
 
 // Run function returns all subdomains found with the service
@@ -37,11 +38,15 @@ func (r *ReconCloud) Run(ctx context.Context, domain string, session *subscrapin
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			r.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://recon.cloud/api/search?domain=%s", domain))
 		if err != nil && resp == nil {
 			results <- subscraping.Result{Source: r.Name(), Type: subscraping.Error, Error: err}
+			r.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -50,6 +55,7 @@ func (r *ReconCloud) Run(ctx context.Context, domain string, session *subscrapin
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
 			results <- subscraping.Result{Source: r.Name(), Type: subscraping.Error, Error: err}
+			r.Errors++
 			resp.Body.Close()
 			return
 		}
@@ -58,6 +64,7 @@ func (r *ReconCloud) Run(ctx context.Context, domain string, session *subscrapin
 		if len(response.CloudAssetsList) > 0 {
 			for _, cloudAsset := range response.CloudAssetsList {
 				results <- subscraping.Result{Source: r.Name(), Type: subscraping.Subdomain, Value: cloudAsset.Domain}
+				r.Results++
 			}
 		}
 	}()

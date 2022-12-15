@@ -7,6 +7,7 @@ import (
 	"math"
 	"net/url"
 	"strconv"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -40,7 +41,11 @@ type BinaryEdge struct {
 }
 
 func NewBinaryEdge() *BinaryEdge {
-	return &BinaryEdge{KeyApiSource: &subscraping.KeyApiSource{}}
+	return &BinaryEdge{
+		KeyApiSource: &subscraping.KeyApiSource{
+			Source: &subscraping.Source{Errors: 0, Results: 0},
+		},
+	}
 }
 
 // Run function returns all subdomains found with the service
@@ -48,10 +53,14 @@ func (b *BinaryEdge) Run(ctx context.Context, domain string, session *subscrapin
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			b.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(b.ApiKeys(), b.Name())
 		if randomApiKey == "" {
+			b.Skipped = true
 			return
 		}
 
@@ -66,32 +75,37 @@ func (b *BinaryEdge) Run(ctx context.Context, domain string, session *subscrapin
 			v1URLWithPageSize, err := addURLParam(fmt.Sprintf(baseAPIURLFmt, v1, domain), v1PageSizeParam, strconv.Itoa(maxV1PageSize))
 			if err != nil {
 				results <- subscraping.Result{Source: b.Name(), Type: subscraping.Error, Error: err}
+				b.Errors++
 				return
 			}
 			baseURL = v1URLWithPageSize.String()
 		}
 
 		if baseURL == "" {
-			results <- subscraping.Result{Source: b.Name(), Type: subscraping.Error, Error: fmt.Errorf("can't get API URL")}
+			results <- subscraping.Result{
+				Source: b.Name(), Type: subscraping.Error, Error: fmt.Errorf("can't get API URL"),
+			}
+			b.Results++
 			return
 		}
 
 		b.enumerate(ctx, session, baseURL, firstPage, authHeader, results)
 	}()
-
 	return results
 }
 
-func (s *BinaryEdge) enumerate(ctx context.Context, session *subscraping.Session, baseURL string, page int, authHeader map[string]string, results chan subscraping.Result) {
+func (b *BinaryEdge) enumerate(ctx context.Context, session *subscraping.Session, baseURL string, page int, authHeader map[string]string, results chan subscraping.Result) {
 	pageURL, err := addURLParam(baseURL, pageParam, strconv.Itoa(page))
 	if err != nil {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		results <- subscraping.Result{Source: b.Name(), Type: subscraping.Error, Error: err}
+		b.Errors++
 		return
 	}
 
 	resp, err := session.Get(ctx, pageURL.String(), "", authHeader)
 	if err != nil && resp == nil {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		results <- subscraping.Result{Source: b.Name(), Type: subscraping.Error, Error: err}
+		b.Errors++
 		session.DiscardHTTPResponse(resp)
 		return
 	}
@@ -99,26 +113,28 @@ func (s *BinaryEdge) enumerate(ctx context.Context, session *subscraping.Session
 	var response subdomainsResponse
 	err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		results <- subscraping.Result{Source: b.Name(), Type: subscraping.Error, Error: err}
+		b.Errors++
 		resp.Body.Close()
 		return
 	}
 
 	// Check error messages
 	if response.Message != "" && response.Status != nil {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf(response.Message)}
+		results <- subscraping.Result{Source: b.Name(), Type: subscraping.Error, Error: fmt.Errorf(response.Message)}
+		b.Results++
 	}
 
 	resp.Body.Close()
 
 	for _, subdomain := range response.Subdomains {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+		results <- subscraping.Result{Source: b.Name(), Type: subscraping.Subdomain, Value: subdomain}
 	}
 
 	totalPages := int(math.Ceil(float64(response.Total) / float64(response.PageSize)))
 	nextPage := response.Page + 1
 	for currentPage := nextPage; currentPage <= totalPages; currentPage++ {
-		s.enumerate(ctx, session, baseURL, currentPage, authHeader, results)
+		b.enumerate(ctx, session, baseURL, currentPage, authHeader, results)
 	}
 }
 

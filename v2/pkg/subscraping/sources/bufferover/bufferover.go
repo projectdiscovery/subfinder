@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -26,7 +27,7 @@ type BufferOver struct {
 }
 
 func NewBufferOver() *BufferOver {
-	return &BufferOver{KeyApiSource: &subscraping.KeyApiSource{}}
+	return &BufferOver{KeyApiSource: &subscraping.KeyApiSource{Source: &subscraping.Source{Errors: 0, Results: 0}}}
 }
 
 // Run function returns all subdomains found with the service
@@ -34,10 +35,14 @@ func (b *BufferOver) Run(ctx context.Context, domain string, session *subscrapin
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			b.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(b.ApiKeys(), b.Name())
 		if randomApiKey == "" {
+			b.Skipped = true
 			return
 		}
 
@@ -47,11 +52,12 @@ func (b *BufferOver) Run(ctx context.Context, domain string, session *subscrapin
 	return results
 }
 
-func (s *BufferOver) getData(ctx context.Context, sourceURL string, apiKey string, session *subscraping.Session, results chan subscraping.Result) {
+func (b *BufferOver) getData(ctx context.Context, sourceURL string, apiKey string, session *subscraping.Session, results chan subscraping.Result) {
 	resp, err := session.Get(ctx, sourceURL, "", map[string]string{"x-api-key": apiKey})
 
 	if err != nil && resp == nil {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		results <- subscraping.Result{Source: b.Name(), Type: subscraping.Error, Error: err}
+		b.Errors++
 		session.DiscardHTTPResponse(resp)
 		return
 	}
@@ -59,7 +65,8 @@ func (s *BufferOver) getData(ctx context.Context, sourceURL string, apiKey strin
 	var bufforesponse response
 	err = jsoniter.NewDecoder(resp.Body).Decode(&bufforesponse)
 	if err != nil {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		results <- subscraping.Result{Source: b.Name(), Type: subscraping.Error, Error: err}
+		b.Errors++
 		resp.Body.Close()
 		return
 	}
@@ -69,7 +76,10 @@ func (s *BufferOver) getData(ctx context.Context, sourceURL string, apiKey strin
 	metaErrors := bufforesponse.Meta.Errors
 
 	if len(metaErrors) > 0 {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", strings.Join(metaErrors, ", "))}
+		results <- subscraping.Result{
+			Source: b.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", strings.Join(metaErrors, ", ")),
+		}
+		b.Errors++
 		return
 	}
 
@@ -84,8 +94,9 @@ func (s *BufferOver) getData(ctx context.Context, sourceURL string, apiKey strin
 
 	for _, subdomain := range subdomains {
 		for _, value := range session.Extractor.FindAllString(subdomain, -1) {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}
+			results <- subscraping.Result{Source: b.Name(), Type: subscraping.Subdomain, Value: value}
 		}
+		b.Results++
 	}
 }
 

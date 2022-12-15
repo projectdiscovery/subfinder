@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -26,7 +27,7 @@ type Crtsh struct {
 }
 
 func NewCrtsh() *Crtsh {
-	return &Crtsh{Source: &subscraping.Source{}}
+	return &Crtsh{Source: &subscraping.Source{Errors: 0, Results: 0}}
 }
 
 // Run function returns all subdomains found with the service
@@ -34,7 +35,10 @@ func (c *Crtsh) Run(ctx context.Context, domain string, session *subscraping.Ses
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			c.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		count := c.getSubdomainsFromSQL(domain, session, results)
 		if count > 0 {
@@ -46,10 +50,11 @@ func (c *Crtsh) Run(ctx context.Context, domain string, session *subscraping.Ses
 	return results
 }
 
-func (s *Crtsh) getSubdomainsFromSQL(domain string, session *subscraping.Session, results chan subscraping.Result) int {
+func (c *Crtsh) getSubdomainsFromSQL(domain string, session *subscraping.Session, results chan subscraping.Result) int {
 	db, err := sql.Open("postgres", "host=crt.sh user=guest dbname=certwatch sslmode=disable binary_parameters=yes")
 	if err != nil {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
+		c.Errors++
 		return 0
 	}
 
@@ -83,11 +88,13 @@ func (s *Crtsh) getSubdomainsFromSQL(domain string, session *subscraping.Session
 				ORDER BY le.ENTRY_TIMESTAMP DESC NULLS LAST;`
 	rows, err := db.Query(query, domain)
 	if err != nil {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
+		c.Errors++
 		return 0
 	}
 	if err := rows.Err(); err != nil {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
+		c.Errors++
 		return 0
 	}
 
@@ -97,25 +104,28 @@ func (s *Crtsh) getSubdomainsFromSQL(domain string, session *subscraping.Session
 	for rows.Next() {
 		err := rows.Scan(&data)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
+			c.Errors++
 			return count
 		}
 
 		count++
 		for _, subdomain := range strings.Split(data, "\n") {
-			subdomain = session.Extractor.FindString(subdomain)
+			subdomain := session.Extractor.FindString(subdomain)
 			if subdomain != "" {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				results <- subscraping.Result{Source: c.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				c.Results++
 			}
 		}
 	}
 	return count
 }
 
-func (s *Crtsh) getSubdomainsFromHTTP(ctx context.Context, domain string, session *subscraping.Session, results chan subscraping.Result) bool {
+func (c *Crtsh) getSubdomainsFromHTTP(ctx context.Context, domain string, session *subscraping.Session, results chan subscraping.Result) bool {
 	resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://crt.sh/?q=%%25.%s&output=json", domain))
 	if err != nil {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
+		c.Errors++
 		session.DiscardHTTPResponse(resp)
 		return false
 	}
@@ -123,7 +133,8 @@ func (s *Crtsh) getSubdomainsFromHTTP(ctx context.Context, domain string, sessio
 	var subdomains []subdomain
 	err = jsoniter.NewDecoder(resp.Body).Decode(&subdomains)
 	if err != nil {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
+		c.Errors++
 		resp.Body.Close()
 		return false
 	}
@@ -134,8 +145,9 @@ func (s *Crtsh) getSubdomainsFromHTTP(ctx context.Context, domain string, sessio
 		for _, sub := range strings.Split(subdomain.NameValue, "\n") {
 			sub = session.Extractor.FindString(sub)
 			if sub != "" {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: sub}
+				results <- subscraping.Result{Source: c.Name(), Type: subscraping.Subdomain, Value: sub}
 			}
+			c.Results++
 		}
 	}
 

@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -29,7 +30,11 @@ type ThreatBook struct {
 }
 
 func NewThreatBook() *ThreatBook {
-	return &ThreatBook{KeyApiSource: &subscraping.KeyApiSource{}}
+	return &ThreatBook{
+		KeyApiSource: &subscraping.KeyApiSource{
+			Source: &subscraping.Source{Errors: 0, Results: 0},
+		},
+	}
 }
 
 // Run function returns all subdomains found with the service
@@ -37,16 +42,21 @@ func (t *ThreatBook) Run(ctx context.Context, domain string, session *subscrapin
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			t.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(t.ApiKeys(), t.Name())
 		if randomApiKey == "" {
+			t.Skipped = true
 			return
 		}
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://api.threatbook.cn/v3/domain/sub_domains?apikey=%s&resource=%s", randomApiKey, domain))
 		if err != nil && resp == nil {
 			results <- subscraping.Result{Source: t.Name(), Type: subscraping.Error, Error: err}
+			t.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -55,19 +65,25 @@ func (t *ThreatBook) Run(ctx context.Context, domain string, session *subscrapin
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
 			results <- subscraping.Result{Source: t.Name(), Type: subscraping.Error, Error: err}
+			t.Errors++
 			resp.Body.Close()
 			return
 		}
 		resp.Body.Close()
 
 		if response.ResponseCode != 0 {
-			results <- subscraping.Result{Source: t.Name(), Type: subscraping.Error, Error: fmt.Errorf("code %d, %s", response.ResponseCode, response.VerboseMsg)}
+			results <- subscraping.Result{
+				Source: t.Name(), Type: subscraping.Error,
+				Error: fmt.Errorf("code %d, %s", response.ResponseCode, response.VerboseMsg),
+			}
+			t.Errors++
 			return
 		}
 
 		total, err := strconv.ParseInt(response.Data.SubDomains.Total, 10, 64)
 		if err != nil {
 			results <- subscraping.Result{Source: t.Name(), Type: subscraping.Error, Error: err}
+			t.Errors++
 			return
 		}
 

@@ -42,7 +42,11 @@ type GitHub struct {
 }
 
 func NewGitHub() *GitHub {
-	return &GitHub{KeyApiSource: &subscraping.KeyApiSource{}}
+	return &GitHub{
+		KeyApiSource: &subscraping.KeyApiSource{
+			Source: &subscraping.Source{Errors: 0, Results: 0},
+		},
+	}
 }
 
 // Run function returns all subdomains found with the service
@@ -50,10 +54,14 @@ func (g *GitHub) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			g.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		if len(g.ApiKeys()) == 0 {
 			gologger.Debug().Msgf("Cannot use the '%s' source because there was no key defined for it.", g.Name())
+			g.Skipped = true
 			return
 		}
 
@@ -66,7 +74,7 @@ func (g *GitHub) Run(ctx context.Context, domain string, session *subscraping.Se
 	return results
 }
 
-func (s *GitHub) enumerate(ctx context.Context, searchURL string, domainRegexp *regexp.Regexp, tokens *Tokens, session *subscraping.Session, results chan subscraping.Result) {
+func (g *GitHub) enumerate(ctx context.Context, searchURL string, domainRegexp *regexp.Regexp, tokens *Tokens, session *subscraping.Session, results chan subscraping.Result) {
 	select {
 	case <-ctx.Done():
 		return
@@ -77,20 +85,23 @@ func (s *GitHub) enumerate(ctx context.Context, searchURL string, domainRegexp *
 
 	if token.RetryAfter > 0 {
 		if len(tokens.pool) == 1 {
-			gologger.Verbose().Label(s.Name()).Msgf("GitHub Search request rate limit exceeded, waiting for %d seconds before retry... \n", token.RetryAfter)
+			gologger.Verbose().Label(g.Name()).Msgf("GitHub Search request rate limit exceeded, waiting for %d seconds before retry... \n", token.RetryAfter)
 			time.Sleep(time.Duration(token.RetryAfter) * time.Second)
 		} else {
 			token = tokens.Get()
 		}
 	}
 
-	headers := map[string]string{"Accept": "application/vnd.github.v3.text-match+json", "Authorization": "token " + token.Hash}
+	headers := map[string]string{
+		"Accept": "application/vnd.github.v3.text-match+json", "Authorization": "token " + token.Hash,
+	}
 
 	// Initial request to GitHub search
 	resp, err := session.Get(ctx, searchURL, "", headers)
 	isForbidden := resp != nil && resp.StatusCode == http.StatusForbidden
 	if err != nil && !isForbidden {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		results <- subscraping.Result{Source: g.Name(), Type: subscraping.Error, Error: err}
+		g.Errors++
 		session.DiscardHTTPResponse(resp)
 		return
 	}
@@ -102,7 +113,7 @@ func (s *GitHub) enumerate(ctx context.Context, searchURL string, domainRegexp *
 		tokens.setCurrentTokenExceeded(retryAfterSeconds)
 		resp.Body.Close()
 
-		s.enumerate(ctx, searchURL, domainRegexp, tokens, session, results)
+		g.enumerate(ctx, searchURL, domainRegexp, tokens, session, results)
 	}
 
 	var data response
@@ -110,16 +121,18 @@ func (s *GitHub) enumerate(ctx context.Context, searchURL string, domainRegexp *
 	// Marshall json response
 	err = jsoniter.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		results <- subscraping.Result{Source: g.Name(), Type: subscraping.Error, Error: err}
+		g.Errors++
 		resp.Body.Close()
 		return
 	}
 
 	resp.Body.Close()
 
-	err = proccesItems(ctx, data.Items, domainRegexp, s.Name(), session, results)
+	err = g.proccesItems(ctx, data.Items, domainRegexp, g.Name(), session, results)
 	if err != nil {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		results <- subscraping.Result{Source: g.Name(), Type: subscraping.Error, Error: err}
+		g.Errors++
 		return
 	}
 
@@ -130,16 +143,17 @@ func (s *GitHub) enumerate(ctx context.Context, searchURL string, domainRegexp *
 		if link.Rel == "next" {
 			nextURL, err := url.QueryUnescape(link.URL)
 			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				results <- subscraping.Result{Source: g.Name(), Type: subscraping.Error, Error: err}
+				g.Errors++
 				return
 			}
-			s.enumerate(ctx, nextURL, domainRegexp, tokens, session, results)
+			g.enumerate(ctx, nextURL, domainRegexp, tokens, session, results)
 		}
 	}
 }
 
 // proccesItems procceses github response items
-func proccesItems(ctx context.Context, items []item, domainRegexp *regexp.Regexp, name string, session *subscraping.Session, results chan subscraping.Result) error {
+func (g *GitHub) proccesItems(ctx context.Context, items []item, domainRegexp *regexp.Regexp, name string, session *subscraping.Session, results chan subscraping.Result) error {
 	for _, item := range items {
 		// find subdomains in code
 		resp, err := session.SimpleGet(ctx, rawURL(item.HTMLURL))
@@ -159,6 +173,8 @@ func proccesItems(ctx context.Context, items []item, domainRegexp *regexp.Regexp
 				}
 				for _, subdomain := range domainRegexp.FindAllString(normalizeContent(line), -1) {
 					results <- subscraping.Result{Source: name, Type: subscraping.Subdomain, Value: subdomain}
+					g.Results++
+
 				}
 			}
 			resp.Body.Close()
@@ -168,6 +184,7 @@ func proccesItems(ctx context.Context, items []item, domainRegexp *regexp.Regexp
 		for _, textMatch := range item.TextMatches {
 			for _, subdomain := range domainRegexp.FindAllString(normalizeContent(textMatch.Fragment), -1) {
 				results <- subscraping.Result{Source: name, Type: subscraping.Subdomain, Value: subdomain}
+				g.Results++
 			}
 		}
 	}

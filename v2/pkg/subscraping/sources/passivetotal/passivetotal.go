@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"regexp"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -23,7 +24,11 @@ type PassiveTotal struct {
 }
 
 func NewPassiveTotal() *PassiveTotal {
-	return &PassiveTotal{MultiPartKeyApiSource: &subscraping.MultiPartKeyApiSource{}}
+	return &PassiveTotal{
+		MultiPartKeyApiSource: &subscraping.MultiPartKeyApiSource{
+			Source: &subscraping.Source{Errors: 0, Results: 0},
+		},
+	}
 }
 
 // Run function returns all subdomains found with the service
@@ -31,10 +36,14 @@ func (p *PassiveTotal) Run(ctx context.Context, domain string, session *subscrap
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			p.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(p.ApiKeys(), p.Name())
 		if randomApiKey.Username == "" || randomApiKey.Password == "" {
+			p.Skipped = true
 			return
 		}
 
@@ -52,6 +61,7 @@ func (p *PassiveTotal) Run(ctx context.Context, domain string, session *subscrap
 		)
 		if err != nil {
 			results <- subscraping.Result{Source: p.Name(), Type: subscraping.Error, Error: err}
+			p.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -60,6 +70,7 @@ func (p *PassiveTotal) Run(ctx context.Context, domain string, session *subscrap
 		err = jsoniter.NewDecoder(resp.Body).Decode(&data)
 		if err != nil {
 			results <- subscraping.Result{Source: p.Name(), Type: subscraping.Error, Error: err}
+			p.Errors++
 			resp.Body.Close()
 			return
 		}
@@ -72,6 +83,7 @@ func (p *PassiveTotal) Run(ctx context.Context, domain string, session *subscrap
 			}
 			finalSubdomain := subdomain + "." + domain
 			results <- subscraping.Result{Source: p.Name(), Type: subscraping.Subdomain, Value: finalSubdomain}
+			p.Results++
 		}
 	}()
 

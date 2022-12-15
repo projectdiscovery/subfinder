@@ -33,7 +33,7 @@ type CommonCrawl struct {
 }
 
 func NewCommonCrawl() *CommonCrawl {
-	return &CommonCrawl{Source: &subscraping.Source{}}
+	return &CommonCrawl{Source: &subscraping.Source{Errors: 0, Results: 0}}
 }
 
 // Run function returns all subdomains found with the service
@@ -41,11 +41,15 @@ func (c *CommonCrawl) Run(ctx context.Context, domain string, session *subscrapi
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			c.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		resp, err := session.SimpleGet(ctx, indexURL)
 		if err != nil {
 			results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
+			c.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -54,6 +58,7 @@ func (c *CommonCrawl) Run(ctx context.Context, domain string, session *subscrapi
 		err = jsoniter.NewDecoder(resp.Body).Decode(&indexes)
 		if err != nil {
 			results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
+			c.Errors++
 			resp.Body.Close()
 			return
 		}
@@ -96,7 +101,7 @@ func (c *CommonCrawl) SourceType() string {
 	return subscraping.TYPE_CRAWL
 }
 
-func (s *CommonCrawl) getSubdomains(ctx context.Context, searchURL, domain string, session *subscraping.Session, results chan subscraping.Result) bool {
+func (c *CommonCrawl) getSubdomains(ctx context.Context, searchURL, domain string, session *subscraping.Session, results chan subscraping.Result) bool {
 	for {
 		select {
 		case <-ctx.Done():
@@ -105,7 +110,7 @@ func (s *CommonCrawl) getSubdomains(ctx context.Context, searchURL, domain strin
 			var headers = map[string]string{"Host": "index.commoncrawl.org"}
 			resp, err := session.Get(ctx, fmt.Sprintf("%s?url=*.%s", searchURL, domain), "", headers)
 			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
 				session.DiscardHTTPResponse(resp)
 				return false
 			}
@@ -124,7 +129,7 @@ func (s *CommonCrawl) getSubdomains(ctx context.Context, searchURL, domain strin
 					subdomain = strings.TrimPrefix(subdomain, "25")
 					subdomain = strings.TrimPrefix(subdomain, "2f")
 
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+					results <- subscraping.Result{Source: c.Name(), Type: subscraping.Subdomain, Value: subdomain}
 				}
 			}
 			resp.Body.Close()

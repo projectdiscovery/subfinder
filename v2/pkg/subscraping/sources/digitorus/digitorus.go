@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
@@ -16,7 +17,7 @@ type Digitorus struct {
 }
 
 func NewDigitorus() *Digitorus {
-	return &Digitorus{Source: &subscraping.Source{}}
+	return &Digitorus{Source: &subscraping.Source{Errors: 0, Results: 0}}
 }
 
 // Run function returns all subdomains found with the service
@@ -24,11 +25,15 @@ func (d *Digitorus) Run(ctx context.Context, domain string, session *subscraping
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			d.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://certificatedetails.com/%s", domain))
 		if err != nil {
 			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Error, Error: err}
+			d.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -43,7 +48,10 @@ func (d *Digitorus) Run(ctx context.Context, domain string, session *subscraping
 			}
 			subdomains := session.Extractor.FindAllString(line, -1)
 			for _, subdomain := range subdomains {
-				results <- subscraping.Result{Source: d.Name(), Type: subscraping.Subdomain, Value: strings.TrimPrefix(subdomain, ".")}
+				results <- subscraping.Result{
+					Source: d.Name(), Type: subscraping.Subdomain, Value: strings.TrimPrefix(subdomain, "."),
+				}
+				d.Results++
 			}
 		}
 	}()

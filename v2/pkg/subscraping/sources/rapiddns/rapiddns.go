@@ -4,6 +4,7 @@ package rapiddns
 import (
 	"context"
 	"io"
+	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
@@ -14,7 +15,7 @@ type RapidDns struct {
 }
 
 func NewRapidDns() *RapidDns {
-	return &RapidDns{Source: &subscraping.Source{}}
+	return &RapidDns{Source: &subscraping.Source{Errors: 0, Results: 0}}
 }
 
 // Run function returns all subdomains found with the service
@@ -22,11 +23,15 @@ func (r *RapidDns) Run(ctx context.Context, domain string, session *subscraping.
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			r.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		resp, err := session.SimpleGet(ctx, "https://rapiddns.io/subdomain/"+domain+"?full=1")
 		if err != nil {
 			results <- subscraping.Result{Source: r.Name(), Type: subscraping.Error, Error: err}
+			r.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -34,6 +39,7 @@ func (r *RapidDns) Run(ctx context.Context, domain string, session *subscraping.
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			results <- subscraping.Result{Source: r.Name(), Type: subscraping.Error, Error: err}
+			r.Errors++
 			resp.Body.Close()
 			return
 		}
@@ -43,6 +49,7 @@ func (r *RapidDns) Run(ctx context.Context, domain string, session *subscraping.
 		src := string(body)
 		for _, subdomain := range session.Extractor.FindAllString(src, -1) {
 			results <- subscraping.Result{Source: r.Name(), Type: subscraping.Subdomain, Value: subdomain}
+			r.Results++
 		}
 	}()
 

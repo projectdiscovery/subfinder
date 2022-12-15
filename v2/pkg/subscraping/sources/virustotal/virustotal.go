@@ -4,6 +4,7 @@ package virustotal
 import (
 	"context"
 	"fmt"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -20,7 +21,11 @@ type VirusTotal struct {
 }
 
 func NewVirusTotal() *VirusTotal {
-	return &VirusTotal{KeyApiSource: &subscraping.KeyApiSource{}}
+	return &VirusTotal{
+		KeyApiSource: &subscraping.KeyApiSource{
+			Source: &subscraping.Source{Errors: 0, Results: 0},
+		},
+	}
 }
 
 // Run function returns all subdomains found with the service
@@ -28,7 +33,10 @@ func (v *VirusTotal) Run(ctx context.Context, domain string, session *subscrapin
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			v.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(v.ApiKeys(), v.Name())
 		if randomApiKey == "" {
@@ -38,6 +46,7 @@ func (v *VirusTotal) Run(ctx context.Context, domain string, session *subscrapin
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://www.virustotal.com/vtapi/v2/domain/report?apikey=%s&domain=%s", randomApiKey, domain))
 		if err != nil {
 			results <- subscraping.Result{Source: v.Name(), Type: subscraping.Error, Error: err}
+			v.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -46,6 +55,7 @@ func (v *VirusTotal) Run(ctx context.Context, domain string, session *subscrapin
 		err = jsoniter.NewDecoder(resp.Body).Decode(&data)
 		if err != nil {
 			results <- subscraping.Result{Source: v.Name(), Type: subscraping.Error, Error: err}
+			v.Errors++
 			resp.Body.Close()
 			return
 		}
@@ -54,6 +64,7 @@ func (v *VirusTotal) Run(ctx context.Context, domain string, session *subscrapin
 
 		for _, subdomain := range data.Subdomains {
 			results <- subscraping.Result{Source: v.Name(), Type: subscraping.Subdomain, Value: subdomain}
+			v.Results++
 		}
 	}()
 

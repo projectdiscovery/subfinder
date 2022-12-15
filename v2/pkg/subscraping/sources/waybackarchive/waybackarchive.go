@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
@@ -17,7 +18,7 @@ type WaybackArchive struct {
 }
 
 func NewWaybackArchive() *WaybackArchive {
-	return &WaybackArchive{Source: &subscraping.Source{}}
+	return &WaybackArchive{Source: &subscraping.Source{Errors: 0, Results: 0}}
 }
 
 // Run function returns all subdomains found with the service
@@ -25,11 +26,15 @@ func (w *WaybackArchive) Run(ctx context.Context, domain string, session *subscr
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			w.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("http://web.archive.org/cdx/search/cdx?url=*.%s/*&output=txt&fl=original&collapse=urlkey", domain))
 		if err != nil {
 			results <- subscraping.Result{Source: w.Name(), Type: subscraping.Error, Error: err}
+			w.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -51,6 +56,7 @@ func (w *WaybackArchive) Run(ctx context.Context, domain string, session *subscr
 				subdomain = strings.TrimPrefix(subdomain, "2f")
 
 				results <- subscraping.Result{Source: w.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				w.Results++
 			}
 		}
 	}()

@@ -3,6 +3,7 @@ package subscraping
 import (
 	"net/http"
 	"regexp"
+	"time"
 
 	"github.com/projectdiscovery/ratelimit"
 )
@@ -11,6 +12,14 @@ import (
 type BasicAuth struct {
 	Username string
 	Password string
+}
+
+// Statistics contains statistics about the scraping process
+type Statistics struct {
+	TimeTaken time.Duration
+	Errors    int
+	Results   int
+	Skipped   bool
 }
 
 // Session is the option passed to the source, an option is created

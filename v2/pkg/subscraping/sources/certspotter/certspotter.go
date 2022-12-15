@@ -4,6 +4,7 @@ package certspotter
 import (
 	"context"
 	"fmt"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -21,7 +22,11 @@ type CertSpotter struct {
 }
 
 func NewCertSpotter() *CertSpotter {
-	return &CertSpotter{KeyApiSource: &subscraping.KeyApiSource{}}
+	return &CertSpotter{
+		KeyApiSource: &subscraping.KeyApiSource{
+			Source: &subscraping.Source{Errors: 0, Results: 0},
+		},
+	}
 }
 
 // Run function returns all subdomains found with the service
@@ -29,10 +34,14 @@ func (c *CertSpotter) Run(ctx context.Context, domain string, session *subscrapi
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			c.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(c.ApiKeys(), c.Name())
 		if randomApiKey == "" {
+			c.Skipped = true
 			return
 		}
 
@@ -42,6 +51,7 @@ func (c *CertSpotter) Run(ctx context.Context, domain string, session *subscrapi
 		resp, err := session.Get(ctx, fmt.Sprintf("https://api.certspotter.com/v1/issuances?domain=%s&include_subdomains=true&expand=dns_names", domain), cookies, headers)
 		if err != nil {
 			results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
+			c.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -50,6 +60,7 @@ func (c *CertSpotter) Run(ctx context.Context, domain string, session *subscrapi
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
 			results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
+			c.Errors++
 			resp.Body.Close()
 			return
 		}
@@ -58,6 +69,7 @@ func (c *CertSpotter) Run(ctx context.Context, domain string, session *subscrapi
 		for _, cert := range response {
 			for _, subdomain := range cert.DNSNames {
 				results <- subscraping.Result{Source: c.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				c.Results++
 			}
 		}
 
@@ -73,6 +85,7 @@ func (c *CertSpotter) Run(ctx context.Context, domain string, session *subscrapi
 			resp, err := session.Get(ctx, reqURL, cookies, headers)
 			if err != nil {
 				results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
+				c.Errors++
 				return
 			}
 
@@ -80,6 +93,7 @@ func (c *CertSpotter) Run(ctx context.Context, domain string, session *subscrapi
 			err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 			if err != nil {
 				results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
+				c.Errors++
 				resp.Body.Close()
 				return
 			}
@@ -92,6 +106,7 @@ func (c *CertSpotter) Run(ctx context.Context, domain string, session *subscrapi
 			for _, cert := range response {
 				for _, subdomain := range cert.DNSNames {
 					results <- subscraping.Result{Source: c.Name(), Type: subscraping.Subdomain, Value: subdomain}
+					c.Results++
 				}
 			}
 

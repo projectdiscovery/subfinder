@@ -1,6 +1,9 @@
 package subscraping
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 const (
 	NONE          = "none"
@@ -42,10 +45,17 @@ type ISource interface {
 
 	// SourceType returns the source type
 	SourceType() string
+
+	// Statistics returns the scrapping statistics for the source
+	Statistics() Statistics
 }
 
 // Source is the basic source
 type Source struct {
+	TimeTaken time.Duration
+	Results   int
+	Errors    int
+	Skipped   bool
 }
 
 func (s *Source) Name() string {
@@ -78,6 +88,14 @@ func (s *Source) KeyType() string {
 
 func (s *Source) SourceType() string {
 	return NONE
+}
+
+func (s *Source) Statistics() Statistics {
+	return Statistics{
+		Errors:    s.Errors,
+		Results:   s.Results,
+		TimeTaken: s.TimeTaken,
+	}
 }
 
 // KeyApiSource is a source who needs an API key

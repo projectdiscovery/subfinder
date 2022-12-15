@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -35,25 +36,37 @@ type Quake struct {
 }
 
 func NewQuake() *Quake {
-	return &Quake{KeyApiSource: &subscraping.KeyApiSource{}}
+	return &Quake{
+		KeyApiSource: &subscraping.KeyApiSource{
+			Source: &subscraping.Source{Errors: 0, Results: 0},
+		},
+	}
 }
 
 // Run function returns all subdomains found with the service
 func (q *Quake) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
+
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			q.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(q.ApiKeys(), q.Name())
 		if randomApiKey == "" {
+			q.Skipped = true
 			return
 		}
 
 		// quake api doc https://quake.360.cn/quake/#/help
 		var requestBody = []byte(fmt.Sprintf(`{"query":"domain: *.%s", "start":0, "size":500}`, domain))
-		resp, err := session.Post(ctx, "https://quake.360.cn/api/v3/search/quake_service", "", map[string]string{"Content-Type": "application/json", "X-QuakeToken": randomApiKey}, bytes.NewReader(requestBody))
+		resp, err := session.Post(ctx, "https://quake.360.cn/api/v3/search/quake_service", "", map[string]string{
+			"Content-Type": "application/json", "X-QuakeToken": randomApiKey,
+		}, bytes.NewReader(requestBody))
 		if err != nil {
 			results <- subscraping.Result{Source: q.Name(), Type: subscraping.Error, Error: err}
+			q.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -62,13 +75,17 @@ func (q *Quake) Run(ctx context.Context, domain string, session *subscraping.Ses
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
 			results <- subscraping.Result{Source: q.Name(), Type: subscraping.Error, Error: err}
+			q.Errors++
 			resp.Body.Close()
 			return
 		}
 		resp.Body.Close()
 
 		if response.Code != 0 {
-			results <- subscraping.Result{Source: q.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.Message)}
+			results <- subscraping.Result{
+				Source: q.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.Message),
+			}
+			q.Errors++
 			return
 		}
 
@@ -79,6 +96,7 @@ func (q *Quake) Run(ctx context.Context, domain string, session *subscraping.Ses
 					subdomain = ""
 				}
 				results <- subscraping.Result{Source: q.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				q.Results++
 			}
 		}
 	}()

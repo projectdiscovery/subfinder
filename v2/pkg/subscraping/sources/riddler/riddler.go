@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
@@ -15,7 +16,7 @@ type Riddler struct {
 }
 
 func NewRiddler() *Riddler {
-	return &Riddler{Source: &subscraping.Source{}}
+	return &Riddler{Source: &subscraping.Source{Errors: 0, Results: 0}}
 }
 
 // Run function returns all subdomains found with the service
@@ -23,11 +24,15 @@ func (r *Riddler) Run(ctx context.Context, domain string, session *subscraping.S
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			r.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://riddler.io/search?q=pld:%s&view_type=data_table", domain))
 		if err != nil {
 			results <- subscraping.Result{Source: r.Name(), Type: subscraping.Error, Error: err}
+			r.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -41,6 +46,7 @@ func (r *Riddler) Run(ctx context.Context, domain string, session *subscraping.S
 			subdomain := session.Extractor.FindString(line)
 			if subdomain != "" {
 				results <- subscraping.Result{Source: r.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				r.Results++
 			}
 		}
 		resp.Body.Close()

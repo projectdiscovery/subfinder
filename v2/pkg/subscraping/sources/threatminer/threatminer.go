@@ -4,6 +4,7 @@ package threatminer
 import (
 	"context"
 	"fmt"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -22,7 +23,7 @@ type ThreatMiner struct {
 }
 
 func NewThreatMiner() *ThreatMiner {
-	return &ThreatMiner{Source: &subscraping.Source{}}
+	return &ThreatMiner{Source: &subscraping.Source{Errors: 0, Results: 0}}
 }
 
 // Run function returns all subdomains found with the service
@@ -30,11 +31,15 @@ func (t *ThreatMiner) Run(ctx context.Context, domain string, session *subscrapi
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			t.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://api.threatminer.org/v2/domain.php?q=%s&rt=5", domain))
 		if err != nil {
 			results <- subscraping.Result{Source: t.Name(), Type: subscraping.Error, Error: err}
+			t.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -45,11 +50,13 @@ func (t *ThreatMiner) Run(ctx context.Context, domain string, session *subscrapi
 		err = jsoniter.NewDecoder(resp.Body).Decode(&data)
 		if err != nil {
 			results <- subscraping.Result{Source: t.Name(), Type: subscraping.Error, Error: err}
+			t.Errors++
 			return
 		}
 
 		for _, subdomain := range data.Results {
 			results <- subscraping.Result{Source: t.Name(), Type: subscraping.Subdomain, Value: subdomain}
+			t.Results++
 		}
 	}()
 

@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -21,7 +22,11 @@ type SecurityTrails struct {
 }
 
 func NewSecurityTrails() *SecurityTrails {
-	return &SecurityTrails{KeyApiSource: &subscraping.KeyApiSource{}}
+	return &SecurityTrails{
+		KeyApiSource: &subscraping.KeyApiSource{
+			Source: &subscraping.Source{Errors: 0, Results: 0},
+		},
+	}
 }
 
 // Run function returns all subdomains found with the service
@@ -29,16 +34,21 @@ func (s *SecurityTrails) Run(ctx context.Context, domain string, session *subscr
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			s.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(s.ApiKeys(), s.Name())
 		if randomApiKey == "" {
+			s.Skipped = true
 			return
 		}
 
 		resp, err := session.Get(ctx, fmt.Sprintf("https://api.securitytrails.com/v1/domain/%s/subdomains", domain), "", map[string]string{"APIKEY": randomApiKey})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -47,6 +57,7 @@ func (s *SecurityTrails) Run(ctx context.Context, domain string, session *subscr
 		err = jsoniter.NewDecoder(resp.Body).Decode(&securityTrailsResponse)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.Errors++
 			resp.Body.Close()
 			return
 		}
@@ -61,6 +72,7 @@ func (s *SecurityTrails) Run(ctx context.Context, domain string, session *subscr
 			}
 
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+			s.Results++
 		}
 	}()
 

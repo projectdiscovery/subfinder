@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -23,7 +24,11 @@ type DnsDB struct {
 }
 
 func NewDnsDB() *DnsDB {
-	return &DnsDB{KeyApiSource: &subscraping.KeyApiSource{}}
+	return &DnsDB{
+		KeyApiSource: &subscraping.KeyApiSource{
+			Source: &subscraping.Source{Errors: 0, Results: 0},
+		},
+	}
 }
 
 // Run function returns all subdomains found with the service
@@ -31,7 +36,10 @@ func (d *DnsDB) Run(ctx context.Context, domain string, session *subscraping.Ses
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			d.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(d.ApiKeys(), d.Name())
 		if randomApiKey == "" {
@@ -47,6 +55,7 @@ func (d *DnsDB) Run(ctx context.Context, domain string, session *subscraping.Ses
 		resp, err := session.Get(ctx, fmt.Sprintf("https://api.dnsdb.info/lookup/rrset/name/*.%s?limit=1000000000000", domain), "", headers)
 		if err != nil {
 			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Error, Error: err}
+			d.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -61,12 +70,17 @@ func (d *DnsDB) Run(ctx context.Context, domain string, session *subscraping.Ses
 			err = jsoniter.NewDecoder(bytes.NewBufferString(line)).Decode(&response)
 			if err != nil {
 				results <- subscraping.Result{Source: d.Name(), Type: subscraping.Error, Error: err}
+				d.Errors++
 				return
 			}
-			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Subdomain, Value: strings.TrimSuffix(response.Name, ".")}
+			results <- subscraping.Result{
+				Source: d.Name(), Type: subscraping.Subdomain, Value: strings.TrimSuffix(response.Name, "."),
+			}
+			d.Results++
 		}
 		resp.Body.Close()
 	}()
+
 	return results
 }
 

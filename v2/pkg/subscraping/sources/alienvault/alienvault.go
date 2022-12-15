@@ -4,6 +4,7 @@ package alienvault
 import (
 	"context"
 	"fmt"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -23,7 +24,7 @@ type AlienVault struct {
 }
 
 func NewAlienVault() *AlienVault {
-	return &AlienVault{Source: &subscraping.Source{}}
+	return &AlienVault{Source: &subscraping.Source{Errors: 0, Results: 0}}
 }
 
 // Run function returns all subdomains found with the service
@@ -31,11 +32,15 @@ func (a *AlienVault) Run(ctx context.Context, domain string, session *subscrapin
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			a.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://otx.alienvault.com/api/v1/indicators/domain/%s/passive_dns", domain))
 		if err != nil && resp == nil {
 			results <- subscraping.Result{Source: a.Name(), Type: subscraping.Error, Error: err}
+			a.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -45,18 +50,22 @@ func (a *AlienVault) Run(ctx context.Context, domain string, session *subscrapin
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
 			results <- subscraping.Result{Source: a.Name(), Type: subscraping.Error, Error: err}
+			a.Errors++
 			resp.Body.Close()
 			return
 		}
 		resp.Body.Close()
 
 		if response.Error != "" {
-			results <- subscraping.Result{Source: a.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s, %s", response.Detail, response.Error)}
+			results <- subscraping.Result{
+				Source: a.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s, %s", response.Detail, response.Error),
+			}
 			return
 		}
 
 		for _, record := range response.PassiveDNS {
 			results <- subscraping.Result{Source: a.Name(), Type: subscraping.Subdomain, Value: record.Hostname}
+			a.Results++
 		}
 	}()
 

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
@@ -36,7 +37,11 @@ type ZoomEye struct {
 }
 
 func NewZoomEye() *ZoomEye {
-	return &ZoomEye{MultiPartKeyApiSource: &subscraping.MultiPartKeyApiSource{}}
+	return &ZoomEye{
+		MultiPartKeyApiSource: &subscraping.MultiPartKeyApiSource{
+			Source: &subscraping.Source{Errors: 0, Results: 0},
+		},
+	}
 }
 
 // Run function returns all subdomains found with the service
@@ -44,21 +49,29 @@ func (z *ZoomEye) Run(ctx context.Context, domain string, session *subscraping.S
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			z.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(z.ApiKeys(), z.Name())
 		if randomApiKey.Username == "" || randomApiKey.Password == "" {
+			z.Skipped = true
 			return
 		}
 
 		jwt, err := doLogin(ctx, session, randomApiKey)
 		if err != nil {
 			results <- subscraping.Result{Source: z.Name(), Type: subscraping.Error, Error: err}
+			z.Errors++
 			return
 		}
 		// check if jwt is null
 		if jwt == "" {
-			results <- subscraping.Result{Source: z.Name(), Type: subscraping.Error, Error: errors.New("could not log into zoomeye")}
+			results <- subscraping.Result{
+				Source: z.Name(), Type: subscraping.Error, Error: errors.New("could not log into zoomeye"),
+			}
+			z.Errors++
 			return
 		}
 
@@ -74,6 +87,7 @@ func (z *ZoomEye) Run(ctx context.Context, domain string, session *subscraping.S
 			if err != nil {
 				if !isForbidden && currentPage == 0 {
 					results <- subscraping.Result{Source: z.Name(), Type: subscraping.Error, Error: err}
+					z.Errors++
 					session.DiscardHTTPResponse(resp)
 				}
 				return
@@ -83,6 +97,7 @@ func (z *ZoomEye) Run(ctx context.Context, domain string, session *subscraping.S
 			err = json.NewDecoder(resp.Body).Decode(&res)
 			if err != nil {
 				results <- subscraping.Result{Source: z.Name(), Type: subscraping.Error, Error: err}
+				z.Errors++
 				resp.Body.Close()
 				return
 			}
@@ -90,8 +105,10 @@ func (z *ZoomEye) Run(ctx context.Context, domain string, session *subscraping.S
 
 			for _, r := range res.Matches {
 				results <- subscraping.Result{Source: z.Name(), Type: subscraping.Subdomain, Value: r.Site}
+				z.Results++
 				for _, domain := range r.Domains {
 					results <- subscraping.Result{Source: z.Name(), Type: subscraping.Subdomain, Value: domain}
+					z.Results++
 				}
 			}
 		}

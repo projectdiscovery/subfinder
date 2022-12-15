@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -34,7 +35,11 @@ type Hunter struct {
 }
 
 func NewHunter() *Hunter {
-	return &Hunter{KeyApiSource: &subscraping.KeyApiSource{}}
+	return &Hunter{
+		KeyApiSource: &subscraping.KeyApiSource{
+			Source: &subscraping.Source{Errors: 0, Results: 0},
+		},
+	}
 }
 
 // Run function returns all subdomains found with the service
@@ -42,10 +47,14 @@ func (h *Hunter) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			h.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(h.ApiKeys(), h.Name())
 		if randomApiKey == "" {
+			h.Skipped = true
 			return
 		}
 
@@ -56,6 +65,7 @@ func (h *Hunter) Run(ctx context.Context, domain string, session *subscraping.Se
 			resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://hunter.qianxin.com/openApi/search?api-key=%s&search=%s&page=1&page_size=100&is_web=3", randomApiKey, qbase64))
 			if err != nil && resp == nil {
 				results <- subscraping.Result{Source: h.Name(), Type: subscraping.Error, Error: err}
+				h.Errors++
 				session.DiscardHTTPResponse(resp)
 				return
 			}
@@ -70,7 +80,9 @@ func (h *Hunter) Run(ctx context.Context, domain string, session *subscraping.Se
 			resp.Body.Close()
 
 			if response.Code == 401 || response.Code == 400 {
-				results <- subscraping.Result{Source: h.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.Message)}
+				results <- subscraping.Result{
+					Source: h.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.Message),
+				}
 				return
 			}
 

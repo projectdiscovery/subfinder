@@ -4,6 +4,7 @@ package anubis
 import (
 	"context"
 	"fmt"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -16,7 +17,7 @@ type Anubis struct {
 }
 
 func NewAnubis() *Anubis {
-	return &Anubis{Source: &subscraping.Source{}}
+	return &Anubis{Source: &subscraping.Source{Errors: 0, Results: 0}}
 }
 
 // Run function returns all subdomains found with the service
@@ -24,11 +25,15 @@ func (a *Anubis) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			a.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://jonlu.ca/anubis/subdomains/%s", domain))
 		if err != nil {
 			results <- subscraping.Result{Source: a.Name(), Type: subscraping.Error, Error: err}
+			a.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -37,6 +42,7 @@ func (a *Anubis) Run(ctx context.Context, domain string, session *subscraping.Se
 		err = jsoniter.NewDecoder(resp.Body).Decode(&subdomains)
 		if err != nil {
 			results <- subscraping.Result{Source: a.Name(), Type: subscraping.Error, Error: err}
+			a.Errors++
 			resp.Body.Close()
 			return
 		}
@@ -45,7 +51,9 @@ func (a *Anubis) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		for _, record := range subdomains {
 			results <- subscraping.Result{Source: a.Name(), Type: subscraping.Subdomain, Value: record}
+			a.Results++
 		}
+
 	}()
 
 	return results

@@ -22,7 +22,11 @@ type GitLab struct {
 }
 
 func NewGitLab() *GitLab {
-	return &GitLab{KeyApiSource: &subscraping.KeyApiSource{}}
+	return &GitLab{
+		KeyApiSource: &subscraping.KeyApiSource{
+			Source: &subscraping.Source{Errors: 0, Results: 0},
+		},
+	}
 }
 
 type item struct {

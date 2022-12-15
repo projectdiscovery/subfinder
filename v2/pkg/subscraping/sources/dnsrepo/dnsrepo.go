@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -16,7 +17,11 @@ type DnsRepo struct {
 }
 
 func NewDnsRepo() *DnsRepo {
-	return &DnsRepo{KeyApiSource: &subscraping.KeyApiSource{}}
+	return &DnsRepo{
+		KeyApiSource: &subscraping.KeyApiSource{
+			Source: &subscraping.Source{Errors: 0, Results: 0},
+		},
+	}
 }
 
 type DnsRepoResponse []struct {
@@ -27,21 +32,27 @@ func (d *DnsRepo) Run(ctx context.Context, domain string, session *subscraping.S
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			d.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(d.ApiKeys(), d.Name())
 		if randomApiKey == "" {
+			d.Skipped = true
 			return
 		}
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://dnsrepo.noc.org/api/?apikey=%s&search=%s", randomApiKey, domain))
 		if err != nil {
 			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Error, Error: err}
+			d.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
 		responseData, err := io.ReadAll(resp.Body)
 		if err != nil {
 			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Error, Error: err}
+			d.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -50,14 +61,19 @@ func (d *DnsRepo) Run(ctx context.Context, domain string, session *subscraping.S
 		err = jsoniter.Unmarshal(responseData, &result)
 		if err != nil {
 			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Error, Error: err}
+			d.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
 		for _, sub := range result {
-			results <- subscraping.Result{Source: d.Name(), Type: subscraping.Subdomain, Value: strings.TrimSuffix(sub.Domain, ".")}
+			results <- subscraping.Result{
+				Source: d.Name(), Type: subscraping.Subdomain, Value: strings.TrimSuffix(sub.Domain, "."),
+			}
+			d.Results++
 		}
 
 	}()
+
 	return results
 }
 

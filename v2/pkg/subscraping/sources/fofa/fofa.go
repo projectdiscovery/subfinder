@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"strings"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -25,7 +26,11 @@ type Fofa struct {
 }
 
 func NewFofa() *Fofa {
-	return &Fofa{MultiPartKeyApiSource: &subscraping.MultiPartKeyApiSource{}}
+	return &Fofa{
+		MultiPartKeyApiSource: &subscraping.MultiPartKeyApiSource{
+			Source: &subscraping.Source{Errors: 0, Results: 0},
+		},
+	}
 }
 
 // Run function returns all subdomains found with the service
@@ -33,10 +38,14 @@ func (f *Fofa) Run(ctx context.Context, domain string, session *subscraping.Sess
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			f.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(f.ApiKeys(), f.Name())
 		if randomApiKey.Username == "" || randomApiKey.Password == "" {
+			f.Skipped = true
 			return
 		}
 
@@ -51,6 +60,7 @@ func (f *Fofa) Run(ctx context.Context, domain string, session *subscraping.Sess
 		)
 		if err != nil && resp == nil {
 			results <- subscraping.Result{Source: f.Name(), Type: subscraping.Error, Error: err}
+			f.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -59,13 +69,17 @@ func (f *Fofa) Run(ctx context.Context, domain string, session *subscraping.Sess
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
 			results <- subscraping.Result{Source: f.Name(), Type: subscraping.Error, Error: err}
+			f.Errors++
 			resp.Body.Close()
 			return
 		}
 		resp.Body.Close()
 
 		if response.Error {
-			results <- subscraping.Result{Source: f.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.ErrMsg)}
+			results <- subscraping.Result{
+				Source: f.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.ErrMsg),
+			}
+			f.Errors++
 			return
 		}
 
@@ -75,6 +89,7 @@ func (f *Fofa) Run(ctx context.Context, domain string, session *subscraping.Sess
 					subdomain = subdomain[strings.Index(subdomain, "//")+2:]
 				}
 				results <- subscraping.Result{Source: f.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				f.Results++
 			}
 		}
 	}()

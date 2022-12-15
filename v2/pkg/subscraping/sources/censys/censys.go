@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"strconv"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -31,7 +32,13 @@ type Censys struct {
 }
 
 func NewCensys() *Censys {
-	return &Censys{MultiPartKeyApiSource: &subscraping.MultiPartKeyApiSource{}}
+	return &Censys{
+		MultiPartKeyApiSource: &subscraping.MultiPartKeyApiSource{
+			Source: &subscraping.Source{
+				Errors: 0, Results: 0,
+			},
+		},
+	}
 }
 
 // Run function returns all subdomains found with the service
@@ -39,10 +46,14 @@ func (c *Censys) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			c.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(c.ApiKeys(), c.Name())
 		if randomApiKey.Username == "" || randomApiKey.Password == "" {
+			c.Skipped = true
 			return
 		}
 
@@ -62,6 +73,7 @@ func (c *Censys) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			if err != nil {
 				results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
+				c.Errors++
 				session.DiscardHTTPResponse(resp)
 				return
 			}
@@ -70,6 +82,7 @@ func (c *Censys) Run(ctx context.Context, domain string, session *subscraping.Se
 			err = jsoniter.NewDecoder(resp.Body).Decode(&censysResponse)
 			if err != nil {
 				results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
+				c.Errors++
 				resp.Body.Close()
 				return
 			}
@@ -79,9 +92,11 @@ func (c *Censys) Run(ctx context.Context, domain string, session *subscraping.Se
 			for _, res := range censysResponse.Results {
 				for _, part := range res.Data {
 					results <- subscraping.Result{Source: c.Name(), Type: subscraping.Subdomain, Value: part}
+					c.Results++
 				}
 				for _, part := range res.Data1 {
 					results <- subscraping.Result{Source: c.Name(), Type: subscraping.Subdomain, Value: part}
+					c.Results++
 				}
 			}
 

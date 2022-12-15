@@ -4,6 +4,7 @@ package shodan
 import (
 	"context"
 	"fmt"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -23,7 +24,11 @@ type Shodan struct {
 }
 
 func NewShodan() *Shodan {
-	return &Shodan{KeyApiSource: &subscraping.KeyApiSource{}}
+	return &Shodan{
+		KeyApiSource: &subscraping.KeyApiSource{
+			Source: &subscraping.Source{Errors: 0, Results: 0},
+		},
+	}
 }
 
 // Run function returns all subdomains found with the service
@@ -31,10 +36,14 @@ func (s *Shodan) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			s.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(s.ApiKeys(), s.Name())
 		if randomApiKey == "" {
+			s.Skipped = true
 			return
 		}
 
@@ -51,16 +60,23 @@ func (s *Shodan) Run(ctx context.Context, domain string, session *subscraping.Se
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.Errors++
 			return
 		}
 
 		if response.Error != "" {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%v", response.Error)}
+			results <- subscraping.Result{
+				Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%v", response.Error),
+			}
+			s.Errors++
 			return
 		}
 
 		for _, data := range response.Subdomains {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: fmt.Sprintf("%s.%s", data, domain)}
+			results <- subscraping.Result{
+				Source: s.Name(), Type: subscraping.Subdomain, Value: fmt.Sprintf("%s.%s", data, domain),
+			}
+			s.Results++
 		}
 	}()
 

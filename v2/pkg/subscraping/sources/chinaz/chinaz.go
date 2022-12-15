@@ -5,9 +5,9 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
-
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
@@ -17,7 +17,11 @@ type Chinaz struct {
 }
 
 func NewChinaz() *Chinaz {
-	return &Chinaz{KeyApiSource: &subscraping.KeyApiSource{}}
+	return &Chinaz{
+		KeyApiSource: &subscraping.KeyApiSource{
+			Source: &subscraping.Source{Errors: 0, Results: 0},
+		},
+	}
 }
 
 // Run function returns all subdomains found with the service
@@ -25,16 +29,21 @@ func (c *Chinaz) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			c.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(c.ApiKeys(), c.Name())
 		if randomApiKey == "" {
+			c.Skipped = true
 			return
 		}
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://apidatav2.chinaz.com/single/alexa?key=%s&domain=%s", randomApiKey, domain))
 		if err != nil {
 			results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
+			c.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -50,9 +59,11 @@ func (c *Chinaz) Run(ctx context.Context, domain string, session *subscraping.Se
 			for i := 0; i < SubdomainList.Size(); i++ {
 				subdomain := jsoniter.Get(_data, i, "DataUrl").ToString()
 				results <- subscraping.Result{Source: c.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				c.Results++
 			}
 		} else {
 			results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
+			c.Errors++
 			return
 		}
 	}()

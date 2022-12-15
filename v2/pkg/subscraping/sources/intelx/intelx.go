@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -42,7 +43,11 @@ type IntelX struct {
 }
 
 func NewIntelX() *IntelX {
-	return &IntelX{MultiPartKeyApiSource: &subscraping.MultiPartKeyApiSource{}}
+	return &IntelX{
+		MultiPartKeyApiSource: &subscraping.MultiPartKeyApiSource{
+			Source: &subscraping.Source{Errors: 0, Results: 0},
+		},
+	}
 }
 
 // Run function returns all subdomains found with the service
@@ -50,10 +55,14 @@ func (i *IntelX) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			i.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(i.ApiKeys(), i.Name())
 		if randomApiKey.Username == "" || randomApiKey.Password == "" {
+			i.Skipped = true
 			return
 		}
 
@@ -69,12 +78,14 @@ func (i *IntelX) Run(ctx context.Context, domain string, session *subscraping.Se
 		body, err := json.Marshal(reqBody)
 		if err != nil {
 			results <- subscraping.Result{Source: i.Name(), Type: subscraping.Error, Error: err}
+			i.Errors++
 			return
 		}
 
 		resp, err := session.SimplePost(ctx, searchURL, "application/json", bytes.NewBuffer(body))
 		if err != nil {
 			results <- subscraping.Result{Source: i.Name(), Type: subscraping.Error, Error: err}
+			i.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -83,6 +94,7 @@ func (i *IntelX) Run(ctx context.Context, domain string, session *subscraping.Se
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
 			results <- subscraping.Result{Source: i.Name(), Type: subscraping.Error, Error: err}
+			i.Errors++
 			resp.Body.Close()
 			return
 		}
@@ -95,6 +107,7 @@ func (i *IntelX) Run(ctx context.Context, domain string, session *subscraping.Se
 			resp, err = session.Get(ctx, resultsURL, "", nil)
 			if err != nil {
 				results <- subscraping.Result{Source: i.Name(), Type: subscraping.Error, Error: err}
+				i.Errors++
 				session.DiscardHTTPResponse(resp)
 				return
 			}
@@ -102,6 +115,7 @@ func (i *IntelX) Run(ctx context.Context, domain string, session *subscraping.Se
 			err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 			if err != nil {
 				results <- subscraping.Result{Source: i.Name(), Type: subscraping.Error, Error: err}
+				i.Errors++
 				resp.Body.Close()
 				return
 			}
@@ -109,6 +123,7 @@ func (i *IntelX) Run(ctx context.Context, domain string, session *subscraping.Se
 			_, err = io.ReadAll(resp.Body)
 			if err != nil {
 				results <- subscraping.Result{Source: i.Name(), Type: subscraping.Error, Error: err}
+				i.Errors++
 				resp.Body.Close()
 				return
 			}
@@ -116,7 +131,10 @@ func (i *IntelX) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			status = response.Status
 			for _, hostname := range response.Selectors {
-				results <- subscraping.Result{Source: i.Name(), Type: subscraping.Subdomain, Value: hostname.Selectvalue}
+				results <- subscraping.Result{
+					Source: i.Name(), Type: subscraping.Subdomain, Value: hostname.Selectvalue,
+				}
+				i.Results++
 			}
 		}
 	}()

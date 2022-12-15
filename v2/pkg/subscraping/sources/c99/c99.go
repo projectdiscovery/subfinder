@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -27,7 +28,13 @@ type dnsdbLookupResponse struct {
 }
 
 func NewC99() *C99 {
-	return &C99{KeyApiSource: &subscraping.KeyApiSource{}}
+	return &C99{
+		KeyApiSource: &subscraping.KeyApiSource{
+			Source: &subscraping.Source{
+				Errors: 0, Results: 0,
+			},
+		},
+	}
 }
 
 // Run function returns all subdomains found with the service
@@ -35,10 +42,14 @@ func (c *C99) Run(ctx context.Context, domain string, session *subscraping.Sessi
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			c.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(c.ApiKeys(), c.Name())
 		if randomApiKey == "" {
+			c.Skipped = true
 			return
 		}
 
@@ -55,17 +66,22 @@ func (c *C99) Run(ctx context.Context, domain string, session *subscraping.Sessi
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
 			results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: err}
+			c.Errors++
 			return
 		}
 
 		if response.Error != "" {
-			results <- subscraping.Result{Source: c.Name(), Type: subscraping.Error, Error: fmt.Errorf("%v", response.Error)}
+			results <- subscraping.Result{
+				Source: c.Name(), Type: subscraping.Error, Error: fmt.Errorf("%v", response.Error),
+			}
+			c.Errors++
 			return
 		}
 
 		for _, data := range response.Subdomains {
 			if !strings.HasPrefix(data.Subdomain, ".") {
 				results <- subscraping.Result{Source: c.Name(), Type: subscraping.Subdomain, Value: data.Subdomain}
+				c.Results++
 			}
 		}
 	}()

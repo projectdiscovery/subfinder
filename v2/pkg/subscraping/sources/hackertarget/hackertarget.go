@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
@@ -15,7 +16,7 @@ type HackerTarget struct {
 }
 
 func NewHackerTarget() *HackerTarget {
-	return &HackerTarget{Source: &subscraping.Source{}}
+	return &HackerTarget{Source: &subscraping.Source{Errors: 0, Results: 0}}
 }
 
 // Run function returns all subdomains found with the service
@@ -23,11 +24,15 @@ func (h *HackerTarget) Run(ctx context.Context, domain string, session *subscrap
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			h.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("http://api.hackertarget.com/hostsearch/?q=%s", domain))
 		if err != nil {
 			results <- subscraping.Result{Source: h.Name(), Type: subscraping.Error, Error: err}
+			h.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -43,6 +48,7 @@ func (h *HackerTarget) Run(ctx context.Context, domain string, session *subscrap
 			match := session.Extractor.FindAllString(line, -1)
 			for _, subdomain := range match {
 				results <- subscraping.Result{Source: h.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				h.Results++
 			}
 		}
 	}()

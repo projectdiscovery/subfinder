@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -30,7 +31,11 @@ type Robtex struct {
 }
 
 func NewRobtex() *Robtex {
-	return &Robtex{KeyApiSource: &subscraping.KeyApiSource{}}
+	return &Robtex{
+		KeyApiSource: &subscraping.KeyApiSource{
+			Source: &subscraping.Source{Errors: 0, Results: 0},
+		},
+	}
 }
 
 // Run function returns all subdomains found with the service
@@ -38,10 +43,14 @@ func (r *Robtex) Run(ctx context.Context, domain string, session *subscraping.Se
 	results := make(chan subscraping.Result)
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			r.TimeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(r.ApiKeys(), r.Name())
 		if randomApiKey == "" {
+			r.Skipped = true
 			return
 		}
 
@@ -50,6 +59,7 @@ func (r *Robtex) Run(ctx context.Context, domain string, session *subscraping.Se
 		ips, err := enumerate(ctx, session, fmt.Sprintf("%s/forward/%s?key=%s", baseURL, domain, randomApiKey), headers)
 		if err != nil {
 			results <- subscraping.Result{Source: r.Name(), Type: subscraping.Error, Error: err}
+			r.Errors++
 			return
 		}
 
@@ -58,14 +68,17 @@ func (r *Robtex) Run(ctx context.Context, domain string, session *subscraping.Se
 				domains, err := enumerate(ctx, session, fmt.Sprintf("%s/reverse/%s?key=%s", baseURL, result.Rrdata, randomApiKey), headers)
 				if err != nil {
 					results <- subscraping.Result{Source: r.Name(), Type: subscraping.Error, Error: err}
+					r.Errors++
 					return
 				}
 				for _, result := range domains {
 					results <- subscraping.Result{Source: r.Name(), Type: subscraping.Subdomain, Value: result.Rrdata}
+					r.Results++
 				}
 			}
 		}
 	}()
+
 	return results
 }
 
