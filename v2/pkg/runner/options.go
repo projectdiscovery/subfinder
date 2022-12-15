@@ -41,6 +41,7 @@ type Options struct {
 	Version            bool                // Version specifies if we should just show version and exit
 	OnlyRecursive      bool                // Recursive specifies whether to use only recursive subdomain enumeration sources
 	All                bool                // All specifies whether to use all (slow) sources.
+	Statistics         bool                // Statistics specifies whether to report source statistics
 	Threads            int                 // Threads controls the number of threads to use for active enumerations
 	Timeout            int                 // Timeout is the seconds to wait for sources to respond
 	MaxEnumerationTime int                 // MaxEnumerationTime is the maximum amount of time in minutes to wait for enumeration
@@ -137,6 +138,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVar(&options.Verbose, "v", false, "show verbose output"),
 		flagSet.BoolVarP(&options.NoColor, "no-color", "nc", false, "disable color in output"),
 		flagSet.BoolVarP(&options.ListSources, "list-sources", "ls", false, "list all available sources"),
+		flagSet.BoolVar(&options.Statistics, "stats", false, "report source statistics"),
 	)
 
 	createGroup(flagSet, "optimization", "Optimization",

@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"regexp"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -19,7 +20,11 @@ type response struct {
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys []apiKey
+	apiKeys   []apiKey
+	timeTaken time.Duration
+	errors    int
+	results   int
+	skipped   bool
 }
 
 type apiKey struct {
@@ -30,12 +35,18 @@ type apiKey struct {
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
+	s.errors = 0
+	s.results = 0
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			s.timeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
 		if randomApiKey.username == "" || randomApiKey.password == "" {
+			s.skipped = true
 			return
 		}
 
@@ -53,6 +64,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -61,6 +73,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		err = jsoniter.NewDecoder(resp.Body).Decode(&data)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.errors++
 			resp.Body.Close()
 			return
 		}
@@ -73,6 +86,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 			finalSubdomain := subdomain + "." + domain
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: finalSubdomain}
+			s.results++
 		}
 	}()
 
@@ -100,4 +114,13 @@ func (s *Source) AddApiKeys(keys []string) {
 	s.apiKeys = subscraping.CreateApiKeys(keys, func(k, v string) apiKey {
 		return apiKey{k, v}
 	})
+}
+
+func (s *Source) Statistics() subscraping.Statistics {
+	return subscraping.Statistics{
+		Errors:    s.errors,
+		Results:   s.results,
+		TimeTaken: s.timeTaken,
+		Skipped:   s.skipped,
+	}
 }

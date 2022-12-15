@@ -148,6 +148,11 @@ func (r *Runner) EnumerateSingleDomain(domain string, writers []io.Writer) error
 	}
 	gologger.Info().Msgf("Found %d subdomains for '%s' in %s\n", numberOfSubDomains, domain, duration)
 
+	if r.options.Statistics {
+		gologger.Info().Msgf("Printing source statistics for '%s'", domain)
+		printStatistics(r.passiveAgent.GetStatistics())
+	}
+
 	return nil
 }
 
