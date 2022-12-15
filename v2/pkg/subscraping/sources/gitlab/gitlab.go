@@ -17,8 +17,12 @@ import (
 )
 
 // Source is the passive scraping agent
-type Source struct {
-	apiKeys []string
+type GitLab struct {
+	*subscraping.KeyApiSource
+}
+
+func NewGitLab() *GitLab {
+	return &GitLab{KeyApiSource: &subscraping.KeyApiSource{}}
 }
 
 type item struct {
@@ -29,13 +33,13 @@ type item struct {
 }
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+func (g *GitLab) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(g.ApiKeys(), g.Name())
 		if randomApiKey == "" {
 			return
 		}
@@ -43,14 +47,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		headers := map[string]string{"PRIVATE-TOKEN": randomApiKey}
 
 		searchURL := fmt.Sprintf("https://gitlab.com/api/v4/search?scope=blobs&search=%s&per_page=100", domain)
-		s.enumerate(ctx, searchURL, domainRegexp(domain), headers, session, results)
+		g.enumerate(ctx, searchURL, domainRegexp(domain), headers, session, results)
 
 	}()
 
 	return results
 }
 
-func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *regexp.Regexp, headers map[string]string, session *subscraping.Session, results chan subscraping.Result) {
+func (g *GitLab) enumerate(ctx context.Context, searchURL string, domainRegexp *regexp.Regexp, headers map[string]string, session *subscraping.Session, results chan subscraping.Result) {
 	select {
 	case <-ctx.Done():
 		return
@@ -59,7 +63,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 
 	resp, err := session.Get(ctx, searchURL, "", headers)
 	if err != nil && resp == nil {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		results <- subscraping.Result{Source: g.Name(), Type: subscraping.Error, Error: err}
 		session.DiscardHTTPResponse(resp)
 		return
 	}
@@ -69,7 +73,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 	var items []item
 	err = jsoniter.NewDecoder(resp.Body).Decode(&items)
 	if err != nil {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		results <- subscraping.Result{Source: g.Name(), Type: subscraping.Error, Error: err}
 		return
 	}
 
@@ -85,7 +89,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 				if resp == nil || (resp != nil && resp.StatusCode != http.StatusNotFound) {
 					session.DiscardHTTPResponse(resp)
 
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+					results <- subscraping.Result{Source: g.Name(), Type: subscraping.Error, Error: err}
 					return
 				}
 			}
@@ -98,7 +102,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 						continue
 					}
 					for _, subdomain := range domainRegexp.FindAllString(line, -1) {
-						results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+						results <- subscraping.Result{Source: g.Name(), Type: subscraping.Subdomain, Value: subdomain}
 					}
 				}
 				resp.Body.Close()
@@ -114,14 +118,14 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 		if link.Rel == "next" {
 			nextURL, err := url.QueryUnescape(link.URL)
 			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				results <- subscraping.Result{Source: g.Name(), Type: subscraping.Error, Error: err}
 				return
 			}
 
 			// TODO: hardcoded for testing, should be a source internal rate limit #718
 			time.Sleep(2 * time.Second)
 
-			s.enumerate(ctx, nextURL, domainRegexp, headers, session, results)
+			g.enumerate(ctx, nextURL, domainRegexp, headers, session, results)
 		}
 	}
 
@@ -134,22 +138,10 @@ func domainRegexp(domain string) *regexp.Regexp {
 }
 
 // Name returns the name of the source
-func (s *Source) Name() string {
+func (g *GitLab) Name() string {
 	return "gitlab"
 }
 
-func (s *Source) IsDefault() bool {
-	return false
-}
-
-func (s *Source) HasRecursiveSupport() bool {
-	return false
-}
-
-func (s *Source) NeedsKey() bool {
-	return true
-}
-
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (g *GitLab) SourceType() string {
+	return subscraping.TYPE_API
 }
