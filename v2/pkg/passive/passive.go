@@ -11,7 +11,7 @@ import (
 )
 
 // EnumerateSubdomains enumerates all the subdomains for a given domain
-func (a *Agent) EnumerateSubdomains(domain string, proxy string, rateLimit, timeout int, maxEnumTime time.Duration) chan subscraping.Result {
+func (a *Agent) EnumerateSubdomains(ctx context.Context, domain string, proxy string, rateLimit, timeout int, maxEnumTime time.Duration) chan subscraping.Result {
 	results := make(chan subscraping.Result)
 	go func() {
 		defer close(results)
@@ -24,7 +24,7 @@ func (a *Agent) EnumerateSubdomains(domain string, proxy string, rateLimit, time
 			return
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), maxEnumTime)
+		ctx, cancel := context.WithTimeout(ctx, maxEnumTime)
 
 		wg := &sync.WaitGroup{}
 		// Run each source in parallel on the target domain

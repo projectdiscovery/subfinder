@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"context"
 	"io"
 	"strings"
 	"sync"
@@ -9,6 +10,7 @@ import (
 	"github.com/hako/durafmt"
 
 	"github.com/projectdiscovery/gologger"
+
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
@@ -33,7 +35,7 @@ func (r *Runner) EnumerateSingleDomain(domain string, writers []io.Writer) error
 
 	// Run the passive subdomain enumeration
 	now := time.Now()
-	passiveResults := r.passiveAgent.EnumerateSubdomains(domain, r.options.Proxy, r.options.RateLimit, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute)
+	passiveResults := r.passiveAgent.EnumerateSubdomains(context.Background(), domain, r.options.Proxy, r.options.RateLimit, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
