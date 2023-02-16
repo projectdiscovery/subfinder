@@ -17,8 +17,13 @@ import (
 
 const maxNumCount = 2
 
-// EnumerateSingleDomain performs subdomain enumeration against a single domain
+// EnumerateSingleDomain wraps EnumerateSingleDomainWithCtx with an empty context
 func (r *Runner) EnumerateSingleDomain(domain string, writers []io.Writer) error {
+	return r.EnumerateSingleDomainWithCtx(context.Background(), domain, writers)
+}
+
+// EnumerateSingleDomainWithCtx performs subdomain enumeration against a single domain
+func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string, writers []io.Writer) error {
 	gologger.Info().Msgf("Enumerating subdomains for '%s'\n", domain)
 
 	// Check if the user has asked to remove wildcards explicitly.
@@ -35,7 +40,7 @@ func (r *Runner) EnumerateSingleDomain(domain string, writers []io.Writer) error
 
 	// Run the passive subdomain enumeration
 	now := time.Now()
-	passiveResults := r.passiveAgent.EnumerateSubdomains(context.Background(), domain, r.options.Proxy, r.options.RateLimit, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute)
+	passiveResults := r.passiveAgent.EnumerateSubdomainsWithCtx(ctx, domain, r.options.Proxy, r.options.RateLimit, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
