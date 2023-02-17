@@ -15,6 +15,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/projectdiscovery/utils/file"
+	"github.com/projectdiscovery/utils/log"
 	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
@@ -71,6 +72,7 @@ type OnResultCallback func(result *resolve.HostEntry)
 
 // ParseOptions parses the command line flags provided by a user
 func ParseOptions() *Options {
+	logutil.DisableDefaultLogger()
 	// Seed default random number generator
 	rand.Seed(time.Now().UnixNano())
 
@@ -162,7 +164,7 @@ func ParseOptions() *Options {
 	options.Output = os.Stdout
 
 	// Check if stdin pipe was given
-	options.Stdin = hasStdin()
+	options.Stdin = fileutil.HasStdin()
 
 	// Read the inputs and configure the logging
 	options.configureOutput()
@@ -257,18 +259,6 @@ func unMarshalToLowerCaseMap(defaultConfigLocation string) (map[string][]string,
 
 func isFatalErr(err error) bool {
 	return err != nil && !errors.Is(err, io.EOF)
-}
-
-func hasStdin() bool {
-	stat, err := os.Stdin.Stat()
-	if err != nil {
-		return false
-	}
-
-	isPipedFromChrDev := (stat.Mode() & os.ModeCharDevice) == 0
-	isPipedFromFIFO := (stat.Mode() & os.ModeNamedPipe) != 0
-
-	return isPipedFromChrDev || isPipedFromFIFO
 }
 
 func listSources(options *Options) {
