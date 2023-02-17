@@ -30,7 +30,6 @@ var (
 		"fofa",
 		"fullhunt",
 		"github",
-		"gitlab",
 		"hackertarget",
 		"intelx",
 		"passivetotal",
