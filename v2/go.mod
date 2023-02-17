@@ -10,9 +10,9 @@ require (
 	github.com/projectdiscovery/chaos-client v0.3.0
 	github.com/projectdiscovery/dnsx v1.1.1
 	github.com/projectdiscovery/fdmax v0.0.4
-	github.com/projectdiscovery/fileutil v0.0.3
 	github.com/projectdiscovery/gologger v1.1.5-0.20220817095646-8663411b1b0b
 	github.com/projectdiscovery/ratelimit v0.0.6
+	github.com/projectdiscovery/utils v0.0.9
 	github.com/rs/xid v1.4.0
 	github.com/stretchr/testify v1.8.1
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
@@ -32,12 +32,12 @@ require (
 	github.com/pierrec/lz4 v2.6.0+incompatible // indirect
 	github.com/projectdiscovery/blackrock v0.0.0-20220628111055-35616c71b2dc // indirect
 	github.com/projectdiscovery/cdncheck v0.0.3 // indirect
+	github.com/projectdiscovery/fileutil v0.0.1 // indirect
 	github.com/projectdiscovery/httputil v0.0.0-20210906072657-f3a099cb20bc // indirect
 	github.com/projectdiscovery/iputil v0.0.0-20220712175312-b9406f31cdd8 // indirect
 	github.com/projectdiscovery/mapcidr v1.0.1 // indirect
 	github.com/projectdiscovery/retryablehttp-go v1.0.2 // indirect
 	github.com/projectdiscovery/sliceutil v0.0.0-20220625085859-c3a4ecb669f4 // indirect
-	github.com/projectdiscovery/utils v0.0.6 // indirect
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
 	github.com/ulikunitz/xz v0.5.7 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
