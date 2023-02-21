@@ -37,8 +37,8 @@ github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHm
 github.com/karrick/godirwalk v1.16.1/go.mod h1:j4mkqPuvaLI8mp1DroR3P6ad7cyYd4c1qeJ3RV7ULlk=
 github.com/klauspost/compress v1.4.1/go.mod h1:RyIbtBH6LamlWaDj8nUwkbUhJ87Yi3uG0guNDohfE1A=
 github.com/klauspost/cpuid v1.2.0/go.mod h1:Pj4uuM528wm8OyEC2QMXAi2YiTZ96dNQPGgoMS4s3ek=
-github.com/kr/pretty v0.2.1 h1:Fmg33tUaq4/8ym9TJN1x7sLJnHVwhP33CNkpYV/7rwI=
 github.com/kr/pretty v0.2.1/go.mod h1:ipq/a2n7PKx3OHsz4KJII5eveXtPO4qwEXGdVfWzfnI=
+github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
@@ -91,8 +91,8 @@ github.com/projectdiscovery/fileutil v0.0.0-20220705195237-01becc2a8963/go.mod h
 github.com/projectdiscovery/fileutil v0.0.1 h1:3K3UqCDOan3LsvWhV0nyvVuMWSwCloNPUJIGcXsi1os=
 github.com/projectdiscovery/fileutil v0.0.1/go.mod h1:Oo6ZEvXmQz/xPF0YukzmwpdW2LYinWCSEmzZOQsJCLg=
 github.com/projectdiscovery/goflags v0.0.8/go.mod h1:GDSkWyXa6kfQjpJu10SO64DN8lXuKXVENlBMk8N7H80=
-github.com/projectdiscovery/goflags v0.1.5 h1:zqZvIKAdSC62e5jv5UDgBWyP61KrLHxxUXjH/MAJlB4=
-github.com/projectdiscovery/goflags v0.1.5/go.mod h1:mms5rLXW0+jjbFFTyl/4t9VwtP5TCE+1Y1pReezluAI=
+github.com/projectdiscovery/goflags v0.1.7 h1:KvMs1KnXMWRhJiJj6K+cWurTWpbDYYlo+1cyGvf1YCc=
+github.com/projectdiscovery/goflags v0.1.7/go.mod h1:yILgA7gbrHuTpIvMfikbivzoxkyxBD1Y5/PRHiGTIFk=
 github.com/projectdiscovery/gologger v1.0.1/go.mod h1:Ok+axMqK53bWNwDSU1nTNwITLYMXMdZtRc8/y1c7sWE=
 github.com/projectdiscovery/gologger v1.1.4/go.mod h1:Bhb6Bdx2PV1nMaFLoXNBmHIU85iROS9y1tBuv7T5pMY=
 github.com/projectdiscovery/gologger v1.1.5-0.20220817095646-8663411b1b0b h1:sncWNStu8+oT3vDvKKFncr5FxEui5Bs0ET2Qkj0AVBo=
@@ -123,6 +123,8 @@ github.com/projectdiscovery/stringsutil v0.0.2 h1:uzmw3IVLJSMW1kEg8eCStG/cGbYYZA
 github.com/projectdiscovery/stringsutil v0.0.2/go.mod h1:EJ3w6bC5fBYjVou6ryzodQq37D5c6qbAYQpGmAy+DC0=
 github.com/projectdiscovery/utils v0.0.10 h1:WU/sJJgE4RrXuhooKk+PKcIaTc/MT9B+ohdnK6hgpsE=
 github.com/projectdiscovery/utils v0.0.10/go.mod h1:dZqlayNwgCGn2HgYfKrI71RjBEyKsEPovrU+UDfpQWw=
+github.com/rogpeppe/go-internal v1.9.0 h1:73kH8U+JUqXU8lRuOHeVHaa/SZPifC7BkcraZVejAe8=
+github.com/rogpeppe/go-internal v1.9.0/go.mod h1:WtVeX8xhTBvf0smdhujwtBcq4Qrzq/fJaraNFVN+nFs=
 github.com/rs/xid v1.4.0 h1:qd7wPTDkN6KQx2VmMBLrpHkiyQwgFXRnkOLacUiaSNY=
 github.com/rs/xid v1.4.0/go.mod h1:trrq9SKmegXys3aeAKXMUTdJsYXVwGY3RLcfgqegfbg=
 github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca h1:NugYot0LIVPxTvN8n+Kvkn6TrbMyxQiuvKdEwFdR9vI=

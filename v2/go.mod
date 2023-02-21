@@ -38,6 +38,7 @@ require (
 	github.com/projectdiscovery/mapcidr v1.0.1 // indirect
 	github.com/projectdiscovery/retryablehttp-go v1.0.2 // indirect
 	github.com/projectdiscovery/sliceutil v0.0.0-20220625085859-c3a4ecb669f4 // indirect
+	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
 	github.com/ulikunitz/xz v0.5.7 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
@@ -59,7 +60,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/projectdiscovery/goflags v0.1.5
+	github.com/projectdiscovery/goflags v0.1.7
 	github.com/projectdiscovery/retryabledns v1.0.15 // indirect
 	github.com/projectdiscovery/stringsutil v0.0.2 // indirect
 	golang.org/x/net v0.1.0 // indirect
