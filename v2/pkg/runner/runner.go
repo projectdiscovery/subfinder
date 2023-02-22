@@ -2,6 +2,7 @@ package runner
 
 import (
 	"bufio"
+	"context"
 	"io"
 	"os"
 	"path"
@@ -11,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/projectdiscovery/gologger"
+
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
 )
@@ -41,13 +43,18 @@ func NewRunner(options *Options) (*Runner, error) {
 	return runner, nil
 }
 
-// RunEnumeration runs the subdomain enumeration flow on the targets specified
+// RunEnumeration wraps RunEnumerationWithCtx with an empty context
 func (r *Runner) RunEnumeration() error {
+	return r.RunEnumerationWithCtx(context.Background())
+}
+
+// RunEnumerationWithCtx runs the subdomain enumeration flow on the targets specified
+func (r *Runner) RunEnumerationWithCtx(ctx context.Context) error {
 	outputs := []io.Writer{r.options.Output}
 
 	if len(r.options.Domain) > 0 {
 		domainsReader := strings.NewReader(strings.Join(r.options.Domain, "\n"))
-		return r.EnumerateMultipleDomains(domainsReader, outputs)
+		return r.EnumerateMultipleDomainsWithCtx(ctx, domainsReader, outputs)
 	}
 
 	// If we have multiple domains as input,
@@ -56,21 +63,26 @@ func (r *Runner) RunEnumeration() error {
 		if err != nil {
 			return err
 		}
-		err = r.EnumerateMultipleDomains(f, outputs)
+		err = r.EnumerateMultipleDomainsWithCtx(ctx, f, outputs)
 		f.Close()
 		return err
 	}
 
 	// If we have STDIN input, treat it as multiple domains
 	if r.options.Stdin {
-		return r.EnumerateMultipleDomains(os.Stdin, outputs)
+		return r.EnumerateMultipleDomainsWithCtx(ctx, os.Stdin, outputs)
 	}
 	return nil
 }
 
-// EnumerateMultipleDomains enumerates subdomains for multiple domains
-// We keep enumerating subdomains for a given domain until we reach an error
+// EnumerateMultipleDomains wraps EnumerateMultipleDomainsWithCtx with an empty context
 func (r *Runner) EnumerateMultipleDomains(reader io.Reader, writers []io.Writer) error {
+	return r.EnumerateMultipleDomainsWithCtx(context.Background(), reader, writers)
+}
+
+// EnumerateMultipleDomainsWithCtx enumerates subdomains for multiple domains
+// We keep enumerating subdomains for a given domain until we reach an error
+func (r *Runner) EnumerateMultipleDomainsWithCtx(ctx context.Context, reader io.Reader, writers []io.Writer) error {
 	scanner := bufio.NewScanner(reader)
 	ip, _ := regexp.Compile(`^([0-9\.]+$)`)
 	for scanner.Scan() {
@@ -92,7 +104,7 @@ func (r *Runner) EnumerateMultipleDomains(reader io.Reader, writers []io.Writer)
 				return err
 			}
 
-			err = r.EnumerateSingleDomain(domain, append(writers, file))
+			err = r.EnumerateSingleDomainWithCtx(ctx, domain, append(writers, file))
 
 			file.Close()
 		} else if r.options.OutputDirectory != "" {
@@ -110,11 +122,11 @@ func (r *Runner) EnumerateMultipleDomains(reader io.Reader, writers []io.Writer)
 				return err
 			}
 
-			err = r.EnumerateSingleDomain(domain, append(writers, file))
+			err = r.EnumerateSingleDomainWithCtx(ctx, domain, append(writers, file))
 
 			file.Close()
 		} else {
-			err = r.EnumerateSingleDomain(domain, writers)
+			err = r.EnumerateSingleDomainWithCtx(ctx, domain, writers)
 		}
 		if err != nil {
 			return err

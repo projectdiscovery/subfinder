@@ -9,16 +9,15 @@ on:
 
 jobs:
   docker:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-16-cores
     steps:
-
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Get Github tag
         id: meta
         run: |
-          echo "::set-output name=tag::$(curl --silent "https://api.github.com/repos/projectdiscovery/subfinder/releases/latest" | jq -r .tag_name)"
+          curl --silent "https://api.github.com/repos/projectdiscovery/subfinder/releases/latest" | jq -r .tag_name | xargs -I {} echo TAG={} >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -33,9 +32,9 @@ jobs:
           password: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Build and push
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           platforms: linux/amd64,linux/arm64,linux/arm
           push: true
-          tags: projectdiscovery/subfinder:latest,projectdiscovery/subfinder:${{ steps.meta.outputs.tag }}
+          tags: projectdiscovery/subfinder:latest,projectdiscovery/subfinder:${{ steps.meta.outputs.TAG }}

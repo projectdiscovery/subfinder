@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/projectdiscovery/fileutil"
+	"github.com/projectdiscovery/utils/file"
 )
 
 var (

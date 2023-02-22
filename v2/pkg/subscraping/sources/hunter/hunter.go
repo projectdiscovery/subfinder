@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -30,18 +31,28 @@ type hunterData struct {
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys []string
+	apiKeys   []string
+	timeTaken time.Duration
+	errors    int
+	results   int
+	skipped   bool
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
+	s.errors = 0
+	s.results = 0
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			s.timeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
 		if randomApiKey == "" {
+			s.skipped = true
 			return
 		}
 
@@ -52,6 +63,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://hunter.qianxin.com/openApi/search?api-key=%s&search=%s&page=1&page_size=100&is_web=3", randomApiKey, qbase64))
 			if err != nil && resp == nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
 				session.DiscardHTTPResponse(resp)
 				return
 			}
@@ -66,7 +78,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			resp.Body.Close()
 
 			if response.Code == 401 || response.Code == 400 {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.Message)}
+				results <- subscraping.Result{
+					Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.Message),
+				}
 				return
 			}
 
@@ -102,4 +116,13 @@ func (s *Source) NeedsKey() bool {
 
 func (s *Source) AddApiKeys(keys []string) {
 	s.apiKeys = keys
+}
+
+func (s *Source) Statistics() subscraping.Statistics {
+	return subscraping.Statistics{
+		Errors:    s.errors,
+		Results:   s.results,
+		TimeTaken: s.timeTaken,
+		Skipped:   s.skipped,
+	}
 }

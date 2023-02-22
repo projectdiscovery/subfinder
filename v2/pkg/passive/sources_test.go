@@ -23,6 +23,7 @@ var (
 		"chinaz",
 		"commoncrawl",
 		"crtsh",
+		"digitorus",
 		"dnsdumpster",
 		"dnsdb",
 		"dnsrepo",
@@ -40,14 +41,14 @@ var (
 		"shodan",
 		"sitedossier",
 		"threatbook",
-		"threatminer",
 		"virustotal",
 		"waybackarchive",
 		"whoisxmlapi",
 		"zoomeye",
 		"zoomeyeapi",
 		"hunter",
-		"reconcloud",
+		// "threatminer",
+		// "reconcloud",
 	}
 
 	expectedDefaultSources = []string{
@@ -61,6 +62,7 @@ var (
 		"chaos",
 		"chinaz",
 		"crtsh",
+		"digitorus",
 		"dnsdumpster",
 		"dnsrepo",
 		"fofa",
@@ -73,11 +75,11 @@ var (
 		"riddler",
 		"securitytrails",
 		"shodan",
-		"threatminer",
 		"virustotal",
 		"whoisxmlapi",
 		"hunter",
-		"reconcloud",
+		// "threatminer",
+		// "reconcloud",
 	}
 
 	expectedDefaultRecursiveSources = []string{
@@ -87,11 +89,12 @@ var (
 		"certspotter",
 		"crtsh",
 		"dnsdumpster",
+		"digitorus",
 		"hackertarget",
 		"passivetotal",
 		"securitytrails",
 		"virustotal",
-		"reconcloud",
+		// "reconcloud",
 	}
 )
 

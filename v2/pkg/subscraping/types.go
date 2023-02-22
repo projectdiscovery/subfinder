@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"regexp"
+	"time"
 
 	"github.com/projectdiscovery/ratelimit"
 )
@@ -14,12 +15,21 @@ type BasicAuth struct {
 	Password string
 }
 
+// Statistics contains statistics about the scraping process
+type Statistics struct {
+	TimeTaken time.Duration
+	Errors    int
+	Results   int
+	Skipped   bool
+}
+
 // Source is an interface inherited by each passive source
 type Source interface {
 	// Run takes a domain as argument and a session object
 	// which contains the extractor for subdomains, http client
 	// and other stuff.
 	Run(context.Context, string, *Session) <-chan Result
+
 	// Name returns the name of the source. It is preferred to use lower case names.
 	Name() string
 
@@ -36,6 +46,9 @@ type Source interface {
 	NeedsKey() bool
 
 	AddApiKeys([]string)
+
+	// Statistics returns the scrapping statistics for the source
+	Statistics() Statistics
 }
 
 // Session is the option passed to the source, an option is created

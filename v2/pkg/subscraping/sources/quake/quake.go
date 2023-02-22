@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -31,25 +32,39 @@ type quakeResults struct {
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys []string
+	apiKeys   []string
+	timeTaken time.Duration
+	errors    int
+	results   int
+	skipped   bool
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
+	s.errors = 0
+	s.results = 0
+
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			s.timeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
 		if randomApiKey == "" {
+			s.skipped = true
 			return
 		}
 
 		// quake api doc https://quake.360.cn/quake/#/help
 		var requestBody = []byte(fmt.Sprintf(`{"query":"domain: *.%s", "start":0, "size":500}`, domain))
-		resp, err := session.Post(ctx, "https://quake.360.cn/api/v3/search/quake_service", "", map[string]string{"Content-Type": "application/json", "X-QuakeToken": randomApiKey}, bytes.NewReader(requestBody))
+		resp, err := session.Post(ctx, "https://quake.360.cn/api/v3/search/quake_service", "", map[string]string{
+			"Content-Type": "application/json", "X-QuakeToken": randomApiKey,
+		}, bytes.NewReader(requestBody))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -58,13 +73,17 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.errors++
 			resp.Body.Close()
 			return
 		}
 		resp.Body.Close()
 
 		if response.Code != 0 {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.Message)}
+			results <- subscraping.Result{
+				Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.Message),
+			}
+			s.errors++
 			return
 		}
 
@@ -75,6 +94,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					subdomain = ""
 				}
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				s.results++
 			}
 		}
 	}()
@@ -101,4 +121,13 @@ func (s *Source) NeedsKey() bool {
 
 func (s *Source) AddApiKeys(keys []string) {
 	s.apiKeys = keys
+}
+
+func (s *Source) Statistics() subscraping.Statistics {
+	return subscraping.Statistics{
+		Errors:    s.errors,
+		Results:   s.results,
+		TimeTaken: s.timeTaken,
+		Skipped:   s.skipped,
+	}
 }

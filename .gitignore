@@ -7,3 +7,4 @@ v2/subfinder
 vendor/
 .idea
 .devcontainer
+dist

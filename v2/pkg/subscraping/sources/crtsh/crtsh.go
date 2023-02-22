@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -21,14 +22,23 @@ type subdomain struct {
 }
 
 // Source is the passive scraping agent
-type Source struct{}
+type Source struct {
+	timeTaken time.Duration
+	errors    int
+	results   int
+}
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
+	s.errors = 0
+	s.results = 0
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			s.timeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		count := s.getSubdomainsFromSQL(domain, session, results)
 		if count > 0 {
@@ -44,22 +54,47 @@ func (s *Source) getSubdomainsFromSQL(domain string, session *subscraping.Sessio
 	db, err := sql.Open("postgres", "host=crt.sh user=guest dbname=certwatch sslmode=disable binary_parameters=yes")
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		s.errors++
 		return 0
 	}
 
 	defer db.Close()
 
-	pattern := "%." + domain
-	query := `SELECT DISTINCT ci.NAME_VALUE as domain FROM certificate_identity ci
-					  WHERE reverse(lower(ci.NAME_VALUE)) LIKE reverse(lower($1))
-					  ORDER BY ci.NAME_VALUE`
-	rows, err := db.Query(query, pattern)
+	query := `WITH ci AS (
+				SELECT min(sub.CERTIFICATE_ID) ID,
+					min(sub.ISSUER_CA_ID) ISSUER_CA_ID,
+					array_agg(DISTINCT sub.NAME_VALUE) NAME_VALUES,
+					x509_commonName(sub.CERTIFICATE) COMMON_NAME,
+					x509_notBefore(sub.CERTIFICATE) NOT_BEFORE,
+					x509_notAfter(sub.CERTIFICATE) NOT_AFTER,
+					encode(x509_serialNumber(sub.CERTIFICATE), 'hex') SERIAL_NUMBER
+					FROM (SELECT *
+							FROM certificate_and_identities cai
+							WHERE plainto_tsquery('certwatch', $1) @@ identities(cai.CERTIFICATE)
+								AND cai.NAME_VALUE ILIKE ('%' || $1 || '%')
+							LIMIT 10000
+						) sub
+					GROUP BY sub.CERTIFICATE
+			)
+			SELECT array_to_string(ci.NAME_VALUES, chr(10)) NAME_VALUE
+				FROM ci
+						LEFT JOIN LATERAL (
+							SELECT min(ctle.ENTRY_TIMESTAMP) ENTRY_TIMESTAMP
+								FROM ct_log_entry ctle
+								WHERE ctle.CERTIFICATE_ID = ci.ID
+						) le ON TRUE,
+					ca
+				WHERE ci.ISSUER_CA_ID = ca.ID
+				ORDER BY le.ENTRY_TIMESTAMP DESC NULLS LAST;`
+	rows, err := db.Query(query, domain)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		s.errors++
 		return 0
 	}
 	if err := rows.Err(); err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		s.errors++
 		return 0
 	}
 
@@ -70,10 +105,18 @@ func (s *Source) getSubdomainsFromSQL(domain string, session *subscraping.Sessio
 		err := rows.Scan(&data)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.errors++
 			return count
 		}
+
 		count++
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: session.Extractor.FindString(data)}
+		for _, subdomain := range strings.Split(data, "\n") {
+			value := session.Extractor.FindString(subdomain)
+			if value != "" {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}
+				s.results++
+			}
+		}
 	}
 	return count
 }
@@ -82,6 +125,7 @@ func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, sessi
 	resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://crt.sh/?q=%%25.%s&output=json", domain))
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		s.errors++
 		session.DiscardHTTPResponse(resp)
 		return false
 	}
@@ -90,6 +134,7 @@ func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, sessi
 	err = jsoniter.NewDecoder(resp.Body).Decode(&subdomains)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		s.errors++
 		resp.Body.Close()
 		return false
 	}
@@ -98,7 +143,11 @@ func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, sessi
 
 	for _, subdomain := range subdomains {
 		for _, sub := range strings.Split(subdomain.NameValue, "\n") {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: session.Extractor.FindString(sub)}
+			value := session.Extractor.FindString(sub)
+			if value != "" {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}
+			}
+			s.results++
 		}
 	}
 
@@ -124,4 +173,12 @@ func (s *Source) NeedsKey() bool {
 
 func (s *Source) AddApiKeys(_ []string) {
 	// no key needed
+}
+
+func (s *Source) Statistics() subscraping.Statistics {
+	return subscraping.Statistics{
+		Errors:    s.errors,
+		Results:   s.results,
+		TimeTaken: s.timeTaken,
+	}
 }

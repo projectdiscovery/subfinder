@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"context"
 	"io"
 	"strings"
 	"sync"
@@ -9,14 +10,20 @@ import (
 	"github.com/hako/durafmt"
 
 	"github.com/projectdiscovery/gologger"
+
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
 const maxNumCount = 2
 
-// EnumerateSingleDomain performs subdomain enumeration against a single domain
+// EnumerateSingleDomain wraps EnumerateSingleDomainWithCtx with an empty context
 func (r *Runner) EnumerateSingleDomain(domain string, writers []io.Writer) error {
+	return r.EnumerateSingleDomainWithCtx(context.Background(), domain, writers)
+}
+
+// EnumerateSingleDomainWithCtx performs subdomain enumeration against a single domain
+func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string, writers []io.Writer) error {
 	gologger.Info().Msgf("Enumerating subdomains for '%s'\n", domain)
 
 	// Check if the user has asked to remove wildcards explicitly.
@@ -33,7 +40,7 @@ func (r *Runner) EnumerateSingleDomain(domain string, writers []io.Writer) error
 
 	// Run the passive subdomain enumeration
 	now := time.Now()
-	passiveResults := r.passiveAgent.EnumerateSubdomains(domain, r.options.Proxy, r.options.RateLimit, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute)
+	passiveResults := r.passiveAgent.EnumerateSubdomainsWithCtx(ctx, domain, r.options.Proxy, r.options.RateLimit, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
@@ -147,6 +154,11 @@ func (r *Runner) EnumerateSingleDomain(domain string, writers []io.Writer) error
 		}
 	}
 	gologger.Info().Msgf("Found %d subdomains for '%s' in %s\n", numberOfSubDomains, domain, duration)
+
+	if r.options.Statistics {
+		gologger.Info().Msgf("Printing source statistics for '%s'", domain)
+		printStatistics(r.passiveAgent.GetStatistics())
+	}
 
 	return nil
 }
