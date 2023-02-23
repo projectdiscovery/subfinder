@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"github.com/projectdiscovery/gologger"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -57,10 +58,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 
 		var pages = 1
+		var pageSize = 100
 		for currentPage := 1; currentPage <= pages; currentPage++ {
 			// hunter api doc https://hunter.qianxin.com/home/helpCenter?r=5-1-2
 			qbase64 := base64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("domain.suffix=\"%s\"", domain)))
-			resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://hunter.qianxin.com/openApi/search?api-key=%s&search=%s&page=1&page_size=100&is_web=3", randomApiKey, qbase64))
+			resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://hunter.qianxin.com/openApi/search?api-key=%s&search=%s&page=%d&page_size=%d&is_web=3", randomApiKey, qbase64, currentPage, pageSize))
 			if err != nil && resp == nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				s.errors++
@@ -83,14 +85,21 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				}
 				return
 			}
-
+			if response.Code == 429 {
+				gologger.Debug().Msgf("Hunter API  speed limit")
+				currentPage -= 1
+				time.Sleep(time.Second * 3)
+				continue
+			}
 			if response.Data.Total > 0 {
 				for _, hunterInfo := range response.Data.InfoArr {
 					subdomain := hunterInfo.Domain
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 				}
 			}
-			pages = int(response.Data.Total/1000) + 1
+			// api has a speed limit, so requires sleep.
+			time.Sleep(time.Second * 3)
+			pages = int(response.Data.Total/pageSize) + 1
 		}
 	}()
 
