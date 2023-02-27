@@ -14,7 +14,7 @@ require (
 	github.com/projectdiscovery/ratelimit v0.0.6
 	github.com/projectdiscovery/utils v0.0.10
 	github.com/rs/xid v1.4.0
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
 	golang.org/x/exp v0.0.0-20221230185412-738e83a70c30
 	gopkg.in/yaml.v3 v3.0.1
