@@ -12,7 +12,7 @@ require (
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/gologger v1.1.8
 	github.com/projectdiscovery/ratelimit v0.0.6
-	github.com/projectdiscovery/utils v0.0.10
+	github.com/projectdiscovery/utils v0.0.13
 	github.com/rs/xid v1.4.0
 	github.com/stretchr/testify v1.8.2
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
@@ -41,7 +41,7 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/mod v0.6.0 // indirect
-	golang.org/x/text v0.6.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/tools v0.2.0 // indirect
 	gopkg.in/djherbis/times.v1 v1.3.0 // indirect
 )
@@ -57,6 +57,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/projectdiscovery/goflags v0.1.7
 	github.com/projectdiscovery/retryabledns v1.0.21 // indirect
-	golang.org/x/net v0.5.0 // indirect
-	golang.org/x/sys v0.4.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
 )
