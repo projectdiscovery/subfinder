@@ -12,6 +12,9 @@ const banner = `
 /____/\__,_/_.___/_/ /_/_/ /_/\__,_/\___/_/ v2.5.6
 `
 
+//Name
+const ToolName = `subfinder`
+
 // Version is the current version of subfinder
 const Version = `v2.5.6`
 

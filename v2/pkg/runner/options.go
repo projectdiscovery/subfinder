@@ -14,12 +14,13 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/projectdiscovery/utils/file"
-	"github.com/projectdiscovery/utils/log"
 	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
+	pdtmutils "github.com/projectdiscovery/pdtm/pkg/utils"
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
+	fileutil "github.com/projectdiscovery/utils/file"
+	logutil "github.com/projectdiscovery/utils/log"
 )
 
 var (
@@ -65,6 +66,7 @@ type Options struct {
 	matchRegexes       []*regexp.Regexp
 	filterRegexes      []*regexp.Regexp
 	ResultCallback     OnResultCallback // OnResult callback
+	DisableUpdateCheck bool             // DisableUpdateCheck disable update checking
 }
 
 // OnResultCallback (hostResult)
@@ -114,6 +116,11 @@ func ParseOptions() *Options {
 	createGroup(flagSet, "rate-limit", "Rate-limit",
 		flagSet.IntVarP(&options.RateLimit, "rate-limit", "rl", 0, "maximum number of http requests to send per second"),
 		flagSet.IntVar(&options.Threads, "t", 10, "number of concurrent goroutines for resolving (-active only)"),
+	)
+
+	flagSet.CreateGroup("update", "Update",
+		flagSet.CallbackVarP(pdtmutils.GetUpdaterCallback(ToolName), "update", "up", fmt.Sprintf("update %v to the latest version", ToolName)),
+		flagSet.BoolVarP(&options.DisableUpdateCheck, "disable-update-check", "duc", false, "disable automatic update check"),
 	)
 
 	createGroup(flagSet, "output", "Output",
@@ -178,6 +185,11 @@ func ParseOptions() *Options {
 
 	if !options.Silent {
 		showBanner()
+	}
+
+	if !options.DisableUpdateCheck {
+		checkVersion := pdtmutils.GetVersionCheckCallback(ToolName)
+		gologger.Info().Msg(checkVersion())
 	}
 
 	// Check if the application loading with any provider configuration, then take it
