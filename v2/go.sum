@@ -80,8 +80,8 @@ github.com/projectdiscovery/retryabledns v1.0.21 h1:vOpPQR1q8Z824uoA8JXCI/RyvDAs
 github.com/projectdiscovery/retryabledns v1.0.21/go.mod h1:6oTPKMRlKZ7lIIEzTH723K6RvNRjmm6fe9br4Dom3UI=
 github.com/projectdiscovery/retryablehttp-go v1.0.10 h1:A8tsJZhzpijgnvHT41JNrhiXtn8F8s7TWMC5ZxLV/Cg=
 github.com/projectdiscovery/retryablehttp-go v1.0.10/go.mod h1:a5bmSbaxgHvC0P80csOymMOwKaJirMnsS6otRUH/vcU=
-github.com/projectdiscovery/utils v0.0.13 h1:Bvguo7avXN+Zs9tHL+8+Qld65nwIE8Kr9qddErDDqmw=
-github.com/projectdiscovery/utils v0.0.13/go.mod h1:2CyxZXcx62NUiGJZZam23CpphqXy3kaomE9uvgHgkEo=
+github.com/projectdiscovery/utils v0.0.14 h1:ZtyZu0stPQ/qQSw8hsB0pQll2mLOkuB4d08J3ZdbZPw=
+github.com/projectdiscovery/utils v0.0.14/go.mod h1:2CyxZXcx62NUiGJZZam23CpphqXy3kaomE9uvgHgkEo=
 github.com/rogpeppe/go-internal v1.9.0 h1:73kH8U+JUqXU8lRuOHeVHaa/SZPifC7BkcraZVejAe8=
 github.com/rs/xid v1.4.0 h1:qd7wPTDkN6KQx2VmMBLrpHkiyQwgFXRnkOLacUiaSNY=
 github.com/rs/xid v1.4.0/go.mod h1:trrq9SKmegXys3aeAKXMUTdJsYXVwGY3RLcfgqegfbg=
