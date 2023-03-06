@@ -119,7 +119,6 @@ func ParseOptions() *Options {
 	)
 
 	flagSet.CreateGroup("update", "Update",
-		flagSet.CallbackVarP(pdtmutils.GetUpdaterCallback(ToolName), "update", "up", fmt.Sprintf("update %v to the latest version", ToolName)),
 		flagSet.BoolVarP(&options.DisableUpdateCheck, "disable-update-check", "duc", false, "disable automatic update check"),
 	)
 
