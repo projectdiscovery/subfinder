@@ -26,7 +26,7 @@ func showBanner() {
 	gologger.Print().Msgf("\t\tprojectdiscovery.io\n\n")
 }
 
-// GetUpdateCallback returns a callback function that updates httpx
+// GetUpdateCallback returns a callback function that updates subfinder
 func GetUpdateCallback() func() {
 	return func() {
 		showBanner()
