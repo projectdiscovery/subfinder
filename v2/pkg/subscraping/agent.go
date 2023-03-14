@@ -35,7 +35,7 @@ func NewSession(domain string, proxy string, rateLimit, timeout int) (*Session, 
 		proxyURL, _ := url.Parse(proxy)
 		if proxyURL == nil {
 			// Log warning but continue anyway
-			gologger.Warning().Msgf("Invalid proxy provided: '%s'", proxy)
+			gologger.Warning().Msgf("Invalid proxy provided: %s", proxy)
 		} else {
 			Transport.Proxy = http.ProxyURL(proxyURL)
 		}
@@ -135,9 +135,9 @@ func httpRequestWrapper(client *http.Client, request *http.Request) (*http.Respo
 		gologger.Debug().MsgFunc(func() string {
 			buffer := new(bytes.Buffer)
 			_, _ = buffer.ReadFrom(response.Body)
-			return fmt.Sprintf("Response for failed request against '%s':\n%s", requestURL, buffer.String())
+			return fmt.Sprintf("Response for failed request against %s:\n%s", requestURL, buffer.String())
 		})
-		return response, fmt.Errorf("unexpected status code %d received from '%s'", response.StatusCode, requestURL)
+		return response, fmt.Errorf("unexpected status code %d received from %s", response.StatusCode, requestURL)
 	}
 	return response, nil
 }

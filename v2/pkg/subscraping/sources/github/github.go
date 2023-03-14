@@ -58,7 +58,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}(time.Now())
 
 		if len(s.apiKeys) == 0 {
-			gologger.Debug().Msgf("Cannot use the '%s' source because there was no key defined for it.", s.Name())
+			gologger.Debug().Msgf("Cannot use the %s source because there was no key defined for it.", s.Name())
 			s.skipped = true
 			return
 		}

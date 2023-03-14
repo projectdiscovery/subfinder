@@ -80,13 +80,13 @@ func ParseOptions() *Options {
 
 	// Migrate config to provider config
 	if fileutil.FileExists(defaultConfigLocation) && !fileutil.FileExists(defaultProviderConfigLocation) {
-		gologger.Info().Msgf("Detected old '%s' config file, trying to migrate providers to '%s'\n", defaultConfigLocation, defaultProviderConfigLocation)
+		gologger.Info().Msgf("Detected old %s config file, trying to migrate providers to %s\n", defaultConfigLocation, defaultProviderConfigLocation)
 		if err := migrateToProviderConfig(defaultConfigLocation, defaultProviderConfigLocation); err != nil {
-			gologger.Warning().Msgf("Could not migrate providers from existing config '%s' to provider config '%s': %s\n", defaultConfigLocation, defaultProviderConfigLocation, err)
+			gologger.Warning().Msgf("Could not migrate providers from existing config %s to provider config %s: %s\n", defaultConfigLocation, defaultProviderConfigLocation, err)
 		} else {
 			// cleanup the existing config file post migration
 			_ = os.Remove(defaultConfigLocation)
-			gologger.Info().Msgf("Migration successful from '%s' to '%s'.\n", defaultConfigLocation, defaultProviderConfigLocation)
+			gologger.Info().Msgf("Migration successful from %s to %s.\n", defaultConfigLocation, defaultProviderConfigLocation)
 		}
 	}
 
@@ -232,7 +232,7 @@ func (options *Options) loadProvidersFrom(location string) {
 	// We skip bailing out if file doesn't exist because we'll create it
 	// at the end of options parsing from default via goflags.
 	if err := UnmarshalFrom(location); isFatalErr(err) && !errors.Is(err, os.ErrNotExist) {
-		gologger.Fatal().Msgf("Could not read providers from '%s': %s\n", location, err)
+		gologger.Fatal().Msgf("Could not read providers from %s: %s\n", location, err)
 	}
 }
 
@@ -282,7 +282,7 @@ func isFatalErr(err error) bool {
 func listSources(options *Options) {
 	gologger.Info().Msgf("Current list of available sources. [%d]\n", len(passive.AllSources))
 	gologger.Info().Msgf("Sources marked with an * need key(s) or token(s) to work.\n")
-	gologger.Info().Msgf("You can modify '%s' to configure your keys/tokens.\n\n", options.ProviderConfig)
+	gologger.Info().Msgf("You can modify %s to configure your keys/tokens.\n\n", options.ProviderConfig)
 
 	for _, source := range passive.AllSources {
 		message := "%s\n"
