@@ -11,7 +11,6 @@ require (
 	github.com/projectdiscovery/dnsx v1.1.2
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/gologger v1.1.8
-	github.com/projectdiscovery/pdtm v0.0.4
 	github.com/projectdiscovery/ratelimit v0.0.6
 	github.com/projectdiscovery/utils v0.0.16
 	github.com/rs/xid v1.4.0
@@ -37,11 +36,9 @@ require (
 	github.com/fatih/color v1.14.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/go-github v17.0.0+incompatible // indirect
 	github.com/google/go-github/v30 v30.1.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
-	github.com/logrusorgru/aurora/v4 v4.0.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect

@@ -16,7 +16,6 @@ import (
 
 	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
-	pdtmutils "github.com/projectdiscovery/pdtm/pkg/utils"
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
 	fileutil "github.com/projectdiscovery/utils/file"
@@ -122,7 +121,7 @@ func ParseOptions() *Options {
 	flagSet.CreateGroup("update", "Update",
 		flagSet.CallbackVarP(GetUpdateCallback(), "update", "up", "update subfinder to latest version"),
 		flagSet.BoolVarP(&options.DisableUpdateCheck, "disable-update-check", "duc", false, "disable automatic subfinder update check"),
-	)
+	) 
 
 	createGroup(flagSet, "output", "Output",
 		flagSet.StringVarP(&options.OutputFile, "output", "o", "", "file to write output to"),
@@ -197,11 +196,6 @@ func ParseOptions() *Options {
 
 	if !options.Silent {
 		showBanner()
-	}
-
-	if !options.DisableUpdateCheck {
-		checkVersion := pdtmutils.GetVersionCheckCallback(ToolName)
-		gologger.Info().Msg(checkVersion())
 	}
 
 	// Check if the application loading with any provider configuration, then take it
