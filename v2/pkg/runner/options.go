@@ -21,6 +21,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
 	fileutil "github.com/projectdiscovery/utils/file"
 	logutil "github.com/projectdiscovery/utils/log"
+	updateutils "github.com/projectdiscovery/utils/update"
 )
 
 var (
@@ -119,7 +120,8 @@ func ParseOptions() *Options {
 	)
 
 	flagSet.CreateGroup("update", "Update",
-		flagSet.BoolVarP(&options.DisableUpdateCheck, "disable-update-check", "duc", false, "disable automatic update check"),
+		flagSet.CallbackVarP(GetUpdateCallback(), "update", "up", "update subfinder to latest version"),
+		flagSet.BoolVarP(&options.DisableUpdateCheck, "disable-update-check", "duc", false, "disable automatic subfinder update check"),
 	)
 
 	createGroup(flagSet, "output", "Output",
@@ -176,8 +178,19 @@ func ParseOptions() *Options {
 	options.configureOutput()
 
 	if options.Version {
-		gologger.Info().Msgf("Current Version: %s\n", Version)
+		gologger.Info().Msgf("Current Version: %s\n", version)
 		os.Exit(0)
+	}
+
+	if !options.DisableUpdateCheck {
+		latestVersion, err := updateutils.GetVersionCheckCallback("subfinder")()
+		if err != nil {
+			if options.Verbose {
+				gologger.Error().Msgf("subfinder version check failed: %v", err.Error())
+			}
+		} else {
+			gologger.Info().Msgf("Current subfinder version %v %v", version, updateutils.GetVersionDescription(version, latestVersion))
+		}
 	}
 
 	options.preProcessOptions()

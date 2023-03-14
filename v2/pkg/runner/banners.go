@@ -2,6 +2,8 @@ package runner
 
 import (
 	"github.com/projectdiscovery/gologger"
+	updateutils "github.com/projectdiscovery/utils/update"
+
 )
 
 const banner = `
@@ -16,10 +18,18 @@ const banner = `
 const ToolName = `subfinder`
 
 // Version is the current version of subfinder
-const Version = `v2.5.6`
+const version = `v2.5.6`
 
 // showBanner is used to show the banner to the user
 func showBanner() {
 	gologger.Print().Msgf("%s\n", banner)
 	gologger.Print().Msgf("\t\tprojectdiscovery.io\n\n")
+}
+
+// GetUpdateCallback returns a callback function that updates httpx
+func GetUpdateCallback() func() {
+	return func() {
+		showBanner()
+		updateutils.GetUpdateToolCallback("subfinder", version)()
+	}
 }
