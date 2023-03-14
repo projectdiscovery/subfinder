@@ -24,7 +24,7 @@ func (r *Runner) EnumerateSingleDomain(domain string, writers []io.Writer) error
 
 // EnumerateSingleDomainWithCtx performs subdomain enumeration against a single domain
 func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string, writers []io.Writer) error {
-	gologger.Info().Msgf("Enumerating subdomains for '%s'\n", domain)
+	gologger.Info().Msgf("Enumerating subdomains for %s\n", domain)
 
 	// Check if the user has asked to remove wildcards explicitly.
 	// If yes, create the resolution pool and get the wildcards for the current domain

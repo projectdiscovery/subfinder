@@ -181,6 +181,12 @@ func ParseOptions() *Options {
 		os.Exit(0)
 	}
 
+	options.preProcessOptions()
+
+	if !options.Silent {
+		showBanner()
+	}
+
 	if !options.DisableUpdateCheck {
 		latestVersion, err := updateutils.GetVersionCheckCallback("subfinder")()
 		if err != nil {
@@ -192,19 +198,13 @@ func ParseOptions() *Options {
 		}
 	}
 
-	options.preProcessOptions()
-
-	if !options.Silent {
-		showBanner()
-	}
-
 	// Check if the application loading with any provider configuration, then take it
 	// Otherwise load the default provider config
 	if fileutil.FileExists(options.ProviderConfig) {
-		gologger.Info().Msgf("Loading provider config from '%s'", options.ProviderConfig)
+		gologger.Info().Msgf("Loading provider config from %s", options.ProviderConfig)
 		options.loadProvidersFrom(options.ProviderConfig)
 	} else {
-		gologger.Info().Msgf("Loading provider config from the default location: '%s'", defaultProviderConfigLocation)
+		gologger.Info().Msgf("Loading provider config from the default location: %s", defaultProviderConfigLocation)
 		options.loadProvidersFrom(defaultProviderConfigLocation)
 	}
 	if options.ListSources {
