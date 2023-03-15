@@ -82,7 +82,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/projectdiscovery/goflags v0.1.8-0.20230228104313-262b4665b8fe
+	github.com/projectdiscovery/goflags v0.1.8
 	github.com/projectdiscovery/retryabledns v1.0.21 // indirect
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
