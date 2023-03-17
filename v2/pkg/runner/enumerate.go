@@ -24,7 +24,7 @@ func (r *Runner) EnumerateSingleDomain(domain string, writers []io.Writer) error
 
 // EnumerateSingleDomainWithCtx performs subdomain enumeration against a single domain
 func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string, writers []io.Writer) error {
-	gologger.Info().Msgf("Enumerating subdomains for '%s'\n", domain)
+	gologger.Info().Msgf("Enumerating subdomains for %s\n", domain)
 
 	// Check if the user has asked to remove wildcards explicitly.
 	// If yes, create the resolution pool and get the wildcards for the current domain
@@ -34,7 +34,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 		err := resolutionPool.InitWildcards(domain)
 		if err != nil {
 			// Log the error but don't quit.
-			gologger.Warning().Msgf("Could not get wildcards for domain '%s': %s\n", domain, err)
+			gologger.Warning().Msgf("Could not get wildcards for domain %s: %s\n", domain, err)
 		}
 	}
 
@@ -53,7 +53,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 		for result := range passiveResults {
 			switch result.Type {
 			case subscraping.Error:
-				gologger.Warning().Msgf("Could not run source '%s': %s\n", result.Source, result.Error)
+				gologger.Warning().Msgf("Could not run source %s: %s\n", result.Source, result.Error)
 			case subscraping.Subdomain:
 				// Validate the subdomain found and remove wildcards from
 				if !strings.HasSuffix(result.Value, "."+domain) {
@@ -106,7 +106,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 		for result := range resolutionPool.Results {
 			switch result.Type {
 			case resolve.Error:
-				gologger.Warning().Msgf("Could not resolve host: '%s'\n", result.Error)
+				gologger.Warning().Msgf("Could not resolve host: %s\n", result.Error)
 			case resolve.Subdomain:
 				// Add the found subdomain to a map.
 				if _, ok := foundResults[result.Host]; !ok {
@@ -134,7 +134,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 			}
 		}
 		if err != nil {
-			gologger.Error().Msgf("Could not write results for '%s': %s\n", domain, err)
+			gologger.Error().Msgf("Could not write results for %s: %s\n", domain, err)
 			return err
 		}
 	}
@@ -153,10 +153,10 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 			r.options.ResultCallback(&v)
 		}
 	}
-	gologger.Info().Msgf("Found %d subdomains for '%s' in %s\n", numberOfSubDomains, domain, duration)
+	gologger.Info().Msgf("Found %d subdomains for %s in %s\n", numberOfSubDomains, domain, duration)
 
 	if r.options.Statistics {
-		gologger.Info().Msgf("Printing source statistics for '%s'", domain)
+		gologger.Info().Msgf("Printing source statistics for %s", domain)
 		printStatistics(r.passiveAgent.GetStatistics())
 	}
 

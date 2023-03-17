@@ -1,5 +1,4 @@
 # Build
-
 FROM golang:1.20.1-alpine AS build-env
 RUN apk add build-base
 WORKDIR /app
@@ -12,6 +11,6 @@ RUN go build ./cmd/subfinder
 FROM alpine:3.17.2
 RUN apk -U upgrade --no-cache \
     && apk add --no-cache bind-tools ca-certificates
-COPY --from=build-env /app/v2/subfinder /usr/local/bin/subfinder
+COPY --from=build-env /app/v2/subfinder /usr/local/bin/
 
 ENTRYPOINT ["subfinder"]
