@@ -11,14 +11,14 @@ const banner = `
    _______  __/ /_  / __(_)___  ____/ /__  _____
   / ___/ / / / __ \/ /_/ / __ \/ __  / _ \/ ___/
  (__  ) /_/ / /_/ / __/ / / / / /_/ /  __/ /    
-/____/\__,_/_.___/_/ /_/_/ /_/\__,_/\___/_/ v2.5.6
+/____/\__,_/_.___/_/ /_/_/ /_/\__,_/\___/_/
 `
 
 //Name
 const ToolName = `subfinder`
 
 // Version is the current version of subfinder
-const version = `v2.5.6`
+const version = `v2.5.7`
 
 // showBanner is used to show the banner to the user
 func showBanner() {
