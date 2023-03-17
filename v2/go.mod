@@ -7,7 +7,7 @@ require (
 	github.com/hako/durafmt v0.0.0-20210316092057-3a2c319c1acd
 	github.com/json-iterator/go v1.1.12
 	github.com/lib/pq v1.10.7
-	github.com/projectdiscovery/chaos-client v0.3.0
+	github.com/projectdiscovery/chaos-client v0.5.0
 	github.com/projectdiscovery/dnsx v1.1.3
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/gologger v1.1.8
@@ -52,8 +52,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pierrec/lz4 v2.6.0+incompatible // indirect
 	github.com/projectdiscovery/cdncheck v0.0.3 // indirect
-	github.com/projectdiscovery/httputil v0.0.0-20210906072657-f3a099cb20bc // indirect
-	github.com/projectdiscovery/retryablehttp-go v1.0.10 // indirect
+	github.com/projectdiscovery/retryablehttp-go v1.0.12 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
