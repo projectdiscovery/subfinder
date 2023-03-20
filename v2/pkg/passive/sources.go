@@ -2,6 +2,7 @@ package passive
 
 import (
 	"fmt"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/leakix"
 	"strings"
 
 	"golang.org/x/exp/maps"
@@ -83,6 +84,7 @@ var AllSources = [...]subscraping.Source{
 	&whoisxmlapi.Source{},
 	&zoomeye.Source{},
 	&zoomeyeapi.Source{},
+	&leakix.Source{},
 	// &threatminer.Source{}, // failing  api
 	// &reconcloud.Source{}, // failing due to cloudflare bot protection
 }
