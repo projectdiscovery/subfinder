@@ -4,7 +4,6 @@ package leakix
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
 
@@ -47,7 +46,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			s.errors++
 			return
 		} else if resp.StatusCode != 200 {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: errors.New(fmt.Sprintf("request failed with status %d", resp.StatusCode))}
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("request failed with status %d", resp.StatusCode)}
 			s.errors++
 			return
 		}
