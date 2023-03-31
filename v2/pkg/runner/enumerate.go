@@ -79,7 +79,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 						continue
 					}
 
-					hostEntry := resolve.HostEntry{Host: subdomain, Source: result.Source}
+					hostEntry := resolve.HostEntry{Domain: domain, Host: subdomain, Source: result.Source}
 
 					uniqueMap[subdomain] = hostEntry
 					// If the user asked to remove wildcard then send on the resolve

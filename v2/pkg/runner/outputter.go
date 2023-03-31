@@ -128,7 +128,7 @@ func writeJSONHostIP(input string, results map[string]resolve.Result, writer io.
 func (o *OutputWriter) WriteHostNoWildcard(input string, results map[string]resolve.Result, writer io.Writer) error {
 	hosts := make(map[string]resolve.HostEntry)
 	for host, result := range results {
-		hosts[host] = resolve.HostEntry{Host: result.Host, Source: result.Source}
+		hosts[host] = resolve.HostEntry{Domain: host, Host: result.Host, Source: result.Source}
 	}
 
 	return o.WriteHost(input, hosts, writer)
