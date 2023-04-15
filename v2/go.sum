@@ -131,8 +131,8 @@ github.com/projectdiscovery/retryabledns v1.0.21 h1:vOpPQR1q8Z824uoA8JXCI/RyvDAs
 github.com/projectdiscovery/retryabledns v1.0.21/go.mod h1:6oTPKMRlKZ7lIIEzTH723K6RvNRjmm6fe9br4Dom3UI=
 github.com/projectdiscovery/retryablehttp-go v1.0.13 h1:gKxd/J08Dxc8a/LFvTz9+JUedEvivH3PoDnQQEHAY4M=
 github.com/projectdiscovery/retryablehttp-go v1.0.13/go.mod h1:L5HwtGSvc0E3dNVtVqPACWOmr21Bbop2ZhpbCPYEeYU=
-github.com/projectdiscovery/utils v0.0.17 h1:Y/uj8wAI1/a9UtWwDTBCBgsc2RicLUhrhcbCCsC7nrM=
-github.com/projectdiscovery/utils v0.0.17/go.mod h1:Cu216AlQ7rAYa8aDBqB2OgNfu5p24Uj+tG9RxV8Wbfs=
+github.com/projectdiscovery/utils v0.0.19 h1:5m70xVhBq86h5KsOMVWSO0H+PTmkwlOGAekWcHsaTxI=
+github.com/projectdiscovery/utils v0.0.19/go.mod h1:Cu216AlQ7rAYa8aDBqB2OgNfu5p24Uj+tG9RxV8Wbfs=
 github.com/rivo/uniseg v0.1.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/rivo/uniseg v0.4.4 h1:8TfxU8dW6PdqD27gjM8MVNuicgxIjxpm4K7x4jp8sis=
