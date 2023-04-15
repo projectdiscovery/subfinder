@@ -13,7 +13,7 @@ require (
 	github.com/projectdiscovery/gologger v1.1.8
 	github.com/projectdiscovery/ratelimit v0.0.6
 	github.com/projectdiscovery/utils v0.0.19
-	github.com/rs/xid v1.4.0
+	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.8.2
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
 	golang.org/x/exp v0.0.0-20230314191032-db074128a8ec
