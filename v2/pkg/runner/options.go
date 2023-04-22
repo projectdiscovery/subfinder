@@ -188,7 +188,7 @@ func ParseOptions() *Options {
 	}
 
 	if !options.DisableUpdateCheck {
-		latestVersion, err := updateutils.GetVersionCheckCallback("subfinder")()
+		latestVersion, err := updateutils.GetToolVersionCallback("subfinder", version)()
 		if err != nil {
 			if options.Verbose {
 				gologger.Error().Msgf("subfinder version check failed: %v", err.Error())
