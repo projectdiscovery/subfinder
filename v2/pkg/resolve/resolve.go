@@ -25,6 +25,7 @@ type ResolutionPool struct {
 
 // HostEntry defines a host with the source
 type HostEntry struct {
+	Domain string
 	Host   string
 	Source string
 }
