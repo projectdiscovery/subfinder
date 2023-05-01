@@ -127,7 +127,7 @@ You can also use the `subfinder -ls` command to display all the available source
 These values are stored in the `$HOME/.config/subfinder/provider-config.yaml` file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys
 can be specified for each of these services from which one of them will be used for enumeration.
 
-Composite keys for sources like, `Censys`, `PassiveTotal`, `Fofa`, `Intellix` and `ZoomEye`, need to be separated with a colon (`:`).
+Composite keys for sources like, `Censys`, `PassiveTotal`, `Fofa`, `Intellix`, `360quake` and `ZoomEye`, need to be separated with a colon (`:`).
 
 An example provider config file:
 
@@ -148,6 +148,8 @@ github:
   - ghp_gkUuhkIYdQPj13ifH4KA3cXRn8JD2lqir2d4
 zoomeye:
   - zoomeye_username:zoomeye_password
+quake:
+  - 0cb9030c-0a40-48a3-b8c4-fca28e466ba3
 ```
 
 # Running Subfinder
