@@ -31,6 +31,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hunter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/leakix"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/netlas"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/passivetotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/quake"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rapiddns"
@@ -70,6 +71,7 @@ var AllSources = [...]subscraping.Source{
 	&hackertarget.Source{},
 	&hunter.Source{},
 	&intelx.Source{},
+	&netlas.Source{},
 	&passivetotal.Source{},
 	&quake.Source{},
 	&rapiddns.Source{},
