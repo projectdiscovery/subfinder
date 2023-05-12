@@ -81,6 +81,7 @@ var AllSources = [...]subscraping.Source{
 	&securitytrails.Source{},
 	&shodan.Source{},
 	&sitedossier.Source{},
+	&subdomaincenter.Source{},
 	&threatbook.Source{},
 	&virustotal.Source{},
 	&waybackarchive.Source{},
