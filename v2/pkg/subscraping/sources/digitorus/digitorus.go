@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -31,7 +32,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}(time.Now())
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://certificatedetails.com/%s", domain))
-		if err != nil {
+		// the 404 page still contains around 100 subdomains - https://github.com/projectdiscovery/subfinder/issues/774
+		if err != nil && resp.StatusCode != http.StatusNotFound {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
 			session.DiscardHTTPResponse(resp)
