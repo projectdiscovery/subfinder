@@ -153,12 +153,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 			r.options.ResultCallback(&v)
 		}
 	}
-
-	if numberOfSubDomains > 0 {
-		gologger.Info().Msgf("Found %d subdomains for %s in %s\n", numberOfSubDomains, domain, duration)
-	} else {
-		gologger.Info().Msgf("Found no subdomains for %s\n", domain)
-	}
+	gologger.Info().Msgf("Found %d subdomains for %s in %s\n", numberOfSubDomains, domain, duration)
 
 	if r.options.Statistics {
 		gologger.Info().Msgf("Printing source statistics for %s", domain)
