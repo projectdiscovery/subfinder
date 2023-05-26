@@ -68,7 +68,10 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 
 					// Log the verbose message about the found subdomain per source
 					if _, ok := sourceMap[subdomain][result.Source]; !ok {
-						gologger.Verbose().Label(result.Source).Msg(subdomain)
+						gologger.Verbose().
+							Str("subdomain_source", result.Source).
+							Str("subdomain", subdomain).
+							Msg("Found subdomain")
 					}
 
 					sourceMap[subdomain][result.Source] = struct{}{}

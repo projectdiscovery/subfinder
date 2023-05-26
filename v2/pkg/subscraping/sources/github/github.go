@@ -83,7 +83,9 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 
 	if token.RetryAfter > 0 {
 		if len(tokens.pool) == 1 {
-			gologger.Verbose().Label(s.Name()).Msgf("GitHub Search request rate limit exceeded, waiting for %d seconds before retry... \n", token.RetryAfter)
+			gologger.Verbose().
+				Str("subdomain_source", s.Name()).
+				Msgf("GitHub Search request rate limit exceeded, waiting for %d seconds before retry... \n", token.RetryAfter)
 			time.Sleep(time.Duration(token.RetryAfter) * time.Second)
 		} else {
 			token = tokens.Get()
