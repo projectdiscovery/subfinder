@@ -123,6 +123,12 @@ func (s *Session) DiscardHTTPResponse(response *http.Response) {
 	}
 }
 
+// Close the session
+func (s *Session) Close() {
+	s.RateLimiter.Stop()
+	s.Client.CloseIdleConnections()
+}
+
 func httpRequestWrapper(client *http.Client, request *http.Request) (*http.Response, error) {
 	response, err := client.Do(request)
 	if err != nil {
