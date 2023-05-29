@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/exp/slices"
 
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/gologger/levels"
@@ -15,6 +16,11 @@ import (
 )
 
 func TestSourcesWithoutKeys(t *testing.T) {
+	ignoredSources := []string{
+		"commoncrawl", // commoncrawl is under resourced and will likely time-out so step over it for this test https://groups.google.com/u/2/g/common-crawl/c/3QmQjFA_3y4/m/vTbhGqIBBQAJ
+		"riddler",     // Fails with 403: There might be too much traffic or a configuration error
+	}
+
 	domain := "hackerone.com"
 	timeout := 60
 
@@ -27,12 +33,8 @@ func TestSourcesWithoutKeys(t *testing.T) {
 	var expected = subscraping.Result{Type: subscraping.Subdomain, Value: domain, Error: nil}
 
 	for _, source := range AllSources {
-		if source.NeedsKey() {
+		if source.NeedsKey() || slices.Contains(ignoredSources, source.Name()) {
 			continue
-		}
-
-		if source.Name() == "commoncrawl" {
-			continue // commoncrawl is under resourced and will likely time-out so step over it for this test https://groups.google.com/u/2/g/common-crawl/c/3QmQjFA_3y4/m/vTbhGqIBBQAJ
 		}
 
 		t.Run(source.Name(), func(t *testing.T) {
