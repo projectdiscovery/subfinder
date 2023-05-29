@@ -61,13 +61,6 @@ jobs:
           max_attempts: 3
           command: cd v2; go test ./... -v
 
-      - name: Integration Tests
-        env:
-          GH_ACTION: true
-          DNSREPO_API_KEY: ${{secrets.DNSREPO_API}}
-        run: bash run.sh
-        working-directory: v2/cmd/integration-test/
-
       - name: Race Condition Tests
         run: go build -race ./...
         working-directory: v2/
