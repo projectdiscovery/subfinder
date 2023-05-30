@@ -72,6 +72,7 @@ var AllSources = [...]subscraping.Source{
 	&hunter.Source{},
 	&intelx.Source{},
 	&netlas.Source{},
+	&leakix.Source{},
 	&passivetotal.Source{},
 	&quake.Source{},
 	&rapiddns.Source{},
@@ -86,7 +87,6 @@ var AllSources = [...]subscraping.Source{
 	&whoisxmlapi.Source{},
 	&zoomeye.Source{},
 	&zoomeyeapi.Source{},
-	&leakix.Source{},
 	// &threatminer.Source{}, // failing  api
 	// &reconcloud.Source{}, // failing due to cloudflare bot protection
 }

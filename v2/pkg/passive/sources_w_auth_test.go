@@ -3,25 +3,19 @@ package passive
 import (
 	"context"
 	"fmt"
+	"os"
 	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/exp/slices"
 
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/gologger/levels"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-func TestSourcesWithoutKeys(t *testing.T) {
-	ignoredSources := []string{
-		"commoncrawl", // commoncrawl is under resourced and will likely time-out so step over it for this test https://groups.google.com/u/2/g/common-crawl/c/3QmQjFA_3y4/m/vTbhGqIBBQAJ
-		"riddler",     // Fails with 403: There might be too much traffic or a configuration error
-		"crtsh",     // Fails in GH Action (possibly IP-based ban) causing a timeout.
-	}
-
+func TestSourcesWithKeys(t *testing.T) {
 	domain := "hackerone.com"
 	timeout := 60
 
@@ -34,9 +28,16 @@ func TestSourcesWithoutKeys(t *testing.T) {
 	var expected = subscraping.Result{Type: subscraping.Subdomain, Value: domain, Error: nil}
 
 	for _, source := range AllSources {
-		if source.NeedsKey() || slices.Contains(ignoredSources, source.Name()) {
+		if !source.NeedsKey() {
 			continue
 		}
+
+		apiKey := os.Getenv(fmt.Sprintf("%s_API_KEY", strings.ToUpper(source.Name())))
+		if apiKey == "" {
+			fmt.Printf("Skipping %s as no API key is provided\n", source.Name())
+			continue
+		}
+		source.AddApiKeys([]string{apiKey})
 
 		t.Run(source.Name(), func(t *testing.T) {
 			var results []subscraping.Result

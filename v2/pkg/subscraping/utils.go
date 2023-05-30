@@ -23,7 +23,7 @@ func init() {
 func NewSubdomainExtractor(domain string) (*regexp.Regexp, error) {
 	subdomainExtractorMutex.Lock()
 	defer subdomainExtractorMutex.Unlock()
-	extractor, err := regexp.Compile(`[a-zA-Z0-9\*_.-]+\.` + domain)
+	extractor, err := regexp.Compile(`(?i)[a-zA-Z0-9\*_.-]+\.` + domain)
 	if err != nil {
 		return nil, err
 	}
