@@ -28,6 +28,7 @@ func (a *Agent) EnumerateSubdomainsWithCtx(ctx context.Context, domain string, p
 			}
 			return
 		}
+		defer session.Close()
 
 		ctx, cancel := context.WithTimeout(ctx, maxEnumTime)
 

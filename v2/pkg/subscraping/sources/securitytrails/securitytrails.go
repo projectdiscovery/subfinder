@@ -4,7 +4,6 @@ package securitytrails
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -63,12 +62,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		resp.Body.Close()
 
 		for _, subdomain := range securityTrailsResponse.Subdomains {
-			if strings.HasSuffix(subdomain, ".") {
-				subdomain += domain
-			} else {
-				subdomain = subdomain + "." + domain
-			}
-
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 			s.results++
 		}
