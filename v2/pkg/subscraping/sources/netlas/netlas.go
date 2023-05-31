@@ -145,7 +145,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			// Parse the response body and extract the domain values
 			var data Response
-			json.Unmarshal(body, &data)
+			err := json.Unmarshal(body, &data)
+			if err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
+				return
+			}
 
 			for _, item := range data.Items {
 				results <- subscraping.Result{
@@ -188,10 +193,4 @@ func (s *Source) Statistics() subscraping.Statistics {
 		TimeTaken: s.timeTaken,
 		Skipped:   s.skipped,
 	}
-}
-
-type subResponse struct {
-	Subdomain   string    `json:"subdomain"`
-	DistinctIps int       `json:"distinct_ips"`
-	LastSeen    time.Time `json:"last_seen"`
 }
