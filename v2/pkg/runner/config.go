@@ -6,8 +6,8 @@ import (
 
 	"gopkg.in/yaml.v3"
 
+	"github.com/nth347/subfinder/v2/pkg/passive"
 	"github.com/projectdiscovery/gologger"
-	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
 )
 
 // GetConfigDirectory gets the subfinder config directory for a user

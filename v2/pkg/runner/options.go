@@ -14,10 +14,10 @@ import (
 
 	"gopkg.in/yaml.v3"
 
+	"github.com/nth347/subfinder/v2/pkg/passive"
+	"github.com/nth347/subfinder/v2/pkg/resolve"
 	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
-	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
-	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
 	fileutil "github.com/projectdiscovery/utils/file"
 	logutil "github.com/projectdiscovery/utils/log"
 	updateutils "github.com/projectdiscovery/utils/update"

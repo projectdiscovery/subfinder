@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/nth347/subfinder/v2/pkg/subscraping"
 	"github.com/projectdiscovery/chaos-client/pkg/chaos"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
 // Source is the passive scraping agent

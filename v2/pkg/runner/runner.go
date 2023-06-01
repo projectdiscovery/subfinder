@@ -13,8 +13,8 @@ import (
 
 	"github.com/projectdiscovery/gologger"
 
-	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
-	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
+	"github.com/nth347/subfinder/v2/pkg/passive"
+	"github.com/nth347/subfinder/v2/pkg/resolve"
 )
 
 // Runner is an instance of the subdomain enumeration

@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
+	"github.com/nth347/subfinder/v2/pkg/subscraping"
 )
 
 // zoomAuth holds the ZoomEye credentials

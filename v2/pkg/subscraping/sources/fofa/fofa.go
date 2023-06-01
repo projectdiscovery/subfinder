@@ -10,7 +10,7 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
+	"github.com/nth347/subfinder/v2/pkg/subscraping"
 )
 
 type fofaResponse struct {
