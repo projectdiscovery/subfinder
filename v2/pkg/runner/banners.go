@@ -3,7 +3,6 @@ package runner
 import (
 	"github.com/projectdiscovery/gologger"
 	updateutils "github.com/projectdiscovery/utils/update"
-
 )
 
 const banner = `
@@ -14,11 +13,11 @@ const banner = `
 /____/\__,_/_.___/_/ /_/_/ /_/\__,_/\___/_/
 `
 
-//Name
+// Name
 const ToolName = `subfinder`
 
 // Version is the current version of subfinder
-const version = `v2.5.8`
+const version = `v2.6.0-dev`
 
 // showBanner is used to show the banner to the user
 func showBanner() {
