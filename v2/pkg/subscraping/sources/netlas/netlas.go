@@ -66,22 +66,13 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		params.Set("q", countQuery)
 		countUrl := endpoint + "?" + params.Encode()
 
-		client := &http.Client{}
-		req, err := http.NewRequest("GET", countUrl, nil)
-		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
-			return
-		}
-		req.Header.Set("accept", "application/json")
-
 		// Pick an API key
 		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
-		if randomApiKey != "" {
-			req.Header.Set("X-API-Key", randomApiKey)
-		}
+		resp, err := session.HTTPRequest(ctx, http.MethodGet, countUrl, "", map[string]string{
+			"accept":    "application/json",
+			"X-API-Key": randomApiKey,
+		}, nil, subscraping.BasicAuth{})
 
-		resp, err := client.Do(req)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
@@ -125,24 +116,18 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			params.Set("fields", "*")
 			apiUrl := endpoint + "?" + params.Encode()
 
-			// Send the HTTP request and read the response body
-			client := &http.Client{}
-			req, _ := http.NewRequest("GET", apiUrl, nil)
-			req.Header.Set("accept", "application/json")
-
 			// Pick an API key
 			randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
-			if randomApiKey != "" {
-				req.Header.Set("X-API-Key", randomApiKey)
-			}
 
-			resp, err := client.Do(req)
+			resp, err := session.HTTPRequest(ctx, http.MethodGet, apiUrl, "", map[string]string{
+				"accept":    "application/json",
+				"X-API-Key": randomApiKey}, nil, subscraping.BasicAuth{})
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				s.errors++
 				return
 			}
-
+			defer resp.Body.Close()
 			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("error reading ressponse body")}
