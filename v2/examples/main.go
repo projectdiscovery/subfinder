@@ -17,6 +17,7 @@ func main() {
 		// ResultCallback: func(s *resolve.HostEntry) {
 		// callback function executed after each unique subdomain is found
 		// },
+		// ProviderConfig: "your_provider_config.yaml",
 		// and other config related options
 	}
 
