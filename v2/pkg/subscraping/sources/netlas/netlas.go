@@ -3,10 +3,10 @@ package netlas
 
 import (
 	"context"
+	"io"
 
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -61,13 +61,18 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		// To get count of domains
 		endpoint := "https://app.netlas.io/api/domains_count/"
-		paramss := url.Values{}
+		params := url.Values{}
 		countQuery := fmt.Sprintf("domain:*.%s AND NOT domain:%s", domain, domain)
-		paramss.Set("q", countQuery)
-		countUrl := endpoint + "?" + paramss.Encode()
+		params.Set("q", countQuery)
+		countUrl := endpoint + "?" + params.Encode()
 
 		client := &http.Client{}
-		req, _ := http.NewRequest("GET", countUrl, nil)
+		req, err := http.NewRequest("GET", countUrl, nil)
+		if err != nil {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.errors++
+			return
+		}
 		req.Header.Set("accept", "application/json")
 
 		// Pick an API key
@@ -88,9 +93,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 		defer resp.Body.Close()
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("Error Reading ressponse body")}
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("error reading ressponse body")}
 			s.errors++
 			return
 		}
@@ -131,8 +136,19 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				req.Header.Set("X-API-Key", randomApiKey)
 			}
 
-			resp, _ := client.Do(req)
-			body, _ := ioutil.ReadAll(resp.Body)
+			resp, err := client.Do(req)
+			if err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
+				return
+			}
+
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("error reading ressponse body")}
+				s.errors++
+				return
+			}
 
 			if resp.StatusCode == 429 {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("request rate limited with status code %d", resp.StatusCode)}
@@ -142,7 +158,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			// Parse the response body and extract the domain values
 			var data DomainsResponse
-			err := json.Unmarshal(body, &data)
+			err = json.Unmarshal(body, &data)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				s.errors++
