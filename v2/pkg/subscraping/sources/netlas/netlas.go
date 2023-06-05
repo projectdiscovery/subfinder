@@ -30,7 +30,7 @@ type Item struct {
 	} `json:"data"`
 }
 
-type Response struct {
+type DomainsResponse struct {
 	Items []Item `json:"items"`
 	Took  int    `json:"took"`
 }
@@ -48,11 +48,6 @@ type Source struct {
 	skipped   bool
 }
 
-// func get_domains(offset string, domain string) int {
-
-// 	return resp.StatusCode
-// }
-
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 	s.errors = 0
@@ -67,7 +62,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		// To get count of domains
 		endpoint := "https://app.netlas.io/api/domains_count/"
 		paramss := url.Values{}
-		paramss.Set("q", "domain:(domain:*."+domain+" "+"AND NOT domain:"+domain+")")
+		countQuery := fmt.Sprintf("domain:*.%s AND NOT domain:%s", domain, domain)
+		paramss.Set("q", countQuery)
 		countUrl := endpoint + "?" + paramss.Encode()
 
 		client := &http.Client{}
@@ -112,12 +108,13 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		for i := 0; i < domainsCount.Count; i += 20 {
 
-			time.Sleep(1200 * time.Millisecond)
+			time.Sleep(1000 * time.Millisecond)
 			offset := strconv.Itoa(i)
 
 			endpoint := "https://app.netlas.io/api/domains/"
 			params := url.Values{}
-			params.Set("q", "domain:(domain:*."+domain+" "+"AND NOT domain:"+domain+")")
+			query := fmt.Sprintf("domain:(domain:*.%s AND NOT domain:%s)", domain, domain)
+			params.Set("q", query)
 			params.Set("source_type", "include")
 			params.Set("start", offset)
 			params.Set("fields", "*")
@@ -144,7 +141,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 
 			// Parse the response body and extract the domain values
-			var data Response
+			var data DomainsResponse
 			err := json.Unmarshal(body, &data)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
