@@ -121,7 +121,7 @@ func ParseOptions() *Options {
 	flagSet.CreateGroup("update", "Update",
 		flagSet.CallbackVarP(GetUpdateCallback(), "update", "up", "update subfinder to latest version"),
 		flagSet.BoolVarP(&options.DisableUpdateCheck, "disable-update-check", "duc", false, "disable automatic subfinder update check"),
-	) 
+	)
 
 	createGroup(flagSet, "output", "Output",
 		flagSet.StringVarP(&options.OutputFile, "output", "o", "", "file to write output to"),
@@ -231,8 +231,8 @@ func (options *Options) loadProvidersFrom(location string) {
 
 	// We skip bailing out if file doesn't exist because we'll create it
 	// at the end of options parsing from default via goflags.
-	if err := UnmarshalFrom(location); isFatalErr(err) && !errors.Is(err, os.ErrNotExist) {
-		gologger.Fatal().Msgf("Could not read providers from %s: %s\n", location, err)
+	if err := UnmarshalFrom(location); err != nil && (!strings.Contains(err.Error(), "file doesn't exist") || errors.Is(os.ErrNotExist, err)) {
+		gologger.Error().Msgf("Could not read providers from %s: %s\n", location, err)
 	}
 }
 
