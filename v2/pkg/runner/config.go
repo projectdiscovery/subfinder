@@ -8,6 +8,7 @@ import (
 
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
+	fileutil "github.com/projectdiscovery/utils/file"
 )
 
 // GetConfigDirectory gets the subfinder config directory for a user
@@ -42,14 +43,13 @@ func CreateProviderConfigYAML(configFilePath string, sourcesRequiringApiKeysMap 
 
 // UnmarshalFrom writes the marshaled yaml config to disk
 func UnmarshalFrom(file string) error {
-	f, err := os.Open(file)
+	reader, err := fileutil.SubstituteConfigFromEnvVars(file)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
 
 	sourceApiKeysMap := map[string][]string{}
-	err = yaml.NewDecoder(f).Decode(sourceApiKeysMap)
+	err = yaml.NewDecoder(reader).Decode(sourceApiKeysMap)
 	for _, source := range passive.AllSources {
 		sourceName := strings.ToLower(source.Name())
 		apiKeys := sourceApiKeysMap[sourceName]
