@@ -121,7 +121,7 @@ func ParseOptions() *Options {
 	flagSet.CreateGroup("update", "Update",
 		flagSet.CallbackVarP(GetUpdateCallback(), "update", "up", "update subfinder to latest version"),
 		flagSet.BoolVarP(&options.DisableUpdateCheck, "disable-update-check", "duc", false, "disable automatic subfinder update check"),
-	) 
+	)
 
 	createGroup(flagSet, "output", "Output",
 		flagSet.StringVarP(&options.OutputFile, "output", "o", "", "file to write output to"),
@@ -198,15 +198,6 @@ func ParseOptions() *Options {
 		}
 	}
 
-	// Check if the application loading with any provider configuration, then take it
-	// Otherwise load the default provider config
-	if fileutil.FileExists(options.ProviderConfig) {
-		gologger.Info().Msgf("Loading provider config from %s", options.ProviderConfig)
-		options.loadProvidersFrom(options.ProviderConfig)
-	} else {
-		gologger.Info().Msgf("Loading provider config from the default location: %s", defaultProviderConfigLocation)
-		options.loadProvidersFrom(defaultProviderConfigLocation)
-	}
 	if options.ListSources {
 		listSources(options)
 		os.Exit(0)

@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/projectdiscovery/subfinder/v2/pkg/runner"
 	// Attempts to increase the OS file descriptors - Fail silently
 	_ "github.com/projectdiscovery/fdmax/autofdmax"
 	"github.com/projectdiscovery/gologger"
-	"github.com/projectdiscovery/subfinder/v2/pkg/runner"
 )
 
 func main() {

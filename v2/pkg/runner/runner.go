@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/projectdiscovery/gologger"
+	fileutil "github.com/projectdiscovery/utils/file"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
@@ -30,6 +31,16 @@ type Runner struct {
 // and setting up loggers, etc.
 func NewRunner(options *Options) (*Runner, error) {
 	runner := &Runner{options: options}
+
+	// Check if the application loading with any provider configuration, then take it
+	// Otherwise load the default provider config
+	if fileutil.FileExists(options.ProviderConfig) {
+		gologger.Info().Msgf("Loading provider config from %s", options.ProviderConfig)
+		options.loadProvidersFrom(options.ProviderConfig)
+	} else {
+		gologger.Info().Msgf("Loading provider config from the default location: %s", defaultProviderConfigLocation)
+		options.loadProvidersFrom(defaultProviderConfigLocation)
+	}
 
 	// Initialize the passive subdomain enumeration engine
 	runner.initializePassiveEngine()

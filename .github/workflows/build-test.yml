@@ -64,3 +64,7 @@ jobs:
       - name: Race Condition Tests
         run: go build -race ./...
         working-directory: v2/
+
+      - name: Run Example
+        run: go run .
+        working-directory: v2/examples
