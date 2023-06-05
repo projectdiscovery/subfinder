@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/nth347/subfinder/v2/pkg/runner"
+	"github.com/projectdiscovery/subfinder/v2/pkg/runner"
 	// Attempts to increase the OS file descriptors - Fail silently
 	_ "github.com/projectdiscovery/fdmax/autofdmax"
 	"github.com/projectdiscovery/gologger"
