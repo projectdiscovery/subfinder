@@ -32,6 +32,7 @@ var (
 		"github",
 		"hackertarget",
 		"intelx",
+		"netlas",
 		"passivetotal",
 		"quake",
 		"rapiddns",
