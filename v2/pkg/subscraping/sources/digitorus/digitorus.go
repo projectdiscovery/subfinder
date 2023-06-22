@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
+	"github.com/projectdiscovery/utils/ptr"
 )
 
 // Source is the passive scraping agent
@@ -33,7 +34,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://certificatedetails.com/%s", domain))
 		// the 404 page still contains around 100 subdomains - https://github.com/projectdiscovery/subfinder/issues/774
-		if err != nil && resp.StatusCode != http.StatusNotFound {
+		if err != nil && ptr.Safe(resp).StatusCode != http.StatusNotFound {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
 			session.DiscardHTTPResponse(resp)
