@@ -12,7 +12,7 @@ require (
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/gologger v1.1.10
 	github.com/projectdiscovery/ratelimit v0.0.8
-	github.com/projectdiscovery/utils v0.0.39
+	github.com/projectdiscovery/utils v0.0.40
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.8.4
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
