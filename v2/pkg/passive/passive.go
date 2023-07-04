@@ -89,7 +89,7 @@ func buildMultiRateLimiter(ctx context.Context, a *Agent, rateLimit int, rateLim
 func sourceRateLimitOrGlobal(globalRateLimit int, sourceRateLimit interface{}) uint {
 	if sourceRateLimitStr, ok := sourceRateLimit.(string); ok {
 		sourceRateLimitUint, err := strconv.ParseUint(sourceRateLimitStr, 10, 64)
-		if err == nil {
+		if err == nil && sourceRateLimitUint > 0 && sourceRateLimitUint <= math.MaxUint32 {
 			return uint(sourceRateLimitUint)
 		}
 	}
