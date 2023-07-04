@@ -53,7 +53,7 @@ func TestSourcesWithoutKeys(t *testing.T) {
 		t.Run(source.Name(), func(t *testing.T) {
 			var results []subscraping.Result
 
-			//nolint: SA1029 reason
+			//lint:ignore SA1029 reason
 			ctxWithValue := context.WithValue(ctxParent, "source", source.Name())
 			for result := range source.Run(ctxWithValue, domain, session) {
 				results = append(results, result)
