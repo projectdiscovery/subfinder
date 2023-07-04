@@ -32,15 +32,13 @@ func TestSourcesWithoutKeys(t *testing.T) {
 
 	ctxParent := context.Background()
 
-	//lint:ignore SA1029 reason
-	ctx := context.WithValue(ctxParent, "default", "default")
-	multiRateLimiter, err := ratelimit.NewMultiLimiter(ctx, &ratelimit.Options{
-		Key:         "default",
-		IsUnlimited: true,
-		MaxCount:    math.MaxUint32,
-		Duration:    time.Millisecond,
-	})
-	assert.Nil(t, err)
+	var multiRateLimiter *ratelimit.MultiLimiter
+	for _, source := range AllSources {
+		if source.NeedsKey() || slices.Contains(ignoredSources, source.Name()) {
+			continue
+		}
+		multiRateLimiter, _ = addRateLimiter(ctxParent, multiRateLimiter, source.Name(), math.MaxInt32, time.Millisecond)
+	}
 
 	session, err := subscraping.NewSession(domain, "", multiRateLimiter, timeout)
 	assert.Nil(t, err)
@@ -55,7 +53,9 @@ func TestSourcesWithoutKeys(t *testing.T) {
 		t.Run(source.Name(), func(t *testing.T) {
 			var results []subscraping.Result
 
-			for result := range source.Run(ctx, domain, session) {
+			//nolint: SA1029 reason
+			ctxWithValue := context.WithValue(ctxParent, "source", source.Name())
+			for result := range source.Run(ctxWithValue, domain, session) {
 				results = append(results, result)
 
 				assert.Equal(t, source.Name(), result.Source, "wrong source name")

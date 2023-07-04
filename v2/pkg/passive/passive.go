@@ -50,7 +50,7 @@ func (a *Agent) EnumerateSubdomainsWithCtx(ctx context.Context, domain string, p
 			wg.Add(1)
 
 			go func(source subscraping.Source) {
-				//lint:ignore SA1029 reason
+				// nolint:staticcheck SA1029 reason
 				ctxWithValue := context.WithValue(ctx, "source", source.Name())
 				for resp := range source.Run(ctxWithValue, domain, session) {
 					results <- resp
