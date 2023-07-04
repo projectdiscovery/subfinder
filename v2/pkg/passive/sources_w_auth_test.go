@@ -3,15 +3,18 @@ package passive
 import (
 	"context"
 	"fmt"
+	"math"
 	"os"
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/gologger/levels"
+	"github.com/projectdiscovery/ratelimit"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
@@ -21,8 +24,18 @@ func TestSourcesWithKeys(t *testing.T) {
 
 	gologger.DefaultLogger.SetMaxLevel(levels.LevelDebug)
 
-	ctx := context.Background()
-	session, err := subscraping.NewSession(domain, "", 0, timeout)
+	ctxParent := context.Background()
+	//lint:ignore SA1029 reason
+	ctx := context.WithValue(ctxParent, "default", "default")
+	multiRateLimiter, err := ratelimit.NewMultiLimiter(ctx, &ratelimit.Options{
+		Key:         "default",
+		IsUnlimited: true,
+		MaxCount:    math.MaxUint32,
+		Duration:    time.Millisecond,
+	})
+	assert.Nil(t, err)
+
+	session, err := subscraping.NewSession(domain, "", multiRateLimiter, timeout)
 	assert.Nil(t, err)
 
 	var expected = subscraping.Result{Type: subscraping.Subdomain, Value: domain, Error: nil}
@@ -42,7 +55,7 @@ func TestSourcesWithKeys(t *testing.T) {
 		t.Run(source.Name(), func(t *testing.T) {
 			var results []subscraping.Result
 
-			for result := range source.Run(ctx, domain, session) {
+			for result := range source.Run(ctxParent, domain, session) {
 				results = append(results, result)
 
 				assert.Equal(t, source.Name(), result.Source, "wrong source name")

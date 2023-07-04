@@ -3,15 +3,18 @@ package passive
 import (
 	"context"
 	"fmt"
+	"math"
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/slices"
 
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/gologger/levels"
+	"github.com/projectdiscovery/ratelimit"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
@@ -27,8 +30,19 @@ func TestSourcesWithoutKeys(t *testing.T) {
 
 	gologger.DefaultLogger.SetMaxLevel(levels.LevelDebug)
 
-	ctx := context.Background()
-	session, err := subscraping.NewSession(domain, "", 0, timeout)
+	ctxParent := context.Background()
+
+	//lint:ignore SA1029 reason
+	ctx := context.WithValue(ctxParent, "default", "default")
+	multiRateLimiter, err := ratelimit.NewMultiLimiter(ctx, &ratelimit.Options{
+		Key:         "default",
+		IsUnlimited: true,
+		MaxCount:    math.MaxUint32,
+		Duration:    time.Millisecond,
+	})
+	assert.Nil(t, err)
+
+	session, err := subscraping.NewSession(domain, "", multiRateLimiter, timeout)
 	assert.Nil(t, err)
 
 	var expected = subscraping.Result{Type: subscraping.Subdomain, Value: domain, Error: nil}

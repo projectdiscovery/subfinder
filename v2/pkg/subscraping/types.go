@@ -59,7 +59,7 @@ type Session struct {
 	// Client is the current http client
 	Client *http.Client
 	// Rate limit instance
-	RateLimiter *ratelimit.Limiter
+	MultiRateLimiter *ratelimit.MultiLimiter
 }
 
 // Result is a result structure returned by a source

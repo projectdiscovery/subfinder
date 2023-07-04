@@ -74,6 +74,7 @@ FILTER:
 
 RATE-LIMIT:
   -rl, -rate-limit int  maximum number of http requests to send per second
+  -rls value            maximum number of http requests to send per second four providers in key=value format (-rls hackertarget=10)
   -t int                number of concurrent goroutines for resolving (-active only) (default 10)
 
 UPDATE:
