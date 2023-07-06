@@ -97,24 +97,24 @@ func ParseOptions() *Options {
 	flagSet := goflags.NewFlagSet()
 	flagSet.SetDescription(`Subfinder is a subdomain discovery tool that discovers subdomains for websites by using passive online sources.`)
 
-	createGroup(flagSet, "input", "Input",
+	flagSet.CreateGroup("input", "Input",
 		flagSet.StringSliceVarP(&options.Domain, "domain", "d", []string{}, "domains to find subdomains for", goflags.NormalizedStringSliceOptions),
 		flagSet.StringVarP(&options.DomainsFile, "list", "dL", "", "file containing list of domains for subdomain discovery"),
 	)
 
-	createGroup(flagSet, "source", "Source",
+	flagSet.CreateGroup("source", "Source",
 		flagSet.StringSliceVarP(&options.Sources, "sources", "s", []string{}, "specific sources to use for discovery (-s crtsh,github). Use -ls to display all available sources.", goflags.NormalizedStringSliceOptions),
 		flagSet.BoolVar(&options.OnlyRecursive, "recursive", false, "use only sources that can handle subdomains recursively (e.g. subdomain.domain.tld vs domain.tld)"),
 		flagSet.BoolVar(&options.All, "all", false, "use all sources for enumeration (slow)"),
 		flagSet.StringSliceVarP(&options.ExcludeSources, "exclude-sources", "es", []string{}, "sources to exclude from enumeration (-es alienvault,zoomeye)", goflags.NormalizedStringSliceOptions),
 	)
 
-	createGroup(flagSet, "filter", "Filter",
+	flagSet.CreateGroup("filter", "Filter",
 		flagSet.StringSliceVarP(&options.Match, "match", "m", []string{}, "subdomain or list of subdomain to match (file or comma separated)", goflags.FileNormalizedStringSliceOptions),
 		flagSet.StringSliceVarP(&options.Filter, "filter", "f", []string{}, " subdomain or list of subdomain to filter (file or comma separated)", goflags.FileNormalizedStringSliceOptions),
 	)
 
-	createGroup(flagSet, "rate-limit", "Rate-limit",
+	flagSet.CreateGroup("rate-limit", "Rate-limit",
 		flagSet.IntVarP(&options.RateLimit, "rate-limit", "rl", 0, "maximum number of http requests to send per second (global)"),
 		flagSet.RuntimeMapVar(&options.RateLimits, "rls", nil, "maximum number of http requests to send per second four providers in key=value format (-rls hackertarget=10)"),
 		flagSet.IntVar(&options.Threads, "t", 10, "number of concurrent goroutines for resolving (-active only)"),
@@ -125,7 +125,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVarP(&options.DisableUpdateCheck, "disable-update-check", "duc", false, "disable automatic subfinder update check"),
 	)
 
-	createGroup(flagSet, "output", "Output",
+	flagSet.CreateGroup("output", "Output",
 		flagSet.StringVarP(&options.OutputFile, "output", "o", "", "file to write output to"),
 		flagSet.BoolVarP(&options.JSON, "json", "oJ", false, "write output in JSONL(ines) format"),
 		flagSet.StringVarP(&options.OutputDirectory, "output-dir", "oD", "", "directory to write output (-dL only)"),
@@ -133,7 +133,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVarP(&options.HostIP, "ip", "oI", false, "include host IP in output (-active only)"),
 	)
 
-	createGroup(flagSet, "configuration", "Configuration",
+	flagSet.CreateGroup("configuration", "Configuration",
 		flagSet.StringVar(&options.Config, "config", defaultConfigLocation, "flag config file"),
 		flagSet.StringVarP(&options.ProviderConfig, "provider-config", "pc", defaultProviderConfigLocation, "provider config file"),
 		flagSet.StringSliceVar(&options.Resolvers, "r", []string{}, "comma separated list of resolvers to use", goflags.NormalizedStringSliceOptions),
@@ -143,7 +143,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVarP(&options.ExcludeIps, "exclude-ip", "ei", false, "exclude IPs from the list of domains"),
 	)
 
-	createGroup(flagSet, "debug", "Debug",
+	flagSet.CreateGroup("debug", "Debug",
 		flagSet.BoolVar(&options.Silent, "silent", false, "show only subdomains in output"),
 		flagSet.BoolVar(&options.Version, "version", false, "show version of subfinder"),
 		flagSet.BoolVar(&options.Verbose, "v", false, "show verbose output"),
@@ -152,7 +152,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVar(&options.Statistics, "stats", false, "report source statistics"),
 	)
 
-	createGroup(flagSet, "optimization", "Optimization",
+	flagSet.CreateGroup("optimization", "Optimization",
 		flagSet.IntVar(&options.Timeout, "timeout", 30, "seconds to wait before timing out"),
 		flagSet.IntVar(&options.MaxEnumerationTime, "max-time", 10, "minutes to wait for enumeration results"),
 	)
@@ -284,13 +284,6 @@ func listSources(options *Options) {
 			message = "%s *\n"
 		}
 		gologger.Silent().Msgf(message, sourceName)
-	}
-}
-
-func createGroup(flagSet *goflags.FlagSet, groupName, description string, flags ...*goflags.FlagData) {
-	flagSet.SetGroup(groupName, description)
-	for _, currentFlag := range flags {
-		currentFlag.Group(groupName)
 	}
 }
 
