@@ -14,6 +14,12 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
+type ctxarg string
+
+const (
+	ctxSourceArg ctxarg = "source"
+)
+
 // EnumerateSubdomains wraps EnumerateSubdomainsWithCtx with an empty context
 func (a *Agent) EnumerateSubdomains(domain string, proxy string, rateLimit int, rateLimits map[string]interface{}, timeout int, maxEnumTime time.Duration) chan subscraping.Result {
 	return a.EnumerateSubdomainsWithCtx(context.Background(), domain, proxy, rateLimit, rateLimits, timeout, maxEnumTime)
@@ -48,10 +54,8 @@ func (a *Agent) EnumerateSubdomainsWithCtx(ctx context.Context, domain string, p
 		// Run each source in parallel on the target domain
 		for _, runner := range a.sources {
 			wg.Add(1)
-
 			go func(source subscraping.Source) {
-				//lint:ignore SA1029 reason
-				ctxWithValue := context.WithValue(ctx, "source", source.Name())
+				ctxWithValue := context.WithValue(ctx, ctxSourceArg, source.Name())
 				for resp := range source.Run(ctxWithValue, domain, session) {
 					results <- resp
 				}
