@@ -9,6 +9,12 @@ import (
 	"github.com/projectdiscovery/ratelimit"
 )
 
+type CtxArg string
+
+const (
+	CtxSourceArg CtxArg = "source"
+)
+
 // BasicAuth request's Authorization header
 type BasicAuth struct {
 	Username string

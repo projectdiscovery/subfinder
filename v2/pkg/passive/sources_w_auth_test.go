@@ -53,7 +53,7 @@ func TestSourcesWithKeys(t *testing.T) {
 		t.Run(source.Name(), func(t *testing.T) {
 			var results []subscraping.Result
 
-			ctxWithValue := context.WithValue(ctxParent, ctxSourceArg, source.Name())
+			ctxWithValue := context.WithValue(ctxParent, subscraping.CtxSourceArg, source.Name())
 			for result := range source.Run(ctxWithValue, domain, session) {
 				results = append(results, result)
 

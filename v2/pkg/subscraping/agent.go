@@ -102,7 +102,7 @@ func (s *Session) HTTPRequest(ctx context.Context, method, requestURL, cookies s
 		req.Header.Set(key, value)
 	}
 
-	sourceName := ctx.Value("source").(string)
+	sourceName := ctx.Value(CtxSourceArg).(string)
 	mrlErr := s.MultiRateLimiter.Take(sourceName)
 	if mrlErr != nil {
 		return nil, mrlErr
