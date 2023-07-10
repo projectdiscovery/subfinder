@@ -13,19 +13,36 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
+type EnumerationOptions struct {
+	customRateLimiter *subscraping.CustomRateLimit
+}
+
+type EnumerateOption func(opts *EnumerationOptions)
+
+func WithCustomRateLimit(crl *subscraping.CustomRateLimit) EnumerateOption {
+	return func(opts *EnumerationOptions) {
+		opts.customRateLimiter = crl
+	}
+}
+
 // EnumerateSubdomains wraps EnumerateSubdomainsWithCtx with an empty context
-func (a *Agent) EnumerateSubdomains(domain string, proxy string, rateLimit *subscraping.CustomRateLimit, timeout int, maxEnumTime time.Duration) chan subscraping.Result {
-	return a.EnumerateSubdomainsWithCtx(context.Background(), domain, proxy, rateLimit, timeout, maxEnumTime)
+func (a *Agent) EnumerateSubdomains(domain string, proxy string, rateLimit int, timeout int, maxEnumTime time.Duration, options ...EnumerateOption) chan subscraping.Result {
+	return a.EnumerateSubdomainsWithCtx(context.Background(), domain, proxy, rateLimit, timeout, maxEnumTime, options...)
 }
 
 // EnumerateSubdomainsWithCtx enumerates all the subdomains for a given domain
-func (a *Agent) EnumerateSubdomainsWithCtx(ctx context.Context, domain string, proxy string, rateLimit *subscraping.CustomRateLimit, timeout int, maxEnumTime time.Duration) chan subscraping.Result {
+func (a *Agent) EnumerateSubdomainsWithCtx(ctx context.Context, domain string, proxy string, rateLimit int, timeout int, maxEnumTime time.Duration, options ...EnumerateOption) chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		multiRateLimiter, err := a.buildMultiRateLimiter(ctx, rateLimit)
+		var enumerateOptions EnumerationOptions
+		for _, enumerateOption := range options {
+			enumerateOption(&enumerateOptions)
+		}
+
+		multiRateLimiter, err := a.buildMultiRateLimiter(ctx, rateLimit, enumerateOptions.customRateLimiter)
 		if err != nil {
 			results <- subscraping.Result{
 				Type: subscraping.Error, Error: fmt.Errorf("could not init multi rate limiter for %s: %s", domain, err),
@@ -61,13 +78,13 @@ func (a *Agent) EnumerateSubdomainsWithCtx(ctx context.Context, domain string, p
 	return results
 }
 
-func (a *Agent) buildMultiRateLimiter(ctx context.Context, rateLimit *subscraping.CustomRateLimit) (*ratelimit.MultiLimiter, error) {
+func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, rateLimit *subscraping.CustomRateLimit) (*ratelimit.MultiLimiter, error) {
 	var multiRateLimiter *ratelimit.MultiLimiter
 	var err error
 	for _, source := range a.sources {
 		var rl uint
 		if sourceRateLimit, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
-			rl = sourceRateLimitOrDefault(rateLimit.Default, sourceRateLimit)
+			rl = sourceRateLimitOrDefault(uint(globalRateLimit), sourceRateLimit)
 		}
 
 		if rl > 0 {

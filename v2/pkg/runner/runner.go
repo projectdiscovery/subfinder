@@ -56,9 +56,8 @@ func NewRunner(options *Options) (*Runner, error) {
 		return nil, err
 	}
 
-	// Initialize the rate limit jar
+	// Initialize the custom rate limit
 	runner.rateLimit = &subscraping.CustomRateLimit{
-		Default: uint(options.RateLimit),
 		Custom: mapsutil.SyncLockMap[string, uint]{
 			Map: make(map[string]uint),
 		},
