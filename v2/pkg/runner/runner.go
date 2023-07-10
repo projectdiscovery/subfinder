@@ -68,7 +68,7 @@ func NewRunner(options *Options) (*Runner, error) {
 		if sourceRateLimitStr, ok := sourceRateLimit.(string); ok {
 			sourceRateLimitUint, err := strconv.ParseUint(sourceRateLimitStr, 10, 64)
 			if err == nil && sourceRateLimitUint > 0 && sourceRateLimitUint <= math.MaxUint32 {
-				runner.ratelimitJar.Custom.Set(source, uint(sourceRateLimitUint))
+				_ = runner.ratelimitJar.Custom.Set(source, uint(sourceRateLimitUint))
 			}
 		}
 	}
