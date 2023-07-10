@@ -3,8 +3,6 @@ package runner
 import (
 	"context"
 	"io"
-	"math"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -12,7 +10,6 @@ import (
 	"github.com/hako/durafmt"
 
 	"github.com/projectdiscovery/gologger"
-	mapsutil "github.com/projectdiscovery/utils/maps"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -41,24 +38,9 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 		}
 	}
 
-	rateLimitJar := &subscraping.RateLimitJar{
-		Global: uint(r.options.RateLimit),
-		Custom: mapsutil.SyncLockMap[string, uint]{
-			Map: make(map[string]uint),
-		},
-	}
-	for source, sourceRateLimit := range r.options.RateLimits.AsMap() {
-		if sourceRateLimitStr, ok := sourceRateLimit.(string); ok {
-			sourceRateLimitUint, err := strconv.ParseUint(sourceRateLimitStr, 10, 64)
-			if err == nil && sourceRateLimitUint > 0 && sourceRateLimitUint <= math.MaxUint32 {
-				rateLimitJar.Custom.Set(source, uint(sourceRateLimitUint))
-			}
-		}
-	}
-
 	// Run the passive subdomain enumeration
 	now := time.Now()
-	passiveResults := r.passiveAgent.EnumerateSubdomainsWithCtx(ctx, domain, r.options.Proxy, rateLimitJar, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute)
+	passiveResults := r.passiveAgent.EnumerateSubdomainsWithCtx(ctx, domain, r.options.Proxy, r.ratelimitJar, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
