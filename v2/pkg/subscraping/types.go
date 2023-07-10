@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/projectdiscovery/ratelimit"
+	mapsutil "github.com/projectdiscovery/utils/maps"
 )
 
 type CtxArg string
@@ -14,6 +15,11 @@ type CtxArg string
 const (
 	CtxSourceArg CtxArg = "source"
 )
+
+type RateLimitJar struct {
+	Global uint
+	Custom mapsutil.SyncLockMap[string, uint]
+}
 
 // BasicAuth request's Authorization header
 type BasicAuth struct {
