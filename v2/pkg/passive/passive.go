@@ -14,18 +14,18 @@ import (
 )
 
 // EnumerateSubdomains wraps EnumerateSubdomainsWithCtx with an empty context
-func (a *Agent) EnumerateSubdomains(domain string, proxy string, rateLimitJar *subscraping.RateLimitJar, timeout int, maxEnumTime time.Duration) chan subscraping.Result {
-	return a.EnumerateSubdomainsWithCtx(context.Background(), domain, proxy, rateLimitJar, timeout, maxEnumTime)
+func (a *Agent) EnumerateSubdomains(domain string, proxy string, rateLimit *subscraping.CustomRateLimit, timeout int, maxEnumTime time.Duration) chan subscraping.Result {
+	return a.EnumerateSubdomainsWithCtx(context.Background(), domain, proxy, rateLimit, timeout, maxEnumTime)
 }
 
 // EnumerateSubdomainsWithCtx enumerates all the subdomains for a given domain
-func (a *Agent) EnumerateSubdomainsWithCtx(ctx context.Context, domain string, proxy string, rateLimitJar *subscraping.RateLimitJar, timeout int, maxEnumTime time.Duration) chan subscraping.Result {
+func (a *Agent) EnumerateSubdomainsWithCtx(ctx context.Context, domain string, proxy string, rateLimit *subscraping.CustomRateLimit, timeout int, maxEnumTime time.Duration) chan subscraping.Result {
 	results := make(chan subscraping.Result)
 
 	go func() {
 		defer close(results)
 
-		multiRateLimiter, err := buildMultiRateLimiter(ctx, a, rateLimitJar)
+		multiRateLimiter, err := a.buildMultiRateLimiter(ctx, rateLimit)
 		if err != nil {
 			results <- subscraping.Result{
 				Type: subscraping.Error, Error: fmt.Errorf("could not init multi rate limiter for %s: %s", domain, err),
@@ -61,13 +61,13 @@ func (a *Agent) EnumerateSubdomainsWithCtx(ctx context.Context, domain string, p
 	return results
 }
 
-func buildMultiRateLimiter(ctx context.Context, a *Agent, rateLimitJar *subscraping.RateLimitJar) (*ratelimit.MultiLimiter, error) {
+func (a *Agent) buildMultiRateLimiter(ctx context.Context, rateLimit *subscraping.CustomRateLimit) (*ratelimit.MultiLimiter, error) {
 	var multiRateLimiter *ratelimit.MultiLimiter
 	var err error
 	for _, source := range a.sources {
 		var rl uint
-		if sourceRateLimit, ok := rateLimitJar.Custom.Get(strings.ToLower(source.Name())); ok {
-			rl = sourceRateLimitOrGlobal(rateLimitJar.Global, sourceRateLimit)
+		if sourceRateLimit, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
+			rl = sourceRateLimitOrDefault(rateLimit.Default, sourceRateLimit)
 		}
 
 		if rl > 0 {
@@ -83,11 +83,11 @@ func buildMultiRateLimiter(ctx context.Context, a *Agent, rateLimitJar *subscrap
 	return multiRateLimiter, err
 }
 
-func sourceRateLimitOrGlobal(globalRateLimit uint, sourceRateLimit uint) uint {
+func sourceRateLimitOrDefault(defaultRateLimit uint, sourceRateLimit uint) uint {
 	if sourceRateLimit > 0 {
 		return sourceRateLimit
 	}
-	return globalRateLimit
+	return defaultRateLimit
 }
 
 func addRateLimiter(ctx context.Context, multiRateLimiter *ratelimit.MultiLimiter, key string, maxCount uint, duration time.Duration) (*ratelimit.MultiLimiter, error) {

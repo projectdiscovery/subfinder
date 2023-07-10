@@ -28,7 +28,7 @@ type Runner struct {
 	options        *Options
 	passiveAgent   *passive.Agent
 	resolverClient *resolve.Resolver
-	ratelimitJar   *subscraping.RateLimitJar
+	rateLimit      *subscraping.CustomRateLimit
 }
 
 // NewRunner creates a new runner struct instance by parsing
@@ -57,8 +57,8 @@ func NewRunner(options *Options) (*Runner, error) {
 	}
 
 	// Initialize the rate limit jar
-	runner.ratelimitJar = &subscraping.RateLimitJar{
-		Global: uint(options.RateLimit),
+	runner.rateLimit = &subscraping.CustomRateLimit{
+		Default: uint(options.RateLimit),
 		Custom: mapsutil.SyncLockMap[string, uint]{
 			Map: make(map[string]uint),
 		},
@@ -68,7 +68,7 @@ func NewRunner(options *Options) (*Runner, error) {
 		if sourceRateLimitStr, ok := sourceRateLimit.(string); ok {
 			sourceRateLimitUint, err := strconv.ParseUint(sourceRateLimitStr, 10, 64)
 			if err == nil && sourceRateLimitUint > 0 && sourceRateLimitUint <= math.MaxUint32 {
-				_ = runner.ratelimitJar.Custom.Set(source, uint(sourceRateLimitUint))
+				_ = runner.rateLimit.Custom.Set(source, uint(sourceRateLimitUint))
 			}
 		}
 	}
