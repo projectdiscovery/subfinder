@@ -10,7 +10,7 @@ require (
 	github.com/projectdiscovery/chaos-client v0.5.1
 	github.com/projectdiscovery/dnsx v1.1.4
 	github.com/projectdiscovery/fdmax v0.0.4
-	github.com/projectdiscovery/gologger v1.1.10
+	github.com/projectdiscovery/gologger v1.1.11
 	github.com/projectdiscovery/ratelimit v0.0.8
 	github.com/projectdiscovery/utils v0.0.40-0.20230627061640-8ec2b35f851c
 	github.com/rs/xid v1.5.0
