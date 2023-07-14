@@ -12,7 +12,7 @@ require (
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/gologger v1.1.10
 	github.com/projectdiscovery/ratelimit v0.0.8
-	github.com/projectdiscovery/utils v0.0.39
+	github.com/projectdiscovery/utils v0.0.40-0.20230627061640-8ec2b35f851c
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.8.4
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
@@ -83,7 +83,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/projectdiscovery/goflags v0.1.10
+	github.com/projectdiscovery/goflags v0.1.11
 	github.com/projectdiscovery/retryabledns v1.0.23 // indirect
 	golang.org/x/net v0.11.0 // indirect
 	golang.org/x/sys v0.9.0 // indirect
