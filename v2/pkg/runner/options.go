@@ -6,7 +6,6 @@ import (
 	"io"
 	"math/rand"
 	"os"
-	"os/user"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -299,9 +298,9 @@ func (options *Options) preProcessOptions() {
 }
 
 func userHomeDir() string {
-	usr, err := user.Current()
+	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		gologger.Fatal().Msgf("Could not get user home directory: %s\n", err)
 	}
-	return usr.HomeDir
+	return homeDir
 }
