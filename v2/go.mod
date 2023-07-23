@@ -53,8 +53,8 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
 	github.com/projectdiscovery/blackrock v0.0.1 // indirect
-	github.com/projectdiscovery/cdncheck v1.0.1 // indirect
-	github.com/projectdiscovery/retryablehttp-go v1.0.15 // indirect
+	github.com/projectdiscovery/cdncheck v1.0.9 // indirect
+	github.com/projectdiscovery/retryablehttp-go v1.0.17 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
 	github.com/ulikunitz/xz v0.5.11 // indirect
@@ -84,7 +84,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/projectdiscovery/goflags v0.1.11
-	github.com/projectdiscovery/retryabledns v1.0.23 // indirect
+	github.com/projectdiscovery/retryabledns v1.0.29 // indirect
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/sys v0.10.0 // indirect
 )
