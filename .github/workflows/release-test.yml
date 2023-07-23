@@ -26,4 +26,4 @@ jobs:
         with:
           args: "release --clean --snapshot"
           version: latest
-          workdir: .
+          workdir: v2
