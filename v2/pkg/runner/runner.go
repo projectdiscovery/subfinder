@@ -8,7 +8,6 @@ import (
 	"os"
 	"path"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -64,11 +63,8 @@ func NewRunner(options *Options) (*Runner, error) {
 	}
 
 	for source, sourceRateLimit := range options.RateLimits.AsMap() {
-		if sourceRateLimitStr, ok := sourceRateLimit.(string); ok {
-			sourceRateLimitUint, err := strconv.ParseUint(sourceRateLimitStr, 10, 64)
-			if err == nil && sourceRateLimitUint > 0 && sourceRateLimitUint <= math.MaxUint32 {
-				_ = runner.rateLimit.Custom.Set(source, uint(sourceRateLimitUint))
-			}
+		if sourceRateLimit.MaxCount > 0 && sourceRateLimit.MaxCount <= math.MaxUint {
+			_ = runner.rateLimit.Custom.Set(source, sourceRateLimit.MaxCount)
 		}
 	}
 

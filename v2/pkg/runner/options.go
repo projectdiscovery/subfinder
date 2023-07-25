@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"math/rand"
 	"os"
 	"os/user"
@@ -50,17 +51,17 @@ type Options struct {
 	Domain             goflags.StringSlice // Domain is the domain to find subdomains for
 	DomainsFile        string              // DomainsFile is the file containing list of domains to find subdomains for
 	Output             io.Writer
-	OutputFile         string              // Output is the file to write found subdomains to.
-	OutputDirectory    string              // OutputDirectory is the directory to write results to in case list of domains is given
-	Sources            goflags.StringSlice `yaml:"sources,omitempty"`         // Sources contains a comma-separated list of sources to use for enumeration
-	ExcludeSources     goflags.StringSlice `yaml:"exclude-sources,omitempty"` // ExcludeSources contains the comma-separated sources to not include in the enumeration process
-	Resolvers          goflags.StringSlice `yaml:"resolvers,omitempty"`       // Resolvers is the comma-separated resolvers to use for enumeration
-	ResolverList       string              // ResolverList is a text file containing list of resolvers to use for enumeration
-	Config             string              // Config contains the location of the config file
-	ProviderConfig     string              // ProviderConfig contains the location of the provider config file
-	Proxy              string              // HTTP proxy
-	RateLimit          int                 // Global maximum number of HTTP requests to send per second
-	RateLimits         goflags.RuntimeMap  // Maximum number of HTTP requests to send per second
+	OutputFile         string               // Output is the file to write found subdomains to.
+	OutputDirectory    string               // OutputDirectory is the directory to write results to in case list of domains is given
+	Sources            goflags.StringSlice  `yaml:"sources,omitempty"`         // Sources contains a comma-separated list of sources to use for enumeration
+	ExcludeSources     goflags.StringSlice  `yaml:"exclude-sources,omitempty"` // ExcludeSources contains the comma-separated sources to not include in the enumeration process
+	Resolvers          goflags.StringSlice  `yaml:"resolvers,omitempty"`       // Resolvers is the comma-separated resolvers to use for enumeration
+	ResolverList       string               // ResolverList is a text file containing list of resolvers to use for enumeration
+	Config             string               // Config contains the location of the config file
+	ProviderConfig     string               // ProviderConfig contains the location of the provider config file
+	Proxy              string               // HTTP proxy
+	RateLimit          int                  // Global maximum number of HTTP requests to send per second
+	RateLimits         goflags.RateLimitMap // Maximum number of HTTP requests to send per second
 	ExcludeIps         bool
 	Match              goflags.StringSlice
 	Filter             goflags.StringSlice
@@ -116,7 +117,7 @@ func ParseOptions() *Options {
 
 	flagSet.CreateGroup("rate-limit", "Rate-limit",
 		flagSet.IntVarP(&options.RateLimit, "rate-limit", "rl", 0, "maximum number of http requests to send per second (global)"),
-		flagSet.RuntimeMapVar(&options.RateLimits, "rls", nil, "maximum number of http requests to send per second four providers in key=value format (-rls hackertarget=10)"),
+		flagSet.RateLimitMapVarP(&options.RateLimits, "rate-limits", "rls", defaultRateLimits(), "maximum number of http requests to send per second four providers in key=value format (-rls hackertarget=10/m)", goflags.NormalizedStringSliceOptions),
 		flagSet.IntVar(&options.Threads, "t", 10, "number of concurrent goroutines for resolving (-active only)"),
 	)
 
@@ -299,4 +300,21 @@ func userHomeDir() string {
 		gologger.Fatal().Msgf("Could not get user home directory: %s\n", err)
 	}
 	return usr.HomeDir
+}
+
+func defaultRateLimits() []string {
+	return []string{
+		"github=30/m",
+		"gitlab=2000/m",
+		"fullhunt=60/m",
+		fmt.Sprintf("robotex=%d/ms", uint(math.MaxUint)),
+		"securitytrails=1/s",
+		"shodan=1/s",
+		"virustotal=4/m",
+		"hackertarget=2/s",
+		"threatminer=10/m",
+		"waybackarchive=15/m",
+		"whoisxmlapi=50/s",
+	}
+
 }
