@@ -24,6 +24,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdb"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdumpster"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsrepo"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/facebook"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fofa"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fullhunt"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/github"
@@ -87,6 +88,7 @@ var AllSources = [...]subscraping.Source{
 	&whoisxmlapi.Source{},
 	&zoomeye.Source{},
 	&zoomeyeapi.Source{},
+	&facebook.Source{},
 	// &threatminer.Source{}, // failing  api
 	// &reconcloud.Source{}, // failing due to cloudflare bot protection
 }
