@@ -1,14 +1,16 @@
-# Build Container
-FROM golang:1.11.4-alpine3.7 AS build-env
-RUN apk add --no-cache --upgrade git openssh-client ca-certificates
-RUN go get -u github.com/golang/dep/cmd/dep
-WORKDIR /go/src/app
+# Build
+FROM golang:1.20.6-alpine AS build-env
+RUN apk add build-base
+WORKDIR /app
+COPY . /app
+WORKDIR /app/v2
+RUN go mod download
+RUN go build ./cmd/subfinder
 
-# Cache the dependencies early
-COPY Gopkg.toml Gopkg.lock ./
-RUN dep ensure -vendor-only -v
-
-# Install
-RUN go get -u github.com/subfinder/subfinder
+# Release
+FROM alpine:3.18.2
+RUN apk upgrade --no-cache \
+    && apk add --no-cache bind-tools ca-certificates
+COPY --from=build-env /app/v2/subfinder /usr/local/bin/
 
 ENTRYPOINT ["subfinder"]

@@ -1,0 +1,70 @@
+name: 🔨 Build Test
+
+on:
+  pull_request:
+    paths:
+      - '**.go'
+      - '**.mod'
+  workflow_dispatch:
+
+jobs:  
+  build:
+    name: Test Builds
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-13]
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.19
+
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Build
+        run: go build ./...
+        working-directory: v2/
+
+      - name: Run tests
+        env:
+          BEVIGIL_API_KEY: ${{secrets.BEVIGIL_API_KEY}}
+          BINARYEDGE_API_KEY: ${{secrets.BINARYEDGE_API_KEY}}
+          BUFFEROVER_API_KEY: ${{secrets.BUFFEROVER_API_KEY}}
+          C99_API_KEY: ${{secrets.C99_API_KEY}}
+          CENSYS_API_KEY: ${{secrets.CENSYS_API_KEY}}
+          CERTSPOTTER_API_KEY: ${{secrets.CERTSPOTTER_API_KEY}}
+          CHAOS_API_KEY: ${{secrets.CHAOS_API_KEY}}
+          CHINAZ_API_KEY: ${{secrets.CHINAZ_API_KEY}}
+          DNSDB_API_KEY: ${{secrets.DNSDB_API_KEY}}
+          DNSREPO_API_KEY: ${{secrets.DNSREPO_API_KEY}}
+          FOFA_API_KEY: ${{secrets.FOFA_API_KEY}}
+          FULLHUNT_API_KEY: ${{secrets.FULLHUNT_API_KEY}}
+          GITHUB_API_KEY: ${{secrets.GITHUB_API_KEY}}
+          HUNTER_API_KEY: ${{secrets.HUNTER_API_KEY}}
+          INTELX_API_KEY: ${{secrets.INTELX_API_KEY}}
+          LEAKIX_API_KEY: ${{secrets.LEAKIX_API_KEY}}
+          PASSIVETOTAL_API_KEY: ${{secrets.PASSIVETOTAL_API_KEY}}
+          QUAKE_API_KEY: ${{secrets.QUAKE_API_KEY}}
+          ROBTEX_API_KEY: ${{secrets.ROBTEX_API_KEY}}
+          SECURITYTRAILS_API_KEY: ${{secrets.SECURITYTRAILS_API_KEY}}
+          SHODAN_API_KEY: ${{secrets.SHODAN_API_KEY}}
+          THREATBOOK_API_KEY: ${{secrets.THREATBOOK_API_KEY}}
+          VIRUSTOTAL_API_KEY: ${{secrets.VIRUSTOTAL_API_KEY}}
+          WHOISXMLAPI_API_KEY: ${{secrets.WHOISXMLAPI_API_KEY}}
+          ZOOMEYE_API_KEY: ${{secrets.ZOOMEYE_API_KEY}}
+          ZOOMEYEAPI_API_KEY: ${{secrets.ZOOMEYEAPI_API_KEY}}
+        uses: nick-invision/retry@v2
+        with:
+          timeout_seconds: 360
+          max_attempts: 3
+          command: cd v2; go test ./... -v
+
+      - name: Race Condition Tests
+        run: go build -race ./...
+        working-directory: v2/
+
+      - name: Run Example
+        run: go run .
+        working-directory: v2/examples

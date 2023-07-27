@@ -1,34 +1,10 @@
-# Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-
-# JSON Configuration data
-config.json
-
-# Executable File
-process
-subfinder
-main
-
-# Test binary, build with `go test -c`
-*.test
-
-# Output of the go coverage tool, specifically when used with LiteIDE
-*.out
-
-# VIM swap files
-*.swp
-*.swo
-
-# VSCode
-.vscode/
-
-# Build Contents
-*.zip
-checksums.txt
-build/
-
+.DS_Store
+cmd/subfinder/subfinder
+# subfinder binary when built with `go build`
+v2/cmd/subfinder/subfinder
+# subfinder binary when built with `make`
+v2/subfinder
 vendor/
+.idea
+.devcontainer
+dist
