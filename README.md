@@ -151,7 +151,7 @@ zoomeye:
 quake:
   - 0cb9030c-0a40-48a3-b8c4-fca28e466ba3
 facebook:
-  - 1234567890123456|a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
+  - APP_ID:APP_SECRET
 ```
 
 # Running Subfinder
