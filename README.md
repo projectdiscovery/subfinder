@@ -1,3 +1,9 @@
+# subfinder
+
+[![License](https://img.shields.io/badge/license-MIT-_red.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://travis-ci.org/subfinder/subfinder.svg?branch=master)](https://travis-ci.org/subfinder/subfinder)
+[![Go Report Card](https://goreportcard.com/badge/github.com/subfinder/subfinder)](https://goreportcard.com/report/github.com/subfinder/subfinder)
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/subfinder/subfinder/issues)
 <h1 align="center">
   <img src="static/subfinder-logo.png" alt="subfinder" width="200px">
   <br>
@@ -45,8 +51,29 @@ hunters alike.
 - Optimized for speed and **lightweight** on resources
 - **STDIN/OUT** support enables easy integration into workflows
 
-# Usage
 
+
+# Installation Instructions
+## Direct Installation
+
+SubFinder requires go1.10+ to install successfully!
+
+```bash
+gem install go
+```
+
+The installation is easy. Download the pre-built binaries for different platforms from the [Releases page](https://github.com/projectdiscovery/subfinder/releases/). Extract them using tar, move it to your $PATH and you're ready to go:
+
+```bash
+tar -xzvf subfinder-linux-amd64.tar && mv subfinder-linux-amd64 /usr/bin/subfinder && cd && subfinder
+
+## Upgrading
+For upgrade subfinder you can use:
+```bash
+go get -u github.com/subfinder/subfinder
+```
+
+## Running in a Docker Container
 ```sh
 subfinder -h
 ```
@@ -209,6 +236,25 @@ https://docs.hackerone.com
 http://mta-sts.managed.hackerone.com
 ```
 
+Theses values are stored in the $HOME/.config/subfinder/config.json file, which will be created when you run the tool for the first time. To configure the services to use an API key, you need to use the tool with -config option which will allow you to set a configuration option. For example:
+
+```bash
+subfinder -config VirustotalAPIKey=0x41414141
+subfinder -config PassivetotalUsername=hacker,PassivetotalKey=supersecret
+```
+
+## For use in Docker
+
+If you are using docker, you need to first create your directory structure holding subfinder configuration file. You can either run the binary in your host system and let it create the directory structure of files, after which you can use --set-config flag to set the api values like before. Or you can run:
+```bash
+mkdir $HOME/.config/subfinder
+cp config.json $HOME/.config/subfinder/config.json
+nano $HOME/.config/subfinder/config.json
+```
+After that, you can pass it as a volume using the following sample command.
+```bash
+sudo docker run -v $HOME/.config/subfinder:/root/.config/subfinder -it subfinder -d freelancer.com
+=======
 <table>
 <tr>
 <td>  
@@ -221,6 +267,60 @@ Pull the latest tagged [subfinder](https://hub.docker.com/r/projectdiscovery/sub
 docker pull projectdiscovery/subfinder:latest
 ```
 
+
+#
+#
+# Usage
+
+```bash
+subfinder
+```
+This will display help for the tool. Here are all the switches it supports.
+
+| Flag | Description | Example |
+|------|-------------|---------|
+| -b   | Use bruteforcing to find subdomains | ./subfinder -d example.com -b |
+| -c   | Don't show colored output            | ./subfinder -c |
+| -d   | Domain to find subdomains for        | ./subfinder -d example.com |
+| -dL  | List of domains to find subdomains for | ./subfinder -dL hosts.txt |
+| -nW  | Remove wildcard subdomains           | ./subfinder -nW |
+| -o   | Name of the output file (Optional)   | ./subfinder -o output.txt |
+| -oT  | Write output in Aquatone style JSON format (Required -nW)  | ./subfinder -o output.txt -nW -oT |
+| -oJ  | Write output in JSON format          | ./subfinder -o output.json -oJ |
+| -oD  | Output to directory (When using multiple hosts) | ./subfinder -oD ~/misc/out/ |
+| -r  | Comma-separated list of resolvers to use | ./subfinder -r 8.8.8.8,1.1.1.1 |
+| -rL  | File containing list of resolvers to use | ./subfinder -rL resolvers.txt |
+| --recursive  | Use recursive subdomain finding (default: false) | ./subfinder --recursive |
+| --set-config | Sets a configuration option | ./subfinder --set-config example=something |
+| --set-settings | Sets a setting option | ./subfinder --set-settings CensysPages=10 |
+| --no-passive  | Do not perform passive subdomain enumeration | ./subfinder -d freelancer.com --no-passive |
+| --silent | Show only the subdomains found    | ./subfinder --silent |
+| --sources | Comma separated list of sources to use (optional) | ./subfinder --sources threatcrowd,virustotal |
+| --exclude-sources | Comma separated list of sources not to use (optional) | ./subfinder --exclude-sources threatcrowd,virustotal |
+| -t   | Number of concurrent threads (Bruteforce) | ./subfinder -b -t 10 -w words.txt |
+| --timeout | Seconds to wait until quitting connection | ./subfinder --timeout 10 |
+| -v | Display verbose output  | ./subfinder -v |
+| -w | Wordlist for doing bruteforcing and permutation | ./subfinder -w words.txt |
+
+# Running Subfinder
+
+To run the tool on a target, use the following command.
+```bash
+subfinder -d freelancer.com
+```
+This will run the tool against freelancer.com. There are a number of configuration options that you can pass along with this command. The verbose switch (-v) can be used to display verbose information.
+
+```bash
+[CERTSPOTTER] www.fi.freelancer.com
+[DNSDUMPSTER] hosting.freelancer.com
+[DNSDUMPSTER] support.freelancer.com
+[DNSDUMPSTER] accounts.freelancer.com
+[DNSDUMPSTER] phabricator.freelancer.com
+[DNSDUMPSTER] cdn1.freelancer.com
+[DNSDUMPSTER] t1.freelancer.com
+[DNSDUMPSTER] wdc.t1.freelancer.com
+[DNSDUMPSTER] dal.t1.freelancer.com
+=======
 Running `subfinder` using the docker image:
 
 ```sh
@@ -229,6 +329,8 @@ docker run projectdiscovery/subfinder:latest -d hackerone.com
 
 Running `subfinder` using the docker image, with a local config file:
 
+```bash
+subfinder -d freelancer.com -o output.txt
 ```sh
 docker run -v $HOME/.config/subfinder:/root/.config/subfinder -t projectdiscovery/subfinder -d hackerone.com
 ```
@@ -237,6 +339,46 @@ docker run -v $HOME/.config/subfinder:/root/.config/subfinder -t projectdiscover
 </tr>
 </table>
 
+You can also pass some special settings for the tool through the command line by using --set-setting flag.
+For example, you can pass the number of Censys pages to check using the following command.
+```bash
+subfinder -d freelancer.com --sources censys --set-settings CensysPages=2 -v
+```
+For checking all pages returned by censys, you can use "all" option. Note, It is a string.
+
+These are the settings currently supported
+```bash
+CensysPages
+AskPages
+BaiduPages
+BingPages
+```
+
+For using bruteforcing capabilities, you can use -b flag with -w option to specify a wordlist.
+```bash
+subfinder -d freelancer.com -b -w jhaddix_all.txt -t 100 --sources censys --set-settings CensysPages=2 -v
+```
+
+You can also write output in JSON format as used by Aquatone.
+```bash
+subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v
+```
+
+You can specify custom resolvers too.
+```bash
+subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v -r 8.8.8.8,1.1.1.1
+subfinder -d freelancer.com -o result_aquatone.json -oT -nW -v -rL resolvers.txt
+```
+
+If you want to do bruteforce only and do not want to run the passive subdomain discovery engine, you can use `--no-passive` flag which will not run passive discovery. You can use this functionality to run plain bruteforce, etc.
+```bash
+subfinder -d freelancer.com --no-passive -v -b -w ~/dnslist.txt
+```
+
+Ninja Mode
+```bash
+subfinder -dL target_ips -t 37 -nW -oD ~/root/ -oI chI -oJ chJ -silent -vvv
+```
 <table>
 <tr>
 <td>  
