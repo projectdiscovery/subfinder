@@ -1,6 +1,6 @@
 module github.com/projectdiscovery/subfinder/v2
 
-go 1.18
+go 1.20
 
 require (
 	github.com/corpix/uarand v0.2.0
@@ -12,6 +12,7 @@ require (
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/gologger v1.1.11
 	github.com/projectdiscovery/ratelimit v0.0.9
+	github.com/projectdiscovery/retryablehttp-go v1.0.15
 	github.com/projectdiscovery/utils v0.0.44
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.8.4
@@ -54,7 +55,6 @@ require (
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
 	github.com/projectdiscovery/blackrock v0.0.1 // indirect
 	github.com/projectdiscovery/cdncheck v1.0.1 // indirect
-	github.com/projectdiscovery/retryablehttp-go v1.0.15 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
 	github.com/ulikunitz/xz v0.5.11 // indirect

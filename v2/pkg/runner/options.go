@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"io"
 	"math"
-	"math/rand"
 	"os"
 	"os/user"
 	"path/filepath"
 	"regexp"
 	"strings"
-	"time"
 
 	"gopkg.in/yaml.v3"
 
@@ -77,8 +75,6 @@ type OnResultCallback func(result *resolve.HostEntry)
 // ParseOptions parses the command line flags provided by a user
 func ParseOptions() *Options {
 	logutil.DisableDefaultLogger()
-	// Seed default random number generator
-	rand.Seed(time.Now().UnixNano())
 
 	// Migrate config to provider config
 	if fileutil.FileExists(defaultConfigLocation) && !fileutil.FileExists(defaultProviderConfigLocation) {
@@ -117,7 +113,7 @@ func ParseOptions() *Options {
 
 	flagSet.CreateGroup("rate-limit", "Rate-limit",
 		flagSet.IntVarP(&options.RateLimit, "rate-limit", "rl", 0, "maximum number of http requests to send per second (global)"),
-		flagSet.RateLimitMapVarP(&options.RateLimits, "rate-limits", "rls", defaultRateLimits(), "maximum number of http requests to send per second four providers in key=value format (-rls hackertarget=10/m)", goflags.NormalizedStringSliceOptions),
+		flagSet.RateLimitMapVarP(&options.RateLimits, "rate-limits", "rls", defaultRateLimits, "maximum number of http requests to send per second four providers in key=value format (-rls hackertarget=10/m)", goflags.NormalizedStringSliceOptions),
 		flagSet.IntVar(&options.Threads, "t", 10, "number of concurrent goroutines for resolving (-active only)"),
 	)
 
@@ -302,19 +298,16 @@ func userHomeDir() string {
 	return usr.HomeDir
 }
 
-func defaultRateLimits() []string {
-	return []string{
-		"github=30/m",
-		"gitlab=2000/m",
-		"fullhunt=60/m",
-		fmt.Sprintf("robotex=%d/ms", uint(math.MaxUint)),
-		"securitytrails=1/s",
-		"shodan=1/s",
-		"virustotal=4/m",
-		"hackertarget=2/s",
-		"threatminer=10/m",
-		"waybackarchive=15/m",
-		"whoisxmlapi=50/s",
-	}
-
+var defaultRateLimits = []string{
+	"github=30/m",
+	"gitlab=2000/m",
+	"fullhunt=60/m",
+	fmt.Sprintf("robotex=%d/ms", uint(math.MaxUint)),
+	"securitytrails=1/s",
+	"shodan=1/s",
+	"virustotal=4/m",
+	"hackertarget=2/s",
+	"threatminer=10/m",
+	"waybackarchive=15/m",
+	"whoisxmlapi=50/s",
 }
