@@ -9,6 +9,9 @@ import (
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/gologger/formatter"
 	"github.com/projectdiscovery/gologger/levels"
+	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
+	mapsutil "github.com/projectdiscovery/utils/maps"
+	sliceutil "github.com/projectdiscovery/utils/slice"
 )
 
 // validateOptions validates the configuration options passed
@@ -53,6 +56,13 @@ func (options *Options) validateOptions() error {
 			if options.filterRegexes[i], err = regexp.Compile(stripRegexString(re)); err != nil {
 				return errors.New("invalid value for filter regex option")
 			}
+		}
+	}
+
+	sources := mapsutil.GetKeys(passive.NameSourceMap)
+	for source := range options.RateLimits.AsMap() {
+		if !sliceutil.Contains(sources, source) {
+			return fmt.Errorf("invalid source %s specified in -rls flag", source)
 		}
 	}
 	return nil
