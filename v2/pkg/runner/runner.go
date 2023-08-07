@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"io"
+	"math"
 	"os"
 	"path"
 	"regexp"
@@ -13,9 +14,11 @@ import (
 
 	"github.com/projectdiscovery/gologger"
 	fileutil "github.com/projectdiscovery/utils/file"
+	mapsutil "github.com/projectdiscovery/utils/maps"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
 // Runner is an instance of the subdomain enumeration
@@ -24,6 +27,7 @@ type Runner struct {
 	options        *Options
 	passiveAgent   *passive.Agent
 	resolverClient *resolve.Resolver
+	rateLimit      *subscraping.CustomRateLimit
 }
 
 // NewRunner creates a new runner struct instance by parsing
@@ -49,6 +53,19 @@ func NewRunner(options *Options) (*Runner, error) {
 	err := runner.initializeResolver()
 	if err != nil {
 		return nil, err
+	}
+
+	// Initialize the custom rate limit
+	runner.rateLimit = &subscraping.CustomRateLimit{
+		Custom: mapsutil.SyncLockMap[string, uint]{
+			Map: make(map[string]uint),
+		},
+	}
+
+	for source, sourceRateLimit := range options.RateLimits.AsMap() {
+		if sourceRateLimit.MaxCount > 0 && sourceRateLimit.MaxCount <= math.MaxUint {
+			_ = runner.rateLimit.Custom.Set(source, sourceRateLimit.MaxCount)
+		}
 	}
 
 	return runner, nil

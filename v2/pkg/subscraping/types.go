@@ -7,7 +7,18 @@ import (
 	"time"
 
 	"github.com/projectdiscovery/ratelimit"
+	mapsutil "github.com/projectdiscovery/utils/maps"
 )
+
+type CtxArg string
+
+const (
+	CtxSourceArg CtxArg = "source"
+)
+
+type CustomRateLimit struct {
+	Custom mapsutil.SyncLockMap[string, uint]
+}
 
 // BasicAuth request's Authorization header
 type BasicAuth struct {
@@ -59,7 +70,7 @@ type Session struct {
 	// Client is the current http client
 	Client *http.Client
 	// Rate limit instance
-	RateLimiter *ratelimit.Limiter
+	MultiRateLimiter *ratelimit.MultiLimiter
 }
 
 // Result is a result structure returned by a source

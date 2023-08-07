@@ -74,6 +74,7 @@ FILTER:
 
 RATE-LIMIT:
   -rl, -rate-limit int  maximum number of http requests to send per second
+  -rls value            maximum number of http requests to send per second four providers in key=value format (-rls "hackertarget=10/s,shodan=15/s")
   -t int                number of concurrent goroutines for resolving (-active only) (default 10)
 
 UPDATE:
@@ -110,7 +111,7 @@ OPTIMIZATION:
 
 # Installation
 
-`subfinder` requires **go1.19** to install successfully. Run the following command to install the latest version:
+`subfinder` requires **go1.20** to install successfully. Run the following command to install the latest version:
 
 ```sh
 go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
