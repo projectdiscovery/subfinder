@@ -148,11 +148,14 @@ github:
   - ghp_lkyJGU3jv1xmwk4SDXavrLDJ4dl2pSJMzj4X
   - ghp_gkUuhkIYdQPj13ifH4KA3cXRn8JD2lqir2d4
 zoomeye:
-  - zoomeye_username:zoomeye_password
+  - ZOOMEYE_USERNAME:ZOOMEYE_PASSWORD
 quake:
   - 0cb9030c-0a40-48a3-b8c4-fca28e466ba3
 facebook:
   - APP_ID:APP_SECRET
+intelx:
+  - HOST:API_KEY
+  - 2.intelx.io:s4324-b98b-41b2-220e8-3320f6a1284d
 ```
 
 # Running Subfinder
