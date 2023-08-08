@@ -2,7 +2,6 @@
 package censys
 
 import (
-	"bytes"
 	"context"
 	"strconv"
 	"time"
@@ -10,20 +9,48 @@ import (
 	jsoniter "github.com/json-iterator/go"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
+	urlutil "github.com/projectdiscovery/utils/url"
 )
 
-const maxCensysPages = 10
-
-type resultsq struct {
-	Data  []string `json:"parsed.extensions.subject_alt_name.dns_names"`
-	Data1 []string `json:"parsed.names"`
-}
+const (
+	maxCensysPages = 10
+	maxPerPage     = 100
+)
 
 type response struct {
-	Results  []resultsq `json:"results"`
-	Metadata struct {
-		Pages int `json:"pages"`
-	} `json:"metadata"`
+	Code   int    `json:"code"`
+	Status string `json:"status"`
+	Result result `json:"result"`
+}
+
+type result struct {
+	Query      string  `json:"query"`
+	Total      float64 `json:"total"`
+	DurationMS int     `json:"duration_ms"`
+	Hits       []hit   `json:"hits"`
+	Links      links   `json:"links"`
+}
+
+type hit struct {
+	Parsed            parsed   `json:"parsed"`
+	Names             []string `json:"names"`
+	FingerprintSha256 string   `json:"fingerprint_sha256"`
+}
+
+type parsed struct {
+	ValidityPeriod validityPeriod `json:"validity_period"`
+	SubjectDN      string         `json:"subject_dn"`
+	IssuerDN       string         `json:"issuer_dn"`
+}
+
+type validityPeriod struct {
+	NotAfter  string `json:"not_after"`
+	NotBefore string `json:"not_before"`
+}
+
+type links struct {
+	Next string `json:"next"`
+	Prev string `json:"prev"`
 }
 
 // Source is the passive scraping agent
@@ -58,17 +85,30 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
+		certSearchEndpoint := "https://search.censys.io/api/v2/certificates/search"
+		cursor := ""
 		currentPage := 1
 		for {
-			var request = []byte(`{"query":"` + domain + `", "page":` + strconv.Itoa(currentPage) + `, "fields":["parsed.names","parsed.extensions.subject_alt_name.dns_names"], "flatten":true}`)
+			certSearchEndpointUrl, err := urlutil.Parse(certSearchEndpoint)
+			if err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
+				return
+			}
+
+			certSearchEndpointUrl.Params.Add("q", domain)
+			certSearchEndpointUrl.Params.Add("per_page", strconv.Itoa(maxPerPage))
+			if cursor != "" {
+				certSearchEndpointUrl.Params.Add("cursor", cursor)
+			}
 
 			resp, err := session.HTTPRequest(
 				ctx,
-				"POST",
-				"https://search.censys.io/api/v1/search/certificates",
+				"GET",
+				certSearchEndpointUrl.String(),
 				"",
-				map[string]string{"Content-Type": "application/json", "Accept": "application/json"},
-				bytes.NewReader(request),
+				nil,
+				nil,
 				subscraping.BasicAuth{Username: randomApiKey.token, Password: randomApiKey.secret},
 			)
 
@@ -90,22 +130,18 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			resp.Body.Close()
 
-			for _, res := range censysResponse.Results {
-				for _, part := range res.Data {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: part}
-					s.results++
-				}
-				for _, part := range res.Data1 {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: part}
+			for _, hit := range censysResponse.Result.Hits {
+				for _, name := range hit.Names {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: name}
 					s.results++
 				}
 			}
 
-			// Exit the censys enumeration if max pages is reached
-			if currentPage >= censysResponse.Metadata.Pages || currentPage >= maxCensysPages {
+			// Exit the censys enumeration if last page is reached
+			cursor = censysResponse.Result.Links.Next
+			if cursor == "" || currentPage >= maxCensysPages {
 				break
 			}
-
 			currentPage++
 		}
 	}()
