@@ -11,6 +11,7 @@ import (
 
 	"github.com/projectdiscovery/gologger"
 
+	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
@@ -40,7 +41,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 
 	// Run the passive subdomain enumeration
 	now := time.Now()
-	passiveResults := r.passiveAgent.EnumerateSubdomainsWithCtx(ctx, domain, r.options.Proxy, r.options.RateLimit, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute)
+	passiveResults := r.passiveAgent.EnumerateSubdomainsWithCtx(ctx, domain, r.options.Proxy, r.options.RateLimit, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute, passive.WithCustomRateLimit(r.rateLimit))
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)

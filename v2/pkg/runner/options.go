@@ -4,12 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math/rand"
+	"math"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
-	"time"
 
 	"gopkg.in/yaml.v3"
 
@@ -49,16 +48,17 @@ type Options struct {
 	Domain             goflags.StringSlice // Domain is the domain to find subdomains for
 	DomainsFile        string              // DomainsFile is the file containing list of domains to find subdomains for
 	Output             io.Writer
-	OutputFile         string              // Output is the file to write found subdomains to.
-	OutputDirectory    string              // OutputDirectory is the directory to write results to in case list of domains is given
-	Sources            goflags.StringSlice `yaml:"sources,omitempty"`         // Sources contains a comma-separated list of sources to use for enumeration
-	ExcludeSources     goflags.StringSlice `yaml:"exclude-sources,omitempty"` // ExcludeSources contains the comma-separated sources to not include in the enumeration process
-	Resolvers          goflags.StringSlice `yaml:"resolvers,omitempty"`       // Resolvers is the comma-separated resolvers to use for enumeration
-	ResolverList       string              // ResolverList is a text file containing list of resolvers to use for enumeration
-	Config             string              // Config contains the location of the config file
-	ProviderConfig     string              // ProviderConfig contains the location of the provider config file
-	Proxy              string              // HTTP proxy
-	RateLimit          int                 // Maximum number of HTTP requests to send per second
+	OutputFile         string               // Output is the file to write found subdomains to.
+	OutputDirectory    string               // OutputDirectory is the directory to write results to in case list of domains is given
+	Sources            goflags.StringSlice  `yaml:"sources,omitempty"`         // Sources contains a comma-separated list of sources to use for enumeration
+	ExcludeSources     goflags.StringSlice  `yaml:"exclude-sources,omitempty"` // ExcludeSources contains the comma-separated sources to not include in the enumeration process
+	Resolvers          goflags.StringSlice  `yaml:"resolvers,omitempty"`       // Resolvers is the comma-separated resolvers to use for enumeration
+	ResolverList       string               // ResolverList is a text file containing list of resolvers to use for enumeration
+	Config             string               // Config contains the location of the config file
+	ProviderConfig     string               // ProviderConfig contains the location of the provider config file
+	Proxy              string               // HTTP proxy
+	RateLimit          int                  // Global maximum number of HTTP requests to send per second
+	RateLimits         goflags.RateLimitMap // Maximum number of HTTP requests to send per second
 	ExcludeIps         bool
 	Match              goflags.StringSlice
 	Filter             goflags.StringSlice
@@ -74,8 +74,6 @@ type OnResultCallback func(result *resolve.HostEntry)
 // ParseOptions parses the command line flags provided by a user
 func ParseOptions() *Options {
 	logutil.DisableDefaultLogger()
-	// Seed default random number generator
-	rand.Seed(time.Now().UnixNano())
 
 	// Migrate config to provider config
 	if fileutil.FileExists(defaultConfigLocation) && !fileutil.FileExists(defaultProviderConfigLocation) {
@@ -95,25 +93,26 @@ func ParseOptions() *Options {
 	flagSet := goflags.NewFlagSet()
 	flagSet.SetDescription(`Subfinder is a subdomain discovery tool that discovers subdomains for websites by using passive online sources.`)
 
-	createGroup(flagSet, "input", "Input",
-		flagSet.StringSliceVarP(&options.Domain, "domain", "d", []string{}, "domains to find subdomains for", goflags.NormalizedStringSliceOptions),
+	flagSet.CreateGroup("input", "Input",
+		flagSet.StringSliceVarP(&options.Domain, "domain", "d", nil, "domains to find subdomains for", goflags.NormalizedStringSliceOptions),
 		flagSet.StringVarP(&options.DomainsFile, "list", "dL", "", "file containing list of domains for subdomain discovery"),
 	)
 
-	createGroup(flagSet, "source", "Source",
-		flagSet.StringSliceVarP(&options.Sources, "sources", "s", []string{}, "specific sources to use for discovery (-s crtsh,github). Use -ls to display all available sources.", goflags.NormalizedStringSliceOptions),
+	flagSet.CreateGroup("source", "Source",
+		flagSet.StringSliceVarP(&options.Sources, "sources", "s", nil, "specific sources to use for discovery (-s crtsh,github). Use -ls to display all available sources.", goflags.NormalizedStringSliceOptions),
 		flagSet.BoolVar(&options.OnlyRecursive, "recursive", false, "use only sources that can handle subdomains recursively (e.g. subdomain.domain.tld vs domain.tld)"),
 		flagSet.BoolVar(&options.All, "all", false, "use all sources for enumeration (slow)"),
-		flagSet.StringSliceVarP(&options.ExcludeSources, "exclude-sources", "es", []string{}, "sources to exclude from enumeration (-es alienvault,zoomeye)", goflags.NormalizedStringSliceOptions),
+		flagSet.StringSliceVarP(&options.ExcludeSources, "exclude-sources", "es", nil, "sources to exclude from enumeration (-es alienvault,zoomeye)", goflags.NormalizedStringSliceOptions),
 	)
 
-	createGroup(flagSet, "filter", "Filter",
-		flagSet.StringSliceVarP(&options.Match, "match", "m", []string{}, "subdomain or list of subdomain to match (file or comma separated)", goflags.FileNormalizedStringSliceOptions),
-		flagSet.StringSliceVarP(&options.Filter, "filter", "f", []string{}, " subdomain or list of subdomain to filter (file or comma separated)", goflags.FileNormalizedStringSliceOptions),
+	flagSet.CreateGroup("filter", "Filter",
+		flagSet.StringSliceVarP(&options.Match, "match", "m", nil, "subdomain or list of subdomain to match (file or comma separated)", goflags.FileNormalizedStringSliceOptions),
+		flagSet.StringSliceVarP(&options.Filter, "filter", "f", nil, " subdomain or list of subdomain to filter (file or comma separated)", goflags.FileNormalizedStringSliceOptions),
 	)
 
-	createGroup(flagSet, "rate-limit", "Rate-limit",
-		flagSet.IntVarP(&options.RateLimit, "rate-limit", "rl", 0, "maximum number of http requests to send per second"),
+	flagSet.CreateGroup("rate-limit", "Rate-limit",
+		flagSet.IntVarP(&options.RateLimit, "rate-limit", "rl", 0, "maximum number of http requests to send per second (global)"),
+		flagSet.RateLimitMapVarP(&options.RateLimits, "rate-limits", "rls", defaultRateLimits, "maximum number of http requests to send per second four providers in key=value format (-rls hackertarget=10/m)", goflags.NormalizedStringSliceOptions),
 		flagSet.IntVar(&options.Threads, "t", 10, "number of concurrent goroutines for resolving (-active only)"),
 	)
 
@@ -122,7 +121,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVarP(&options.DisableUpdateCheck, "disable-update-check", "duc", false, "disable automatic subfinder update check"),
 	)
 
-	createGroup(flagSet, "output", "Output",
+	flagSet.CreateGroup("output", "Output",
 		flagSet.StringVarP(&options.OutputFile, "output", "o", "", "file to write output to"),
 		flagSet.BoolVarP(&options.JSON, "json", "oJ", false, "write output in JSONL(ines) format"),
 		flagSet.StringVarP(&options.OutputDirectory, "output-dir", "oD", "", "directory to write output (-dL only)"),
@@ -130,17 +129,17 @@ func ParseOptions() *Options {
 		flagSet.BoolVarP(&options.HostIP, "ip", "oI", false, "include host IP in output (-active only)"),
 	)
 
-	createGroup(flagSet, "configuration", "Configuration",
+	flagSet.CreateGroup("configuration", "Configuration",
 		flagSet.StringVar(&options.Config, "config", defaultConfigLocation, "flag config file"),
 		flagSet.StringVarP(&options.ProviderConfig, "provider-config", "pc", defaultProviderConfigLocation, "provider config file"),
-		flagSet.StringSliceVar(&options.Resolvers, "r", []string{}, "comma separated list of resolvers to use", goflags.NormalizedStringSliceOptions),
+		flagSet.StringSliceVar(&options.Resolvers, "r", nil, "comma separated list of resolvers to use", goflags.NormalizedStringSliceOptions),
 		flagSet.StringVarP(&options.ResolverList, "rlist", "rL", "", "file containing list of resolvers to use"),
 		flagSet.BoolVarP(&options.RemoveWildcard, "active", "nW", false, "display active subdomains only"),
 		flagSet.StringVar(&options.Proxy, "proxy", "", "http proxy to use with subfinder"),
 		flagSet.BoolVarP(&options.ExcludeIps, "exclude-ip", "ei", false, "exclude IPs from the list of domains"),
 	)
 
-	createGroup(flagSet, "debug", "Debug",
+	flagSet.CreateGroup("debug", "Debug",
 		flagSet.BoolVar(&options.Silent, "silent", false, "show only subdomains in output"),
 		flagSet.BoolVar(&options.Version, "version", false, "show version of subfinder"),
 		flagSet.BoolVar(&options.Verbose, "v", false, "show verbose output"),
@@ -149,7 +148,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVar(&options.Statistics, "stats", false, "report source statistics"),
 	)
 
-	createGroup(flagSet, "optimization", "Optimization",
+	flagSet.CreateGroup("optimization", "Optimization",
 		flagSet.IntVar(&options.Timeout, "timeout", 30, "seconds to wait before timing out"),
 		flagSet.IntVar(&options.MaxEnumerationTime, "max-time", 10, "minutes to wait for enumeration results"),
 	)
@@ -284,13 +283,6 @@ func listSources(options *Options) {
 	}
 }
 
-func createGroup(flagSet *goflags.FlagSet, groupName, description string, flags ...*goflags.FlagData) {
-	flagSet.SetGroup(groupName, description)
-	for _, currentFlag := range flags {
-		currentFlag.Group(groupName)
-	}
-}
-
 func (options *Options) preProcessOptions() {
 	for i, domain := range options.Domain {
 		options.Domain[i], _ = sanitize(domain)
@@ -303,4 +295,18 @@ func userHomeDir() string {
 		gologger.Fatal().Msgf("Could not get user home directory: %s\n", err)
 	}
 	return homeDir
+}
+
+var defaultRateLimits = []string{
+	"github=30/m",
+	// "gitlab=2000/m",
+	"fullhunt=60/m",
+	fmt.Sprintf("robtex=%d/ms", uint(math.MaxUint)),
+	"securitytrails=1/s",
+	"shodan=1/s",
+	"virustotal=4/m",
+	"hackertarget=2/s",
+	// "threatminer=10/m",
+	"waybackarchive=15/m",
+	"whoisxmlapi=50/s",
 }

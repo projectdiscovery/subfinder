@@ -18,7 +18,7 @@ import (
 )
 
 // NewSession creates a new session object for a domain
-func NewSession(domain string, proxy string, rateLimit, timeout int) (*Session, error) {
+func NewSession(domain string, proxy string, multiRateLimiter *ratelimit.MultiLimiter, timeout int) (*Session, error) {
 	Transport := &http.Transport{
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 100,
@@ -49,11 +49,7 @@ func NewSession(domain string, proxy string, rateLimit, timeout int) (*Session, 
 	session := &Session{Client: client}
 
 	// Initiate rate limit instance
-	if rateLimit > 0 {
-		session.RateLimiter = ratelimit.New(context.Background(), uint(rateLimit), time.Second)
-	} else {
-		session.RateLimiter = ratelimit.NewUnlimited(context.Background())
-	}
+	session.MultiRateLimiter = multiRateLimiter
 
 	// Create a new extractor object for the current domain
 	extractor, err := NewSubdomainExtractor(domain)
@@ -106,7 +102,11 @@ func (s *Session) HTTPRequest(ctx context.Context, method, requestURL, cookies s
 		req.Header.Set(key, value)
 	}
 
-	s.RateLimiter.Take()
+	sourceName := ctx.Value(CtxSourceArg).(string)
+	mrlErr := s.MultiRateLimiter.Take(sourceName)
+	if mrlErr != nil {
+		return nil, mrlErr
+	}
 
 	return httpRequestWrapper(s.Client, req)
 }
@@ -125,7 +125,7 @@ func (s *Session) DiscardHTTPResponse(response *http.Response) {
 
 // Close the session
 func (s *Session) Close() {
-	s.RateLimiter.Stop()
+	s.MultiRateLimiter.Stop()
 	s.Client.CloseIdleConnections()
 }
 

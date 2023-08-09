@@ -74,6 +74,7 @@ FILTER:
 
 RATE-LIMIT:
   -rl, -rate-limit int  maximum number of http requests to send per second
+  -rls value            maximum number of http requests to send per second four providers in key=value format (-rls "hackertarget=10/s,shodan=15/s")
   -t int                number of concurrent goroutines for resolving (-active only) (default 10)
 
 UPDATE:
@@ -110,7 +111,7 @@ OPTIMIZATION:
 
 # Installation
 
-`subfinder` requires **go1.19** to install successfully. Run the following command to install the latest version:
+`subfinder` requires **go1.20** to install successfully. Run the following command to install the latest version:
 
 ```sh
 go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
@@ -120,7 +121,7 @@ go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 
 `subfinder` can be used right after the installation, however the following services require configuring API keys to work:
 
-[BeVigil](https://bevigil.com/osint-api), [BinaryEdge](https://binaryedge.io), [BufferOver](https://tls.bufferover.run), [C99](https://api.c99.nl/), [Censys](https://censys.io), [CertSpotter](https://sslmate.com/certspotter/api/), [Chaos](https://chaos.projectdiscovery.io), [Chinaz](http://my.chinaz.com/ChinazAPI/DataCenter/MyDataApi), [DnsDB](https://api.dnsdb.info), [Fofa](https://fofa.info/static_pages/api_help), [FullHunt](https://fullhunt.io), [GitHub](https://github.com), [Intelx](https://intelx.io), [PassiveTotal](http://passivetotal.org), [quake](https://quake.360.cn), [Robtex](https://www.robtex.com/api/), [SecurityTrails](http://securitytrails.com), [Shodan](https://shodan.io), [ThreatBook](https://x.threatbook.cn/en), [VirusTotal](https://www.virustotal.com), [WhoisXML API](https://whoisxmlapi.com/), [ZoomEye](https://www.zoomeye.org), [ZoomEye API](https://api.zoomeye.org), [dnsrepo](https://dnsrepo.noc.org), [Hunter](https://hunter.qianxin.com/)
+[BeVigil](https://bevigil.com/osint-api), [BinaryEdge](https://binaryedge.io), [BufferOver](https://tls.bufferover.run), [C99](https://api.c99.nl/), [Censys](https://censys.io), [CertSpotter](https://sslmate.com/certspotter/api/), [Chaos](https://chaos.projectdiscovery.io), [Chinaz](http://my.chinaz.com/ChinazAPI/DataCenter/MyDataApi), [DnsDB](https://api.dnsdb.info), [Fofa](https://fofa.info/static_pages/api_help), [FullHunt](https://fullhunt.io), [GitHub](https://github.com), [Intelx](https://intelx.io), [PassiveTotal](http://passivetotal.org), [quake](https://quake.360.cn), [Robtex](https://www.robtex.com/api/), [SecurityTrails](http://securitytrails.com), [Shodan](https://shodan.io), [ThreatBook](https://x.threatbook.cn/en), [VirusTotal](https://www.virustotal.com), [WhoisXML API](https://whoisxmlapi.com/), [ZoomEye](https://www.zoomeye.org), [ZoomEye API](https://api.zoomeye.org), [dnsrepo](https://dnsrepo.noc.org), [Hunter](https://hunter.qianxin.com/), [Facebook](https://developers.facebook.com)
 
 You can also use the `subfinder -ls` command to display all the available sources.
 
@@ -147,9 +148,14 @@ github:
   - ghp_lkyJGU3jv1xmwk4SDXavrLDJ4dl2pSJMzj4X
   - ghp_gkUuhkIYdQPj13ifH4KA3cXRn8JD2lqir2d4
 zoomeye:
-  - zoomeye_username:zoomeye_password
+  - ZOOMEYE_USERNAME:ZOOMEYE_PASSWORD
 quake:
   - 0cb9030c-0a40-48a3-b8c4-fca28e466ba3
+facebook:
+  - APP_ID:APP_SECRET
+intelx:
+  - HOST:API_KEY
+  - 2.intelx.io:s4324-b98b-41b2-220e8-3320f6a1284d
 ```
 
 # Running Subfinder
