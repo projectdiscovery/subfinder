@@ -106,7 +106,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/projectdiscovery/goflags v0.1.16
-	github.com/projectdiscovery/retryabledns v1.0.33 // indirect
+	github.com/projectdiscovery/retryabledns v1.0.34 // indirect
 	golang.org/x/net v0.14.0 // indirect
 	golang.org/x/sys v0.11.0 // indirect
 )
