@@ -7,4 +7,5 @@ v2/subfinder
 vendor/
 .idea
 .devcontainer
+.vscode
 dist
