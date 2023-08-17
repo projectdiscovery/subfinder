@@ -93,11 +93,19 @@ var AllSources = [...]subscraping.Source{
 	// &reconcloud.Source{}, // failing due to cloudflare bot protection
 }
 
+var sourceWarnings = map[string]string{
+	"passivetotal": "New API credentials for PassiveTotal can't be generated, but existing user account credentials are still functional. Please ensure your integrations are using valid credentials.",
+}
+
 var NameSourceMap = make(map[string]subscraping.Source, len(AllSources))
 
 func init() {
 	for _, currentSource := range AllSources {
 		NameSourceMap[strings.ToLower(currentSource.Name())] = currentSource
+
+		if warning, ok := sourceWarnings[strings.ToLower(currentSource.Name())]; ok {
+			gologger.Warning().Msg(warning)
+		}
 	}
 }
 
@@ -147,6 +155,12 @@ func New(sourceNames, excludedSourceNames []string, useAllSources, useSourcesSup
 	}
 
 	gologger.Debug().Msgf(fmt.Sprintf("Selected source(s) for this search: %s", strings.Join(maps.Keys(sources), ", ")))
+
+	for _, currentSource := range sources {
+		if warning, ok := sourceWarnings[strings.ToLower(currentSource.Name())]; ok {
+			gologger.Warning().Msg(warning)
+		}
+	}
 
 	// Create the agent, insert the sources and remove the excluded sources
 	agent := &Agent{sources: maps.Values(sources)}
