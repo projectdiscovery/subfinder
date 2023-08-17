@@ -47,6 +47,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/whoisxmlapi"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeye"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeyeapi"
+	mapsutil "github.com/projectdiscovery/utils/maps"
 )
 
 var AllSources = [...]subscraping.Source{
@@ -93,19 +94,16 @@ var AllSources = [...]subscraping.Source{
 	// &reconcloud.Source{}, // failing due to cloudflare bot protection
 }
 
-var sourceWarnings = map[string]string{
-	"passivetotal": "New API credentials for PassiveTotal can't be generated, but existing user account credentials are still functional. Please ensure your integrations are using valid credentials.",
-}
+var sourceWarnings = mapsutil.NewSyncLockMap[string, string](
+	mapsutil.WithMap(mapsutil.Map[string, string]{
+		"passivetotal": "New API credentials for PassiveTotal can't be generated, but existing user account credentials are still functional. Please ensure your integrations are using valid credentials.",
+	}))
 
 var NameSourceMap = make(map[string]subscraping.Source, len(AllSources))
 
 func init() {
 	for _, currentSource := range AllSources {
 		NameSourceMap[strings.ToLower(currentSource.Name())] = currentSource
-
-		if warning, ok := sourceWarnings[strings.ToLower(currentSource.Name())]; ok {
-			gologger.Warning().Msg(warning)
-		}
 	}
 }
 
@@ -157,7 +155,7 @@ func New(sourceNames, excludedSourceNames []string, useAllSources, useSourcesSup
 	gologger.Debug().Msgf(fmt.Sprintf("Selected source(s) for this search: %s", strings.Join(maps.Keys(sources), ", ")))
 
 	for _, currentSource := range sources {
-		if warning, ok := sourceWarnings[strings.ToLower(currentSource.Name())]; ok {
+		if warning, ok := sourceWarnings.Get(strings.ToLower(currentSource.Name())); ok {
 			gologger.Warning().Msg(warning)
 		}
 	}
