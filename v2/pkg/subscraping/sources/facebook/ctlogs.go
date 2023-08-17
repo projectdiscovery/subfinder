@@ -126,11 +126,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: domain}
 				}
 			}
-			if response.Next == "" {
+			if response.Paging.Next == "" {
 				break
 			}
 			// cursor includes api key so no need to update it
-			domainsURL = updateParamInURL(domainsURL, "limit", domainsPerPage)
+			domainsURL = updateParamInURL(response.Paging.Next, "limit", domainsPerPage)
 		}
 	}()
 

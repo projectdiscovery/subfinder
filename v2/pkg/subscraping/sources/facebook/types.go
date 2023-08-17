@@ -30,5 +30,7 @@ type response struct {
 	Data []struct {
 		Domains []string `json:"domains"`
 	} `json:"data"`
-	Next string `json:"next"`
+	Paging struct {
+		Next string `json:"next"`
+	} `json:"paging"`
 }
