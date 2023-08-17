@@ -33,6 +33,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/leakix"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/netlas"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/passivetotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/quake"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rapiddns"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/riddler"
@@ -73,7 +74,7 @@ var AllSources = [...]subscraping.Source{
 	&intelx.Source{},
 	&netlas.Source{},
 	&leakix.Source{},
-	// &passivetotal.Source{}, //Redirects to MS Defender TI, no API.
+	&passivetotal.Source{},
 	&quake.Source{},
 	&rapiddns.Source{},
 	&riddler.Source{},
