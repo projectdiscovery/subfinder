@@ -11,8 +11,6 @@ import (
 	"regexp"
 	"strings"
 
-	"gopkg.in/yaml.v3"
-
 	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
@@ -75,18 +73,6 @@ type OnResultCallback func(result *resolve.HostEntry)
 // ParseOptions parses the command line flags provided by a user
 func ParseOptions() *Options {
 	logutil.DisableDefaultLogger()
-
-	// Migrate config to provider config
-	if fileutil.FileExists(defaultConfigLocation) && !fileutil.FileExists(defaultProviderConfigLocation) {
-		gologger.Info().Msgf("Detected old %s config file, trying to migrate providers to %s\n", defaultConfigLocation, defaultProviderConfigLocation)
-		if err := migrateToProviderConfig(defaultConfigLocation, defaultProviderConfigLocation); err != nil {
-			gologger.Warning().Msgf("Could not migrate providers from existing config %s to provider config %s: %s\n", defaultConfigLocation, defaultProviderConfigLocation, err)
-		} else {
-			// cleanup the existing config file post migration
-			_ = os.Remove(defaultConfigLocation)
-			gologger.Info().Msgf("Migration successful from %s to %s.\n", defaultConfigLocation, defaultProviderConfigLocation)
-		}
-	}
 
 	options := &Options{}
 
@@ -159,6 +145,12 @@ func ParseOptions() *Options {
 		os.Exit(1)
 	}
 
+	if exists := fileutil.FileExists(defaultProviderConfigLocation); !exists {
+		if err := createProviderConfigYAML(defaultProviderConfigLocation); err != nil {
+			gologger.Error().Msgf("Could not create provider config file: %s\n", err)
+		}
+	}
+
 	if options.Config != defaultConfigLocation {
 		// An empty source file is not a fatal error
 		if err := flagSet.MergeConfigFile(options.Config); err != nil && !errors.Is(err, io.EOF) {
@@ -224,49 +216,6 @@ func (options *Options) loadProvidersFrom(location string) {
 	if err := UnmarshalFrom(location); err != nil && (!strings.Contains(err.Error(), "file doesn't exist") || errors.Is(os.ErrNotExist, err)) {
 		gologger.Error().Msgf("Could not read providers from %s: %s\n", location, err)
 	}
-}
-
-func migrateToProviderConfig(defaultConfigLocation, defaultProviderLocation string) error {
-	configs, err := unMarshalToLowerCaseMap(defaultConfigLocation)
-	if err != nil {
-		return err
-	}
-
-	sourcesRequiringApiKeysMap := make(map[string][]string)
-	for _, source := range passive.AllSources {
-		if source.NeedsKey() {
-			sourceName := strings.ToLower(source.Name())
-			if sourceKeys, ok := configs[sourceName]; ok {
-				sourcesRequiringApiKeysMap[sourceName] = sourceKeys
-			} else {
-				sourcesRequiringApiKeysMap[sourceName] = []string{}
-			}
-		}
-	}
-
-	return CreateProviderConfigYAML(defaultProviderLocation, sourcesRequiringApiKeysMap)
-}
-
-func unMarshalToLowerCaseMap(defaultConfigLocation string) (map[string][]string, error) {
-	defaultConfigFile, err := os.Open(defaultConfigLocation)
-	if err != nil {
-		return nil, err
-	}
-	defer defaultConfigFile.Close()
-
-	configs := map[string][]string{}
-	if err := yaml.NewDecoder(defaultConfigFile).Decode(configs); isFatalErr(err) {
-		return nil, err
-	}
-
-	for k, v := range configs {
-		configs[strings.ToLower(k)] = v
-	}
-	return configs, nil
-}
-
-func isFatalErr(err error) bool {
-	return err != nil && !errors.Is(err, io.EOF)
 }
 
 func listSources(options *Options) {
