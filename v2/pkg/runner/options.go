@@ -145,7 +145,7 @@ func ParseOptions() *Options {
 		os.Exit(1)
 	}
 
-	if exists := fileutil.FileExists(defaultConfigLocation); !exists {
+	if exists := fileutil.FileExists(defaultProviderConfigLocation); !exists {
 		if err := createProviderConfigYAML(defaultProviderConfigLocation); err != nil {
 			gologger.Error().Msgf("Could not create provider config file: %s\n", err)
 		}
