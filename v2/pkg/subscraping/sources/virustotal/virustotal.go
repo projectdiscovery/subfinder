@@ -12,7 +12,11 @@ import (
 )
 
 type response struct {
-	Subdomains []string `json:"subdomains"`
+	Data []Object `json:"data"`
+}
+
+type Object struct {
+	Id string `json:"id"`
 }
 
 // Source is the passive scraping agent
@@ -41,7 +45,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://www.virustotal.com/vtapi/v2/domain/report?apikey=%s&domain=%s", randomApiKey, domain))
+		headers := map[string]string{"x-apikey": randomApiKey}
+
+		resp, err := session.Get(ctx, fmt.Sprintf("https://www.virustotal.com/api/v3/domains/%s/subdomains?limit=1000", domain), "", headers)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
@@ -60,8 +66,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		resp.Body.Close()
 
-		for _, subdomain := range data.Subdomains {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+		for _, subdomain := range data.Data {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain.Id}
 			s.results++
 		}
 	}()
