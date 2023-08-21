@@ -6,12 +6,12 @@ on:
       - '**.go'
       - '**.mod'
   workflow_dispatch:
-  inputs:
+    inputs:
       short:
         description: 'Use -short flag for tests'
         required: false
         type: boolean
-        default: 'false'
+        default: false
 
 jobs:  
   build:
