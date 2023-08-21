@@ -61,7 +61,7 @@ require (
 	github.com/projectdiscovery/blackrock v0.0.1 // indirect
 	github.com/projectdiscovery/cdncheck v1.0.1 // indirect
 	github.com/projectdiscovery/fastdialer v0.0.36 // indirect
-	github.com/projectdiscovery/hmap v0.0.14 // indirect
+	github.com/projectdiscovery/hmap v0.0.15 // indirect
 	github.com/projectdiscovery/networkpolicy v0.0.6 // indirect
 	github.com/quic-go/quic-go v0.37.0 // indirect
 	github.com/refraction-networking/utls v1.4.2 // indirect
