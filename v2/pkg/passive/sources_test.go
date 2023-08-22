@@ -52,6 +52,7 @@ var (
 		"facebook",
 		// "threatminer",
 		// "reconcloud",
+		"urlscan",
 	}
 
 	expectedDefaultSources = []string{
@@ -85,6 +86,7 @@ var (
 		"facebook",
 		// "threatminer",
 		// "reconcloud",
+		"urlscan",
 	}
 
 	expectedDefaultRecursiveSources = []string{
@@ -102,6 +104,7 @@ var (
 		"leakix",
 		"facebook",
 		// "reconcloud",
+		"urlscan",
 	}
 )
 
