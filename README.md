@@ -156,6 +156,8 @@ facebook:
 intelx:
   - HOST:API_KEY
   - 2.intelx.io:s4324-b98b-41b2-220e8-3320f6a1284d
+urlscan:
+  - 919b0bf8-ccd0-53f5-0685-324d3959b637
 ```
 
 # Running Subfinder
