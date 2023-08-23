@@ -259,4 +259,5 @@ var defaultRateLimits = []string{
 	// "threatminer=10/m",
 	"waybackarchive=15/m",
 	"whoisxmlapi=50/s",
+	"urlscan=120/m",
 }
