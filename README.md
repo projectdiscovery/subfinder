@@ -147,6 +147,8 @@ shodan:
 github:
   - ghp_lkyJGU3jv1xmwk4SDXavrLDJ4dl2pSJMzj4X
   - ghp_gkUuhkIYdQPj13ifH4KA3cXRn8JD2lqir2d4
+gitlab:
+  - glpat-khpkq8eifH42Kski4Uzy
 zoomeye:
   - ZOOMEYE_USERNAME:ZOOMEYE_PASSWORD
 quake:

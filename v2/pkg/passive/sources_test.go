@@ -52,6 +52,7 @@ var (
 		"facebook",
 		// "threatminer",
 		// "reconcloud",
+		"gitlab",
 	}
 
 	expectedDefaultSources = []string{

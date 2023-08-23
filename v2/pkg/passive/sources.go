@@ -28,6 +28,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fofa"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fullhunt"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/github"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/gitlab"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hackertarget"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hunter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
@@ -91,6 +92,7 @@ var AllSources = [...]subscraping.Source{
 	&facebook.Source{},
 	// &threatminer.Source{}, // failing  api
 	// &reconcloud.Source{}, // failing due to cloudflare bot protection
+	&gitlab.Source{},
 }
 
 var NameSourceMap = make(map[string]subscraping.Source, len(AllSources))

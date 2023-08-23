@@ -249,7 +249,7 @@ func userHomeDir() string {
 
 var defaultRateLimits = []string{
 	"github=30/m",
-	// "gitlab=2000/m",
+	"gitlab=10/m",
 	"fullhunt=60/m",
 	fmt.Sprintf("robtex=%d/ms", uint(math.MaxUint)),
 	"securitytrails=1/s",
