@@ -13,6 +13,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/bevigil"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/binaryedge"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/bufferover"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/builtwith"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/c99"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/censys"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/certspotter"
@@ -91,6 +92,7 @@ var AllSources = [...]subscraping.Source{
 	&facebook.Source{},
 	// &threatminer.Source{}, // failing  api
 	// &reconcloud.Source{}, // failing due to cloudflare bot protection
+	&builtwith.Source{},
 }
 
 var NameSourceMap = make(map[string]subscraping.Source, len(AllSources))

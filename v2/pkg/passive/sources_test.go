@@ -52,6 +52,7 @@ var (
 		"facebook",
 		// "threatminer",
 		// "reconcloud",
+		"builtwith",
 	}
 
 	expectedDefaultSources = []string{
@@ -85,6 +86,7 @@ var (
 		"facebook",
 		// "threatminer",
 		// "reconcloud",
+		"builtwith",
 	}
 
 	expectedDefaultRecursiveSources = []string{
