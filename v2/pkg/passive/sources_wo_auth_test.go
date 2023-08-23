@@ -20,10 +20,12 @@ import (
 
 func TestSourcesWithoutKeys(t *testing.T) {
 	ignoredSources := []string{
-		"commoncrawl",  // commoncrawl is under resourced and will likely time-out so step over it for this test https://groups.google.com/u/2/g/common-crawl/c/3QmQjFA_3y4/m/vTbhGqIBBQAJ
-		"riddler",      // Fails with 403: There might be too much traffic or a configuration error
-		"crtsh",        // Fails in GH Action (possibly IP-based ban) causing a timeout.
-		"hackertarget", // Fails in GH Action (possibly IP-based ban) but works locally
+		"commoncrawl",    // commoncrawl is under resourced and will likely time-out so step over it for this test https://groups.google.com/u/2/g/common-crawl/c/3QmQjFA_3y4/m/vTbhGqIBBQAJ
+		"riddler",        // Fails with 403: There might be too much traffic or a configuration error
+		"crtsh",          // Fails in GH Action (possibly IP-based ban) causing a timeout.
+		"hackertarget",   // Fails in GH Action (possibly IP-based ban) but works locally
+		"waybackarchive", // Fails randomly
+		"alienvault",     // 503 Service Temporarily Unavailable
 	}
 
 	domain := "hackerone.com"
