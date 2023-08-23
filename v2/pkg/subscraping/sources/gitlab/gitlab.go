@@ -131,8 +131,8 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, scope string, 
 	wg.Wait()
 }
 
-func buildUrl(scope string, t_item map[string]interface{}) string {
-	if webURL, exists := t_item["web_url"].(string); exists {
+func buildUrl(scope string, item map[string]interface{}) string {
+	if webURL, exists := item["web_url"].(string); exists {
 		switch scope {
 		case "projects", "issues", "merge_requests", "milestones", "snippet_titles", "users", "commits", "wiki_blobs":
 			return webURL
@@ -140,10 +140,10 @@ func buildUrl(scope string, t_item map[string]interface{}) string {
 	}
 
 	if scope == "blobs" {
-		if path, ok := t_item["path"].(string); ok {
+		if path, ok := item["path"].(string); ok {
 			encodedPath := strings.Replace(path, "/", "%2f", -1)
-			if projectID, ok := t_item["project_id"].(int); ok {
-				if ref, ok := t_item["ref"].(string); ok {
+			if projectID, ok := item["project_id"].(int); ok {
+				if ref, ok := item["ref"].(string); ok {
 					return fmt.Sprintf("https://gitlab.com/api/v4/projects/%d/repository/files/%s/raw?ref=%s", projectID, encodedPath, ref)
 				}
 			}
