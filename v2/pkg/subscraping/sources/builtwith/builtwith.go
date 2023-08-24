@@ -63,9 +63,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		// x, _ := io.ReadAll(resp.Body)
-		// fmt.Println(string(x))
-
 		var data response
 		err = jsoniter.NewDecoder(resp.Body).Decode(&data)
 		if err != nil {
