@@ -66,7 +66,7 @@ SOURCE:
   -s, -sources string[]           specific sources to use for discovery (-s crtsh,github). Use -ls to display all available sources.
   -recursive                      use only sources that can handle subdomains recursively (e.g. subdomain.domain.tld vs domain.tld)
   -all                            use all sources for enumeration (slow)
-  -es, -exclude-sources string[]  sources to exclude from enumeration (-es alienvault,zoomeye)
+  -es, -exclude-sources string[]  sources to exclude from enumeration (-es alienvault,zoomeyeapi)
 
 FILTER:
   -m, -match string[]   subdomain or list of subdomain to match (file or comma separated)
@@ -121,14 +121,14 @@ go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 
 `subfinder` can be used right after the installation, however the following services require configuring API keys to work:
 
-[BeVigil](https://bevigil.com/osint-api), [BinaryEdge](https://binaryedge.io), [BufferOver](https://tls.bufferover.run), [C99](https://api.c99.nl/), [Censys](https://censys.io), [CertSpotter](https://sslmate.com/certspotter/api/), [Chaos](https://chaos.projectdiscovery.io), [Chinaz](http://my.chinaz.com/ChinazAPI/DataCenter/MyDataApi), [DnsDB](https://api.dnsdb.info), [Fofa](https://fofa.info/static_pages/api_help), [FullHunt](https://fullhunt.io), [GitHub](https://github.com), [Intelx](https://intelx.io), [PassiveTotal](http://passivetotal.org), [quake](https://quake.360.cn), [Robtex](https://www.robtex.com/api/), [SecurityTrails](http://securitytrails.com), [Shodan](https://shodan.io), [ThreatBook](https://x.threatbook.cn/en), [VirusTotal](https://www.virustotal.com), [WhoisXML API](https://whoisxmlapi.com/), [ZoomEye](https://www.zoomeye.org), [ZoomEye API](https://api.zoomeye.org), [dnsrepo](https://dnsrepo.noc.org), [Hunter](https://hunter.qianxin.com/), [Facebook](https://developers.facebook.com)
+[BeVigil](https://bevigil.com/osint-api), [BinaryEdge](https://binaryedge.io), [BufferOver](https://tls.bufferover.run), [C99](https://api.c99.nl/), [Censys](https://censys.io), [CertSpotter](https://sslmate.com/certspotter/api/), [Chaos](https://chaos.projectdiscovery.io), [Chinaz](http://my.chinaz.com/ChinazAPI/DataCenter/MyDataApi), [DnsDB](https://api.dnsdb.info), [Fofa](https://fofa.info/static_pages/api_help), [FullHunt](https://fullhunt.io), [GitHub](https://github.com), [Intelx](https://intelx.io), [PassiveTotal](http://passivetotal.org), [quake](https://quake.360.cn), [Robtex](https://www.robtex.com/api/), [SecurityTrails](http://securitytrails.com), [Shodan](https://shodan.io), [ThreatBook](https://x.threatbook.cn/en), [VirusTotal](https://www.virustotal.com), [WhoisXML API](https://whoisxmlapi.com/), [ZoomEye API](https://api.zoomeye.org), [dnsrepo](https://dnsrepo.noc.org), [Hunter](https://hunter.qianxin.com/), [Facebook](https://developers.facebook.com)
 
 You can also use the `subfinder -ls` command to display all the available sources.
 
 These values are stored in the `$HOME/.config/subfinder/provider-config.yaml` file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys
 can be specified for each of these services from which one of them will be used for enumeration.
 
-Composite keys for sources like, `Censys`, `PassiveTotal`, `Fofa`, `Intellix`, `360quake` and `ZoomEye`, need to be separated with a colon (`:`).
+Composite keys for sources like, `Censys`, `PassiveTotal`, `Fofa`, `Intellix` and `360quake`, need to be separated with a colon (`:`).
 
 An example provider config file:
 
@@ -147,8 +147,8 @@ shodan:
 github:
   - ghp_lkyJGU3jv1xmwk4SDXavrLDJ4dl2pSJMzj4X
   - ghp_gkUuhkIYdQPj13ifH4KA3cXRn8JD2lqir2d4
-zoomeye:
-  - ZOOMEYE_USERNAME:ZOOMEYE_PASSWORD
+zoomeyeapi:
+  - 4f73021d-ff95-4f53-937f-83d6db719eec
 quake:
   - 0cb9030c-0a40-48a3-b8c4-fca28e466ba3
 facebook:

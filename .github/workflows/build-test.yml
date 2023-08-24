@@ -53,7 +53,6 @@ jobs:
           THREATBOOK_API_KEY: ${{secrets.THREATBOOK_API_KEY}}
           VIRUSTOTAL_API_KEY: ${{secrets.VIRUSTOTAL_API_KEY}}
           WHOISXMLAPI_API_KEY: ${{secrets.WHOISXMLAPI_API_KEY}}
-          ZOOMEYE_API_KEY: ${{secrets.ZOOMEYE_API_KEY}}
           ZOOMEYEAPI_API_KEY: ${{secrets.ZOOMEYEAPI_API_KEY}}
         uses: nick-invision/retry@v2
         with:
