@@ -6,6 +6,12 @@ on:
       - '**.go'
       - '**.mod'
   workflow_dispatch:
+    inputs:
+      short:
+        description: 'Use -short flag for tests'
+        required: false
+        type: boolean
+        default: false
 
 jobs:  
   build:
@@ -58,7 +64,7 @@ jobs:
         with:
           timeout_seconds: 360
           max_attempts: 3
-          command: cd v2; go test ./... -v
+          command: cd v2; go test ./... -v ${{ github.event.inputs.short == 'true' && '-short' || '' }}
 
       - name: Race Condition Tests
         run: go build -race ./...
