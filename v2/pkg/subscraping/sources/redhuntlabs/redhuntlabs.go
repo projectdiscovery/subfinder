@@ -57,7 +57,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: errors.New("if you get a 'limit has been reached' error, head over to https://devportal.redhuntlabs.com/ for upgrading your subscription")}
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: errors.New("if you get a 'limit has been reached' error, head over to https://devportal.redhuntlabs.com")}
 			session.DiscardHTTPResponse(resp)
 			return
 		}
