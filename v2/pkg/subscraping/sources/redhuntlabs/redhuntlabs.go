@@ -59,6 +59,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: errors.New("if you get a 'limit has been reached' error, head over to https://devportal.redhuntlabs.com")}
 			session.DiscardHTTPResponse(resp)
+			s.errors++
 			return
 		}
 		var response Response
@@ -66,6 +67,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			resp.Body.Close()
+			s.errors++
 			return
 		}
 
@@ -81,6 +83,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: errors.New("if you get a 'limit has been reached' error, head over to https://devportal.redhuntlabs.com/ for upgrading your subscription")}
 					session.DiscardHTTPResponse(resp)
+					s.errors++
 					continue
 				}
 
@@ -89,6 +92,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				if err != nil {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 					resp.Body.Close()
+					s.errors++
 					continue
 				}
 
@@ -99,12 +103,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 				for _, subdomain := range subdomains {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+					s.results++
 				}
 			}
 		} else {
 			if len(response.Subdomains) > 0 {
 				for _, subdomain := range response.Subdomains {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+					s.results++
 				}
 			}
 		}
