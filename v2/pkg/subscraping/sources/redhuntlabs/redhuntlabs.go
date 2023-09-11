@@ -4,7 +4,7 @@ package redhuntlabs
 import (
 	"context"
 	"errors"
-	"strconv"
+	"fmt"
 	"strings"
 	"time"
 
@@ -51,10 +51,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		creds := strings.Split(randomCred, ":")
 		baseUrl := creds[0] + ":" + creds[1]
-		getUrl := baseUrl + "?domain=" + domain + "&page=1&page_size=" + strconv.Itoa(pageSize)
-		resp, err := session.Get(ctx, getUrl, "", map[string]string{
-			"X-BLOBR-KEY": creds[2], "User-Agent": "subfinder",
-		})
+		requestHeaders := map[string]string{"X-BLOBR-KEY": creds[2], "User-Agent": "subfinder"}
+		getUrl := fmt.Sprintf("%s?domain=%s&page=1&page_size=%d", baseUrl, domain, pageSize)
+		resp, err := session.Get(ctx, getUrl, "", requestHeaders)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: errors.New("if you get a 'limit has been reached' error, head over to https://devportal.redhuntlabs.com")}
@@ -75,10 +74,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		if response.Metadata.ResultCount > pageSize {
 			totalPages := (response.Metadata.ResultCount + pageSize - 1) / pageSize
 			for page := 1; page <= totalPages; page++ {
-				getUrl = baseUrl + "?domain=" + domain + "&page=" + strconv.Itoa(page) + "&page_size=" + strconv.Itoa(pageSize)
-				resp, err := session.Get(ctx, getUrl, "", map[string]string{
-					"X-BLOBR-KEY": creds[2], "User-Agent": "subfinder",
-				})
+				getUrl = fmt.Sprintf("%s?domain=%s&page=%d&page_size=%d", baseUrl, domain, page, pageSize)
+				resp, err := session.Get(ctx, getUrl, "", requestHeaders)
 				if err != nil {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: errors.New("if you get a 'limit has been reached' error, head over to https://devportal.redhuntlabs.com/ for upgrading your subscription")}
@@ -87,7 +84,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					continue
 				}
 
-				var subdomains []string
 				err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 				if err != nil {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -97,21 +93,16 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				}
 
 				resp.Body.Close()
-				if len(response.Subdomains) > 0 {
-					subdomains = response.Subdomains
-				}
 
-				for _, subdomain := range subdomains {
+				for _, subdomain := range response.Subdomains {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 					s.results++
 				}
 			}
 		} else {
-			if len(response.Subdomains) > 0 {
-				for _, subdomain := range response.Subdomains {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-					s.results++
-				}
+			for _, subdomain := range response.Subdomains {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				s.results++
 			}
 		}
 

@@ -161,6 +161,8 @@ intelx:
   - 2.intelx.io:s4324-b98b-41b2-220e8-3320f6a1284d
 ```
 
+Note: RedHunt Labs's [Attack Surface Recon API](https://devportal.redhuntlabs.com/) has different API endpoints depending on the user's subscription. Make sure to add the appropriate endpoint before running any scans.
+
 # Running Subfinder
 
 To run the tool on a target, just use the following command.
