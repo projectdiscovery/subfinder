@@ -3,7 +3,6 @@ package redhuntlabs
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -55,8 +54,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		getUrl := fmt.Sprintf("%s?domain=%s&page=1&page_size=%d", baseUrl, domain, pageSize)
 		resp, err := session.Get(ctx, getUrl, "", requestHeaders)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: errors.New("if you get a 'limit has been reached' error, head over to https://devportal.redhuntlabs.com")}
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("encountered error: %v; note: if you get a 'limit has been reached' error, head over to https://devportal.redhuntlabs.com", err)}
 			session.DiscardHTTPResponse(resp)
 			s.errors++
 			return
@@ -77,11 +75,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				getUrl = fmt.Sprintf("%s?domain=%s&page=%d&page_size=%d", baseUrl, domain, page, pageSize)
 				resp, err := session.Get(ctx, getUrl, "", requestHeaders)
 				if err != nil {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: errors.New("if you get a 'limit has been reached' error, head over to https://devportal.redhuntlabs.com/ for upgrading your subscription")}
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("encountered error: %v; note: if you get a 'limit has been reached' error, head over to https://devportal.redhuntlabs.com", err)}
 					session.DiscardHTTPResponse(resp)
 					s.errors++
-					continue
+					return
 				}
 
 				err = jsoniter.NewDecoder(resp.Body).Decode(&response)
