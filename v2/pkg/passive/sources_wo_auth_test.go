@@ -19,6 +19,10 @@ import (
 )
 
 func TestSourcesWithoutKeys(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
 	ignoredSources := []string{
 		"commoncrawl",    // commoncrawl is under resourced and will likely time-out so step over it for this test https://groups.google.com/u/2/g/common-crawl/c/3QmQjFA_3y4/m/vTbhGqIBBQAJ
 		"riddler",        // Fails with 403: There might be too much traffic or a configuration error

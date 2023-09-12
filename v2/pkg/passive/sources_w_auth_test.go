@@ -19,6 +19,10 @@ import (
 )
 
 func TestSourcesWithKeys(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
 	domain := "hackerone.com"
 	timeout := 60
 

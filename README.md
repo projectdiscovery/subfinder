@@ -66,7 +66,7 @@ SOURCE:
   -s, -sources string[]           specific sources to use for discovery (-s crtsh,github). Use -ls to display all available sources.
   -recursive                      use only sources that can handle subdomains recursively (e.g. subdomain.domain.tld vs domain.tld)
   -all                            use all sources for enumeration (slow)
-  -es, -exclude-sources string[]  sources to exclude from enumeration (-es alienvault,zoomeye)
+  -es, -exclude-sources string[]  sources to exclude from enumeration (-es alienvault,zoomeyeapi)
 
 FILTER:
   -m, -match string[]   subdomain or list of subdomain to match (file or comma separated)
@@ -128,7 +128,7 @@ You can also use the `subfinder -ls` command to display all the available source
 These values are stored in the `$HOME/.config/subfinder/provider-config.yaml` file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys
 can be specified for each of these services from which one of them will be used for enumeration.
 
-Composite keys for sources like, `Censys`, `PassiveTotal`, `Fofa`, `Intellix`, `360quake` and `ZoomEye`, need to be separated with a colon (`:`).
+Composite keys for sources like, `Censys`, `PassiveTotal`, `Fofa`, `Intellix` and `360quake`, need to be separated with a colon (`:`).
 
 An example provider config file:
 
@@ -141,14 +141,17 @@ censys:
 certspotter: []
 passivetotal:
   - sample-email@user.com:sample_password
+redhuntlabs:
+  - ENDPOINT:API_TOKEN
+  - https://reconapi.redhuntlabs.com/community/v1/domains/subdomains:joEPzJJp2AuOCw7teAj63HYrPGnsxuPQ
 securitytrails: []
 shodan:
   - AAAAClP1bJJSRMEYJazgwhJKrggRwKA
 github:
   - ghp_lkyJGU3jv1xmwk4SDXavrLDJ4dl2pSJMzj4X
   - ghp_gkUuhkIYdQPj13ifH4KA3cXRn8JD2lqir2d4
-zoomeye:
-  - ZOOMEYE_USERNAME:ZOOMEYE_PASSWORD
+zoomeyeapi:
+  - 4f73021d-ff95-4f53-937f-83d6db719eec
 quake:
   - 0cb9030c-0a40-48a3-b8c4-fca28e466ba3
 facebook:
@@ -157,6 +160,8 @@ intelx:
   - HOST:API_KEY
   - 2.intelx.io:s4324-b98b-41b2-220e8-3320f6a1284d
 ```
+
+Note: RedHunt Labs's [Attack Surface Recon API](https://devportal.redhuntlabs.com/) has different API endpoints depending on the user's subscription. Make sure to add the appropriate endpoint before running any scans.
 
 # Running Subfinder
 

@@ -18,6 +18,10 @@ var (
 )
 
 func TestFacebookSource(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
 	updateWithEnv(&fb_API_ID)
 	updateWithEnv(&fb_API_SECRET)
 	if generic.EqualsAny("", fb_API_ID, fb_API_SECRET) {

@@ -12,7 +12,16 @@ import (
 )
 
 type response struct {
-	Subdomains []string `json:"subdomains"`
+	Data []Object `json:"data"`
+	Meta Meta     `json:"meta"`
+}
+
+type Object struct {
+	Id string `json:"id"`
+}
+
+type Meta struct {
+	Cursor string `json:"cursor"`
 }
 
 // Source is the passive scraping agent
@@ -40,29 +49,40 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		if randomApiKey == "" {
 			return
 		}
+		var url string = fmt.Sprintf("https://www.virustotal.com/api/v3/domains/%s/subdomains?limit=1000", domain)
+		var hasMore bool = true
+		var cursor string = ""
+		for hasMore {
+			if cursor != "" {
+				url = fmt.Sprintf("%s&cursor=%s", url, cursor)
+			}
+			resp, err := session.Get(ctx, url, "", map[string]string{"x-apikey": randomApiKey})
+			if err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
+				session.DiscardHTTPResponse(resp)
+				return
+			}
 
-		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://www.virustotal.com/vtapi/v2/domain/report?apikey=%s&domain=%s", randomApiKey, domain))
-		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
-			session.DiscardHTTPResponse(resp)
-			return
-		}
+			var data response
+			err = jsoniter.NewDecoder(resp.Body).Decode(&data)
+			if err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
+				resp.Body.Close()
+				return
+			}
 
-		var data response
-		err = jsoniter.NewDecoder(resp.Body).Decode(&data)
-		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
 			resp.Body.Close()
-			return
-		}
 
-		resp.Body.Close()
-
-		for _, subdomain := range data.Subdomains {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-			s.results++
+			for _, subdomain := range data.Data {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain.Id}
+				s.results++
+			}
+			cursor = data.Meta.Cursor
+			if cursor == "" {
+				hasMore = false
+			}
 		}
 	}()
 

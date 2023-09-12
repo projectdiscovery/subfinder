@@ -150,8 +150,14 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 	}
 
 	if r.options.ResultCallback != nil {
-		for _, v := range uniqueMap {
-			r.options.ResultCallback(&v)
+		if r.options.RemoveWildcard {
+			for host, result := range foundResults {
+				r.options.ResultCallback(&resolve.HostEntry{Domain: host, Host: result.Host, Source: result.Source})
+			}
+		} else {
+			for _, v := range uniqueMap {
+				r.options.ResultCallback(&v)
+			}
 		}
 	}
 	gologger.Info().Msgf("Found %d subdomains for %s in %s\n", numberOfSubDomains, domain, duration)
