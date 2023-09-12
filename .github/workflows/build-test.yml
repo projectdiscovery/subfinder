@@ -6,6 +6,12 @@ on:
       - '**.go'
       - '**.mod'
   workflow_dispatch:
+    inputs:
+      short:
+        description: 'Use -short flag for tests'
+        required: false
+        type: boolean
+        default: false
 
 jobs:  
   build:
@@ -53,13 +59,12 @@ jobs:
           THREATBOOK_API_KEY: ${{secrets.THREATBOOK_API_KEY}}
           VIRUSTOTAL_API_KEY: ${{secrets.VIRUSTOTAL_API_KEY}}
           WHOISXMLAPI_API_KEY: ${{secrets.WHOISXMLAPI_API_KEY}}
-          ZOOMEYE_API_KEY: ${{secrets.ZOOMEYE_API_KEY}}
           ZOOMEYEAPI_API_KEY: ${{secrets.ZOOMEYEAPI_API_KEY}}
         uses: nick-invision/retry@v2
         with:
           timeout_seconds: 360
           max_attempts: 3
-          command: cd v2; go test ./... -v
+          command: cd v2; go test ./... -v ${{ github.event.inputs.short == 'true' && '-short' || '' }}
 
       - name: Race Condition Tests
         run: go build -race ./...

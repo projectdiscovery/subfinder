@@ -46,7 +46,6 @@ var (
 		"virustotal",
 		"waybackarchive",
 		"whoisxmlapi",
-		"zoomeye",
 		"zoomeyeapi",
 		"hunter",
 		"leakix",

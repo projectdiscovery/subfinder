@@ -30,13 +30,21 @@ func GetConfigDirectory() (string, error) {
 	return config, nil
 }
 
-// CreateProviderConfigYAML marshals the input map to the given location on the disk
-func CreateProviderConfigYAML(configFilePath string, sourcesRequiringApiKeysMap map[string][]string) error {
+// createProviderConfigYAML marshals the input map to the given location on the disk
+func createProviderConfigYAML(configFilePath string) error {
 	configFile, err := os.Create(configFilePath)
 	if err != nil {
 		return err
 	}
 	defer configFile.Close()
+
+	sourcesRequiringApiKeysMap := make(map[string][]string)
+	for _, source := range passive.AllSources {
+		if source.NeedsKey() {
+			sourceName := strings.ToLower(source.Name())
+			sourcesRequiringApiKeysMap[sourceName] = []string{}
+		}
+	}
 
 	return yaml.NewEncoder(configFile).Encode(sourcesRequiringApiKeysMap)
 }
