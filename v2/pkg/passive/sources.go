@@ -46,6 +46,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/whoisxmlapi"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeyeapi"
+	mapsutil "github.com/projectdiscovery/utils/maps"
 )
 
 var AllSources = [...]subscraping.Source{
@@ -90,6 +91,11 @@ var AllSources = [...]subscraping.Source{
 	// &threatminer.Source{}, // failing  api
 	// &reconcloud.Source{}, // failing due to cloudflare bot protection
 }
+
+var sourceWarnings = mapsutil.NewSyncLockMap[string, string](
+	mapsutil.WithMap(mapsutil.Map[string, string]{
+		"passivetotal": "New API credentials for PassiveTotal can't be generated, but existing user account credentials are still functional. Please ensure your integrations are using valid credentials.",
+	}))
 
 var NameSourceMap = make(map[string]subscraping.Source, len(AllSources))
 
@@ -145,6 +151,12 @@ func New(sourceNames, excludedSourceNames []string, useAllSources, useSourcesSup
 	}
 
 	gologger.Debug().Msgf(fmt.Sprintf("Selected source(s) for this search: %s", strings.Join(maps.Keys(sources), ", ")))
+
+	for _, currentSource := range sources {
+		if warning, ok := sourceWarnings.Get(strings.ToLower(currentSource.Name())); ok {
+			gologger.Warning().Msg(warning)
+		}
+	}
 
 	// Create the agent, insert the sources and remove the excluded sources
 	agent := &Agent{sources: maps.Values(sources)}
