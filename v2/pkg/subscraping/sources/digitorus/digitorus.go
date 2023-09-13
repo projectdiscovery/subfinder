@@ -49,7 +49,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			if line == "" {
 				continue
 			}
-			subdomains := session.Extractor.FindAllString(line, -1)
+			subdomains := session.Extractor.Extract(line)
 			for _, subdomain := range subdomains {
 				results <- subscraping.Result{
 					Source: s.Name(), Type: subscraping.Subdomain, Value: strings.TrimPrefix(subdomain, "."),

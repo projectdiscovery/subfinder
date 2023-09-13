@@ -142,14 +142,15 @@ func (s *Source) getSubdomains(ctx context.Context, searchURL, domain string, se
 					continue
 				}
 				line, _ = url.QueryUnescape(line)
-				subdomain := session.Extractor.FindString(line)
-				if subdomain != "" {
-					// fix for triple encoded URL
-					subdomain = strings.ToLower(subdomain)
-					subdomain = strings.TrimPrefix(subdomain, "25")
-					subdomain = strings.TrimPrefix(subdomain, "2f")
+				for _, subdomain := range session.Extractor.Extract(line) {
+					if subdomain != "" {
+						// fix for triple encoded URL
+						subdomain = strings.ToLower(subdomain)
+						subdomain = strings.TrimPrefix(subdomain, "25")
+						subdomain = strings.TrimPrefix(subdomain, "2f")
 
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+						results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+					}
 				}
 			}
 			resp.Body.Close()

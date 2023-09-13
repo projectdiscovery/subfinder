@@ -103,7 +103,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		for _, subdomain := range session.Extractor.FindAllString(data, -1) {
+		for _, subdomain := range session.Extractor.Extract(data) {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 			s.results++
 		}
