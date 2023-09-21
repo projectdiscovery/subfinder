@@ -95,7 +95,7 @@ func (s *Source) getData(ctx context.Context, sourceURL string, apiKey string, s
 	}
 
 	for _, subdomain := range subdomains {
-		for _, value := range session.Extractor.FindAllString(subdomain, -1) {
+		for _, value := range session.Extractor.Extract(subdomain) {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}
 		}
 		s.results++
