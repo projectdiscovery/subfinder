@@ -97,6 +97,7 @@ var (
 		"certspotter",
 		"crtsh",
 		"dnsdumpster",
+		"dnsdb",
 		"digitorus",
 		"hackertarget",
 		"passivetotal",
