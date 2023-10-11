@@ -6,7 +6,6 @@ import (
 	"io"
 	"math"
 	"os"
-	"os/user"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -16,13 +15,14 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
 	fileutil "github.com/projectdiscovery/utils/file"
+	folderutil "github.com/projectdiscovery/utils/folder"
 	logutil "github.com/projectdiscovery/utils/log"
 	updateutils "github.com/projectdiscovery/utils/update"
 )
 
 var (
-	defaultConfigLocation         = filepath.Join(userHomeDir(), ".config/subfinder/config.yaml")
-	defaultProviderConfigLocation = filepath.Join(userHomeDir(), ".config/subfinder/provider-config.yaml")
+	defaultConfigLocation         = filepath.Join(folderutil.AppConfigDirOrDefault(".", "subfinder"), "config.yaml")
+	defaultProviderConfigLocation = filepath.Join(folderutil.AppConfigDirOrDefault(".", "subfinder"), "provider-config.yaml")
 )
 
 // Options contains the configuration options for tuning
@@ -237,14 +237,6 @@ func (options *Options) preProcessOptions() {
 	for i, domain := range options.Domain {
 		options.Domain[i], _ = sanitize(domain)
 	}
-}
-
-func userHomeDir() string {
-	usr, err := user.Current()
-	if err != nil {
-		gologger.Fatal().Msgf("Could not get user home directory: %s\n", err)
-	}
-	return usr.HomeDir
 }
 
 var defaultRateLimits = []string{
