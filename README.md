@@ -89,8 +89,8 @@ OUTPUT:
   -oI, -ip                 include host IP in output (-active only)
 
 CONFIGURATION:
-  -config string                flag config file (default "$HOME/.config/subfinder/config.yaml")
-  -pc, -provider-config string  provider config file (default "$HOME/.config/subfinder/provider-config.yaml")
+  -config string                flag config file (default "$CONFIG/subfinder/config.yaml")
+  -pc, -provider-config string  provider config file (default "$CONFIG/subfinder/provider-config.yaml")
   -r string[]                   comma separated list of resolvers to use
   -rL, -rlist string            file containing list of resolvers to use
   -nW, -active                  display active subdomains only
@@ -125,7 +125,7 @@ go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 
 You can also use the `subfinder -ls` command to display all the available sources.
 
-These values are stored in the `$HOME/.config/subfinder/provider-config.yaml` file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys
+These values are stored in the `$CONFIG/subfinder/provider-config.yaml` file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys
 can be specified for each of these services from which one of them will be used for enumeration.
 
 Composite keys for sources like, `Censys`, `PassiveTotal`, `Fofa`, `Intellix` and `360quake`, need to be separated with a colon (`:`).
@@ -241,7 +241,7 @@ docker run projectdiscovery/subfinder:latest -d hackerone.com
 Running `subfinder` using the docker image, with a local config file:
 
 ```sh
-docker run -v $HOME/.config/subfinder:/root/.config/subfinder -t projectdiscovery/subfinder -d hackerone.com
+docker run -v $CONFIG/subfinder:/root/.config/subfinder -t projectdiscovery/subfinder -d hackerone.com
 ```
 
 </td>

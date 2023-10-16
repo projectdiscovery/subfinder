@@ -21,8 +21,9 @@ import (
 )
 
 var (
-	defaultConfigLocation         = filepath.Join(folderutil.AppConfigDirOrDefault(".", "subfinder"), "config.yaml")
-	defaultProviderConfigLocation = filepath.Join(folderutil.AppConfigDirOrDefault(".", "subfinder"), "provider-config.yaml")
+	configDir                     = folderutil.AppConfigDirOrDefault(".", "subfinder")
+	defaultConfigLocation         = filepath.Join(configDir, "config.yaml")
+	defaultProviderConfigLocation = filepath.Join(configDir, "provider-config.yaml")
 )
 
 // Options contains the configuration options for tuning
@@ -169,6 +170,7 @@ func ParseOptions() *Options {
 
 	if options.Version {
 		gologger.Info().Msgf("Current Version: %s\n", version)
+		gologger.Info().Msgf("Subfinder Config Directory: %s", configDir)
 		os.Exit(0)
 	}
 
