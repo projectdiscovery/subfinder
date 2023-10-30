@@ -11,25 +11,6 @@ import (
 	fileutil "github.com/projectdiscovery/utils/file"
 )
 
-// GetConfigDirectory gets the subfinder config directory for a user
-func GetConfigDirectory() (string, error) {
-	var config string
-
-	directory, err := os.UserHomeDir()
-	if err != nil {
-		return config, err
-	}
-	config = directory + "/.config/subfinder"
-
-	// Create All directory for subfinder even if they exist
-	err = os.MkdirAll(config, os.ModePerm)
-	if err != nil {
-		return config, err
-	}
-
-	return config, nil
-}
-
 // createProviderConfigYAML marshals the input map to the given location on the disk
 func createProviderConfigYAML(configFilePath string) error {
 	configFile, err := os.Create(configFilePath)
