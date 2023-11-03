@@ -45,7 +45,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			if line == "" {
 				continue
 			}
-			match := session.Extractor.FindAllString(line, -1)
+			match := session.Extractor.Extract(line)
 			for _, subdomain := range match {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 				s.results++

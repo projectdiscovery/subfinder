@@ -48,8 +48,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				continue
 			}
 			line, _ = url.QueryUnescape(line)
-			subdomain := session.Extractor.FindString(line)
-			if subdomain != "" {
+			for _, subdomain := range session.Extractor.Extract(line) {
 				// fix for triple encoded URL
 				subdomain = strings.ToLower(subdomain)
 				subdomain = strings.TrimPrefix(subdomain, "25")

@@ -111,10 +111,11 @@ func (s *Source) getSubdomainsFromSQL(domain string, session *subscraping.Sessio
 
 		count++
 		for _, subdomain := range strings.Split(data, "\n") {
-			value := session.Extractor.FindString(subdomain)
-			if value != "" {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}
-				s.results++
+			for _, value := range session.Extractor.Extract(subdomain) {
+				if value != "" {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}
+					s.results++
+				}
 			}
 		}
 	}
@@ -143,11 +144,12 @@ func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, sessi
 
 	for _, subdomain := range subdomains {
 		for _, sub := range strings.Split(subdomain.NameValue, "\n") {
-			value := session.Extractor.FindString(sub)
-			if value != "" {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}
+			for _, value := range session.Extractor.Extract(sub) {
+				if value != "" {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}
+				}
+				s.results++
 			}
-			s.results++
 		}
 	}
 

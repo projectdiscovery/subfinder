@@ -8,12 +8,12 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/lib/pq v1.10.9
 	github.com/projectdiscovery/chaos-client v0.5.1
-	github.com/projectdiscovery/dnsx v1.1.4
+	github.com/projectdiscovery/dnsx v1.1.5
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/gologger v1.1.11
-	github.com/projectdiscovery/ratelimit v0.0.9
-	github.com/projectdiscovery/retryablehttp-go v1.0.26
-	github.com/projectdiscovery/utils v0.0.54
+	github.com/projectdiscovery/ratelimit v0.0.13
+	github.com/projectdiscovery/retryablehttp-go v1.0.33
+	github.com/projectdiscovery/utils v0.0.60
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.8.4
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
@@ -35,6 +35,7 @@ require (
 	github.com/charmbracelet/glamour v0.6.0 // indirect
 	github.com/cheggaaa/pb/v3 v3.1.4 // indirect
 	github.com/cloudflare/circl v1.3.3 // indirect
+	github.com/denisbrodbeck/machineid v1.0.1 // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.8.1 // indirect
 	github.com/dsnet/compress v0.0.1 // indirect
@@ -60,21 +61,21 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
 	github.com/projectdiscovery/blackrock v0.0.1 // indirect
-	github.com/projectdiscovery/cdncheck v1.0.1 // indirect
-	github.com/projectdiscovery/fastdialer v0.0.37 // indirect
-	github.com/projectdiscovery/hmap v0.0.18 // indirect
+	github.com/projectdiscovery/cdncheck v1.0.9 // indirect
+	github.com/projectdiscovery/fastdialer v0.0.42 // indirect
+	github.com/projectdiscovery/hmap v0.0.23 // indirect
 	github.com/projectdiscovery/networkpolicy v0.0.6 // indirect
 	github.com/quic-go/quic-go v0.37.4 // indirect
-	github.com/refraction-networking/utls v1.5.2 // indirect
+	github.com/refraction-networking/utls v1.5.4 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
 	github.com/syndtr/goleveldb v1.0.0 // indirect
-	github.com/tidwall/btree v1.4.3 // indirect
+	github.com/tidwall/btree v1.6.0 // indirect
 	github.com/tidwall/buntdb v1.3.0 // indirect
-	github.com/tidwall/gjson v1.14.3 // indirect
+	github.com/tidwall/gjson v1.14.4 // indirect
 	github.com/tidwall/grect v0.1.4 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
-	github.com/tidwall/pretty v1.2.0 // indirect
+	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/rtred v0.1.2 // indirect
 	github.com/tidwall/tinyqueue v0.1.1 // indirect
 	github.com/ulikunitz/xz v0.5.11 // indirect
@@ -92,7 +93,7 @@ require (
 	golang.org/x/mod v0.12.0 // indirect
 	golang.org/x/oauth2 v0.11.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
-	golang.org/x/tools v0.11.0 // indirect
+	golang.org/x/tools v0.13.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/djherbis/times.v1 v1.3.0 // indirect
@@ -102,13 +103,13 @@ require (
 	github.com/cnf/structhash v0.0.0-20201127153200-e1b16c1ebc08 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
-	github.com/miekg/dns v1.1.55 // indirect
+	github.com/miekg/dns v1.1.56 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/projectdiscovery/goflags v0.1.20
-	github.com/projectdiscovery/retryabledns v1.0.35 // indirect
+	github.com/projectdiscovery/goflags v0.1.25
+	github.com/projectdiscovery/retryabledns v1.0.40 // indirect
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 )
