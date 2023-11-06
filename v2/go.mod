@@ -11,7 +11,7 @@ require (
 	github.com/projectdiscovery/dnsx v1.1.5
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/gologger v1.1.11
-	github.com/projectdiscovery/ratelimit v0.0.13
+	github.com/projectdiscovery/ratelimit v0.0.14
 	github.com/projectdiscovery/retryablehttp-go v1.0.33
 	github.com/projectdiscovery/utils v0.0.62
 	github.com/rs/xid v1.5.0
