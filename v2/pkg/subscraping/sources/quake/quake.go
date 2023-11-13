@@ -58,7 +58,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 
 		// quake api doc https://quake.360.cn/quake/#/help
-		var requestBody = []byte(fmt.Sprintf(`{"query":"domain: *.%s", "include":["service.http.host"], "latest": true, "start":0, "size":500}`, domain))
+		var requestBody = []byte(fmt.Sprintf(`{"query":"domain: %s", "include":["service.http.host"], "latest": true, "start":0, "size":500}`, domain))
 		resp, err := session.Post(ctx, "https://quake.360.net/api/v3/search/quake_service", "", map[string]string{
 			"Content-Type": "application/json", "X-QuakeToken": randomApiKey,
 		}, bytes.NewReader(requestBody))
