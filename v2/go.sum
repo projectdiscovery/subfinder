@@ -160,8 +160,8 @@ github.com/projectdiscovery/cdncheck v1.0.9 h1:BS15gzj9gb5AVSKqTDzPamfSgStu7nJQO
 github.com/projectdiscovery/cdncheck v1.0.9/go.mod h1:18SSl1w7rMj53CGeRIZTbDoa286a6xZIxGbaiEo4Fxs=
 github.com/projectdiscovery/chaos-client v0.5.1 h1:NFxU7cxBY7AL1OKxQQRLRvJrkXlV+SP8zv7VEkVVJ7U=
 github.com/projectdiscovery/chaos-client v0.5.1/go.mod h1:uU7X/hVEKpOP8OZ8meDAAetMZ4Up0lz9oCcPGe86Yx4=
-github.com/projectdiscovery/dnsx v1.1.5 h1:9pm4PfmVaroonw0dxPZPWIHpFD21hDI8KLu9wotYO+0=
-github.com/projectdiscovery/dnsx v1.1.5/go.mod h1:k7Zx9XV4umvI+m86/+F8bfUAuBBcRvSzYsEsOGhB+Fc=
+github.com/projectdiscovery/dnsx v1.1.6 h1:QdKVKC0n/fpgaB4q3s6A2wn+qqg75CY0XxNkU9sVjws=
+github.com/projectdiscovery/dnsx v1.1.6/go.mod h1:9rkLQzJHxQ26qiD1PhfoJDrhqCVN8lKLsxiAON1uDxM=
 github.com/projectdiscovery/fastdialer v0.0.43 h1:tL1Ivcx4XVJ5hjPA0OoXy8P3TB5paPTnRjkOm/DSLNs=
 github.com/projectdiscovery/fastdialer v0.0.43/go.mod h1:pPYldB5+HwlRNB69vHOUBx/Uk0NBcSw1y4z3UZyPOiU=
 github.com/projectdiscovery/fdmax v0.0.4 h1:K9tIl5MUZrEMzjvwn/G4drsHms2aufTn1xUdeVcmhmc=
@@ -176,8 +176,8 @@ github.com/projectdiscovery/networkpolicy v0.0.6 h1:yDvm0XCrS9HeemRrBS+J+22surzV
 github.com/projectdiscovery/networkpolicy v0.0.6/go.mod h1:8HJQ/33Pi7v3a3MRWIQGXzpj+zHw2d60TysEL4qdoQk=
 github.com/projectdiscovery/ratelimit v0.0.14 h1:kzDU/nupb6yHME5qSJ4bSVb34Hixg2tDP78C2mA+kxY=
 github.com/projectdiscovery/ratelimit v0.0.14/go.mod h1:MLQg9jXu4yfxtwjP7pCZWOst15M9hoOphU79i+7fh4c=
-github.com/projectdiscovery/retryabledns v1.0.40 h1:BasP4PSL9oRGghJNiRNQGd5EYM/gySoZQH0i7WKFEsg=
-github.com/projectdiscovery/retryabledns v1.0.40/go.mod h1:BI0AsUmaWF8k/AjEhDGRekMwqda6IDLI43misQuTdYQ=
+github.com/projectdiscovery/retryabledns v1.0.41 h1:08EKCoKy+Vusxa84ZMN/KLF4CvwfHB+GYbZUWD7tJo0=
+github.com/projectdiscovery/retryabledns v1.0.41/go.mod h1:AnMPvBks/ZJLcD9wIPMJ/Mu2eEv0mmShiz7oCTwuUns=
 github.com/projectdiscovery/retryablehttp-go v1.0.33 h1:ysYnfUOEx4K/gC3SRYT7xRQYP/tqHwnSpG5SuC/34qU=
 github.com/projectdiscovery/retryablehttp-go v1.0.33/go.mod h1:zBlSJQabyxnX8giwjWOPsMhKPacYdMhVoy1XSPPGXIg=
 github.com/projectdiscovery/utils v0.0.63 h1:J4iRAi3kTTdwiZ2R1reVOdADKe4Umkh9Ebc0fHQttkQ=
