@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -84,6 +85,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			for _, subdomain := range response.Results {
 				if strings.HasPrefix(strings.ToLower(subdomain), "http://") || strings.HasPrefix(strings.ToLower(subdomain), "https://") {
 					subdomain = subdomain[strings.Index(subdomain, "//")+2:]
+				}
+				re := regexp.MustCompile(`:\d+$`)
+				if re.MatchString(subdomain) {
+					subdomain = re.ReplaceAllString(subdomain, "")
 				}
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 				s.results++
