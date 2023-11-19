@@ -89,8 +89,8 @@ OUTPUT:
   -oI, -ip                 include host IP in output (-active only)
 
 CONFIGURATION:
-  -config string                flag config file (default "$HOME/.config/subfinder/config.yaml")
-  -pc, -provider-config string  provider config file (default "$HOME/.config/subfinder/provider-config.yaml")
+  -config string                flag config file (default "$CONFIG/subfinder/config.yaml")
+  -pc, -provider-config string  provider config file (default "$CONFIG/subfinder/provider-config.yaml")
   -r string[]                   comma separated list of resolvers to use
   -rL, -rlist string            file containing list of resolvers to use
   -nW, -active                  display active subdomains only
@@ -121,11 +121,11 @@ go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 
 `subfinder` can be used right after the installation, however the following services require configuring API keys to work:
 
-[BeVigil](https://bevigil.com/osint-api), [BinaryEdge](https://binaryedge.io), [BufferOver](https://tls.bufferover.run), [C99](https://api.c99.nl/), [Censys](https://censys.io), [CertSpotter](https://sslmate.com/certspotter/api/), [Chaos](https://chaos.projectdiscovery.io), [Chinaz](http://my.chinaz.com/ChinazAPI/DataCenter/MyDataApi), [DnsDB](https://api.dnsdb.info), [Fofa](https://fofa.info/static_pages/api_help), [FullHunt](https://fullhunt.io), [GitHub](https://github.com), [Intelx](https://intelx.io), [PassiveTotal](http://passivetotal.org), [quake](https://quake.360.cn), [Robtex](https://www.robtex.com/api/), [SecurityTrails](http://securitytrails.com), [Shodan](https://shodan.io), [ThreatBook](https://x.threatbook.cn/en), [VirusTotal](https://www.virustotal.com), [WhoisXML API](https://whoisxmlapi.com/), [ZoomEye](https://www.zoomeye.org), [ZoomEye API](https://api.zoomeye.org), [dnsrepo](https://dnsrepo.noc.org), [Hunter](https://hunter.qianxin.com/), [Facebook](https://developers.facebook.com), [BuiltWith](https://api.builtwith.com/domain-api)
+[BeVigil](https://bevigil.com/osint-api), [BinaryEdge](https://binaryedge.io), [BufferOver](https://tls.bufferover.run), [C99](https://api.c99.nl/), [Censys](https://censys.io), [CertSpotter](https://sslmate.com/certspotter/api/), [Chaos](https://chaos.projectdiscovery.io), [Chinaz](http://my.chinaz.com/ChinazAPI/DataCenter/MyDataApi), [DNSDB](https://api.dnsdb.info), [Fofa](https://fofa.info/static_pages/api_help), [FullHunt](https://fullhunt.io), [GitHub](https://github.com), [Intelx](https://intelx.io), [PassiveTotal](http://passivetotal.org), [quake](https://quake.360.cn), [Robtex](https://www.robtex.com/api/), [SecurityTrails](http://securitytrails.com), [Shodan](https://shodan.io), [ThreatBook](https://x.threatbook.cn/en), [VirusTotal](https://www.virustotal.com), [WhoisXML API](https://whoisxmlapi.com/), [ZoomEye](https://www.zoomeye.org), [ZoomEye API](https://api.zoomeye.org), [dnsrepo](https://dnsrepo.noc.org), [Hunter](https://hunter.qianxin.com/), [Facebook](https://developers.facebook.com), [BuiltWith](https://api.builtwith.com/domain-api)
 
 You can also use the `subfinder -ls` command to display all the available sources.
 
-These values are stored in the `$HOME/.config/subfinder/provider-config.yaml` file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys
+These values are stored in the `$CONFIG/subfinder/provider-config.yaml` file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys
 can be specified for each of these services from which one of them will be used for enumeration.
 
 Composite keys for sources like, `Censys`, `PassiveTotal`, `Fofa`, `Intellix` and `360quake`, need to be separated with a colon (`:`).
@@ -241,7 +241,7 @@ docker run projectdiscovery/subfinder:latest -d hackerone.com
 Running `subfinder` using the docker image, with a local config file:
 
 ```sh
-docker run -v $HOME/.config/subfinder:/root/.config/subfinder -t projectdiscovery/subfinder -d hackerone.com
+docker run -v $CONFIG/subfinder:/root/.config/subfinder -t projectdiscovery/subfinder -d hackerone.com
 ```
 
 </td>
