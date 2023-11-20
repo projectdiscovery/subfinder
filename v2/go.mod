@@ -2,8 +2,6 @@ module github.com/projectdiscovery/subfinder/v2
 
 go 1.21
 
-toolchain go1.21.3
-
 require (
 	github.com/corpix/uarand v0.2.0
 	github.com/hako/durafmt v0.0.0-20210316092057-3a2c319c1acd
