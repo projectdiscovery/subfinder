@@ -1,6 +1,8 @@
 module github.com/projectdiscovery/subfinder/v2
 
-go 1.20
+go 1.21
+
+toolchain go1.21.3
 
 require (
 	github.com/corpix/uarand v0.2.0
@@ -13,7 +15,7 @@ require (
 	github.com/projectdiscovery/gologger v1.1.11
 	github.com/projectdiscovery/ratelimit v0.0.16
 	github.com/projectdiscovery/retryablehttp-go v1.0.36
-	github.com/projectdiscovery/utils v0.0.63
+	github.com/projectdiscovery/utils v0.0.64
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.8.4
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
