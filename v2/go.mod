@@ -1,6 +1,6 @@
 module github.com/projectdiscovery/subfinder/v2
 
-go 1.20
+go 1.21
 
 require (
 	github.com/corpix/uarand v0.2.0
@@ -11,9 +11,9 @@ require (
 	github.com/projectdiscovery/dnsx v1.1.6
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/gologger v1.1.11
-	github.com/projectdiscovery/ratelimit v0.0.15
-	github.com/projectdiscovery/retryablehttp-go v1.0.35
-	github.com/projectdiscovery/utils v0.0.63
+	github.com/projectdiscovery/ratelimit v0.0.16
+	github.com/projectdiscovery/retryablehttp-go v1.0.36
+	github.com/projectdiscovery/utils v0.0.64
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.8.4
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
@@ -62,7 +62,7 @@ require (
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
 	github.com/projectdiscovery/blackrock v0.0.1 // indirect
 	github.com/projectdiscovery/cdncheck v1.0.9 // indirect
-	github.com/projectdiscovery/fastdialer v0.0.44 // indirect
+	github.com/projectdiscovery/fastdialer v0.0.45 // indirect
 	github.com/projectdiscovery/hmap v0.0.25 // indirect
 	github.com/projectdiscovery/networkpolicy v0.0.6 // indirect
 	github.com/quic-go/quic-go v0.37.4 // indirect
@@ -108,8 +108,8 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/projectdiscovery/goflags v0.1.27
-	github.com/projectdiscovery/retryabledns v1.0.42 // indirect
+	github.com/projectdiscovery/goflags v0.1.28
+	github.com/projectdiscovery/retryabledns v1.0.43 // indirect
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 )
