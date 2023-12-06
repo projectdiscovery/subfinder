@@ -114,7 +114,7 @@ func (r *Runner) EnumerateMultipleDomainsWithCtx(ctx context.Context, reader io.
 	scanner := bufio.NewScanner(reader)
 	ip, _ := regexp.Compile(`^([0-9\.]+$)`)
 	for scanner.Scan() {
-		domain, err := sanitize(scanner.Text())
+		domain, err := sanitize(normalizeLowercase(scanner.Text()))
 		isIp := ip.MatchString(domain)
 		if errors.Is(err, ErrEmptyInput) || (r.options.ExcludeIps && isIp) {
 			continue

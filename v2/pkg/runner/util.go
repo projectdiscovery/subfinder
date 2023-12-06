@@ -5,11 +5,12 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/projectdiscovery/utils/file"
+	fileutil "github.com/projectdiscovery/utils/file"
 )
 
 var (
 	ErrEmptyInput = errors.New("empty data")
+	quotes        = []rune{'"', '\'', '`'}
 )
 
 func loadFromFile(file string) ([]string, error) {
@@ -35,4 +36,8 @@ func sanitize(data string) (string, error) {
 		return "", ErrEmptyInput
 	}
 	return data, nil
+}
+
+func normalizeLowercase(s string) string {
+	return strings.TrimSpace(strings.Trim(strings.TrimSpace(strings.ToLower(s)), string(quotes)))
 }
