@@ -94,6 +94,7 @@ var AllSources = [...]subscraping.Source{
 	// &threatminer.Source{}, // failing  api
 	// &reconcloud.Source{}, // failing due to cloudflare bot protection
 	&builtwith.Source{},
+        &spyse.Source{},
 }
 
 var sourceWarnings = mapsutil.NewSyncLockMap[string, string](
