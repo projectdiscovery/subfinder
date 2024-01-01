@@ -179,8 +179,8 @@ github.com/projectdiscovery/chaos-client v0.5.1 h1:NFxU7cxBY7AL1OKxQQRLRvJrkXlV+
 github.com/projectdiscovery/chaos-client v0.5.1/go.mod h1:uU7X/hVEKpOP8OZ8meDAAetMZ4Up0lz9oCcPGe86Yx4=
 github.com/projectdiscovery/dnsx v1.1.6 h1:QdKVKC0n/fpgaB4q3s6A2wn+qqg75CY0XxNkU9sVjws=
 github.com/projectdiscovery/dnsx v1.1.6/go.mod h1:9rkLQzJHxQ26qiD1PhfoJDrhqCVN8lKLsxiAON1uDxM=
-github.com/projectdiscovery/fastdialer v0.0.50 h1:NJyuiSMi0Fy78+qSVhqRs83NtKyM91dJ5x778kshiOQ=
-github.com/projectdiscovery/fastdialer v0.0.50/go.mod h1:y8X6at1FyRwmSig6+amuRXnxViDRGGK7S2EAvxf7mDo=
+github.com/projectdiscovery/fastdialer v0.0.51 h1:LsRry/aSzUfgSCakJve05d6Ut83w1n1NcGS5tyUqsEY=
+github.com/projectdiscovery/fastdialer v0.0.51/go.mod h1:OqJbaFL/a6kX7107K6OjZ3usi2MStZ7dQop73DUOUJU=
 github.com/projectdiscovery/fdmax v0.0.4 h1:K9tIl5MUZrEMzjvwn/G4drsHms2aufTn1xUdeVcmhmc=
 github.com/projectdiscovery/fdmax v0.0.4/go.mod h1:oZLqbhMuJ5FmcoaalOm31B1P4Vka/CqP50nWjgtSz+I=
 github.com/projectdiscovery/goflags v0.1.33 h1:6B/YkHMfnClSb+ibbS4GnSVXINSYxLNXGhEk5lwwogQ=
