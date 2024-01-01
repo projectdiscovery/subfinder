@@ -1,5 +1,8 @@
 package subscraping
 
+// SSID represents the type for SSID information
+type SSID string
+
 import (
 	"context"
 	"net/http"
