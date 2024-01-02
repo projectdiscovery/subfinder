@@ -2,9 +2,10 @@
 package securitytrails
 
 import (
+	"bytes"
 	"context"
 	"fmt"
-	"strings"
+	"net/http"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -13,7 +14,12 @@ import (
 )
 
 type response struct {
-	Subdomains []string `json:"subdomains"`
+	Meta struct {
+		ScrollID string `json:"scroll_id"`
+	} `json:"meta"`
+	Records []struct {
+		Hostname string `json:"hostname"`
+	} `json:"records"`
 }
 
 // Source is the passive scraping agent
@@ -43,34 +49,48 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		resp, err := session.Get(ctx, fmt.Sprintf("https://api.securitytrails.com/v1/domain/%s/subdomains", domain), "", map[string]string{"APIKEY": randomApiKey})
-		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
-			session.DiscardHTTPResponse(resp)
-			return
-		}
+		var scrollId string
+		headers := map[string]string{"Content-Type": "application/json", "APIKEY": randomApiKey}
 
-		var securityTrailsResponse response
-		err = jsoniter.NewDecoder(resp.Body).Decode(&securityTrailsResponse)
-		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
-			resp.Body.Close()
-			return
-		}
+		for {
+			var resp *http.Response
+			var err error
 
-		resp.Body.Close()
-
-		for _, subdomain := range securityTrailsResponse.Subdomains {
-			if strings.HasSuffix(subdomain, ".") {
-				subdomain += domain
+			if scrollId == "" {
+				var requestBody = []byte(fmt.Sprintf(`{"query":"apex_domain='%s'"}`, domain))
+				resp, err = session.Post(ctx, "https://api.securitytrails.com/v1/domains/list?include_ips=false&scroll=true", "",
+					headers, bytes.NewReader(requestBody))
 			} else {
-				subdomain = subdomain + "." + domain
+				resp, err = session.Get(ctx, fmt.Sprintf("https://api.securitytrails.com/v1/scroll/%s", scrollId), "", headers)
 			}
 
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-			s.results++
+			if err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
+				session.DiscardHTTPResponse(resp)
+				return
+			}
+
+			var securityTrailsResponse response
+			err = jsoniter.NewDecoder(resp.Body).Decode(&securityTrailsResponse)
+			if err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
+				resp.Body.Close()
+				return
+			}
+
+			resp.Body.Close()
+
+			for _, record := range securityTrailsResponse.Records {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Hostname}
+				s.results++
+			}
+			scrollId = securityTrailsResponse.Meta.ScrollID
+
+			if scrollId == "" {
+				break
+			}
 		}
 	}()
 
