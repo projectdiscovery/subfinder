@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -20,6 +21,7 @@ type response struct {
 	Records []struct {
 		Hostname string `json:"hostname"`
 	} `json:"records"`
+	Subdomains []string `json:"subdomains"`
 }
 
 // Source is the passive scraping agent
@@ -64,6 +66,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				resp, err = session.Get(ctx, fmt.Sprintf("https://api.securitytrails.com/v1/scroll/%s", scrollId), "", headers)
 			}
 
+			if err != nil && resp.StatusCode == 403 {
+				resp, err = session.Get(ctx, fmt.Sprintf("https://api.securitytrails.com/v1/domain/%s/subdomains", domain), "", headers)
+			}
+
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				s.errors++
@@ -86,6 +92,17 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Hostname}
 				s.results++
 			}
+
+			for _, subdomain := range securityTrailsResponse.Subdomains {
+				if strings.HasSuffix(subdomain, ".") {
+					subdomain += domain
+				} else {
+					subdomain = subdomain + "." + domain
+				}
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				s.results++
+			}
+
 			scrollId = securityTrailsResponse.Meta.ScrollID
 
 			if scrollId == "" {
