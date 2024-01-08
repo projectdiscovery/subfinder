@@ -11,9 +11,9 @@ require (
 	github.com/projectdiscovery/dnsx v1.1.6
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/gologger v1.1.12
-	github.com/projectdiscovery/ratelimit v0.0.21
+	github.com/projectdiscovery/ratelimit v0.0.23
 	github.com/projectdiscovery/retryablehttp-go v1.0.42
-	github.com/projectdiscovery/utils v0.0.69
+	github.com/projectdiscovery/utils v0.0.70
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.8.4
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
