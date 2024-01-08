@@ -13,7 +13,7 @@ require (
 	github.com/projectdiscovery/gologger v1.1.12
 	github.com/projectdiscovery/ratelimit v0.0.21
 	github.com/projectdiscovery/retryablehttp-go v1.0.42
-	github.com/projectdiscovery/utils v0.0.69
+	github.com/projectdiscovery/utils v0.0.70
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.8.4
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
@@ -109,7 +109,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/projectdiscovery/goflags v0.1.33
+	github.com/projectdiscovery/goflags v0.1.34
 	github.com/projectdiscovery/retryabledns v1.0.49 // indirect
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
