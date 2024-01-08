@@ -49,10 +49,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		if randomApiKey == "" {
 			return
 		}
-		var url string = fmt.Sprintf("https://www.virustotal.com/api/v3/domains/%s/subdomains?limit=1000", domain)
-		var hasMore bool = true
 		var cursor string = ""
-		for hasMore {
+		for {
+			var url string = fmt.Sprintf("https://www.virustotal.com/api/v3/domains/%s/subdomains?limit=1000", domain)
 			if cursor != "" {
 				url = fmt.Sprintf("%s&cursor=%s", url, cursor)
 			}
@@ -63,17 +62,15 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				session.DiscardHTTPResponse(resp)
 				return
 			}
+			defer resp.Body.Close()
 
 			var data response
 			err = jsoniter.NewDecoder(resp.Body).Decode(&data)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				s.errors++
-				resp.Body.Close()
 				return
 			}
-
-			resp.Body.Close()
 
 			for _, subdomain := range data.Data {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain.Id}
@@ -81,7 +78,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 			cursor = data.Meta.Cursor
 			if cursor == "" {
-				hasMore = false
+				break
 			}
 		}
 	}()
