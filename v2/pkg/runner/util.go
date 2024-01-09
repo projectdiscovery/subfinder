@@ -10,7 +10,6 @@ import (
 
 var (
 	ErrEmptyInput = errors.New("empty data")
-	quotes        = []rune{'"', '\'', '`'}
 )
 
 func loadFromFile(file string) ([]string, error) {
