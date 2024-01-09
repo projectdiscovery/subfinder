@@ -72,7 +72,6 @@ func (s *Source) getSubdomainsFromSQL(domain string, session *subscraping.Sessio
 							FROM certificate_and_identities cai
 							WHERE plainto_tsquery('certwatch', $1) @@ identities(cai.CERTIFICATE)
 								AND cai.NAME_VALUE ILIKE ('%' || $1 || '%')
-							LIMIT 10000
 						) sub
 					GROUP BY sub.CERTIFICATE
 			)
