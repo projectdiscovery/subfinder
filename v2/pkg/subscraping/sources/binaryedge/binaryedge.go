@@ -83,7 +83,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			results <- subscraping.Result{
 				Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("can't get API URL"),
 			}
-			s.results++
+			s.errors++
 			return
 		}
 
@@ -101,7 +101,7 @@ func (s *Source) enumerate(ctx context.Context, session *subscraping.Session, ba
 	}
 
 	resp, err := session.Get(ctx, pageURL.String(), "", authHeader)
-	if err != nil && resp == nil {
+	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		s.errors++
 		session.DiscardHTTPResponse(resp)
@@ -120,19 +120,21 @@ func (s *Source) enumerate(ctx context.Context, session *subscraping.Session, ba
 	// Check error messages
 	if response.Message != "" && response.Status != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf(response.Message)}
-		s.results++
+		s.errors++
+		return
 	}
 
 	resp.Body.Close()
 
 	for _, subdomain := range response.Subdomains {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+		s.results++
 	}
 
 	totalPages := int(math.Ceil(float64(response.Total) / float64(response.PageSize)))
 	nextPage := response.Page + 1
-	for currentPage := nextPage; currentPage <= totalPages; currentPage++ {
-		s.enumerate(ctx, session, baseURL, currentPage, authHeader, results)
+	if nextPage <= totalPages {
+		s.enumerate(ctx, session, baseURL, nextPage, authHeader, results)
 	}
 }
 
