@@ -37,7 +37,7 @@ var (
 		"quake",
 		"rapiddns",
 		"redhuntlabs",
-		"riddler",
+		// "riddler", // failing due to cloudfront protection
 		"robtex",
 		"securitytrails",
 		"shodan",
@@ -77,7 +77,7 @@ var (
 		"quake",
 		"redhuntlabs",
 		"robtex",
-		"riddler",
+		// "riddler", // failing due to cloudfront protection
 		"securitytrails",
 		"shodan",
 		"virustotal",
@@ -97,6 +97,7 @@ var (
 		"certspotter",
 		"crtsh",
 		"dnsdumpster",
+		"dnsdb",
 		"digitorus",
 		"hackertarget",
 		"passivetotal",

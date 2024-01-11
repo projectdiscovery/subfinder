@@ -3,7 +3,6 @@ package subscraping
 import (
 	"context"
 	"net/http"
-	"regexp"
 	"time"
 
 	"github.com/projectdiscovery/ratelimit"
@@ -62,11 +61,16 @@ type Source interface {
 	Statistics() Statistics
 }
 
+// SubdomainExtractor is an interface that defines the contract for subdomain extraction.
+type SubdomainExtractor interface {
+	Extract(text string) []string
+}
+
 // Session is the option passed to the source, an option is created
 // uniquely for each source.
 type Session struct {
-	// Extractor is the regex for subdomains created for each domain
-	Extractor *regexp.Regexp
+	//SubdomainExtractor
+	Extractor SubdomainExtractor
 	// Client is the current http client
 	Client *http.Client
 	// Rate limit instance

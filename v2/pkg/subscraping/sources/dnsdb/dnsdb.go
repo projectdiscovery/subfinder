@@ -3,9 +3,12 @@ package dnsdb
 
 import (
 	"bufio"
-	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,7 +17,23 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-type dnsdbResponse struct {
+const urlBase string = "https://api.dnsdb.info/dnsdb/v2"
+
+type rateResponse struct {
+	Rate rate
+}
+
+type rate struct {
+	OffsetMax json.Number `json:"offset_max"`
+}
+
+type safResponse struct {
+	Condition string   `json:"cond"`
+	Obj       dnsdbObj `json:"obj"`
+	Msg       string   `json:"msg"`
+}
+
+type dnsdbObj struct {
 	Name string `json:"rrname"`
 }
 
@@ -23,7 +42,7 @@ type Source struct {
 	apiKeys   []string
 	timeTaken time.Duration
 	errors    int
-	results   int
+	results   uint64
 	skipped   bool
 }
 
@@ -39,44 +58,105 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		sourceName := s.Name()
+
+		randomApiKey := subscraping.PickRandom(s.apiKeys, sourceName)
 		if randomApiKey == "" {
 			return
 		}
 
 		headers := map[string]string{
-			"X-API-KEY":    randomApiKey,
-			"Accept":       "application/json",
-			"Content-Type": "application/json",
+			"X-API-KEY": randomApiKey,
+			"Accept":    "application/x-ndjson",
 		}
 
-		resp, err := session.Get(ctx, fmt.Sprintf("https://api.dnsdb.info/lookup/rrset/name/*.%s?limit=1000000000000", domain), "", headers)
+		offsetMax, err := getMaxOffset(ctx, session, headers)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
 			s.errors++
-			session.DiscardHTTPResponse(resp)
 			return
 		}
 
-		scanner := bufio.NewScanner(resp.Body)
-		for scanner.Scan() {
-			line := scanner.Text()
-			if line == "" {
-				continue
-			}
-			var response dnsdbResponse
-			err = jsoniter.NewDecoder(bytes.NewBufferString(line)).Decode(&response)
+		path := fmt.Sprintf("lookup/rrset/name/*.%s", domain)
+		urlTemplate := fmt.Sprintf("%s/%s?", urlBase, path)
+		queryParams := url.Values{}
+		// ?limit=0 means DNSDB will return the maximum number of results allowed.
+		queryParams.Add("limit", "0")
+		queryParams.Add("swclient", "subfinder")
+
+		for {
+			url := urlTemplate + queryParams.Encode()
+
+			resp, err := session.Get(ctx, url, "", headers)
 			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
 				s.errors++
+				session.DiscardHTTPResponse(resp)
 				return
 			}
-			results <- subscraping.Result{
-				Source: s.Name(), Type: subscraping.Subdomain, Value: strings.TrimSuffix(response.Name, "."),
+
+			var respCond string
+			reader := bufio.NewReader(resp.Body)
+			for {
+				n, err := reader.ReadBytes('\n')
+				if err == io.EOF {
+					break
+				} else if err != nil {
+					results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
+					s.errors++
+					resp.Body.Close()
+					return
+				}
+
+				var response safResponse
+				err = jsoniter.Unmarshal(n, &response)
+				if err != nil {
+					results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
+					s.errors++
+					resp.Body.Close()
+					return
+				}
+
+				// Condition is a scalar enum of string values: {“begin”, “ongoing”, “succeeded”, “limited”, “failed”}.
+				// "begin" will be the initiating Condition, this can be safely ignored. The data of interest will be in
+				// objects with Condition "" or "ongoing". Conditions "succeeded", "limited", and "failed" are terminating conditions.
+				// See https://www.domaintools.com/resources/user-guides/farsight-streaming-api-framing-protocol-documentation/
+				// for more details
+				respCond = response.Condition
+				if respCond == "" || respCond == "ongoing" {
+					if response.Obj.Name != "" {
+						results <- subscraping.Result{
+							Source: sourceName, Type: subscraping.Subdomain, Value: strings.TrimSuffix(response.Obj.Name, "."),
+						}
+						s.results++
+					}
+				} else if respCond != "begin" {
+					// if the respCond is not "", "ongoing", or "begin", then it is a terminating condition, so break out of the loop
+					break
+				}
 			}
-			s.results++
+
+			// Check the terminating jsonl object's condition. There are 3 possible scenarios:
+			// 1. "limited" - There are more results available, make another query with an offset
+			// 2. "succeeded" - The query completed successfully and all results were sent.
+			// 3. anything else - This is an error and should be reported to the user. The user can then decide to use the results up to this
+			// point or discard and retry.
+			if respCond == "limited" {
+				if offsetMax != 0 && s.results <= offsetMax {
+					// Reset done to false to get more results with an offset query parameter set to s.results
+					queryParams.Set("offset", strconv.FormatUint(s.results, 10))
+					continue
+				}
+			} else if respCond != "succeeded" {
+				// DNSDB's terminating jsonl object's cond is not "limited" or succeeded" (#3), this is an error, notify the user.
+				err = fmt.Errorf("%s terminated with condition: %s", sourceName, respCond)
+				results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
+				s.errors++
+			}
+
+			resp.Body.Close()
+			break
 		}
-		resp.Body.Close()
 	}()
 
 	return results
@@ -92,7 +172,7 @@ func (s *Source) IsDefault() bool {
 }
 
 func (s *Source) HasRecursiveSupport() bool {
-	return false
+	return true
 }
 
 func (s *Source) NeedsKey() bool {
@@ -106,8 +186,36 @@ func (s *Source) AddApiKeys(keys []string) {
 func (s *Source) Statistics() subscraping.Statistics {
 	return subscraping.Statistics{
 		Errors:    s.errors,
-		Results:   s.results,
+		Results:   int(s.results),
 		TimeTaken: s.timeTaken,
 		Skipped:   s.skipped,
 	}
+}
+
+func getMaxOffset(ctx context.Context, session *subscraping.Session, headers map[string]string) (uint64, error) {
+	var offsetMax uint64
+	url := fmt.Sprintf("%s/rate_limit", urlBase)
+	resp, err := session.Get(ctx, url, "", headers)
+	defer session.DiscardHTTPResponse(resp)
+	if err != nil {
+		return offsetMax, err
+	}
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return offsetMax, err
+	}
+	var rateResp rateResponse
+	err = jsoniter.Unmarshal(data, &rateResp)
+	if err != nil {
+		return offsetMax, err
+	}
+	// if the OffsetMax is "n/a" then the ?offset= query parameter is not allowed
+	if rateResp.Rate.OffsetMax.String() != "n/a" {
+		offsetMax, err = strconv.ParseUint(rateResp.Rate.OffsetMax.String(), 10, 64)
+		if err != nil {
+			return offsetMax, err
+		}
+	}
+
+	return offsetMax, nil
 }

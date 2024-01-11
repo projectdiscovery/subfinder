@@ -8,11 +8,13 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
 
 	"github.com/projectdiscovery/gologger"
+	contextutil "github.com/projectdiscovery/utils/context"
 	fileutil "github.com/projectdiscovery/utils/file"
 	mapsutil "github.com/projectdiscovery/utils/maps"
 
@@ -73,7 +75,8 @@ func NewRunner(options *Options) (*Runner, error) {
 
 // RunEnumeration wraps RunEnumerationWithCtx with an empty context
 func (r *Runner) RunEnumeration() error {
-	return r.RunEnumerationWithCtx(context.Background())
+	ctx, _ := contextutil.WithValues(context.Background(), contextutil.ContextArg("All"), contextutil.ContextArg(strconv.FormatBool(r.options.All)))
+	return r.RunEnumerationWithCtx(ctx)
 }
 
 // RunEnumerationWithCtx runs the subdomain enumeration flow on the targets specified
@@ -105,7 +108,8 @@ func (r *Runner) RunEnumerationWithCtx(ctx context.Context) error {
 
 // EnumerateMultipleDomains wraps EnumerateMultipleDomainsWithCtx with an empty context
 func (r *Runner) EnumerateMultipleDomains(reader io.Reader, writers []io.Writer) error {
-	return r.EnumerateMultipleDomainsWithCtx(context.Background(), reader, writers)
+	ctx, _ := contextutil.WithValues(context.Background(), contextutil.ContextArg("All"), contextutil.ContextArg(strconv.FormatBool(r.options.All)))
+	return r.EnumerateMultipleDomainsWithCtx(ctx, reader, writers)
 }
 
 // EnumerateMultipleDomainsWithCtx enumerates subdomains for multiple domains
@@ -114,7 +118,7 @@ func (r *Runner) EnumerateMultipleDomainsWithCtx(ctx context.Context, reader io.
 	scanner := bufio.NewScanner(reader)
 	ip, _ := regexp.Compile(`^([0-9\.]+$)`)
 	for scanner.Scan() {
-		domain, err := sanitize(scanner.Text())
+		domain, err := normalizeLowercase(scanner.Text())
 		isIp := ip.MatchString(domain)
 		if errors.Is(err, ErrEmptyInput) || (r.options.ExcludeIps && isIp) {
 			continue

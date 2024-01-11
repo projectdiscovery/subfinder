@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
+	contextutil "github.com/projectdiscovery/utils/context"
 )
 
 type subdomain struct {
@@ -40,7 +42,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		count := s.getSubdomainsFromSQL(domain, session, results)
+		count := s.getSubdomainsFromSQL(ctx, domain, session, results)
 		if count > 0 {
 			return
 		}
@@ -50,7 +52,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	return results
 }
 
-func (s *Source) getSubdomainsFromSQL(domain string, session *subscraping.Session, results chan subscraping.Result) int {
+func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, session *subscraping.Session, results chan subscraping.Result) int {
 	db, err := sql.Open("postgres", "host=crt.sh user=guest dbname=certwatch sslmode=disable binary_parameters=yes")
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -60,7 +62,14 @@ func (s *Source) getSubdomainsFromSQL(domain string, session *subscraping.Sessio
 
 	defer db.Close()
 
-	query := `WITH ci AS (
+	limitClause := ""
+	if all, ok := ctx.Value(contextutil.ContextArg("All")).(contextutil.ContextArg); ok {
+		if allBool, err := strconv.ParseBool(string(all)); err == nil && !allBool {
+			limitClause = "LIMIT 10000"
+		}
+	}
+
+	query := fmt.Sprintf(`WITH ci AS (
 				SELECT min(sub.CERTIFICATE_ID) ID,
 					min(sub.ISSUER_CA_ID) ISSUER_CA_ID,
 					array_agg(DISTINCT sub.NAME_VALUE) NAME_VALUES,
@@ -71,8 +80,8 @@ func (s *Source) getSubdomainsFromSQL(domain string, session *subscraping.Sessio
 					FROM (SELECT *
 							FROM certificate_and_identities cai
 							WHERE plainto_tsquery('certwatch', $1) @@ identities(cai.CERTIFICATE)
-								AND cai.NAME_VALUE ILIKE ('%' || $1 || '%')
-							LIMIT 10000
+								AND cai.NAME_VALUE ILIKE ('%%' || $1 || '%%')
+								%s
 						) sub
 					GROUP BY sub.CERTIFICATE
 			)
@@ -85,7 +94,7 @@ func (s *Source) getSubdomainsFromSQL(domain string, session *subscraping.Sessio
 						) le ON TRUE,
 					ca
 				WHERE ci.ISSUER_CA_ID = ca.ID
-				ORDER BY le.ENTRY_TIMESTAMP DESC NULLS LAST;`
+				ORDER BY le.ENTRY_TIMESTAMP DESC NULLS LAST;`, limitClause)
 	rows, err := db.Query(query, domain)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -111,10 +120,11 @@ func (s *Source) getSubdomainsFromSQL(domain string, session *subscraping.Sessio
 
 		count++
 		for _, subdomain := range strings.Split(data, "\n") {
-			value := session.Extractor.FindString(subdomain)
-			if value != "" {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}
-				s.results++
+			for _, value := range session.Extractor.Extract(subdomain) {
+				if value != "" {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}
+					s.results++
+				}
 			}
 		}
 	}
@@ -143,11 +153,12 @@ func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, sessi
 
 	for _, subdomain := range subdomains {
 		for _, sub := range strings.Split(subdomain.NameValue, "\n") {
-			value := session.Extractor.FindString(sub)
-			if value != "" {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}
+			for _, value := range session.Extractor.Extract(sub) {
+				if value != "" {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}
+				}
+				s.results++
 			}
-			s.results++
 		}
 	}
 
