@@ -73,7 +73,8 @@ func NewRunner(options *Options) (*Runner, error) {
 
 // RunEnumeration wraps RunEnumerationWithCtx with an empty context
 func (r *Runner) RunEnumeration() error {
-	return r.RunEnumerationWithCtx(context.Background())
+	ctx := context.WithValue(context.Background(), "All", r.options.All)
+	return r.RunEnumerationWithCtx(ctx)
 }
 
 // RunEnumerationWithCtx runs the subdomain enumeration flow on the targets specified
@@ -105,7 +106,8 @@ func (r *Runner) RunEnumerationWithCtx(ctx context.Context) error {
 
 // EnumerateMultipleDomains wraps EnumerateMultipleDomainsWithCtx with an empty context
 func (r *Runner) EnumerateMultipleDomains(reader io.Reader, writers []io.Writer) error {
-	return r.EnumerateMultipleDomainsWithCtx(context.Background(), reader, writers)
+	ctx := context.WithValue(context.Background(), "All", r.options.All)
+	return r.EnumerateMultipleDomainsWithCtx(ctx, reader, writers)
 }
 
 // EnumerateMultipleDomainsWithCtx enumerates subdomains for multiple domains

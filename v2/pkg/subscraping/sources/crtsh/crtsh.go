@@ -40,7 +40,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		count := s.getSubdomainsFromSQL(domain, session, results)
+		count := s.getSubdomainsFromSQL(ctx, domain, session, results)
 		if count > 0 {
 			return
 		}
@@ -50,7 +50,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	return results
 }
 
-func (s *Source) getSubdomainsFromSQL(domain string, session *subscraping.Session, results chan subscraping.Result) int {
+func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, session *subscraping.Session, results chan subscraping.Result) int {
 	db, err := sql.Open("postgres", "host=crt.sh user=guest dbname=certwatch sslmode=disable binary_parameters=yes")
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -60,7 +60,13 @@ func (s *Source) getSubdomainsFromSQL(domain string, session *subscraping.Sessio
 
 	defer db.Close()
 
-	query := `WITH ci AS (
+	limitClause := ""
+	all, ok := ctx.Value("All").(bool)
+	if !ok || !all {
+		limitClause = "LIMIT 10000"
+	}
+
+	query := fmt.Sprintf(`WITH ci AS (
 				SELECT min(sub.CERTIFICATE_ID) ID,
 					min(sub.ISSUER_CA_ID) ISSUER_CA_ID,
 					array_agg(DISTINCT sub.NAME_VALUE) NAME_VALUES,
@@ -71,7 +77,8 @@ func (s *Source) getSubdomainsFromSQL(domain string, session *subscraping.Sessio
 					FROM (SELECT *
 							FROM certificate_and_identities cai
 							WHERE plainto_tsquery('certwatch', $1) @@ identities(cai.CERTIFICATE)
-								AND cai.NAME_VALUE ILIKE ('%' || $1 || '%')
+								AND cai.NAME_VALUE ILIKE ('%%' || $1 || '%%')
+								%s
 						) sub
 					GROUP BY sub.CERTIFICATE
 			)
@@ -84,7 +91,7 @@ func (s *Source) getSubdomainsFromSQL(domain string, session *subscraping.Sessio
 						) le ON TRUE,
 					ca
 				WHERE ci.ISSUER_CA_ID = ca.ID
-				ORDER BY le.ENTRY_TIMESTAMP DESC NULLS LAST;`
+				ORDER BY le.ENTRY_TIMESTAMP DESC NULLS LAST;`, limitClause)
 	rows, err := db.Query(query, domain)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
