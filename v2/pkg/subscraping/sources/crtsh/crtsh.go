@@ -63,10 +63,10 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 	defer db.Close()
 
 	limitClause := ""
-	all := ctx.Value(contextutil.ContextArg("All")).(contextutil.ContextArg)
-	allBool, _ := strconv.ParseBool(string(all))
-	if !allBool {
-		limitClause = "LIMIT 10000"
+	if all, ok := ctx.Value(contextutil.ContextArg("All")).(contextutil.ContextArg); ok {
+		if allBool, err := strconv.ParseBool(string(all)); err == nil && !allBool {
+			limitClause = "LIMIT 10000"
+		}
 	}
 
 	query := fmt.Sprintf(`WITH ci AS (

@@ -5,10 +5,8 @@ import (
 	"context"
 	"io"
 	"log"
-	"strconv"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/runner"
-	contextutil "github.com/projectdiscovery/utils/context"
 )
 
 func main() {
@@ -33,8 +31,7 @@ func main() {
 
 	output := &bytes.Buffer{}
 	// To run subdomain enumeration on a single domain
-	ctx, _ := contextutil.WithValues(context.Background(), contextutil.ContextArg("All"), contextutil.ContextArg(strconv.FormatBool(subfinderOpts.All)))
-	if err = subfinder.EnumerateSingleDomainWithCtx(ctx, "hackerone.com", []io.Writer{output}); err != nil {
+	if err = subfinder.EnumerateSingleDomainWithCtx(context.Background(), "hackerone.com", []io.Writer{output}); err != nil {
 		log.Fatalf("failed to enumerate single domain: %v", err)
 	}
 
