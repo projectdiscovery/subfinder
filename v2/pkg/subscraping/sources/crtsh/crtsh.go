@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
+	contextutil "github.com/projectdiscovery/utils/context"
 )
 
 type subdomain struct {
@@ -61,8 +63,9 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 	defer db.Close()
 
 	limitClause := ""
-	all, ok := ctx.Value("All").(bool)
-	if !ok || !all {
+	all := ctx.Value(contextutil.ContextArg("All")).(contextutil.ContextArg)
+	allBool, _ := strconv.ParseBool(string(all))
+	if !allBool {
 		limitClause = "LIMIT 10000"
 	}
 

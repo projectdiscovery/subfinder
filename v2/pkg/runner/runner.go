@@ -8,11 +8,13 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
 
 	"github.com/projectdiscovery/gologger"
+	contextutil "github.com/projectdiscovery/utils/context"
 	fileutil "github.com/projectdiscovery/utils/file"
 	mapsutil "github.com/projectdiscovery/utils/maps"
 
@@ -73,7 +75,7 @@ func NewRunner(options *Options) (*Runner, error) {
 
 // RunEnumeration wraps RunEnumerationWithCtx with an empty context
 func (r *Runner) RunEnumeration() error {
-	ctx := context.WithValue(context.Background(), "All", r.options.All)
+	ctx, _ := contextutil.WithValues(context.Background(), contextutil.ContextArg("All"), contextutil.ContextArg(strconv.FormatBool(r.options.All)))
 	return r.RunEnumerationWithCtx(ctx)
 }
 
@@ -106,7 +108,7 @@ func (r *Runner) RunEnumerationWithCtx(ctx context.Context) error {
 
 // EnumerateMultipleDomains wraps EnumerateMultipleDomainsWithCtx with an empty context
 func (r *Runner) EnumerateMultipleDomains(reader io.Reader, writers []io.Writer) error {
-	ctx := context.WithValue(context.Background(), "All", r.options.All)
+	ctx, _ := contextutil.WithValues(context.Background(), contextutil.ContextArg("All"), contextutil.ContextArg(strconv.FormatBool(r.options.All)))
 	return r.EnumerateMultipleDomainsWithCtx(ctx, reader, writers)
 }
 
