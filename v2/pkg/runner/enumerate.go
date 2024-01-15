@@ -49,6 +49,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 	uniqueMap := make(map[string]resolve.HostEntry)
 	// Create a map to track sources for each host
 	sourceMap := make(map[string]map[string]struct{})
+	skippedCounts := make(map[string]int)
 	// Process the results in a separate goroutine
 	go func() {
 		for result := range passiveResults {
@@ -58,6 +59,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 			case subscraping.Subdomain:
 				// Validate the subdomain found and remove wildcards from
 				if !strings.HasSuffix(result.Value, "."+domain) {
+					skippedCounts[result.Source]++
 					continue
 				}
 				subdomain := strings.ReplaceAll(strings.ToLower(result.Value), "*.", "")
@@ -77,6 +79,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 					// Check if the subdomain is a duplicate. If not,
 					// send the subdomain for resolution.
 					if _, ok := uniqueMap[subdomain]; ok {
+						skippedCounts[result.Source]++
 						continue
 					}
 
@@ -164,7 +167,17 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 
 	if r.options.Statistics {
 		gologger.Info().Msgf("Printing source statistics for %s", domain)
-		printStatistics(r.passiveAgent.GetStatistics())
+		statistics := r.passiveAgent.GetStatistics()
+		// This is a hack to remove the skipped count from the statistics
+		// as we don't want to show it in the statistics.
+		// TODO: Design a better way to do this.
+		for source, count := range skippedCounts {
+			if stat, ok := statistics[source]; ok {
+				stat.Results -= count
+				statistics[source] = stat
+			}
+		}
+		printStatistics(statistics)
 	}
 
 	return nil
