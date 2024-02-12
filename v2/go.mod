@@ -65,7 +65,7 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.2 // indirect
 	github.com/projectdiscovery/blackrock v0.0.1 // indirect
 	github.com/projectdiscovery/cdncheck v1.0.9 // indirect
-	github.com/projectdiscovery/fastdialer v0.0.57 // indirect
+	github.com/projectdiscovery/fastdialer v0.0.58 // indirect
 	github.com/projectdiscovery/hmap v0.0.37 // indirect
 	github.com/projectdiscovery/networkpolicy v0.0.7 // indirect
 	github.com/quic-go/quic-go v0.37.7 // indirect
@@ -112,7 +112,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/projectdiscovery/goflags v0.1.39
-	github.com/projectdiscovery/retryabledns v1.0.53 // indirect
+	github.com/projectdiscovery/retryabledns v1.0.54 // indirect
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sys v0.16.0 // indirect
 )
