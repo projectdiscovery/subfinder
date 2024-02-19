@@ -191,8 +191,8 @@ github.com/projectdiscovery/goflags v0.1.39 h1:Dj8UY+FJEfxzT20+kyDkeTlGs+Ys19SiX
 github.com/projectdiscovery/goflags v0.1.39/go.mod h1:ouB+HpJvhKZJjT8Bd13RYD6au7sQ7nGylbfad3JFy+E=
 github.com/projectdiscovery/gologger v1.1.12 h1:uX/QkQdip4PubJjjG0+uk5DtyAi1ANPJUvpmimXqv4A=
 github.com/projectdiscovery/gologger v1.1.12/go.mod h1:DI8nywPLERS5mo8QEA9E7gd5HZ3Je14SjJBH3F5/kLw=
-github.com/projectdiscovery/hmap v0.0.38 h1:H4eeVRC3Km4bN877V17RoYJe11Wa5M7U1o/FOu9p1TA=
-github.com/projectdiscovery/hmap v0.0.38/go.mod h1:kTeo8Qo+eDxZUrCBPHOy8qvFRrDNWWrJddf5i1hJHe0=
+github.com/projectdiscovery/hmap v0.0.39 h1:R33JJzPz8TMUm1TJQ/X5zVJbmyTS64EttZ085thq19g=
+github.com/projectdiscovery/hmap v0.0.39/go.mod h1:wEPoEIVGPdHsc9EnE+ERUdgNyp29zZn6gACOALylHOg=
 github.com/projectdiscovery/networkpolicy v0.0.7 h1:AwHqBRXBqDQgnWzBMuoJtHBNEYBw+NFp/4qIK688x7o=
 github.com/projectdiscovery/networkpolicy v0.0.7/go.mod h1:CK0CnFoLF1Nou6mY7P4WODSAxhPN8g8g7XpapgEP8tI=
 github.com/projectdiscovery/ratelimit v0.0.28 h1:9ja0V7mvsqwTJYdBZ3RSb4SrCE5Q2GR+1obPxg2TEmw=
