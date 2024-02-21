@@ -125,7 +125,7 @@ func New(sourceNames, excludedSourceNames []string, useAllSources, useSourcesSup
 		if len(sourceNames) > 0 {
 			for _, source := range sourceNames {
 				if NameSourceMap[source] == nil {
-					gologger.Warning().Msgf("There is no source with the name: %s", source)
+					gologger.Fatal().Msgf("There is no source with the name: %s", source)
 				} else {
 					sources[source] = NameSourceMap[source]
 				}
