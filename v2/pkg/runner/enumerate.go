@@ -63,6 +63,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 					continue
 				}
 				subdomain := strings.ReplaceAll(strings.ToLower(result.Value), "*.", "")
+				subdomain = strings.TrimPrefix(strings.TrimPrefix(subdomain, "http://"), "https://")
 
 				if matchSubdomain := r.filterAndMatchSubdomain(subdomain); matchSubdomain {
 					if _, ok := uniqueMap[subdomain]; !ok {
