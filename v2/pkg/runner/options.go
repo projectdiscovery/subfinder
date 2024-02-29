@@ -243,7 +243,6 @@ func (options *Options) preProcessOptions() {
 
 var defaultRateLimits = []string{
 	"github=30/m",
-	// "gitlab=2000/m",
 	"fullhunt=60/m",
 	fmt.Sprintf("robtex=%d/ms", uint(math.MaxUint)),
 	"securitytrails=1/s",
@@ -256,5 +255,6 @@ var defaultRateLimits = []string{
 	"securitytrails=2/s",
 	"sitedossier=8/m",
 	"netlas=1/s",
-	"gitlab=2/s",
+	// "gitlab=2/s",
+	"github=83/m",
 }
