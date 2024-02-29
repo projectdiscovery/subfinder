@@ -254,4 +254,5 @@ var defaultRateLimits = []string{
 	"waybackarchive=15/m",
 	"whoisxmlapi=50/s",
 	"securitytrails=2/s",
+	"sitedossier=8/m",
 }
