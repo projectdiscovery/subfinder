@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"strings"
 	"sync"
-	"time"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -117,9 +116,6 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				return
 			}
-
-			// TODO: hardcoded for testing, should be a source internal rate limit #718
-			time.Sleep(2 * time.Second)
 
 			s.enumerate(ctx, nextURL, domainRegexp, headers, session, results)
 		}

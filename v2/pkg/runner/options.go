@@ -256,4 +256,5 @@ var defaultRateLimits = []string{
 	"securitytrails=2/s",
 	"sitedossier=8/m",
 	"netlas=1/s",
+	"gitlab=2/s",
 }
