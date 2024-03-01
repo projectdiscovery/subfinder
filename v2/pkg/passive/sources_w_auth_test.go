@@ -47,7 +47,12 @@ func TestSourcesWithKeys(t *testing.T) {
 			continue
 		}
 
-		apiKey := os.Getenv(fmt.Sprintf("%s_API_KEY", strings.ToUpper(source.Name())))
+		var apiKey string
+		if source.Name() == "chaos" {
+			apiKey = os.Getenv("PDCP_API_KEY")
+		} else {
+			apiKey = os.Getenv(fmt.Sprintf("%s_API_KEY", strings.ToUpper(source.Name())))
+		}
 		if apiKey == "" {
 			fmt.Printf("Skipping %s as no API key is provided\n", source.Name())
 			continue
