@@ -12,7 +12,7 @@ require (
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/gologger v1.1.12
 	github.com/projectdiscovery/ratelimit v0.0.28
-	github.com/projectdiscovery/retryablehttp-go v1.0.49
+	github.com/projectdiscovery/retryablehttp-go v1.0.50
 	github.com/projectdiscovery/utils v0.0.80
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.8.4
@@ -65,7 +65,7 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.2 // indirect
 	github.com/projectdiscovery/blackrock v0.0.1 // indirect
 	github.com/projectdiscovery/cdncheck v1.0.9 // indirect
-	github.com/projectdiscovery/fastdialer v0.0.59 // indirect
+	github.com/projectdiscovery/fastdialer v0.0.60 // indirect
 	github.com/projectdiscovery/hmap v0.0.40 // indirect
 	github.com/projectdiscovery/networkpolicy v0.0.7 // indirect
 	github.com/quic-go/quic-go v0.37.7 // indirect
