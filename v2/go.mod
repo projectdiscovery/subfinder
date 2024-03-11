@@ -12,8 +12,8 @@ require (
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/gologger v1.1.12
 	github.com/projectdiscovery/ratelimit v0.0.31
-	github.com/projectdiscovery/retryablehttp-go v1.0.50
-	github.com/projectdiscovery/utils v0.0.81
+	github.com/projectdiscovery/retryablehttp-go v1.0.51
+	github.com/projectdiscovery/utils v0.0.82
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.8.4
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
@@ -67,8 +67,8 @@ require (
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
 	github.com/projectdiscovery/blackrock v0.0.1 // indirect
 	github.com/projectdiscovery/cdncheck v1.0.9 // indirect
-	github.com/projectdiscovery/fastdialer v0.0.60 // indirect
-	github.com/projectdiscovery/hmap v0.0.40 // indirect
+	github.com/projectdiscovery/fastdialer v0.0.61 // indirect
+	github.com/projectdiscovery/hmap v0.0.41 // indirect
 	github.com/projectdiscovery/machineid v0.0.0-20240226150047-2e2c51e35983 // indirect
 	github.com/projectdiscovery/networkpolicy v0.0.7 // indirect
 	github.com/quic-go/quic-go v0.37.7 // indirect
