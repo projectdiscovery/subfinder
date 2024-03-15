@@ -18,6 +18,12 @@ import (
 
 const maxNumCount = 2
 
+var replacer = strings.NewReplacer(
+	"*.", "",
+	"http://", "",
+	"https://", "",
+)
+
 // EnumerateSingleDomain wraps EnumerateSingleDomainWithCtx with an empty context
 func (r *Runner) EnumerateSingleDomain(domain string, writers []io.Writer) error {
 	return r.EnumerateSingleDomainWithCtx(context.Background(), domain, writers)
@@ -62,8 +68,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 					skippedCounts[result.Source]++
 					continue
 				}
-				subdomain := strings.ReplaceAll(strings.ToLower(result.Value), "*.", "")
-				subdomain = strings.TrimPrefix(strings.TrimPrefix(subdomain, "http://"), "https://")
+				subdomain := replacer.Replace(result.Value)
 
 				if matchSubdomain := r.filterAndMatchSubdomain(subdomain); matchSubdomain {
 					if _, ok := uniqueMap[subdomain]; !ok {
