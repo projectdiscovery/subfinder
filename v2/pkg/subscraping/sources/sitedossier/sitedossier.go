@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"math/rand"
 	"net/http"
 	"regexp"
 	"time"
@@ -23,44 +22,6 @@ type agent struct {
 	results chan subscraping.Result
 	errors  int
 	session *subscraping.Session
-}
-
-func (a *agent) enumerate(ctx context.Context, baseURL string) {
-	select {
-	case <-ctx.Done():
-		return
-	default:
-	}
-
-	resp, err := a.session.SimpleGet(ctx, baseURL)
-	isnotfound := resp != nil && resp.StatusCode == http.StatusNotFound
-	if err != nil && !isnotfound {
-		a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
-		a.errors++
-		a.session.DiscardHTTPResponse(resp)
-		return
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
-		a.errors++
-		resp.Body.Close()
-		return
-	}
-	resp.Body.Close()
-
-	src := string(body)
-	for _, match := range a.session.Extractor.Extract(src) {
-		a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Subdomain, Value: match}
-	}
-
-	match1 := reNext.FindStringSubmatch(src)
-	time.Sleep(time.Duration((3 + rand.Intn(SleepRandIntn))) * time.Second)
-
-	if len(match1) > 0 {
-		a.enumerate(ctx, "http://www.sitedossier.com"+match1[1])
-	}
 }
 
 // Source is the passive scraping agent
@@ -93,6 +54,42 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	}()
 
 	return a.results
+}
+
+func (a *agent) enumerate(ctx context.Context, baseURL string) {
+	select {
+	case <-ctx.Done():
+		return
+	default:
+	}
+
+	resp, err := a.session.SimpleGet(ctx, baseURL)
+	isnotfound := resp != nil && resp.StatusCode == http.StatusNotFound
+	if err != nil && !isnotfound {
+		a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
+		a.errors++
+		a.session.DiscardHTTPResponse(resp)
+		return
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
+		a.errors++
+		resp.Body.Close()
+		return
+	}
+	resp.Body.Close()
+
+	src := string(body)
+	for _, subdomain := range a.session.Extractor.Extract(src) {
+		a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Subdomain, Value: subdomain}
+	}
+
+	match := reNext.FindStringSubmatch(src)
+	if len(match) > 0 {
+		a.enumerate(ctx, fmt.Sprintf("http://www.sitedossier.com%s", match[1]))
+	}
 }
 
 // Name returns the name of the source

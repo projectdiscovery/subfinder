@@ -103,8 +103,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		//Define the API endpoint URL and query parameters
 
 		for i := 0; i < domainsCount.Count; i += 20 {
-
-			time.Sleep(1000 * time.Millisecond)
 			offset := strconv.Itoa(i)
 
 			endpoint := "https://app.netlas.io/api/domains/"
