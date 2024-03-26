@@ -38,7 +38,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/quake"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rapiddns"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/redhuntlabs"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/riddler"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/robtex"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
@@ -80,7 +79,7 @@ var AllSources = [...]subscraping.Source{
 	&quake.Source{},
 	&rapiddns.Source{},
 	&redhuntlabs.Source{},
-	&riddler.Source{},
+	// &riddler.Source{}, // failing due to cloudfront protection
 	&robtex.Source{},
 	&securitytrails.Source{},
 	&shodan.Source{},
@@ -126,7 +125,7 @@ func New(sourceNames, excludedSourceNames []string, useAllSources, useSourcesSup
 		if len(sourceNames) > 0 {
 			for _, source := range sourceNames {
 				if NameSourceMap[source] == nil {
-					gologger.Warning().Msgf("There is no source with the name: %s", source)
+					gologger.Fatal().Msgf("There is no source with the name: %s", source)
 				} else {
 					sources[source] = NameSourceMap[source]
 				}

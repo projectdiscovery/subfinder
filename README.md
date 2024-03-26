@@ -111,146 +111,21 @@ OPTIMIZATION:
 
 # Installation
 
-`subfinder` requires **go1.20** to install successfully. Run the following command to install the latest version:
+`subfinder` requires **go1.21** to install successfully. Run the following command to install the latest version:
 
 ```sh
 go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 ```
 
+Learn about more ways to install subfinder here: https://docs.projectdiscovery.io/tools/subfinder/install.
+
 ## Post Installation Instructions
 
-`subfinder` can be used right after the installation, however the following services require configuring API keys to work:
+`subfinder` can be used right after the installation, however many sources required API keys to work. Learn more here: https://docs.projectdiscovery.io/tools/subfinder/install#post-install-configuration.
 
-[BeVigil](https://bevigil.com/osint-api), [BinaryEdge](https://binaryedge.io), [BufferOver](https://tls.bufferover.run), [C99](https://api.c99.nl/), [Censys](https://censys.io), [CertSpotter](https://sslmate.com/certspotter/api/), [Chaos](https://chaos.projectdiscovery.io), [Chinaz](http://my.chinaz.com/ChinazAPI/DataCenter/MyDataApi), [DNSDB](https://api.dnsdb.info), [Fofa](https://fofa.info/static_pages/api_help), [FullHunt](https://fullhunt.io), [GitHub](https://github.com), [Intelx](https://intelx.io), [PassiveTotal](http://passivetotal.org), [quake](https://quake.360.cn), [Robtex](https://www.robtex.com/api/), [SecurityTrails](http://securitytrails.com), [Shodan](https://shodan.io), [ThreatBook](https://x.threatbook.cn/en), [VirusTotal](https://www.virustotal.com), [WhoisXML API](https://whoisxmlapi.com/), [ZoomEye](https://www.zoomeye.org), [ZoomEye API](https://api.zoomeye.org), [dnsrepo](https://dnsrepo.noc.org), [Hunter](https://hunter.qianxin.com/), [Facebook](https://developers.facebook.com), [BuiltWith](https://api.builtwith.com/domain-api)
+## Running Subfinder
 
-You can also use the `subfinder -ls` command to display all the available sources.
-
-These values are stored in the `$CONFIG/subfinder/provider-config.yaml` file which will be created when you run the tool for the first time. The configuration file uses the YAML format. Multiple API keys
-can be specified for each of these services from which one of them will be used for enumeration.
-
-Composite keys for sources like, `Censys`, `PassiveTotal`, `Fofa`, `Intellix` and `360quake`, need to be separated with a colon (`:`).
-
-An example provider config file:
-
-```yaml
-binaryedge:
-  - 0bf8919b-aab9-42e4-9574-d3b639324597
-  - ac244e2f-b635-4581-878a-33f4e79a2c13
-censys:
-  - ac244e2f-b635-4581-878a-33f4e79a2c13:dd510d6e-1b6e-4655-83f6-f347b363def9
-certspotter: []
-passivetotal:
-  - sample-email@user.com:sample_password
-redhuntlabs:
-  - ENDPOINT:API_TOKEN
-  - https://reconapi.redhuntlabs.com/community/v1/domains/subdomains:joEPzJJp2AuOCw7teAj63HYrPGnsxuPQ
-securitytrails: []
-shodan:
-  - AAAAClP1bJJSRMEYJazgwhJKrggRwKA
-github:
-  - ghp_lkyJGU3jv1xmwk4SDXavrLDJ4dl2pSJMzj4X
-  - ghp_gkUuhkIYdQPj13ifH4KA3cXRn8JD2lqir2d4
-zoomeyeapi:
-  - 4f73021d-ff95-4f53-937f-83d6db719eec
-quake:
-  - 0cb9030c-0a40-48a3-b8c4-fca28e466ba3
-facebook:
-  - APP_ID:APP_SECRET
-intelx:
-  - HOST:API_KEY
-  - 2.intelx.io:s4324-b98b-41b2-220e8-3320f6a1284d
-```
-
-Note: RedHunt Labs's [Attack Surface Recon API](https://devportal.redhuntlabs.com/) has different API endpoints depending on the user's subscription. Make sure to add the appropriate endpoint before running any scans.
-
-# Running Subfinder
-
-To run the tool on a target, just use the following command.
-
-```console
-subfinder -d hackerone.com
-
-               __    _____           __         
-   _______  __/ /_  / __(_)___  ____/ /__  _____
-  / ___/ / / / __ \/ /_/ / __ \/ __  / _ \/ ___/
- (__  ) /_/ / /_/ / __/ / / / / /_/ /  __/ /    
-/____/\__,_/_.___/_/ /_/_/ /_/\__,_/\___/_/ v2.4.9
-
-		projectdiscovery.io
-
-Use with caution. You are responsible for your actions
-Developers assume no liability and are not responsible for any misuse or damage.
-By using subfinder, you also agree to the terms of the APIs used.
-
-[INF] Enumerating subdomains for hackerone.com
-
-www.hackerone.com
-support.hackerone.com
-links.hackerone.com
-api.hackerone.com
-o1.email.hackerone.com
-go.hackerone.com
-3d.hackerone.com
-resources.hackerone.com
-a.ns.hackerone.com
-b.ns.hackerone.com
-mta-sts.hackerone.com
-docs.hackerone.com
-mta-sts.forwarding.hackerone.com
-gslink.hackerone.com
-hackerone.com
-info.hackerone.com
-mta-sts.managed.hackerone.com
-events.hackerone.com
-
-[INF] Found 18 subdomains for hackerone.com in 3 seconds 672 milliseconds
-```
-
-The subdomains discovered can be piped to other tools too. For example, you can pipe the discovered subdomains to [`httpx`](https://github.com/projectdiscovery/httpx) which will then find
-running HTTP servers on the host.
-
-```console
-echo hackerone.com | subfinder -silent | httpx -silent
-
-http://hackerone.com
-http://www.hackerone.com
-http://docs.hackerone.com
-http://api.hackerone.com
-https://docs.hackerone.com
-http://mta-sts.managed.hackerone.com
-```
-
-<table>
-<tr>
-<td>  
-
-## Subfinder with docker
-
-Pull the latest tagged [subfinder](https://hub.docker.com/r/projectdiscovery/subfinder) docker image:
-
-```sh
-docker pull projectdiscovery/subfinder:latest
-```
-
-Running `subfinder` using the docker image:
-
-```sh
-docker run projectdiscovery/subfinder:latest -d hackerone.com
-```
-
-Running `subfinder` using the docker image, with a local config file:
-
-```sh
-docker run -v $CONFIG/subfinder:/root/.config/subfinder -t projectdiscovery/subfinder -d hackerone.com
-```
-
-</td>
-</tr>
-</table>
-
-<table>
-<tr>
-<td>  
+Learn about how to run Subfinder here: https://docs.projectdiscovery.io/tools/subfinder/running.
 
 ## Subfinder Go library
 
