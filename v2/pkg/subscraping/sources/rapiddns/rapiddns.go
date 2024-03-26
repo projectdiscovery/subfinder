@@ -3,11 +3,16 @@ package rapiddns
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
+
+var pagePattern = regexp.MustCompile(`class="page-link ">(\d+)</a></li>`)
 
 // Source is the passive scraping agent
 type Source struct {
@@ -28,28 +33,47 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		resp, err := session.SimpleGet(ctx, "https://rapiddns.io/subdomain/"+domain+"?full=1")
-		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
-			session.DiscardHTTPResponse(resp)
-			return
-		}
+		page := 1
+		maxPages := 1
+		for {
+			resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://rapiddns.io/subdomain/%s?page=%d", domain, page))
+			if err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
+				session.DiscardHTTPResponse(resp)
+				return
+			}
 
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
+				resp.Body.Close()
+				return
+			}
+
 			resp.Body.Close()
-			return
-		}
 
-		resp.Body.Close()
+			src := string(body)
+			for _, subdomain := range session.Extractor.Extract(src) {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				s.results++
+			}
 
-		src := string(body)
-		for _, subdomain := range session.Extractor.Extract(src) {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-			s.results++
+			if maxPages == 1 {
+				matches := pagePattern.FindAllStringSubmatch(src, -1)
+				if len(matches) > 0 {
+					lastMatch := matches[len(matches)-1]
+					if len(lastMatch) > 1 {
+						maxPages, _ = strconv.Atoi(lastMatch[1])
+					}
+				}
+			}
+
+			if page >= maxPages {
+				break
+			}
+			page++
 		}
 	}()
 
