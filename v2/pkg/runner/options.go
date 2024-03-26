@@ -165,16 +165,13 @@ func ParseOptions() *Options {
 	// Check if stdin pipe was given
 	options.Stdin = fileutil.HasStdin()
 
-	// Read the inputs and configure the logging
-	options.configureOutput()
-
 	if options.Version {
 		gologger.Info().Msgf("Current Version: %s\n", version)
 		gologger.Info().Msgf("Subfinder Config Directory: %s", configDir)
 		os.Exit(0)
 	}
 
-	options.preProcessOptions()
+	options.preProcessDomains()
 
 	if !options.Silent {
 		showBanner()
@@ -235,7 +232,7 @@ func listSources(options *Options) {
 	}
 }
 
-func (options *Options) preProcessOptions() {
+func (options *Options) preProcessDomains() {
 	for i, domain := range options.Domain {
 		options.Domain[i], _ = sanitize(domain)
 	}
