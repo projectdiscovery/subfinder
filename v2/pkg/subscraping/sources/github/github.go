@@ -80,16 +80,6 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 	}
 
 	token := tokens.Get()
-
-	if token.RetryAfter > 0 {
-		if len(tokens.pool) == 1 {
-			gologger.Verbose().Label(s.Name()).Msgf("GitHub Search request rate limit exceeded, waiting for %d seconds before retry... \n", token.RetryAfter)
-			time.Sleep(time.Duration(token.RetryAfter) * time.Second)
-		} else {
-			token = tokens.Get()
-		}
-	}
-
 	headers := map[string]string{
 		"Accept": "application/vnd.github.v3.text-match+json", "Authorization": "token " + token.Hash,
 	}
