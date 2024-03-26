@@ -30,6 +30,7 @@ func TestSourcesWithoutKeys(t *testing.T) {
 		"hackertarget",   // Fails in GH Action (possibly IP-based ban) but works locally
 		"waybackarchive", // Fails randomly
 		"alienvault",     // 503 Service Temporarily Unavailable
+		"digitorus",      // failing with "Failed to retrieve certificate"
 	}
 
 	domain := "hackerone.com"
