@@ -95,7 +95,7 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 					ca
 				WHERE ci.ISSUER_CA_ID = ca.ID
 				ORDER BY le.ENTRY_TIMESTAMP DESC NULLS LAST;`, limitClause)
-	rows, err := db.Query(query, domain)
+	rows, err := db.QueryContext(ctx, query, domain)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		s.errors++
