@@ -25,6 +25,7 @@ type dnsdbLookupResponse struct {
 	Subdomains []string `json:"subdomains"`
 	Result     int      `json:"result"`
 	Error      string   `json:"error"`
+	More       bool     `json:"more"`
 }
 
 // Run function returns all subdomains found with the service
@@ -45,36 +46,45 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		searchURL := fmt.Sprintf("https://api.shodan.io/dns/domain/%s?key=%s", domain, randomApiKey)
-		resp, err := session.SimpleGet(ctx, searchURL)
-		if err != nil {
-			session.DiscardHTTPResponse(resp)
-			return
-		}
+		page := 1
+		for {
 
-		defer resp.Body.Close()
-
-		var response dnsdbLookupResponse
-		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
-			return
-		}
-
-		if response.Error != "" {
-			results <- subscraping.Result{
-				Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%v", response.Error),
+			searchURL := fmt.Sprintf("https://api.shodan.io/dns/domain/%s?key=%s&page=%d", domain, randomApiKey, page)
+			resp, err := session.SimpleGet(ctx, searchURL)
+			if err != nil {
+				session.DiscardHTTPResponse(resp)
+				return
 			}
-			s.errors++
-			return
-		}
 
-		for _, data := range response.Subdomains {
-			results <- subscraping.Result{
-				Source: s.Name(), Type: subscraping.Subdomain, Value: fmt.Sprintf("%s.%s", data, domain),
+			defer resp.Body.Close()
+
+			var response dnsdbLookupResponse
+			err = jsoniter.NewDecoder(resp.Body).Decode(&response)
+			if err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
+				return
 			}
-			s.results++
+
+			if response.Error != "" {
+				results <- subscraping.Result{
+					Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%v", response.Error),
+				}
+				s.errors++
+				return
+			}
+
+			for _, data := range response.Subdomains {
+				results <- subscraping.Result{
+					Source: s.Name(), Type: subscraping.Subdomain, Value: fmt.Sprintf("%s.%s", data, domain),
+				}
+				s.results++
+			}
+
+			if !response.More {
+				break
+			}
+			page++
 		}
 	}()
 
