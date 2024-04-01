@@ -36,7 +36,7 @@ type Runner struct {
 // the configuration options, configuring sources, reading lists
 // and setting up loggers, etc.
 func NewRunner(options *Options) (*Runner, error) {
-	options.configureOutput()
+	options.ConfigureOutput()
 	runner := &Runner{options: options}
 
 	// Check if the application loading with any provider configuration, then take it
