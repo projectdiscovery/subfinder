@@ -120,7 +120,18 @@ func (r *Runner) EnumerateMultipleDomainsWithCtx(ctx context.Context, reader io.
 	ip, _ := regexp.Compile(`^([0-9\.]+$)`)
 	for scanner.Scan() {
 		domain, err := normalizeLowercase(scanner.Text())
+
+	        if idx := strings.Index(domain, "#"); idx != -1 {
+	            domain = domain[:idx]
+	        }
+	        domain = strings.TrimSpace(domain)
+
+		if len(domain) < 1 {
+			continue;
+		}
+
 		isIp := ip.MatchString(domain)
+		
 		if errors.Is(err, ErrEmptyInput) || (r.options.ExcludeIps && isIp) {
 			continue
 		}
