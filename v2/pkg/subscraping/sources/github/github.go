@@ -140,7 +140,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 	}
 }
 
-// proccesItems procceses github response items
+// proccesItems process github response items
 func (s *Source) proccesItems(ctx context.Context, items []item, domainRegexp *regexp.Regexp, name string, session *subscraping.Session, results chan subscraping.Result) error {
 	for _, item := range items {
 		// find subdomains in code
