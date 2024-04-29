@@ -40,3 +40,7 @@ func printStatistics(stats map[string]subscraping.Statistics) {
 		gologger.Print().Msgf("\n\n")
 	}
 }
+
+func (r *Runner) GetStatistics() map[string]subscraping.Statistics {
+	return r.passiveAgent.GetStatistics()
+}
