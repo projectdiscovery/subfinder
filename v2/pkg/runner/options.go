@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/projectdiscovery/chaos-client/pkg/chaos"
 	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
@@ -145,6 +146,9 @@ func ParseOptions() *Options {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
+
+	// set chaos mode
+	chaos.IsSDK = false
 
 	if exists := fileutil.FileExists(defaultProviderConfigLocation); !exists {
 		if err := createProviderConfigYAML(defaultProviderConfigLocation); err != nil {
