@@ -54,7 +54,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 		var pages = 1
 		for currentPage := 1; currentPage <= pages; currentPage++ {
-			api := fmt.Sprintf("https://api.zoomeye.org/domain/search?q=%s&type=1&s=1000&page=%d", domain, currentPage)
+			api := fmt.Sprintf("https://api.zoomeye.hk/domain/search?q=%s&type=1&s=1000&page=%d", domain, currentPage)
 			resp, err := session.Get(ctx, api, "", headers)
 			isForbidden := resp != nil && resp.StatusCode == http.StatusForbidden
 			if err != nil {
