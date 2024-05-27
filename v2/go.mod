@@ -11,7 +11,7 @@ require (
 	github.com/projectdiscovery/dnsx v1.2.1
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/gologger v1.1.12
-	github.com/projectdiscovery/ratelimit v0.0.41
+	github.com/projectdiscovery/ratelimit v0.0.43
 	github.com/projectdiscovery/retryablehttp-go v1.0.61
 	github.com/projectdiscovery/utils v0.0.94
 	github.com/rs/xid v1.5.0
@@ -106,6 +106,7 @@ require (
 	golang.org/x/oauth2 v0.11.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.13.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
