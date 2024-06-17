@@ -12,8 +12,8 @@ require (
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/gologger v1.1.12
 	github.com/projectdiscovery/ratelimit v0.0.44
-	github.com/projectdiscovery/retryablehttp-go v1.0.63
-	github.com/projectdiscovery/utils v0.1.3
+	github.com/projectdiscovery/retryablehttp-go v1.0.64
+	github.com/projectdiscovery/utils v0.1.4
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.9.0
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
