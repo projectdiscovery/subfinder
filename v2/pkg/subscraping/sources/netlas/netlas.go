@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -28,11 +27,6 @@ type Item struct {
 		Cname       []string `json:"cname,omitempty"`
 		Mx          []string `json:"mx,omitempty"`
 	} `json:"data"`
-}
-
-type DomainsResponse struct {
-	Items []Item `json:"items"`
-	Took  int    `json:"took"`
 }
 
 type DomainsCountResponse struct {
@@ -100,60 +94,63 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		//Define the API endpoint URL and query parameters
+		// Make a single POST request to get all domains via download method
 
-		for i := 0; i < domainsCount.Count; i += 20 {
-			offset := strconv.Itoa(i)
+		apiUrl := "https://app.netlas.io/api/domains/download/"
+		query := fmt.Sprintf("domain:(domain:*.%s AND NOT domain:%s)", domain, domain)
+		requestBody := map[string]interface{}{
+			"q":          query,
+			"fields":     []string{"*"},
+			"source_type": "include",
+			"size":        domainsCount.Count,
+		}
+		jsonRequestBody, err := json.Marshal(requestBody)
+		if err != nil {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("error marshaling request body")}
+			s.errors++
+			return
+		}
 
-			endpoint := "https://app.netlas.io/api/domains/"
-			params := url.Values{}
-			query := fmt.Sprintf("domain:(domain:*.%s AND NOT domain:%s)", domain, domain)
-			params.Set("q", query)
-			params.Set("source_type", "include")
-			params.Set("start", offset)
-			params.Set("fields", "*")
-			apiUrl := endpoint + "?" + params.Encode()
+		// Pick an API key
+		randomApiKey = subscraping.PickRandom(s.apiKeys, s.Name())
 
-			// Pick an API key
-			randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		resp, err = session.HTTPRequest(ctx, http.MethodPost, apiUrl, string(jsonRequestBody), map[string]string{
+			"accept":    "application/json",
+			"X-API-Key": randomApiKey,
+			"Content-Type": "application/json"}, nil, subscraping.BasicAuth{})
+		if err != nil {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.errors++
+			return
+		}
+		defer resp.Body.Close()
+		body, err = io.ReadAll(resp.Body)
+		if err != nil {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("error reading ressponse body")}
+			s.errors++
+			return
+		}
 
-			resp, err := session.HTTPRequest(ctx, http.MethodGet, apiUrl, "", map[string]string{
-				"accept":    "application/json",
-				"X-API-Key": randomApiKey}, nil, subscraping.BasicAuth{})
-			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
-				return
+		if resp.StatusCode == 429 {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("request rate limited with status code %d", resp.StatusCode)}
+			s.errors++
+			return
+		}
+
+		// Parse the response body and extract the domain values
+		var data []Item
+		err = json.Unmarshal(body, &data)
+		if err != nil {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.errors++
+			return
+		}
+
+		for _, item := range data {
+			results <- subscraping.Result{
+				Source: s.Name(), Type: subscraping.Subdomain, Value: item.Data.Domain,
 			}
-			defer resp.Body.Close()
-			body, err := io.ReadAll(resp.Body)
-			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("error reading ressponse body")}
-				s.errors++
-				return
-			}
-
-			if resp.StatusCode == 429 {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("request rate limited with status code %d", resp.StatusCode)}
-				s.errors++
-				break
-			}
-
-			// Parse the response body and extract the domain values
-			var data DomainsResponse
-			err = json.Unmarshal(body, &data)
-			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
-				return
-			}
-
-			for _, item := range data.Items {
-				results <- subscraping.Result{
-					Source: s.Name(), Type: subscraping.Subdomain, Value: item.Data.Domain,
-				}
-				s.results++
-			}
+			s.results++
 		}
 
 	}()
