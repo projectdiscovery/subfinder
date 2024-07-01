@@ -4,6 +4,7 @@ package netlas
 import (
 	"context"
 	"io"
+	"strings"
 
 	"encoding/json"
 	"fmt"
@@ -114,10 +115,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		// Pick an API key
 		randomApiKey = subscraping.PickRandom(s.apiKeys, s.Name())
 
-		resp, err = session.HTTPRequest(ctx, http.MethodPost, apiUrl, string(jsonRequestBody), map[string]string{
+		resp, err = session.HTTPRequest(ctx, http.MethodPost, apiUrl, "", map[string]string{
 			"accept":    "application/json",
 			"X-API-Key": randomApiKey,
-			"Content-Type": "application/json"}, nil, subscraping.BasicAuth{})
+			"Content-Type": "application/json"}, strings.NewReader(string(jsonRequestBody)), subscraping.BasicAuth{})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
