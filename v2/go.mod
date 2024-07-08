@@ -13,7 +13,7 @@ require (
 	github.com/projectdiscovery/gologger v1.1.14
 	github.com/projectdiscovery/ratelimit v0.0.45
 	github.com/projectdiscovery/retryablehttp-go v1.0.68
-	github.com/projectdiscovery/utils v0.1.6
+	github.com/projectdiscovery/utils v0.2.0
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.9.0
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
