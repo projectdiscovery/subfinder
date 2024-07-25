@@ -101,7 +101,7 @@ func ParseOptions() *Options {
 
 	flagSet.CreateGroup("rate-limit", "Rate-limit",
 		flagSet.IntVarP(&options.RateLimit, "rate-limit", "rl", 0, "maximum number of http requests to send per second (global)"),
-		flagSet.RateLimitMapVarP(&options.RateLimits, "rate-limits", "rls", defaultRateLimits, "maximum number of http requests to send per second four providers in key=value format (-rls hackertarget=10/m)", goflags.NormalizedStringSliceOptions),
+		flagSet.RateLimitMapVarP(&options.RateLimits, "rate-limits", "rls", defaultRateLimits, "maximum number of http requests to send per second for providers in key=value format (-rls hackertarget=10/m)", goflags.NormalizedStringSliceOptions),
 		flagSet.IntVar(&options.Threads, "t", 10, "number of concurrent goroutines for resolving (-active only)"),
 	)
 
