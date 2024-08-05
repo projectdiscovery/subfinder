@@ -36,7 +36,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		page := 1
 		maxPages := 1
 		for {
-			resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://rapiddns.io/subdomain/%s?page=%d", domain, page))
+			resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://rapiddns.io/subdomain/%s?page=%d&full=1", domain, page))
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				s.errors++
