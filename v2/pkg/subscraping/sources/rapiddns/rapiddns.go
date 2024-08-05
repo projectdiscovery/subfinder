@@ -12,7 +12,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-var pagePattern = regexp.MustCompile(`class="page-link ">(\d+)</a></li>`)
+var pagePattern = regexp.MustCompile(`class="page-link" href="/subdomain/[^"]+\?page=(\d+)">`)
 
 // Source is the passive scraping agent
 type Source struct {
