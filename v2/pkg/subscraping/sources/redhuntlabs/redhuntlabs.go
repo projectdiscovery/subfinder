@@ -42,15 +42,19 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		randomCred := subscraping.PickRandom(s.apiKeys, s.Name())
-		if randomCred == "" || !strings.Contains(randomCred, ":") {
+		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		if randomApiKey == "" || !strings.Contains(randomApiKey, ":") {
 			s.skipped = true
 			return
 		}
 
-		creds := strings.Split(randomCred, ":")
-		baseUrl := creds[0] + ":" + creds[1]
-		requestHeaders := map[string]string{"X-BLOBR-KEY": creds[2], "User-Agent": "subfinder"}
+		randomApiInfo := strings.Split(randomApiKey, ":")
+		if len(randomApiInfo) != 3 {
+			s.skipped = true
+			return
+		}
+		baseUrl := randomApiInfo[0] + ":" + randomApiInfo[1]
+		requestHeaders := map[string]string{"X-BLOBR-KEY": randomApiInfo[2], "User-Agent": "subfinder"}
 		getUrl := fmt.Sprintf("%s?domain=%s&page=1&page_size=%d", baseUrl, domain, pageSize)
 		resp, err := session.Get(ctx, getUrl, "", requestHeaders)
 		if err != nil {

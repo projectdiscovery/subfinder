@@ -12,7 +12,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-var pagePattern = regexp.MustCompile(`class="page-link ">(\d+)</a></li>`)
+var pagePattern = regexp.MustCompile(`class="page-link" href="/subdomain/[^"]+\?page=(\d+)">`)
 
 // Source is the passive scraping agent
 type Source struct {
@@ -36,7 +36,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		page := 1
 		maxPages := 1
 		for {
-			resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://rapiddns.io/subdomain/%s?page=%d", domain, page))
+			resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://rapiddns.io/subdomain/%s?page=%d&full=1", domain, page))
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				s.errors++

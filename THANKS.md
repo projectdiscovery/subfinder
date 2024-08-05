@@ -1,6 +1,6 @@
 ### Thanks
 
-Many people have contributed to subfinder making it a wonderful tool either by making a pull request fixing some stuff or giving generous donations to support the furthur development of this tool. Here, we recognize these persons and thank them. 
+Many people have contributed to subfinder making it a wonderful tool either by making a pull request fixing some stuff or giving generous donations to support the further development of this tool. Here, we recognize these persons and thank them. 
 
 - All the contributors at [CONTRIBUTORS](https://github.com/projectdiscovery/subfinder/graphs/contributors) who made subfinder what it is.
 
