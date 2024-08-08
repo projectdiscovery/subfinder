@@ -89,7 +89,7 @@ func ParseOptions() *Options {
 
 	flagSet.CreateGroup("source", "Source",
 		flagSet.StringSliceVarP(&options.Sources, "sources", "s", nil, "specific sources to use for discovery (-s crtsh,github). Use -ls to display all available sources.", goflags.NormalizedStringSliceOptions),
-		flagSet.BoolVar(&options.OnlyRecursive, "recursive", false, "use only sources that can handle subdomains recursively (e.g. subdomain.domain.tld vs domain.tld)"),
+		flagSet.BoolVar(&options.OnlyRecursive, "recursive", false, "use only sources that can handle subdomains recursively rather than both recursive and non-recursive sources"),
 		flagSet.BoolVar(&options.All, "all", false, "use all sources for enumeration (slow)"),
 		flagSet.StringSliceVarP(&options.ExcludeSources, "exclude-sources", "es", nil, "sources to exclude from enumeration (-es alienvault,zoomeyeapi)", goflags.NormalizedStringSliceOptions),
 	)
