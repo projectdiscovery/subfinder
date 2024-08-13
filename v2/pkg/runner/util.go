@@ -2,14 +2,9 @@ package runner
 
 import (
 	"strings"
-
-	"github.com/pkg/errors"
+	"unicode"
 
 	fileutil "github.com/projectdiscovery/utils/file"
-)
-
-var (
-	ErrEmptyInput = errors.New("empty data")
 )
 
 func loadFromFile(file string) ([]string, error) {
@@ -19,9 +14,8 @@ func loadFromFile(file string) ([]string, error) {
 	}
 	var items []string
 	for item := range chanItems {
-		var err error
-		item, err = sanitize(item)
-		if errors.Is(err, ErrEmptyInput) {
+		item = preprocessDomain(item)
+		if item == "" {
 			continue
 		}
 		items = append(items, item)
@@ -29,15 +23,17 @@ func loadFromFile(file string) ([]string, error) {
 	return items, nil
 }
 
-func sanitize(data string) (string, error) {
-	data = strings.Trim(data, "\n\t\"'` ")
-	if data == "" {
-		return "", ErrEmptyInput
-	}
-	return data, nil
+func trim(s string) string {
+	return strings.Trim(s, "\n\t\"'` ")
 }
 
-func normalizeLowercase(s string) (string, error) {
-	data, err := sanitize(s)
-	return strings.ToLower(data), err
+func stripComment(s string) string {
+	if cut := strings.IndexAny(s, "#"); cut >= 0 {
+		return strings.TrimRightFunc(s[:cut], unicode.IsSpace)
+	}
+	return s
+}
+
+func preprocessDomain(s string) string {
+	return strings.ToLower(trim(stripComment(s)))
 }
