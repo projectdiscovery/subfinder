@@ -30,14 +30,12 @@ func printStatistics(stats map[string]subscraping.Statistics) {
 
 	if len(lines) > 0 {
 		gologger.Print().Msgf("\n Source               Duration      Results     Errors\n%s\n", strings.Repeat("─", 56))
-		gologger.Print().Msgf(strings.Join(lines, "\n"))
-		gologger.Print().Msgf("\n")
+		gologger.Print().Msgf("%s\n", strings.Join(lines, "\n"))
 	}
 
 	if len(skipped) > 0 {
 		gologger.Print().Msgf("\n The following sources were included but skipped...\n\n")
-		gologger.Print().Msgf(strings.Join(skipped, "\n"))
-		gologger.Print().Msgf("\n\n")
+		gologger.Print().Msgf("%s\n\n", strings.Join(skipped, "\n"))
 	}
 }
 

@@ -119,7 +119,7 @@ func (s *Source) enumerate(ctx context.Context, session *subscraping.Session, ba
 
 	// Check error messages
 	if response.Message != "" && response.Status != nil {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf(response.Message)}
+		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.Message)}
 		s.errors++
 		return
 	}
