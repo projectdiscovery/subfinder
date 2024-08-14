@@ -1,10 +1,8 @@
 package runner
 
 import (
-	"strings"
-	"unicode"
-
 	fileutil "github.com/projectdiscovery/utils/file"
+	stringsutil "github.com/projectdiscovery/utils/strings"
 )
 
 func loadFromFile(file string) ([]string, error) {
@@ -23,17 +21,12 @@ func loadFromFile(file string) ([]string, error) {
 	return items, nil
 }
 
-func trim(s string) string {
-	return strings.Trim(s, "\n\t\"'` ")
-}
-
-func stripComment(s string) string {
-	if cut := strings.IndexAny(s, "#"); cut >= 0 {
-		return strings.TrimRightFunc(s[:cut], unicode.IsSpace)
-	}
-	return s
-}
-
 func preprocessDomain(s string) string {
-	return strings.ToLower(trim(stripComment(s)))
+	return stringsutil.NormalizeWithOptions(s,
+		stringsutil.NormalizeOptions{
+			StripComments: true,
+			TrimCutset:    "\n\t\"'` ",
+			Lowercase:     true,
+		},
+	)
 }
