@@ -156,8 +156,8 @@ func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, sessi
 			for _, value := range session.Extractor.Extract(sub) {
 				if value != "" {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}
+					s.results++
 				}
-				s.results++
 			}
 		}
 	}

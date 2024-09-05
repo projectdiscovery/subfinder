@@ -122,8 +122,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 			for _, v := range response.Data {
 				for _, domain := range v.Domains {
-					s.results++
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: domain}
+					s.results++
 				}
 			}
 			if response.Paging.Next == "" {

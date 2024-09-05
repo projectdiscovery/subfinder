@@ -131,6 +131,7 @@ func (s *Source) getSubdomains(ctx context.Context, searchURL, domain string, se
 			resp, err := session.Get(ctx, fmt.Sprintf("%s?url=*.%s", searchURL, domain), "", headers)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
 				session.DiscardHTTPResponse(resp)
 				return false
 			}
@@ -150,6 +151,7 @@ func (s *Source) getSubdomains(ctx context.Context, searchURL, domain string, se
 						subdomain = strings.TrimPrefix(subdomain, "2f")
 
 						results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+						s.results++
 					}
 				}
 			}
