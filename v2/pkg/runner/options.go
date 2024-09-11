@@ -215,7 +215,7 @@ func (options *Options) loadProvidersFrom(location string) {
 
 	// We skip bailing out if file doesn't exist because we'll create it
 	// at the end of options parsing from default via goflags.
-	if err := UnmarshalFrom(location); err != nil && (!strings.Contains(err.Error(), "file doesn't exist") || errors.Is(os.ErrNotExist, err)) {
+	if err := UnmarshalFrom(location); err != nil && (!strings.Contains(err.Error(), "file doesn't exist") || errors.Is(err, os.ErrNotExist)) {
 		gologger.Error().Msgf("Could not read providers from %s: %s\n", location, err)
 	}
 }
@@ -237,7 +237,7 @@ func listSources(options *Options) {
 
 func (options *Options) preProcessDomains() {
 	for i, domain := range options.Domain {
-		options.Domain[i], _ = sanitize(domain)
+		options.Domain[i] = preprocessDomain(domain)
 	}
 }
 
