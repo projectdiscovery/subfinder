@@ -1,15 +1,8 @@
 package runner
 
 import (
-	"strings"
-
-	"github.com/pkg/errors"
-
 	fileutil "github.com/projectdiscovery/utils/file"
-)
-
-var (
-	ErrEmptyInput = errors.New("empty data")
+	stringsutil "github.com/projectdiscovery/utils/strings"
 )
 
 func loadFromFile(file string) ([]string, error) {
@@ -19,9 +12,8 @@ func loadFromFile(file string) ([]string, error) {
 	}
 	var items []string
 	for item := range chanItems {
-		var err error
-		item, err = sanitize(item)
-		if errors.Is(err, ErrEmptyInput) {
+		item = preprocessDomain(item)
+		if item == "" {
 			continue
 		}
 		items = append(items, item)
@@ -29,15 +21,12 @@ func loadFromFile(file string) ([]string, error) {
 	return items, nil
 }
 
-func sanitize(data string) (string, error) {
-	data = strings.Trim(data, "\n\t\"'` ")
-	if data == "" {
-		return "", ErrEmptyInput
-	}
-	return data, nil
-}
-
-func normalizeLowercase(s string) (string, error) {
-	data, err := sanitize(s)
-	return strings.ToLower(data), err
+func preprocessDomain(s string) string {
+	return stringsutil.NormalizeWithOptions(s,
+		stringsutil.NormalizeOptions{
+			StripComments: true,
+			TrimCutset:    "\n\t\"'` ",
+			Lowercase:     true,
+		},
+	)
 }

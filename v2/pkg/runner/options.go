@@ -237,7 +237,7 @@ func listSources(options *Options) {
 
 func (options *Options) preProcessDomains() {
 	for i, domain := range options.Domain {
-		options.Domain[i], _ = sanitize(domain)
+		options.Domain[i] = preprocessDomain(domain)
 	}
 }
 
