@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -17,7 +18,11 @@ import (
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys []string
+	apiKeys   []string
+	timeTaken time.Duration
+	errors    int
+	results   int
+	skipped   bool
 }
 
 type item struct {
@@ -30,9 +35,14 @@ type item struct {
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
+	s.errors = 0
+	s.results = 0
 
 	go func() {
-		defer close(results)
+		defer func(startTime time.Time) {
+			s.timeTaken = time.Since(startTime)
+			close(results)
+		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
 		if randomApiKey == "" {
@@ -59,6 +69,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 	resp, err := session.Get(ctx, searchURL, "", headers)
 	if err != nil && resp == nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		s.errors++
 		session.DiscardHTTPResponse(resp)
 		return
 	}
@@ -69,6 +80,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 	err = jsoniter.NewDecoder(resp.Body).Decode(&items)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		s.errors++
 		return
 	}
 
@@ -85,6 +97,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 					session.DiscardHTTPResponse(resp)
 
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+					s.errors++
 					return
 				}
 			}
@@ -98,6 +111,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 					}
 					for _, subdomain := range domainRegexp.FindAllString(line, -1) {
 						results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+						s.results++
 					}
 				}
 				resp.Body.Close()
@@ -114,6 +128,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 			nextURL, err := url.QueryUnescape(link.URL)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
 				return
 			}
 
@@ -148,4 +163,14 @@ func (s *Source) NeedsKey() bool {
 
 func (s *Source) AddApiKeys(keys []string) {
 	s.apiKeys = keys
+}
+
+// Statistics returns the statistics for the source
+func (s *Source) Statistics() subscraping.Statistics {
+	return subscraping.Statistics{
+		Errors:    s.errors,
+		Results:   s.results,
+		TimeTaken: s.timeTaken,
+		Skipped:   s.skipped,
+	}
 }

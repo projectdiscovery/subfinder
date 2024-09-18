@@ -88,6 +88,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		if total > 0 {
 			for _, subdomain := range response.Data.SubDomains.Data {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				s.results++
 			}
 		}
 	}()
