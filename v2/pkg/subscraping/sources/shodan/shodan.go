@@ -77,8 +77,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			for _, data := range response.Subdomains {
 				value := fmt.Sprintf("%s.%s", data, response.Domain)
-				suffix := fmt.Sprintf(".%s", strings.TrimPrefix(domain, "."))
-				if strings.HasSuffix(value, suffix) {
+				if strings.HasSuffix(value, domain) {
 					results <- subscraping.Result{
 						Source: s.Name(), Type: subscraping.Subdomain, Value: value,
 					}
