@@ -4,7 +4,6 @@ package shodan
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -77,12 +76,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			for _, data := range response.Subdomains {
 				value := fmt.Sprintf("%s.%s", data, response.Domain)
-				if strings.HasSuffix(value, domain) {
-					results <- subscraping.Result{
-						Source: s.Name(), Type: subscraping.Subdomain, Value: value,
-					}
-					s.results++
+				results <- subscraping.Result{
+					Source: s.Name(), Type: subscraping.Subdomain, Value: value,
 				}
+				s.results++
 			}
 
 			if !response.More {
