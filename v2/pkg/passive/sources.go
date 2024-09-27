@@ -156,6 +156,10 @@ func New(sourceNames, excludedSourceNames []string, useAllSources, useSourcesSup
 		}
 	}
 
+	if len(sources) == 0 {
+		gologger.Fatal().Msg("No sources selected for this search")
+	}
+
 	gologger.Debug().Msgf("Selected source(s) for this search: %s", strings.Join(maps.Keys(sources), ", "))
 
 	for _, currentSource := range sources {
