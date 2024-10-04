@@ -93,8 +93,19 @@ func (r *Runner) RunEnumerationWithCtx(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		err = r.EnumerateMultipleDomainsWithCtx(ctx, f, outputs)
-		f.Close()
+		defer f.Close()
+
+		var reader io.Reader = f
+
+		if r.options.StartLine != 0 && r.options.EndLine != 0 {
+			filteredReader, err := filterLinesByRange(f, r.options.StartLine, r.options.EndLine)
+			if err != nil {
+				return err
+			}
+			reader = filteredReader
+		}
+
+		err = r.EnumerateMultipleDomainsWithCtx(ctx, reader, outputs)
 		return err
 	}
 

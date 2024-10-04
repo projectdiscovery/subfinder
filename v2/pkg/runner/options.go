@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/projectdiscovery/chaos-client/pkg/chaos"
@@ -48,6 +49,9 @@ type Options struct {
 	MaxEnumerationTime int                 // MaxEnumerationTime is the maximum amount of time in minutes to wait for enumeration
 	Domain             goflags.StringSlice // Domain is the domain to find subdomains for
 	DomainsFile        string              // DomainsFile is the file containing list of domains to find subdomains for
+	Lines              string              // Lines is the range of lines to be read from the file in the "start,end" format.
+	StartLine          int                 // StartLine is the number of the first line to be read from the file.
+	EndLine            int                 // EndLine is the number of the last line to be read from the file.
 	Output             io.Writer
 	OutputFile         string               // Output is the file to write found subdomains to.
 	OutputDirectory    string               // OutputDirectory is the directory to write results to in case list of domains is given
@@ -85,6 +89,7 @@ func ParseOptions() *Options {
 	flagSet.CreateGroup("input", "Input",
 		flagSet.StringSliceVarP(&options.Domain, "domain", "d", nil, "domains to find subdomains for", goflags.NormalizedStringSliceOptions),
 		flagSet.StringVarP(&options.DomainsFile, "list", "dL", "", "file containing list of domains for subdomain discovery"),
+		flagSet.StringVar(&options.Lines, "lines", "", "range of lines that will be read from the file [start,end]"),
 	)
 
 	flagSet.CreateGroup("source", "Source",
@@ -233,6 +238,32 @@ func listSources(options *Options) {
 		}
 		gologger.Silent().Msgf(message, sourceName)
 	}
+}
+
+/*
+parseLinesArgument processes the "lines" argument in the format [start, end].
+If no error occurs, it sets options.StartLine and options.EndLine.
+*/
+func (options *Options) parseLinesArgument() error {
+	parts := strings.Split(options.Lines, ",")
+	if len(parts) != 2 {
+		return errors.New("invalid lines argument format, expected 'start,end'")
+	}
+
+	start, err := strconv.Atoi(strings.TrimSpace(parts[0]))
+	if err != nil {
+		return errors.New("invalid start line value, expected a number")
+	}
+	options.StartLine = start
+
+	end, err := strconv.Atoi(strings.TrimSpace(parts[1]))
+	if err != nil {
+		options.StartLine = 0
+		return errors.New("invalid end line value, expected a number")
+	}
+	options.EndLine = end
+
+	return nil
 }
 
 func (options *Options) preProcessDomains() {

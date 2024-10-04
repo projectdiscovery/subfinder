@@ -65,6 +65,24 @@ func (options *Options) validateOptions() error {
 			return fmt.Errorf("invalid source %s specified in -rls flag", source)
 		}
 	}
+
+	if options.Lines != "" {
+		err := options.parseLinesArgument()
+		if err != nil {
+			return err
+		}
+	}
+
+	if options.DomainsFile == "" && options.Lines != "" {
+		return errors.New("cannot specify lines range without a file")
+	}
+	if options.StartLine > options.EndLine {
+		return errors.New("start line cannot be greater than end line")
+	}
+	if options.StartLine <= 0 || options.EndLine <= 0 {
+		return errors.New("start and end lines starts cannot be equal or less than zero")
+	}
+
 	return nil
 }
 func stripRegexString(val string) string {
