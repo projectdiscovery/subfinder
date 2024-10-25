@@ -23,7 +23,7 @@ jobs:
       - name: "Create release on GitHub"
         uses: goreleaser/goreleaser-action@v3
         with:
-          args: "release --rm-dist"
+          args: "release --clean"
           version: latest
           workdir: v2/
         env:
