@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -47,14 +48,22 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
+		randomApiInfo := strings.Split(randomApiKey, ":")
+		if len(randomApiInfo) != 2 {
+			s.skipped = true
+			return
+		}
+		host := randomApiInfo[0]
+		apiKey := randomApiInfo[1]
+
 		headers := map[string]string{
-			"API-KEY":      randomApiKey,
+			"API-KEY":      apiKey,
 			"Accept":       "application/json",
 			"Content-Type": "application/json",
 		}
 		var pages = 1
 		for currentPage := 1; currentPage <= pages; currentPage++ {
-			api := fmt.Sprintf("https://api.zoomeye.org/domain/search?q=%s&type=1&s=1000&page=%d", domain, currentPage)
+			api := fmt.Sprintf("https://api.%s/domain/search?q=%s&type=1&s=1000&page=%d", host, domain, currentPage)
 			resp, err := session.Get(ctx, api, "", headers)
 			isForbidden := resp != nil && resp.StatusCode == http.StatusForbidden
 			if err != nil {

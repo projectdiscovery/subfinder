@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/projectdiscovery/chaos-client/pkg/chaos"
 	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
@@ -88,7 +89,7 @@ func ParseOptions() *Options {
 
 	flagSet.CreateGroup("source", "Source",
 		flagSet.StringSliceVarP(&options.Sources, "sources", "s", nil, "specific sources to use for discovery (-s crtsh,github). Use -ls to display all available sources.", goflags.NormalizedStringSliceOptions),
-		flagSet.BoolVar(&options.OnlyRecursive, "recursive", false, "use only sources that can handle subdomains recursively (e.g. subdomain.domain.tld vs domain.tld)"),
+		flagSet.BoolVar(&options.OnlyRecursive, "recursive", false, "use only sources that can handle subdomains recursively rather than both recursive and non-recursive sources"),
 		flagSet.BoolVar(&options.All, "all", false, "use all sources for enumeration (slow)"),
 		flagSet.StringSliceVarP(&options.ExcludeSources, "exclude-sources", "es", nil, "sources to exclude from enumeration (-es alienvault,zoomeyeapi)", goflags.NormalizedStringSliceOptions),
 	)
@@ -100,7 +101,7 @@ func ParseOptions() *Options {
 
 	flagSet.CreateGroup("rate-limit", "Rate-limit",
 		flagSet.IntVarP(&options.RateLimit, "rate-limit", "rl", 0, "maximum number of http requests to send per second (global)"),
-		flagSet.RateLimitMapVarP(&options.RateLimits, "rate-limits", "rls", defaultRateLimits, "maximum number of http requests to send per second four providers in key=value format (-rls hackertarget=10/m)", goflags.NormalizedStringSliceOptions),
+		flagSet.RateLimitMapVarP(&options.RateLimits, "rate-limits", "rls", defaultRateLimits, "maximum number of http requests to send per second for providers in key=value format (-rls hackertarget=10/m)", goflags.NormalizedStringSliceOptions),
 		flagSet.IntVar(&options.Threads, "t", 10, "number of concurrent goroutines for resolving (-active only)"),
 	)
 
@@ -146,6 +147,9 @@ func ParseOptions() *Options {
 		os.Exit(1)
 	}
 
+	// set chaos mode
+	chaos.IsSDK = false
+
 	if exists := fileutil.FileExists(defaultProviderConfigLocation); !exists {
 		if err := createProviderConfigYAML(defaultProviderConfigLocation); err != nil {
 			gologger.Error().Msgf("Could not create provider config file: %s\n", err)
@@ -173,9 +177,8 @@ func ParseOptions() *Options {
 
 	options.preProcessDomains()
 
-	if !options.Silent {
-		showBanner()
-	}
+	options.ConfigureOutput()
+	showBanner()
 
 	if !options.DisableUpdateCheck {
 		latestVersion, err := updateutils.GetToolVersionCallback("subfinder", version)()
@@ -212,7 +215,7 @@ func (options *Options) loadProvidersFrom(location string) {
 
 	// We skip bailing out if file doesn't exist because we'll create it
 	// at the end of options parsing from default via goflags.
-	if err := UnmarshalFrom(location); err != nil && (!strings.Contains(err.Error(), "file doesn't exist") || errors.Is(os.ErrNotExist, err)) {
+	if err := UnmarshalFrom(location); err != nil && (!strings.Contains(err.Error(), "file doesn't exist") || errors.Is(err, os.ErrNotExist)) {
 		gologger.Error().Msgf("Could not read providers from %s: %s\n", location, err)
 	}
 }
@@ -234,7 +237,7 @@ func listSources(options *Options) {
 
 func (options *Options) preProcessDomains() {
 	for i, domain := range options.Domain {
-		options.Domain[i], _ = sanitize(domain)
+		options.Domain[i] = preprocessDomain(domain)
 	}
 }
 
@@ -254,4 +257,5 @@ var defaultRateLimits = []string{
 	"netlas=1/s",
 	// "gitlab=2/s",
 	"github=83/m",
+	"subdomaincenter=2/m",
 }

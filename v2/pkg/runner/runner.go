@@ -11,8 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pkg/errors"
-
 	"github.com/projectdiscovery/gologger"
 	contextutil "github.com/projectdiscovery/utils/context"
 	fileutil "github.com/projectdiscovery/utils/file"
@@ -36,7 +34,7 @@ type Runner struct {
 // the configuration options, configuring sources, reading lists
 // and setting up loggers, etc.
 func NewRunner(options *Options) (*Runner, error) {
-	options.configureOutput()
+	options.ConfigureOutput()
 	runner := &Runner{options: options}
 
 	// Check if the application loading with any provider configuration, then take it
@@ -116,12 +114,13 @@ func (r *Runner) EnumerateMultipleDomains(reader io.Reader, writers []io.Writer)
 // EnumerateMultipleDomainsWithCtx enumerates subdomains for multiple domains
 // We keep enumerating subdomains for a given domain until we reach an error
 func (r *Runner) EnumerateMultipleDomainsWithCtx(ctx context.Context, reader io.Reader, writers []io.Writer) error {
+	var err error
 	scanner := bufio.NewScanner(reader)
 	ip, _ := regexp.Compile(`^([0-9\.]+$)`)
 	for scanner.Scan() {
-		domain, err := normalizeLowercase(scanner.Text())
-		isIp := ip.MatchString(domain)
-		if errors.Is(err, ErrEmptyInput) || (r.options.ExcludeIps && isIp) {
+		domain := preprocessDomain(scanner.Text())
+
+		if domain == "" || (r.options.ExcludeIps && ip.MatchString(domain)) {
 			continue
 		}
 

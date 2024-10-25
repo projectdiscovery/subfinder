@@ -72,6 +72,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
 				resp.Body.Close()
 				return
 			}
@@ -81,6 +82,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				results <- subscraping.Result{
 					Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.Message),
 				}
+				s.errors++
 				return
 			}
 
@@ -88,6 +90,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				for _, hunterInfo := range response.Data.InfoArr {
 					subdomain := hunterInfo.Domain
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+					s.results++
 				}
 			}
 			pages = int(response.Data.Total/1000) + 1

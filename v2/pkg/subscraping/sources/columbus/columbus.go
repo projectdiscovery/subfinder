@@ -1,22 +1,21 @@
-// Package leakix logic
-package leakix
+// Package columbus logic
+package columbus
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
+
+	jsoniter "github.com/json-iterator/go"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys   []string
 	timeTaken time.Duration
 	errors    int
 	results   int
-	skipped   bool
 }
 
 // Run function returns all subdomains found with the service
@@ -30,50 +29,42 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			s.timeTaken = time.Since(startTime)
 			close(results)
 		}(time.Now())
-		// Default headers
-		headers := map[string]string{
-			"accept": "application/json",
-		}
-		// Pick an API key
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
-		if randomApiKey != "" {
-			headers["api-key"] = randomApiKey
-		}
-		// Request
-		resp, err := session.Get(ctx, "https://leakix.net/api/subdomains/"+domain, "", headers)
+
+		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://columbus.elmasy.com/api/lookup/%s", domain))
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
+			session.DiscardHTTPResponse(resp)
 			return
 		}
-		defer resp.Body.Close()
-		if resp.StatusCode != 200 {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("request failed with status %d", resp.StatusCode)}
-			s.errors++
-			return
-		}
-		// Parse and return results
-		var subdomains []subResponse
-		decoder := json.NewDecoder(resp.Body)
-		err = decoder.Decode(&subdomains)
+
+		var subdomains []string
+		err = jsoniter.NewDecoder(resp.Body).Decode(&subdomains)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
+			resp.Body.Close()
 			return
 		}
-		for _, result := range subdomains {
-			results <- subscraping.Result{
-				Source: s.Name(), Type: subscraping.Subdomain, Value: result.Subdomain,
+
+		resp.Body.Close()
+
+		for _, record := range subdomains {
+			if record == "" {
+				continue
 			}
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record + "." + domain}
 			s.results++
 		}
+
 	}()
+
 	return results
 }
 
 // Name returns the name of the source
 func (s *Source) Name() string {
-	return "leakix"
+	return "columbus"
 }
 
 func (s *Source) IsDefault() bool {
@@ -81,15 +72,15 @@ func (s *Source) IsDefault() bool {
 }
 
 func (s *Source) HasRecursiveSupport() bool {
-	return true
+	return false
 }
 
 func (s *Source) NeedsKey() bool {
-	return true
+	return false
 }
 
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (s *Source) AddApiKeys(_ []string) {
+	// no key needed
 }
 
 func (s *Source) Statistics() subscraping.Statistics {
@@ -97,12 +88,5 @@ func (s *Source) Statistics() subscraping.Statistics {
 		Errors:    s.errors,
 		Results:   s.results,
 		TimeTaken: s.timeTaken,
-		Skipped:   s.skipped,
 	}
-}
-
-type subResponse struct {
-	Subdomain   string    `json:"subdomain"`
-	DistinctIps int       `json:"distinct_ips"`
-	LastSeen    time.Time `json:"last_seen"`
 }

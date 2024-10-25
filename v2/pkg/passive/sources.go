@@ -1,7 +1,6 @@
 package passive
 
 import (
-	"fmt"
 	"strings"
 
 	"golang.org/x/exp/maps"
@@ -19,6 +18,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/certspotter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/chaos"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/chinaz"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/columbus"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/commoncrawl"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtsh"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitorus"
@@ -42,6 +42,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/subdomaincenter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
@@ -61,6 +62,7 @@ var AllSources = [...]subscraping.Source{
 	&certspotter.Source{},
 	&chaos.Source{},
 	&chinaz.Source{},
+	&columbus.Source{},
 	&commoncrawl.Source{},
 	&crtsh.Source{},
 	&digitorus.Source{},
@@ -93,6 +95,7 @@ var AllSources = [...]subscraping.Source{
 	// &threatminer.Source{}, // failing  api
 	// &reconcloud.Source{}, // failing due to cloudflare bot protection
 	&builtwith.Source{},
+	&subdomaincenter.Source{},
 }
 
 var sourceWarnings = mapsutil.NewSyncLockMap[string, string](
@@ -153,7 +156,11 @@ func New(sourceNames, excludedSourceNames []string, useAllSources, useSourcesSup
 		}
 	}
 
-	gologger.Debug().Msgf(fmt.Sprintf("Selected source(s) for this search: %s", strings.Join(maps.Keys(sources), ", ")))
+	if len(sources) == 0 {
+		gologger.Fatal().Msg("No sources selected for this search")
+	}
+
+	gologger.Debug().Msgf("Selected source(s) for this search: %s", strings.Join(maps.Keys(sources), ", "))
 
 	for _, currentSource := range sources {
 		if warning, ok := sourceWarnings.Get(strings.ToLower(currentSource.Name())); ok {
