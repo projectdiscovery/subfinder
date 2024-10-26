@@ -61,7 +61,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 		for result := range passiveResults {
 			switch result.Type {
 			case subscraping.Error:
-				gologger.Warning().Msgf("Could not run source %s: %s\n", result.Source, result.Error)
+				gologger.Warning().Msgf("Encountered an error with source %s: %s\n", result.Source, result.Error)
 			case subscraping.Subdomain:
 				// Validate the subdomain found and remove wildcards from
 				if !strings.HasSuffix(result.Value, "."+domain) {
