@@ -18,12 +18,6 @@ const SleepRandIntn = 5
 
 var reNext = regexp.MustCompile(`<a href="([A-Za-z0-9/.]+)"><b>`)
 
-type agent struct {
-	results chan subscraping.Result
-	errors  int
-	session *subscraping.Session
-}
-
 // Source is the passive scraping agent
 type Source struct {
 	timeTaken time.Duration
@@ -37,58 +31,52 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	s.errors = 0
 	s.results = 0
 
-	a := agent{
-		session: session,
-		results: results,
-	}
-
 	go func() {
 		defer func(startTime time.Time) {
 			s.timeTaken = time.Since(startTime)
-			close(a.results)
+			close(results)
 		}(time.Now())
 
-		a.enumerate(ctx, fmt.Sprintf("http://www.sitedossier.com/parentdomain/%s", domain))
-		s.errors = a.errors
-		s.results = len(a.results)
+		s.enumerate(ctx, session, fmt.Sprintf("http://www.sitedossier.com/parentdomain/%s", domain), results)
 	}()
 
-	return a.results
+	return results
 }
 
-func (a *agent) enumerate(ctx context.Context, baseURL string) {
+func (s *Source) enumerate(ctx context.Context, session *subscraping.Session, baseURL string, results chan subscraping.Result) {
 	select {
 	case <-ctx.Done():
 		return
 	default:
 	}
 
-	resp, err := a.session.SimpleGet(ctx, baseURL)
+	resp, err := session.SimpleGet(ctx, baseURL)
 	isnotfound := resp != nil && resp.StatusCode == http.StatusNotFound
 	if err != nil && !isnotfound {
-		a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
-		a.errors++
-		a.session.DiscardHTTPResponse(resp)
+		results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
+		s.errors++
+		session.DiscardHTTPResponse(resp)
 		return
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
-		a.errors++
+		results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
+		s.errors++
 		resp.Body.Close()
 		return
 	}
 	resp.Body.Close()
 
 	src := string(body)
-	for _, subdomain := range a.session.Extractor.Extract(src) {
-		a.results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Subdomain, Value: subdomain}
+	for _, subdomain := range session.Extractor.Extract(src) {
+		results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Subdomain, Value: subdomain}
+		s.results++
 	}
 
 	match := reNext.FindStringSubmatch(src)
 	if len(match) > 0 {
-		a.enumerate(ctx, fmt.Sprintf("http://www.sitedossier.com%s", match[1]))
+		s.enumerate(ctx, session, fmt.Sprintf("http://www.sitedossier.com%s", match[1]), results)
 	}
 }
 
