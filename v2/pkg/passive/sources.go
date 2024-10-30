@@ -18,7 +18,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/certspotter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/chaos"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/chinaz"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/columbus"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/commoncrawl"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtsh"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitorus"
@@ -62,7 +61,6 @@ var AllSources = [...]subscraping.Source{
 	&certspotter.Source{},
 	&chaos.Source{},
 	&chinaz.Source{},
-	&columbus.Source{},
 	&commoncrawl.Source{},
 	&crtsh.Source{},
 	&digitorus.Source{},
