@@ -24,13 +24,15 @@ func TestSourcesWithoutKeys(t *testing.T) {
 	}
 
 	ignoredSources := []string{
-		"commoncrawl",    // commoncrawl is under resourced and will likely time-out so step over it for this test https://groups.google.com/u/2/g/common-crawl/c/3QmQjFA_3y4/m/vTbhGqIBBQAJ
-		"riddler",        // failing due to cloudfront protection
-		"crtsh",          // Fails in GH Action (possibly IP-based ban) causing a timeout.
-		"hackertarget",   // Fails in GH Action (possibly IP-based ban) but works locally
-		"waybackarchive", // Fails randomly
-		"alienvault",     // 503 Service Temporarily Unavailable
-		"digitorus",      // failing with "Failed to retrieve certificate"
+		"commoncrawl",     // commoncrawl is under resourced and will likely time-out so step over it for this test https://groups.google.com/u/2/g/common-crawl/c/3QmQjFA_3y4/m/vTbhGqIBBQAJ
+		"riddler",         // failing due to cloudfront protection
+		"crtsh",           // Fails in GH Action (possibly IP-based ban) causing a timeout.
+		"hackertarget",    // Fails in GH Action (possibly IP-based ban) but works locally
+		"waybackarchive",  // Fails randomly
+		"alienvault",      // 503 Service Temporarily Unavailable
+		"digitorus",       // failing with "Failed to retrieve certificate"
+		"dnsdumpster",     // failing with "unexpected status code 403 received"
+		"subdomaincenter", //failing with empty result or random reason /shrug
 	}
 
 	domain := "hackerone.com"

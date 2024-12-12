@@ -68,7 +68,7 @@ var (
 		"chinaz",
 		"crtsh",
 		"digitorus",
-		"dnsdumpster",
+		// "dnsdumpster", //failing with "unexpected status code 403 received"
 		"dnsrepo",
 		"fofa",
 		"fullhunt",
@@ -89,7 +89,7 @@ var (
 		// "threatminer",
 		// "reconcloud",
 		"builtwith",
-		"subdomaincenter",
+		// "subdomaincenter", //failing with empty result
 	}
 
 	expectedDefaultRecursiveSources = []string{

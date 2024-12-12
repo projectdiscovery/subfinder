@@ -118,7 +118,7 @@ func (s *Source) Name() string {
 }
 
 func (s *Source) IsDefault() bool {
-	return true
+	return false
 }
 
 func (s *Source) HasRecursiveSupport() bool {
