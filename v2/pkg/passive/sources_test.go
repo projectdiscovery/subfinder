@@ -54,6 +54,7 @@ var (
 		// "reconcloud",
 		"builtwith",
 		"subdomaincenter",
+		"hudsonrock",
 	}
 
 	expectedDefaultSources = []string{
