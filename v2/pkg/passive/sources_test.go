@@ -68,7 +68,7 @@ var (
 		"chinaz",
 		"crtsh",
 		"digitorus",
-		// "dnsdumpster", //failing with "unexpected status code 403 received"
+		"dnsdumpster",
 		"dnsrepo",
 		"fofa",
 		"fullhunt",
@@ -98,7 +98,6 @@ var (
 		"bufferover",
 		"certspotter",
 		"crtsh",
-		"dnsdumpster",
 		"dnsdb",
 		"digitorus",
 		"hackertarget",
