@@ -10,10 +10,10 @@ require (
 	github.com/projectdiscovery/chaos-client v0.5.2
 	github.com/projectdiscovery/dnsx v1.2.1
 	github.com/projectdiscovery/fdmax v0.0.4
-	github.com/projectdiscovery/gologger v1.1.27
-	github.com/projectdiscovery/ratelimit v0.0.55
-	github.com/projectdiscovery/retryablehttp-go v1.0.82
-	github.com/projectdiscovery/utils v0.2.15
+	github.com/projectdiscovery/gologger v1.1.35
+	github.com/projectdiscovery/ratelimit v0.0.66
+	github.com/projectdiscovery/retryablehttp-go v1.0.90
+	github.com/projectdiscovery/utils v0.4.2
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.9.0
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
@@ -71,8 +71,8 @@ require (
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
 	github.com/projectdiscovery/blackrock v0.0.1 // indirect
 	github.com/projectdiscovery/cdncheck v1.1.0 // indirect
-	github.com/projectdiscovery/fastdialer v0.2.9 // indirect
-	github.com/projectdiscovery/hmap v0.0.62 // indirect
+	github.com/projectdiscovery/fastdialer v0.2.14 // indirect
+	github.com/projectdiscovery/hmap v0.0.71 // indirect
 	github.com/projectdiscovery/machineid v0.0.0-20240226150047-2e2c51e35983 // indirect
 	github.com/projectdiscovery/networkpolicy v0.0.9 // indirect
 	github.com/refraction-networking/utls v1.6.7 // indirect
@@ -102,12 +102,12 @@ require (
 	github.com/zmap/zcrypto v0.0.0-20230422215203-9a665e1e9968 // indirect
 	go.etcd.io/bbolt v1.3.7 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.27.0 // indirect
+	golang.org/x/crypto v0.31.0 // indirect
 	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/oauth2 v0.11.0 // indirect
-	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/term v0.24.0 // indirect
-	golang.org/x/text v0.18.0 // indirect
+	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/term v0.27.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	google.golang.org/appengine v1.6.7 // indirect
@@ -125,7 +125,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/projectdiscovery/goflags v0.1.64
-	github.com/projectdiscovery/retryabledns v1.0.80 // indirect
+	github.com/projectdiscovery/retryabledns v1.0.89 // indirect
 	golang.org/x/net v0.29.0 // indirect
-	golang.org/x/sys v0.25.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
 )
