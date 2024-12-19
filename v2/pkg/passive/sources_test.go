@@ -54,6 +54,7 @@ var (
 		// "reconcloud",
 		"builtwith",
 		"subdomaincenter",
+		"merklemap",
 	}
 
 	expectedDefaultSources = []string{
@@ -90,6 +91,7 @@ var (
 		// "reconcloud",
 		"builtwith",
 		// "subdomaincenter", //failing with empty result
+		"merklemap",
 	}
 
 	expectedDefaultRecursiveSources = []string{

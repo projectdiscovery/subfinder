@@ -32,6 +32,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hunter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/leakix"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/merklemap"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/netlas"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/passivetotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/quake"
@@ -94,6 +95,7 @@ var AllSources = [...]subscraping.Source{
 	// &reconcloud.Source{}, // failing due to cloudflare bot protection
 	&builtwith.Source{},
 	&subdomaincenter.Source{},
+	&merklemap.Source{},
 }
 
 var sourceWarnings = mapsutil.NewSyncLockMap[string, string](
