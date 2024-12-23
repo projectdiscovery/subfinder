@@ -12,7 +12,7 @@ require (
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/gologger v1.1.35
 	github.com/projectdiscovery/ratelimit v0.0.66
-	github.com/projectdiscovery/retryablehttp-go v1.0.90
+	github.com/projectdiscovery/retryablehttp-go v1.0.92
 	github.com/projectdiscovery/utils v0.4.2
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.9.0
