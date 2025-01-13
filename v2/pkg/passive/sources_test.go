@@ -53,7 +53,6 @@ var (
 		// "threatminer",
 		// "reconcloud",
 		"builtwith",
-		"subdomaincenter",
 		"hudsonrock",
 	}
 
@@ -90,7 +89,6 @@ var (
 		// "threatminer",
 		// "reconcloud",
 		"builtwith",
-		// "subdomaincenter", //failing with empty result
 	}
 
 	expectedDefaultRecursiveSources = []string{
