@@ -53,7 +53,6 @@ var (
 		// "threatminer",
 		// "reconcloud",
 		"builtwith",
-		"subdomaincenter",
 		"merklemap",
 	}
 
@@ -90,7 +89,6 @@ var (
 		// "threatminer",
 		// "reconcloud",
 		"builtwith",
-		// "subdomaincenter", //failing with empty result
 		"merklemap",
 	}
 

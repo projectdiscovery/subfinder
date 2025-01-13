@@ -32,7 +32,6 @@ func TestSourcesWithoutKeys(t *testing.T) {
 		"alienvault",      // 503 Service Temporarily Unavailable
 		"digitorus",       // failing with "Failed to retrieve certificate"
 		"dnsdumpster",     // failing with "unexpected status code 403 received"
-		"subdomaincenter", //failing with empty result or random reason /shrug
 	}
 
 	domain := "hackerone.com"
