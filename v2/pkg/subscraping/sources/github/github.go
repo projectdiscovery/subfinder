@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -142,40 +143,58 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 
 // proccesItems process github response items
 func (s *Source) proccesItems(ctx context.Context, items []item, domainRegexp *regexp.Regexp, name string, session *subscraping.Session, results chan subscraping.Result) error {
-	for _, item := range items {
-		// find subdomains in code
-		resp, err := session.SimpleGet(ctx, rawURL(item.HTMLURL))
-		if err != nil {
-			if resp != nil && resp.StatusCode != http.StatusNotFound {
-				session.DiscardHTTPResponse(resp)
-			}
-			return err
-		}
+	var wg sync.WaitGroup
+	errChan := make(chan error, len(items))
 
-		if resp.StatusCode == http.StatusOK {
-			scanner := bufio.NewScanner(resp.Body)
-			for scanner.Scan() {
-				line := scanner.Text()
-				if line == "" {
-					continue
+	for _, responseItem := range items {
+		wg.Add(1)
+		go func(responseItem item) {
+			defer wg.Done()
+
+			// find subdomains in code
+			resp, err := session.SimpleGet(ctx, rawURL(responseItem.HTMLURL))
+			if err != nil {
+				if resp != nil && resp.StatusCode != http.StatusNotFound {
+					session.DiscardHTTPResponse(resp)
 				}
-				for _, subdomain := range domainRegexp.FindAllString(normalizeContent(line), -1) {
+				errChan <- err
+				return
+			}
+
+			if resp.StatusCode == http.StatusOK {
+				scanner := bufio.NewScanner(resp.Body)
+				for scanner.Scan() {
+					line := scanner.Text()
+					if line == "" {
+						continue
+					}
+					for _, subdomain := range domainRegexp.FindAllString(normalizeContent(line), -1) {
+						results <- subscraping.Result{Source: name, Type: subscraping.Subdomain, Value: subdomain}
+						s.results++
+					}
+				}
+				resp.Body.Close()
+			}
+
+			// find subdomains in text matches
+			for _, textMatch := range responseItem.TextMatches {
+				for _, subdomain := range domainRegexp.FindAllString(normalizeContent(textMatch.Fragment), -1) {
 					results <- subscraping.Result{Source: name, Type: subscraping.Subdomain, Value: subdomain}
 					s.results++
-
 				}
 			}
-			resp.Body.Close()
-		}
+		}(responseItem)
+	}
 
-		// find subdomains in text matches
-		for _, textMatch := range item.TextMatches {
-			for _, subdomain := range domainRegexp.FindAllString(normalizeContent(textMatch.Fragment), -1) {
-				results <- subscraping.Result{Source: name, Type: subscraping.Subdomain, Value: subdomain}
-				s.results++
-			}
+	wg.Wait()
+	close(errChan)
+
+	for err := range errChan {
+		if err != nil {
+			return err
 		}
 	}
+
 	return nil
 }
 

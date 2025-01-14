@@ -30,8 +30,9 @@ func main() {
 	}
 
 	output := &bytes.Buffer{}
+	var sourceMap map[string]map[string]struct{}
 	// To run subdomain enumeration on a single domain
-	if err = subfinder.EnumerateSingleDomainWithCtx(context.Background(), "hackerone.com", []io.Writer{output}); err != nil {
+	if sourceMap, err = subfinder.EnumerateSingleDomainWithCtx(context.Background(), "hackerone.com", []io.Writer{output}); err != nil {
 		log.Fatalf("failed to enumerate single domain: %v", err)
 	}
 
@@ -47,4 +48,13 @@ func main() {
 
 	// print the output
 	log.Println(output.String())
+
+	// Or use sourceMap to access the results in your application
+	for subdomain, sources := range sourceMap {
+		sourcesList := make([]string, 0, len(sources))
+		for source := range sources {
+			sourcesList = append(sourcesList, source)
+		}
+		log.Printf("%s %s (%d)\n", subdomain, sourcesList, len(sources))
+	}
 }

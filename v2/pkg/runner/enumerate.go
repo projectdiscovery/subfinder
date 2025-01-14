@@ -19,18 +19,20 @@ import (
 const maxNumCount = 2
 
 var replacer = strings.NewReplacer(
+	"•.", "",
+	"•", "",
 	"*.", "",
 	"http://", "",
 	"https://", "",
 )
 
 // EnumerateSingleDomain wraps EnumerateSingleDomainWithCtx with an empty context
-func (r *Runner) EnumerateSingleDomain(domain string, writers []io.Writer) error {
+func (r *Runner) EnumerateSingleDomain(domain string, writers []io.Writer) (map[string]map[string]struct{}, error) {
 	return r.EnumerateSingleDomainWithCtx(context.Background(), domain, writers)
 }
 
 // EnumerateSingleDomainWithCtx performs subdomain enumeration against a single domain
-func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string, writers []io.Writer) error {
+func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string, writers []io.Writer) (map[string]map[string]struct{}, error) {
 	gologger.Info().Msgf("Enumerating subdomains for %s\n", domain)
 
 	// Check if the user has asked to remove wildcards explicitly.
@@ -61,14 +63,15 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 		for result := range passiveResults {
 			switch result.Type {
 			case subscraping.Error:
-				gologger.Warning().Msgf("Could not run source %s: %s\n", result.Source, result.Error)
+				gologger.Warning().Msgf("Encountered an error with source %s: %s\n", result.Source, result.Error)
 			case subscraping.Subdomain:
+				subdomain := replacer.Replace(result.Value)
+
 				// Validate the subdomain found and remove wildcards from
-				if !strings.HasSuffix(result.Value, "."+domain) {
+				if !strings.HasSuffix(subdomain, "."+domain) {
 					skippedCounts[result.Source]++
 					continue
 				}
-				subdomain := replacer.Replace(result.Value)
 
 				if matchSubdomain := r.filterAndMatchSubdomain(subdomain); matchSubdomain {
 					if _, ok := uniqueMap[subdomain]; !ok {
@@ -145,7 +148,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 		}
 		if err != nil {
 			gologger.Error().Msgf("Could not write results for %s: %s\n", domain, err)
-			return err
+			return nil, err
 		}
 	}
 
@@ -186,7 +189,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 		printStatistics(statistics)
 	}
 
-	return nil
+	return sourceMap, nil
 }
 
 func (r *Runner) filterAndMatchSubdomain(subdomain string) bool {

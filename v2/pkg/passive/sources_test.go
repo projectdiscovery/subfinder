@@ -21,7 +21,6 @@ var (
 		"certspotter",
 		"chaos",
 		"chinaz",
-		"columbus",
 		"commoncrawl",
 		"crtsh",
 		"digitorus",
@@ -54,7 +53,7 @@ var (
 		// "threatminer",
 		// "reconcloud",
 		"builtwith",
-		"subdomaincenter",
+		"hudsonrock",
 	}
 
 	expectedDefaultSources = []string{
@@ -67,7 +66,6 @@ var (
 		"censys",
 		"chaos",
 		"chinaz",
-		"columbus",
 		"crtsh",
 		"digitorus",
 		"dnsdumpster",
@@ -91,7 +89,6 @@ var (
 		// "threatminer",
 		// "reconcloud",
 		"builtwith",
-		"subdomaincenter",
 	}
 
 	expectedDefaultRecursiveSources = []string{
@@ -100,7 +97,6 @@ var (
 		"bufferover",
 		"certspotter",
 		"crtsh",
-		"dnsdumpster",
 		"dnsdb",
 		"digitorus",
 		"hackertarget",
