@@ -53,6 +53,7 @@ var (
 		// "threatminer",
 		// "reconcloud",
 		"builtwith",
+		"hudsonrock",
 	}
 
 	expectedDefaultSources = []string{
