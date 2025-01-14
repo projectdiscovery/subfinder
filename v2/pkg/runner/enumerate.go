@@ -27,12 +27,12 @@ var replacer = strings.NewReplacer(
 )
 
 // EnumerateSingleDomain wraps EnumerateSingleDomainWithCtx with an empty context
-func (r *Runner) EnumerateSingleDomain(domain string, writers []io.Writer) error {
+func (r *Runner) EnumerateSingleDomain(domain string, writers []io.Writer) (map[string]map[string]struct{}, error) {
 	return r.EnumerateSingleDomainWithCtx(context.Background(), domain, writers)
 }
 
 // EnumerateSingleDomainWithCtx performs subdomain enumeration against a single domain
-func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string, writers []io.Writer) error {
+func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string, writers []io.Writer) (map[string]map[string]struct{}, error) {
 	gologger.Info().Msgf("Enumerating subdomains for %s\n", domain)
 
 	// Check if the user has asked to remove wildcards explicitly.
@@ -148,7 +148,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 		}
 		if err != nil {
 			gologger.Error().Msgf("Could not write results for %s: %s\n", domain, err)
-			return err
+			return nil, err
 		}
 	}
 
@@ -189,7 +189,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 		printStatistics(statistics)
 	}
 
-	return nil
+	return sourceMap, nil
 }
 
 func (r *Runner) filterAndMatchSubdomain(subdomain string) bool {
