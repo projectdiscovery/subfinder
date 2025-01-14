@@ -53,7 +53,6 @@ var (
 		// "threatminer",
 		// "reconcloud",
 		"builtwith",
-		"subdomaincenter",
 	}
 
 	expectedDefaultSources = []string{
@@ -89,7 +88,6 @@ var (
 		// "threatminer",
 		// "reconcloud",
 		"builtwith",
-		// "subdomaincenter", //failing with empty result
 	}
 
 	expectedDefaultRecursiveSources = []string{

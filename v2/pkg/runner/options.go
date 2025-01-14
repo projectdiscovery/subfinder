@@ -257,5 +257,4 @@ var defaultRateLimits = []string{
 	"netlas=1/s",
 	// "gitlab=2/s",
 	"github=83/m",
-	"subdomaincenter=2/m",
 }
