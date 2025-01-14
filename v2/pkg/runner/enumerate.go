@@ -19,6 +19,8 @@ import (
 const maxNumCount = 2
 
 var replacer = strings.NewReplacer(
+	"•.", "",
+	"•", "",
 	"*.", "",
 	"http://", "",
 	"https://", "",
@@ -63,12 +65,13 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 			case subscraping.Error:
 				gologger.Warning().Msgf("Encountered an error with source %s: %s\n", result.Source, result.Error)
 			case subscraping.Subdomain:
+				subdomain := replacer.Replace(result.Value)
+
 				// Validate the subdomain found and remove wildcards from
-				if !strings.HasSuffix(result.Value, "."+domain) {
+				if !strings.HasSuffix(subdomain, "."+domain) {
 					skippedCounts[result.Source]++
 					continue
 				}
-				subdomain := replacer.Replace(result.Value)
 
 				if matchSubdomain := r.filterAndMatchSubdomain(subdomain); matchSubdomain {
 					if _, ok := uniqueMap[subdomain]; !ok {

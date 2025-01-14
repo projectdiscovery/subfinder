@@ -53,7 +53,7 @@ var (
 		// "threatminer",
 		// "reconcloud",
 		"builtwith",
-		"subdomaincenter",
+		"hudsonrock",
 	}
 
 	expectedDefaultSources = []string{
@@ -68,7 +68,7 @@ var (
 		"chinaz",
 		"crtsh",
 		"digitorus",
-		// "dnsdumpster", //failing with "unexpected status code 403 received"
+		"dnsdumpster",
 		"dnsrepo",
 		"fofa",
 		"fullhunt",
@@ -89,7 +89,6 @@ var (
 		// "threatminer",
 		// "reconcloud",
 		"builtwith",
-		// "subdomaincenter", //failing with empty result
 	}
 
 	expectedDefaultRecursiveSources = []string{
@@ -98,7 +97,6 @@ var (
 		"bufferover",
 		"certspotter",
 		"crtsh",
-		"dnsdumpster",
 		"dnsdb",
 		"digitorus",
 		"hackertarget",

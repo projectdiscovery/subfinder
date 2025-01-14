@@ -29,6 +29,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fullhunt"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/github"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hackertarget"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hudsonrock"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hunter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/leakix"
@@ -41,7 +42,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/subdomaincenter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
@@ -93,7 +93,7 @@ var AllSources = [...]subscraping.Source{
 	// &threatminer.Source{}, // failing  api
 	// &reconcloud.Source{}, // failing due to cloudflare bot protection
 	&builtwith.Source{},
-	&subdomaincenter.Source{},
+	&hudsonrock.Source{},
 }
 
 var sourceWarnings = mapsutil.NewSyncLockMap[string, string](
