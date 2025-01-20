@@ -202,8 +202,8 @@ github.com/projectdiscovery/fdmax v0.0.4 h1:K9tIl5MUZrEMzjvwn/G4drsHms2aufTn1xUd
 github.com/projectdiscovery/fdmax v0.0.4/go.mod h1:oZLqbhMuJ5FmcoaalOm31B1P4Vka/CqP50nWjgtSz+I=
 github.com/projectdiscovery/goflags v0.1.64 h1:FDfwdt9N97Hi8OuhbkDlKtVttpc/CRMIWQVa08VsHsI=
 github.com/projectdiscovery/goflags v0.1.64/go.mod h1:3FyHIVQtnycNOc1LE3O1jj/XR5XuMdF9QfHd0ujhnX4=
-github.com/projectdiscovery/gologger v1.1.40 h1:FSIhKnYKzuIEIz3RTg6JX9JtDKgkEzIEf2v5RYckoQ4=
-github.com/projectdiscovery/gologger v1.1.40/go.mod h1:8AUxYXmClqOWJgZ5wknNn5rRK3UlrXQ/r9JjX+gp5Gg=
+github.com/projectdiscovery/gologger v1.1.41 h1:s5iAOhYDoKnUay5CtvhFpZdGzQKXeARJbpQubThT1Bs=
+github.com/projectdiscovery/gologger v1.1.41/go.mod h1:68ltkt+p8WquBsi4CQ2Z2nfrDXhuraC7GQbtH15B0PI=
 github.com/projectdiscovery/hmap v0.0.74 h1:j0TpS9fJxisfdGcIRjaZ3qgyjP3pBkRJf12ZWv64rOI=
 github.com/projectdiscovery/hmap v0.0.74/go.mod h1:qEPAdq/gWQU/IEI+QMzSyL+HYdqayR64V9vGTI/W38c=
 github.com/projectdiscovery/machineid v0.0.0-20240226150047-2e2c51e35983 h1:ZScLodGSezQVwsQDtBSMFp72WDq0nNN+KE/5DHKY5QE=
