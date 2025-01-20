@@ -204,8 +204,8 @@ github.com/projectdiscovery/goflags v0.1.64 h1:FDfwdt9N97Hi8OuhbkDlKtVttpc/CRMIW
 github.com/projectdiscovery/goflags v0.1.64/go.mod h1:3FyHIVQtnycNOc1LE3O1jj/XR5XuMdF9QfHd0ujhnX4=
 github.com/projectdiscovery/gologger v1.1.40 h1:FSIhKnYKzuIEIz3RTg6JX9JtDKgkEzIEf2v5RYckoQ4=
 github.com/projectdiscovery/gologger v1.1.40/go.mod h1:8AUxYXmClqOWJgZ5wknNn5rRK3UlrXQ/r9JjX+gp5Gg=
-github.com/projectdiscovery/hmap v0.0.74 h1:j0TpS9fJxisfdGcIRjaZ3qgyjP3pBkRJf12ZWv64rOI=
-github.com/projectdiscovery/hmap v0.0.74/go.mod h1:qEPAdq/gWQU/IEI+QMzSyL+HYdqayR64V9vGTI/W38c=
+github.com/projectdiscovery/hmap v0.0.75 h1:1RndachCwHXtxtuxxWvn62MSY2F6ONIrXMOXL1Bcz1w=
+github.com/projectdiscovery/hmap v0.0.75/go.mod h1:qSrlTYphDXNL5YEt/WIT/sxLjaYjr28Km2v2rMQ7rtU=
 github.com/projectdiscovery/machineid v0.0.0-20240226150047-2e2c51e35983 h1:ZScLodGSezQVwsQDtBSMFp72WDq0nNN+KE/5DHKY5QE=
 github.com/projectdiscovery/machineid v0.0.0-20240226150047-2e2c51e35983/go.mod h1:3G3BRKui7nMuDFAZKR/M2hiOLtaOmyukT20g88qRQjI=
 github.com/projectdiscovery/networkpolicy v0.0.9 h1:IrlDoYZagNNO8y+7iZeHT8k5izE+nek7TdtvEBwCxqk=
@@ -216,8 +216,8 @@ github.com/projectdiscovery/retryabledns v1.0.93 h1:iKcEEEH77WwUf5EGimhHxCDdqBF2
 github.com/projectdiscovery/retryabledns v1.0.93/go.mod h1:f5HmPdVr3CUm4tHHiB0UyiZVQTYYAKTqfoj8M2gCvqo=
 github.com/projectdiscovery/retryablehttp-go v1.0.95 h1:5CHhWLMovX1MD9W3HzlsMBY3xA+dyeqta2gSWo3j92E=
 github.com/projectdiscovery/retryablehttp-go v1.0.95/go.mod h1:/7CHaD7vqnqBD++AI0JsJdcYyq1Wbf4vMhddjy7sZjI=
-github.com/projectdiscovery/utils v0.4.6 h1:lwbS5d/f70wyDwuwF6lAVkn390hEI/0LOtqyqJEI+qE=
-github.com/projectdiscovery/utils v0.4.6/go.mod h1:eevtW7+x7ydrBdmOenmHdqqJKRv3VqY2QUR7vs4qRfU=
+github.com/projectdiscovery/utils v0.4.7 h1:kw0BCox/G4eCaz5MW0U4HP6z/n0K4X7qv7v1wNuXSLA=
+github.com/projectdiscovery/utils v0.4.7/go.mod h1:B4k3whXzeBD+HrlvlqCv+KNgcAuzrTIL+OADkk0z8Bw=
 github.com/refraction-networking/utls v1.6.7 h1:zVJ7sP1dJx/WtVuITug3qYUq034cDq9B2MR1K67ULZM=
 github.com/refraction-networking/utls v1.6.7/go.mod h1:BC3O4vQzye5hqpmDTWUqi4P5DDhzJfkV1tdqtawQIH0=
 github.com/rivo/uniseg v0.1.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
