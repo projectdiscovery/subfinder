@@ -119,6 +119,7 @@ func (r *Runner) EnumerateMultipleDomainsWithCtx(ctx context.Context, reader io.
 	ip, _ := regexp.Compile(`^([0-9\.]+$)`)
 	for scanner.Scan() {
 		domain := preprocessDomain(scanner.Text())
+		domain = replacer.Replace(domain)
 
 		if domain == "" || (r.options.ExcludeIps && ip.MatchString(domain)) {
 			continue

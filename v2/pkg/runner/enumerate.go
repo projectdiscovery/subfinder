@@ -19,6 +19,7 @@ import (
 const maxNumCount = 2
 
 var replacer = strings.NewReplacer(
+	"/", "",
 	"•.", "",
 	"•", "",
 	"*.", "",
