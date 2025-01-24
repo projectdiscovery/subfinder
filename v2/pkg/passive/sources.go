@@ -47,6 +47,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/whoisxmlapi"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeyeapi"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitalyama"
 	mapsutil "github.com/projectdiscovery/utils/maps"
 )
 
@@ -94,6 +95,7 @@ var AllSources = [...]subscraping.Source{
 	// &reconcloud.Source{}, // failing due to cloudflare bot protection
 	&builtwith.Source{},
 	&hudsonrock.Source{},
+	&digitalyama.Source{},
 }
 
 var sourceWarnings = mapsutil.NewSyncLockMap[string, string](
