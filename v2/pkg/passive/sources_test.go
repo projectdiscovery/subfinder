@@ -54,7 +54,7 @@ var (
 		// "reconcloud",
 		"builtwith",
 		"hudsonrock",
-		"digitalyama"
+		"digitalyama",
 	}
 
 	expectedDefaultSources = []string{
@@ -90,7 +90,7 @@ var (
 		// "threatminer",
 		// "reconcloud",
 		"builtwith",
-		"digitalyama"
+		"digitalyama",
 	}
 
 	expectedDefaultRecursiveSources = []string{
