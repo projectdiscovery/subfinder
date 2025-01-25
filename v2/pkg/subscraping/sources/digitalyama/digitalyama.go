@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	// jsoniter
 	jsoniter "github.com/json-iterator/go"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -20,11 +21,11 @@ type Source struct {
 }
 
 type digitalYamaResponse struct {
-	Query      string   `json:"query"`
-	Count      int      `json:"count"`
-	Subdomains []string `json:"subdomains"`
+	Query        string   `json:"query"`
+	Count        int      `json:"count"`
+	Subdomains   []string `json:"subdomains"`
 	UsageSummary struct {
-		QueryCost       float64 `json:"query_cost"`
+		QueryCost        float64 `json:"query_cost"`
 		CreditsRemaining float64 `json:"credits_remaining"`
 	} `json:"usage_summary"`
 }
