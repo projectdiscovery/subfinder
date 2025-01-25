@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	// jsoniter
 	jsoniter "github.com/json-iterator/go"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
