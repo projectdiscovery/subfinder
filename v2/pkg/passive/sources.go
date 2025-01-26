@@ -34,7 +34,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/leakix"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/netlas"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/passivetotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/quake"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rapiddns"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/redhuntlabs"
@@ -76,7 +75,6 @@ var AllSources = [...]subscraping.Source{
 	&intelx.Source{},
 	&netlas.Source{},
 	&leakix.Source{},
-	&passivetotal.Source{},
 	&quake.Source{},
 	&rapiddns.Source{},
 	&redhuntlabs.Source{},
@@ -99,9 +97,7 @@ var AllSources = [...]subscraping.Source{
 }
 
 var sourceWarnings = mapsutil.NewSyncLockMap[string, string](
-	mapsutil.WithMap(mapsutil.Map[string, string]{
-		"passivetotal": "New API credentials for PassiveTotal can't be generated, but existing user account credentials are still functional. Please ensure your integrations are using valid credentials.",
-	}))
+	mapsutil.WithMap(mapsutil.Map[string, string]{}))
 
 var NameSourceMap = make(map[string]subscraping.Source, len(AllSources))
 
