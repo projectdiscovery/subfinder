@@ -67,6 +67,7 @@ type Options struct {
 	filterRegexes      []*regexp.Regexp
 	ResultCallback     OnResultCallback // OnResult callback
 	DisableUpdateCheck bool             // DisableUpdateCheck disable update checking
+	ExcludeTLDs        goflags.StringSlice
 }
 
 // OnResultCallback (hostResult)
@@ -97,6 +98,7 @@ func ParseOptions() *Options {
 	flagSet.CreateGroup("filter", "Filter",
 		flagSet.StringSliceVarP(&options.Match, "match", "m", nil, "subdomain or list of subdomain to match (file or comma separated)", goflags.FileNormalizedStringSliceOptions),
 		flagSet.StringSliceVarP(&options.Filter, "filter", "f", nil, " subdomain or list of subdomain to filter (file or comma separated)", goflags.FileNormalizedStringSliceOptions),
+		flagSet.StringSliceVarP(&options.ExcludeTLDs, "exclude-tld", "et", nil, "exclude specified TLD(s) (e.g. .ru, .cn). Can be used multiple times or with file input", goflags.FileNormalizedStringSliceOptions,),
 	)
 
 	flagSet.CreateGroup("rate-limit", "Rate-limit",

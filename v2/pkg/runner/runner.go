@@ -125,6 +125,11 @@ func (r *Runner) EnumerateMultipleDomainsWithCtx(ctx context.Context, reader io.
 			continue
 		}
 
+		if r.shouldExcludeDomain(domain) {
+            gologger.Debug().Msgf("Skipping domain %s because TLD is excluded", domain)
+            continue
+        }
+
 		var file *os.File
 		// If the user has specified an output file, use that output file instead
 		// of creating a new output file for each domain. Else create a new file
@@ -166,4 +171,14 @@ func (r *Runner) EnumerateMultipleDomainsWithCtx(ctx context.Context, reader io.
 		}
 	}
 	return nil
+}
+
+// shouldExcludeDomain checks if the domain ends with any TLD in ExcludeTLDs
+func (r *Runner) shouldExcludeDomain(domain string) bool {
+    for _, tld := range r.options.ExcludeTLDs {
+        if strings.HasSuffix(domain, tld) {
+            return true
+        }
+    }
+    return false
 }
