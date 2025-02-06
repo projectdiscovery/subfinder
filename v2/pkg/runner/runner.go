@@ -175,10 +175,10 @@ func (r *Runner) EnumerateMultipleDomainsWithCtx(ctx context.Context, reader io.
 
 // shouldExcludeDomain checks if the domain ends with any TLD in ExcludeTLDs
 func (r *Runner) shouldExcludeDomain(domain string) bool {
-    for _, tld := range r.options.ExcludeTLDs {
-        if strings.HasSuffix(domain, tld) {
-            return true
-        }
-    }
-    return false
+    	for _, tld := range r.options.ExcludeTLDs {
+        	if strings.HasSuffix(domain, tld) {
+            		return true
+        	}
+    	}
+    	return false
 }
