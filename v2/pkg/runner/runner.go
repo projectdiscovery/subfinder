@@ -126,9 +126,9 @@ func (r *Runner) EnumerateMultipleDomainsWithCtx(ctx context.Context, reader io.
 		}
 
 		if r.shouldExcludeDomain(domain) {
-            gologger.Debug().Msgf("Skipping domain %s because TLD is excluded", domain)
-            continue
-        }
+            		gologger.Debug().Msgf("Skipping domain %s because TLD is excluded", domain)
+            		continue
+       		}
 
 		var file *os.File
 		// If the user has specified an output file, use that output file instead
