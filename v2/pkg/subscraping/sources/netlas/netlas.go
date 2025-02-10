@@ -98,10 +98,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		// Make a single POST request to get all domains via download method
 
 		apiUrl := "https://app.netlas.io/api/domains/download/"
-		query := fmt.Sprintf("domain:(domain:*.%s AND NOT domain:%s)", domain, domain)
+		query := fmt.Sprintf("domain:*.%s AND NOT domain:%s", domain, domain)
 		requestBody := map[string]interface{}{
-			"q":          query,
-			"fields":     []string{"*"},
+			"q":           query,
+			"fields":      []string{"*"},
 			"source_type": "include",
 			"size":        domainsCount.Count,
 		}
@@ -116,8 +116,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		randomApiKey = subscraping.PickRandom(s.apiKeys, s.Name())
 
 		resp, err = session.HTTPRequest(ctx, http.MethodPost, apiUrl, "", map[string]string{
-			"accept":    "application/json",
-			"X-API-Key": randomApiKey,
+			"accept":       "application/json",
+			"X-API-Key":    randomApiKey,
 			"Content-Type": "application/json"}, strings.NewReader(string(jsonRequestBody)), subscraping.BasicAuth{})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
