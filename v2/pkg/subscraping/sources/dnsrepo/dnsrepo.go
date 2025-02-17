@@ -40,7 +40,17 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			s.skipped = true
 			return
 		}
-		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://dnsrepo.noc.org/api/?apikey=%s&search=%s", randomApiKey, domain))
+
+		randomApiInfo := strings.Split(randomApiKey, ":")
+		if len(randomApiInfo) != 2 {
+			s.skipped = true
+			return
+		}
+
+		token := randomApiInfo[0]
+		apiKey := randomApiInfo[1]
+
+		resp, err := session.Get(ctx, fmt.Sprintf("https://dnsarchive.net/api/?apikey=%s&search=%s", apiKey, domain), "", map[string]string{" X-API-Access": token})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
