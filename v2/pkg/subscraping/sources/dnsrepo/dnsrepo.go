@@ -21,7 +21,7 @@ type Source struct {
 }
 
 type DnsRepoResponse []struct {
-	Domain string
+	Domain string `json:"domain"`
 }
 
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
@@ -50,7 +50,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		token := randomApiInfo[0]
 		apiKey := randomApiInfo[1]
 
-		resp, err := session.Get(ctx, fmt.Sprintf("https://dnsarchive.net/api/?apikey=%s&search=%s", apiKey, domain), "", map[string]string{" X-API-Access": token})
+		resp, err := session.Get(ctx, fmt.Sprintf("https://dnsarchive.net/api/?apikey=%s&search=%s", apiKey, domain), "", map[string]string{"X-API-Access": token})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
