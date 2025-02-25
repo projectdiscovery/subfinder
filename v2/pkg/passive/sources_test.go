@@ -42,6 +42,7 @@ var (
 		"shodan",
 		"sitedossier",
 		"threatbook",
+		"threatcrowd",
 		"virustotal",
 		"waybackarchive",
 		"whoisxmlapi",
