@@ -51,7 +51,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 		var cursor string = ""
 		for {
-			var url string = fmt.Sprintf("https://www.virustotal.com/api/v3/domains/%s/subdomains?limit=1000", domain)
+			var url string = fmt.Sprintf("https://www.virustotal.com/api/v3/domains/%s/subdomains?limit=40", domain)
 			if cursor != "" {
 				url = fmt.Sprintf("%s&cursor=%s", url, cursor)
 			}

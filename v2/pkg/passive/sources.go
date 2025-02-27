@@ -34,7 +34,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/leakix"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/netlas"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/passivetotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/quake"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rapiddns"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/redhuntlabs"
@@ -43,10 +42,12 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatcrowd"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/whoisxmlapi"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeyeapi"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitalyama"
 	mapsutil "github.com/projectdiscovery/utils/maps"
 )
 
@@ -75,7 +76,6 @@ var AllSources = [...]subscraping.Source{
 	&intelx.Source{},
 	&netlas.Source{},
 	&leakix.Source{},
-	&passivetotal.Source{},
 	&quake.Source{},
 	&rapiddns.Source{},
 	&redhuntlabs.Source{},
@@ -85,6 +85,7 @@ var AllSources = [...]subscraping.Source{
 	&shodan.Source{},
 	&sitedossier.Source{},
 	&threatbook.Source{},
+	&threatcrowd.Source{},
 	&virustotal.Source{},
 	&waybackarchive.Source{},
 	&whoisxmlapi.Source{},
@@ -94,12 +95,11 @@ var AllSources = [...]subscraping.Source{
 	// &reconcloud.Source{}, // failing due to cloudflare bot protection
 	&builtwith.Source{},
 	&hudsonrock.Source{},
+	&digitalyama.Source{},
 }
 
 var sourceWarnings = mapsutil.NewSyncLockMap[string, string](
-	mapsutil.WithMap(mapsutil.Map[string, string]{
-		"passivetotal": "New API credentials for PassiveTotal can't be generated, but existing user account credentials are still functional. Please ensure your integrations are using valid credentials.",
-	}))
+	mapsutil.WithMap(mapsutil.Map[string, string]{}))
 
 var NameSourceMap = make(map[string]subscraping.Source, len(AllSources))
 

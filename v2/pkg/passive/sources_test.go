@@ -33,7 +33,6 @@ var (
 		"hackertarget",
 		"intelx",
 		"netlas",
-		"passivetotal",
 		"quake",
 		"rapiddns",
 		"redhuntlabs",
@@ -43,6 +42,7 @@ var (
 		"shodan",
 		"sitedossier",
 		"threatbook",
+		"threatcrowd",
 		"virustotal",
 		"waybackarchive",
 		"whoisxmlapi",
@@ -54,6 +54,7 @@ var (
 		// "reconcloud",
 		"builtwith",
 		"hudsonrock",
+		"digitalyama",
 	}
 
 	expectedDefaultSources = []string{
@@ -74,7 +75,6 @@ var (
 		"fullhunt",
 		"hackertarget",
 		"intelx",
-		"passivetotal",
 		"quake",
 		"redhuntlabs",
 		"robtex",
@@ -89,6 +89,7 @@ var (
 		// "threatminer",
 		// "reconcloud",
 		"builtwith",
+		"digitalyama",
 	}
 
 	expectedDefaultRecursiveSources = []string{
@@ -100,7 +101,6 @@ var (
 		"dnsdb",
 		"digitorus",
 		"hackertarget",
-		"passivetotal",
 		"securitytrails",
 		"virustotal",
 		"leakix",
