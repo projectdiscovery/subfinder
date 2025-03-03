@@ -10,10 +10,10 @@ require (
 	github.com/projectdiscovery/chaos-client v0.5.2
 	github.com/projectdiscovery/dnsx v1.2.2
 	github.com/projectdiscovery/fdmax v0.0.4
-	github.com/projectdiscovery/gologger v1.1.44
+	github.com/projectdiscovery/gologger v1.1.45
 	github.com/projectdiscovery/ratelimit v0.0.70
-	github.com/projectdiscovery/retryablehttp-go v1.0.99
-	github.com/projectdiscovery/utils v0.4.11
+	github.com/projectdiscovery/retryablehttp-go v1.0.100
+	github.com/projectdiscovery/utils v0.4.12
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.9.0
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
@@ -124,7 +124,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/projectdiscovery/goflags v0.1.72
+	github.com/projectdiscovery/goflags v0.1.74
 	github.com/projectdiscovery/retryabledns v1.0.94 // indirect
 	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
