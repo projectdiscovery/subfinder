@@ -13,24 +13,32 @@ on:
         type: boolean
         default: false
 
-jobs:  
+jobs:
+  lint:
+    name: Lint Test
+    if: "${{ !endsWith(github.actor, '[bot]') }}"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: projectdiscovery/actions/setup/go@v1
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v5
+        with:
+          version: latest
+          args: --timeout 5m
+          working-directory: v2/
+
   build:
     name: Test Builds
+    needs: [lint]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-13]
     steps:
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: 1.21.x
-
-      - name: Check out code
-        uses: actions/checkout@v3
-
-      - name: Build
-        run: go build ./...
+      - uses: actions/checkout@v4
+      - uses: projectdiscovery/actions/setup/go@v1
+      - run: go build ./...
         working-directory: v2/
 
       - name: Run tests
