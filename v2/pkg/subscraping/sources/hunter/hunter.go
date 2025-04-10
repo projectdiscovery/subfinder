@@ -93,12 +93,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				s.results++
 			}
 		}
-		// get all pages 获取全部页数
+		// get all pages
 		pages = int(response.Data.Total/1000) + 1
-		//page turning 进行翻页操作
+		//Perform page turning operation
 		for currentPage := 2; currentPage <= pages; currentPage++ {
 			qbase64 := base64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("domain=\"%s\"", domain)))
-			resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://hunter.qianxin.com/openApi/search?api-key=%s&search=%s&page=%s&page_size=100&is_web=3", randomApiKey, qbase64, currentPage))
+			resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://hunter.qianxin.com/openApi/search?api-key=%s&search=%s&page=%d&page_size=100&is_web=3", randomApiKey, qbase64, currentPage))
 			if err != nil && resp == nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				s.errors++
