@@ -57,43 +57,79 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 
 		var pages = 1
-		for currentPage := 1; currentPage <= pages; currentPage++ {
-			// hunter api doc https://hunter.qianxin.com/home/helpCenter?r=5-1-2
-			qbase64 := base64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("domain=\"%s\"", domain)))
-			resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://hunter.qianxin.com/openApi/search?api-key=%s&search=%s&page=1&page_size=100&is_web=3", randomApiKey, qbase64))
-			if err != nil && resp == nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
-				session.DiscardHTTPResponse(resp)
-				return
-			}
+		// hunter api doc https://hunter.qianxin.com/home/helpCenter?r=5-1-2
+		qbase64 := base64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("domain=\"%s\"", domain)))
+		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://hunter.qianxin.com/openApi/search?api-key=%s&search=%s&page=1&page_size=100&is_web=3", randomApiKey, qbase64))
+		if err != nil && resp == nil {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.errors++
+			session.DiscardHTTPResponse(resp)
+			return
+		}
 
-			var response hunterResp
-			err = jsoniter.NewDecoder(resp.Body).Decode(&response)
-			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
-				resp.Body.Close()
-				return
-			}
+		var response hunterResp
+		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
+		if err != nil {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.errors++
 			resp.Body.Close()
+			return
+		}
+		resp.Body.Close()
 
-			if response.Code == 401 || response.Code == 400 {
-				results <- subscraping.Result{
-					Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.Message),
-				}
-				s.errors++
-				return
+		if response.Code == 401 || response.Code == 400 {
+			results <- subscraping.Result{
+				Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.Message),
 			}
+			s.errors++
+			return
+		}
 
-			if response.Data.Total > 0 {
-				for _, hunterInfo := range response.Data.InfoArr {
-					subdomain := hunterInfo.Domain
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-					s.results++
+		if response.Data.Total > 0 {
+			for _, hunterInfo := range response.Data.InfoArr {
+				subdomain := hunterInfo.Domain
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				s.results++
+			}
+		}
+		//count pages
+		pages = int(response.Data.Total/100) + 1
+
+		if pages > 2 {
+			for currentPage := 2; currentPage <= pages; currentPage++ {
+				resp, err = session.SimpleGet(ctx, fmt.Sprintf("https://hunter.qianxin.com/openApi/search?api-key=%s&search=%s&page=%d&page_size=100&is_web=3", randomApiKey, qbase64, currentPage))
+				if err != nil && resp == nil {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+					s.errors++
+					session.DiscardHTTPResponse(resp)
+					return
+				}
+
+				err = jsoniter.NewDecoder(resp.Body).Decode(&response)
+				if err != nil {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+					s.errors++
+					resp.Body.Close()
+					return
+				}
+				resp.Body.Close()
+				//if code == 4024 this means that your api may have insufficient balance
+				if response.Code == 401 || response.Code == 400 || response.Code == 4024 {
+					results <- subscraping.Result{
+						Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.Message),
+					}
+					s.errors++
+					return
+				}
+
+				if response.Data.Total > 0 {
+					for _, hunterInfo := range response.Data.InfoArr {
+						subdomain := hunterInfo.Domain
+						results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+						s.results++
+					}
 				}
 			}
-			pages = int(response.Data.Total/1000) + 1
 		}
 	}()
 
