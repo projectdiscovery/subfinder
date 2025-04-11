@@ -94,7 +94,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 		}
 		// get all pages
-		pages = int(response.Data.Total/1000) + 1
+		pages = int(response.Data.Total/100) + 1
 		//Perform page turning operation
 		for currentPage := 2; currentPage <= pages; currentPage++ {
 			qbase64 := base64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("domain=\"%s\"", domain)))
