@@ -99,7 +99,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 		}
 		pages = int(response.Meta.Pagination.Total/500) + 1
-		if pages > 2 {
+		if pages > 1 {
 			for currentPage := 2; currentPage <= pages; currentPage++ {
 				var start = (currentPage - 1) * 500
 				requestBody = []byte(fmt.Sprintf(`{"query":"domain: %s", "include":["service.http.host"], "latest": true, "start":%d, "size":500 ,"latest":true}`, domain, start))

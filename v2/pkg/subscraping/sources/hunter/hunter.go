@@ -95,7 +95,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		//count pages
 		pages = int(response.Data.Total/100) + 1
 
-		if pages > 2 {
+		if pages > 1 {
 			for currentPage := 2; currentPage <= pages; currentPage++ {
 				resp, err = session.SimpleGet(ctx, fmt.Sprintf("https://hunter.qianxin.com/openApi/search?api-key=%s&search=%s&page=%d&page_size=100&is_web=3", randomApiKey, qbase64, currentPage))
 				if err != nil && resp == nil {
