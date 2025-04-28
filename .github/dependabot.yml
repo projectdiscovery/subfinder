@@ -15,10 +15,13 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
-    labels:
-      - "Type: Maintenance"
     allow:
       - dependency-name: "github.com/projectdiscovery/*"
+    groups:
+      modules:
+        patterns: ["github.com/projectdiscovery/*"]
+    labels:
+      - "Type: Maintenance"
 
 #  # Maintain dependencies for GitHub Actions
 #  - package-ecosystem: "github-actions"
