@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: projectdiscovery/actions/setup/go@v1
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v5
+        uses: projectdiscovery/actions/golangci-lint/v2@v1
         with:
           version: latest
           args: --timeout 5m
