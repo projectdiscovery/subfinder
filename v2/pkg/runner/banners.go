@@ -17,7 +17,7 @@ const banner = `
 const ToolName = `subfinder`
 
 // Version is the current version of subfinder
-const version = `v2.7.0`
+const version = `v2.7.1`
 
 // showBanner is used to show the banner to the user
 func showBanner() {
