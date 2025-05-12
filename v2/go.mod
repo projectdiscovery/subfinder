@@ -13,9 +13,9 @@ require (
 	github.com/projectdiscovery/dnsx v1.2.2
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/gologger v1.1.54
-	github.com/projectdiscovery/ratelimit v0.0.79
-	github.com/projectdiscovery/retryablehttp-go v1.0.109
-	github.com/projectdiscovery/utils v0.4.18
+	github.com/projectdiscovery/ratelimit v0.0.80
+	github.com/projectdiscovery/retryablehttp-go v1.0.111
+	github.com/projectdiscovery/utils v0.4.19
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.10.0
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
@@ -78,11 +78,11 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.21 // indirect
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
 	github.com/projectdiscovery/blackrock v0.0.1 // indirect
-	github.com/projectdiscovery/cdncheck v1.1.15 // indirect
+	github.com/projectdiscovery/cdncheck v1.1.17 // indirect
 	github.com/projectdiscovery/fastdialer v0.4.0 // indirect
-	github.com/projectdiscovery/hmap v0.0.87 // indirect
+	github.com/projectdiscovery/hmap v0.0.88 // indirect
 	github.com/projectdiscovery/machineid v0.0.0-20240226150047-2e2c51e35983 // indirect
-	github.com/projectdiscovery/networkpolicy v0.1.12 // indirect
+	github.com/projectdiscovery/networkpolicy v0.1.14 // indirect
 	github.com/refraction-networking/utls v1.7.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
@@ -135,7 +135,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/projectdiscovery/goflags v0.1.74
-	github.com/projectdiscovery/retryabledns v1.0.98 // indirect
+	github.com/projectdiscovery/retryabledns v1.0.99 // indirect
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 )
