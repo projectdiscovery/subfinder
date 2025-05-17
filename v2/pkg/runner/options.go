@@ -258,4 +258,6 @@ var defaultRateLimits = []string{
 	// "gitlab=2/s",
 	"github=83/m",
 	"hudsonrock=5/s",
+	"hunter=2/s",
+	"quake=2/s",
 }
