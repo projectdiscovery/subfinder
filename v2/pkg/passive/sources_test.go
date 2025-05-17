@@ -34,6 +34,7 @@ var (
 		"intelx",
 		"netlas",
 		"quake",
+		"pugrecon",
 		"rapiddns",
 		"redhuntlabs",
 		// "riddler", // failing due to cloudfront protection
