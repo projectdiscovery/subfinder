@@ -111,7 +111,7 @@ OPTIMIZATION:
 
 # Installation
 
-`subfinder` requires **go1.21** to install successfully. Run the following command to install the latest version:
+`subfinder` requires **go1.24** to install successfully. Run the following command to install the latest version:
 
 ```sh
 go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
