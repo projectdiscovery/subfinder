@@ -20,6 +20,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/chinaz"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/commoncrawl"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtsh"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitalyama"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitorus"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdb"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdumpster"
@@ -34,6 +35,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/leakix"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/netlas"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/pugrecon"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/quake"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rapiddns"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/redhuntlabs"
@@ -47,7 +49,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/whoisxmlapi"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeyeapi"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitalyama"
 	mapsutil "github.com/projectdiscovery/utils/maps"
 )
 
@@ -77,6 +78,7 @@ var AllSources = [...]subscraping.Source{
 	&netlas.Source{},
 	&leakix.Source{},
 	&quake.Source{},
+	&pugrecon.Source{},
 	&rapiddns.Source{},
 	&redhuntlabs.Source{},
 	// &riddler.Source{}, // failing due to cloudfront protection
