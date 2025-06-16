@@ -14,8 +14,8 @@ require (
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/gologger v1.1.54
 	github.com/projectdiscovery/ratelimit v0.0.81
-	github.com/projectdiscovery/retryablehttp-go v1.0.113
-	github.com/projectdiscovery/utils v0.4.19
+	github.com/projectdiscovery/retryablehttp-go v1.0.114
+	github.com/projectdiscovery/utils v0.4.20
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.10.0
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
@@ -78,8 +78,8 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.21 // indirect
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
 	github.com/projectdiscovery/blackrock v0.0.1 // indirect
-	github.com/projectdiscovery/cdncheck v1.1.20 // indirect
-	github.com/projectdiscovery/fastdialer v0.4.0 // indirect
+	github.com/projectdiscovery/cdncheck v1.1.23 // indirect
+	github.com/projectdiscovery/fastdialer v0.4.1 // indirect
 	github.com/projectdiscovery/hmap v0.0.89 // indirect
 	github.com/projectdiscovery/machineid v0.0.0-20240226150047-2e2c51e35983 // indirect
 	github.com/projectdiscovery/networkpolicy v0.1.15 // indirect
@@ -135,7 +135,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/projectdiscovery/goflags v0.1.74
-	github.com/projectdiscovery/retryabledns v1.0.100 // indirect
+	github.com/projectdiscovery/retryabledns v1.0.101 // indirect
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 )
