@@ -14,7 +14,6 @@ var (
 		"alienvault",
 		"anubis",
 		"bevigil",
-		"binaryedge",
 		"bufferover",
 		"c99",
 		"censys",
@@ -95,7 +94,6 @@ var (
 
 	expectedDefaultRecursiveSources = []string{
 		"alienvault",
-		"binaryedge",
 		"bufferover",
 		"certspotter",
 		"crtsh",
