@@ -24,7 +24,7 @@ jobs:
         with:
           go-version-file: v2/go.mod
       - name: Run golangci-lint
-        uses: projectdiscovery/actions/golangci-lint/v2@v1
+        uses: golangci/golangci-lint-action@v8
         with:
           version: latest
           args: --timeout 5m
