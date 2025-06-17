@@ -99,7 +99,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		apiUrl := "https://app.netlas.io/api/domains/download/"
 		query := fmt.Sprintf("domain:*.%s AND NOT domain:%s", domain, domain)
-		requestBody := map[string]interface{}{
+		requestBody := map[string]any{
 			"q":           query,
 			"fields":      []string{"*"},
 			"source_type": "include",

@@ -65,7 +65,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		resp.Body.Close()
 
 		years := make([]string, 0)
-		for i := 0; i < maxYearsBack; i++ {
+		for i := range maxYearsBack {
 			years = append(years, strconv.Itoa(year-i))
 		}
 

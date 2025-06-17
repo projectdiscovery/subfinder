@@ -60,7 +60,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			var err error
 
 			if scrollId == "" {
-				var requestBody = []byte(fmt.Sprintf(`{"query":"apex_domain='%s'"}`, domain))
+				var requestBody = fmt.Appendf(nil, `{"query":"apex_domain='%s'"}`, domain)
 				resp, err = session.Post(ctx, "https://api.securitytrails.com/v1/domains/list?include_ips=false&scroll=true", "",
 					headers, bytes.NewReader(requestBody))
 			} else {

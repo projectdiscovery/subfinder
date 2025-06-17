@@ -54,7 +54,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 
 		// fofa api doc https://fofa.info/static_pages/api_help
-		qbase64 := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("domain=\"%s\"", domain)))
+		qbase64 := base64.StdEncoding.EncodeToString(fmt.Appendf(nil, "domain=\"%s\"", domain))
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://fofa.info/api/v1/search/all?full=true&fields=host&page=1&size=10000&email=%s&key=%s&qbase64=%s", randomApiKey.username, randomApiKey.secret, qbase64))
 		if err != nil && resp == nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
