@@ -38,6 +38,7 @@ var (
 		"redhuntlabs",
 		// "riddler", // failing due to cloudfront protection
 		"robtex",
+		"rsecloud",
 		"securitytrails",
 		"shodan",
 		"sitedossier",
@@ -79,6 +80,7 @@ var (
 		"redhuntlabs",
 		"robtex",
 		// "riddler", // failing due to cloudfront protection
+		"rsecloud",
 		"securitytrails",
 		"shodan",
 		"virustotal",
