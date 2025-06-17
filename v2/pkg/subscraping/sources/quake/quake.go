@@ -100,7 +100,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				for _, quakeDomain := range response.Data {
 					subdomain := quakeDomain.Service.HTTP.Host
 					if strings.ContainsAny(subdomain, "暂无权限") {
-						subdomain = ""
+						continue
 					}
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 					s.results++
