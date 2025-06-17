@@ -67,12 +67,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			resp.Body.Close()
+			session.DiscardHTTPResponse(resp)
 			s.errors++
 			return
 		}
 
-		resp.Body.Close()
+		session.DiscardHTTPResponse(resp)
 		if response.Metadata.ResultCount > pageSize {
 			totalPages := (response.Metadata.ResultCount + pageSize - 1) / pageSize
 			for page := 1; page <= totalPages; page++ {
@@ -88,12 +88,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 				if err != nil {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-					resp.Body.Close()
+					session.DiscardHTTPResponse(resp)
 					s.errors++
 					continue
 				}
 
-				resp.Body.Close()
+				session.DiscardHTTPResponse(resp)
 
 				for _, subdomain := range response.Subdomains {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}

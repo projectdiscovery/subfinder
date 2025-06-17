@@ -78,7 +78,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			session.DiscardHTTPResponse(resp)
 			return
 		}
-		defer resp.Body.Close()
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("failed to close response body: %w", err)}
+				s.errors++
+			}
+		}()
 
 		if resp.StatusCode != http.StatusOK {
 			errorMsg := fmt.Sprintf("received status code %d", resp.StatusCode)

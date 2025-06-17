@@ -104,7 +104,7 @@ func enumerate(ctx context.Context, session *subscraping.Session, targetURL stri
 		results = append(results, response)
 	}
 
-	resp.Body.Close()
+	session.DiscardHTTPResponse(resp)
 
 	return results, nil
 }

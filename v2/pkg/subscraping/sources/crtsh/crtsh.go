@@ -150,11 +150,11 @@ func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, sessi
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		s.errors++
-		resp.Body.Close()
+		session.DiscardHTTPResponse(resp)
 		return false
 	}
 
-	resp.Body.Close()
+	session.DiscardHTTPResponse(resp)
 
 	for _, subdomain := range subdomains {
 		for sub := range strings.SplitSeq(subdomain.NameValue, "\n") {

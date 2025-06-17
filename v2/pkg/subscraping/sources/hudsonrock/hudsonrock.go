@@ -47,14 +47,19 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			session.DiscardHTTPResponse(resp)
 			return
 		}
-		defer resp.Body.Close()
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
+			}
+		}()
 
 		var response hudsonrockResponse
 		err = json.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
-			resp.Body.Close()
+			session.DiscardHTTPResponse(resp)
 			return
 		}
 

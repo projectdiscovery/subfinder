@@ -54,7 +54,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			s.errors++
 			return
 		}
-		defer resp.Body.Close()
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
+			}
+		}()
 
 		if resp.StatusCode != 200 {
 			var errResponse struct {

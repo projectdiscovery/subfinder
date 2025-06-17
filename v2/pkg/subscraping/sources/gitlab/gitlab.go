@@ -74,7 +74,12 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 		return
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.errors++
+		}
+	}()
 
 	var items []item
 	err = jsoniter.NewDecoder(resp.Body).Decode(&items)
@@ -114,7 +119,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 						s.results++
 					}
 				}
-				resp.Body.Close()
+				session.DiscardHTTPResponse(resp)
 			}
 			defer wg.Done()
 		}(it)
