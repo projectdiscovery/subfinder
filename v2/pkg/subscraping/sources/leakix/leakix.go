@@ -46,12 +46,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			s.errors++
 			return
 		}
-		defer func() {
-			if err := resp.Body.Close(); err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
-			}
-		}()
+
+		defer session.DiscardHTTPResponse(resp)
+
 		if resp.StatusCode != 200 {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("request failed with status %d", resp.StatusCode)}
 			s.errors++

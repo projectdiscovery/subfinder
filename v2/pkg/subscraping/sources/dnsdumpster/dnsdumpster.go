@@ -53,12 +53,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			session.DiscardHTTPResponse(resp)
 			return
 		}
-		defer func() {
-			if err := resp.Body.Close(); err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
-			}
-		}()
+		defer session.DiscardHTTPResponse(resp)
 
 		var response response
 		err = json.NewDecoder(resp.Body).Decode(&response)

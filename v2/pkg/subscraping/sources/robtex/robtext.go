@@ -89,6 +89,8 @@ func enumerate(ctx context.Context, session *subscraping.Session, targetURL stri
 		return results, err
 	}
 
+	defer session.DiscardHTTPResponse(resp)
+
 	scanner := bufio.NewScanner(resp.Body)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -103,8 +105,6 @@ func enumerate(ctx context.Context, session *subscraping.Session, targetURL stri
 
 		results = append(results, response)
 	}
-
-	session.DiscardHTTPResponse(resp)
 
 	return results, nil
 }

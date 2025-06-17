@@ -104,10 +104,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				} else if err != nil {
 					results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
 					s.errors++
-					if err := resp.Body.Close(); err != nil {
-						results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
-						s.errors++
-					}
+					session.DiscardHTTPResponse(resp)
 					return
 				}
 
@@ -157,10 +154,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				s.errors++
 			}
 
-			if err := resp.Body.Close(); err != nil {
-				results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
-				s.errors++
-			}
+			session.DiscardHTTPResponse(resp)
 			break
 		}
 	}()

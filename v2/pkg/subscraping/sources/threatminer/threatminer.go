@@ -44,12 +44,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		defer func() {
-			if err := resp.Body.Close(); err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
-			}
-		}()
+		defer session.DiscardHTTPResponse(resp)
 
 		var data response
 		err = jsoniter.NewDecoder(resp.Body).Decode(&data)
