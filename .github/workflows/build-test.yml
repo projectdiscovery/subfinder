@@ -40,6 +40,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: projectdiscovery/actions/setup/go@v1
+        with:
+          go-version-file: v2/go.mod
       - run: go build ./...
         working-directory: v2/
 
