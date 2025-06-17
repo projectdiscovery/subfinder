@@ -14,6 +14,7 @@ import (
 	// postgres driver
 	_ "github.com/lib/pq"
 
+	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 	contextutil "github.com/projectdiscovery/utils/context"
 )
@@ -60,7 +61,11 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 		return 0
 	}
 
-	defer db.Close()
+	defer func() {
+		if closeErr := db.Close(); closeErr != nil {
+			gologger.Warning().Msgf("Could not close database connection: %s\n", closeErr)
+		}
+	}()
 
 	limitClause := ""
 	if all, ok := ctx.Value(contextutil.ContextArg("All")).(contextutil.ContextArg); ok {
