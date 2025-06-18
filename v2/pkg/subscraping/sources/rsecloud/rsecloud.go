@@ -57,14 +57,13 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					session.DiscardHTTPResponse(resp)
 					return
 				}
-				defer session.DiscardHTTPResponse(resp)
 
 				var rseCloudResponse response
 				err = jsoniter.NewDecoder(resp.Body).Decode(&rseCloudResponse)
+				session.DiscardHTTPResponse(resp)
 				if err != nil {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 					s.errors++
-					resp.Body.Close()
 					return
 				}
 
