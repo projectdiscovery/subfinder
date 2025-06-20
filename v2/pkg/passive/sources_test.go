@@ -84,7 +84,7 @@ var (
 		"rsecloud",
 		"securitytrails",
 		"shodan",
-		// "shrewdeye", // need decision whether to include by default as it doesnt return that much data tbh
+		"shrewdeye",
 		"virustotal",
 		"whoisxmlapi",
 		"hunter",
