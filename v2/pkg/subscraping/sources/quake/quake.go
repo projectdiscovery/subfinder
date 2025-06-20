@@ -96,15 +96,13 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				totalResults = response.Meta.Pagination.Total
 			}
 
-			if len(response.Data) > 0 {
-				for _, quakeDomain := range response.Data {
-					subdomain := quakeDomain.Service.HTTP.Host
-					if strings.ContainsAny(subdomain, "暂无权限") {
-						continue
-					}
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-					s.results++
+			for _, quakeDomain := range response.Data {
+				subdomain := quakeDomain.Service.HTTP.Host
+				if strings.ContainsAny(subdomain, "暂无权限") {
+					continue
 				}
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				s.results++
 			}
 
 			if len(response.Data) == 0 || start+pageSize >= totalResults {
