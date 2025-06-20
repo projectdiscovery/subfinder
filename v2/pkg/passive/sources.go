@@ -94,6 +94,8 @@ var AllSources = [...]subscraping.Source{
 	&whoisxmlapi.Source{},
 	&zoomeyeapi.Source{},
 	&facebook.Source{},
+	// &threatminer.Source{}, // failing  api
+	// &reconcloud.Source{}, // failing due to cloudflare bot protection
 	&shrewdeye.Source{},
 	&builtwith.Source{},
 	&hudsonrock.Source{},
