@@ -1,6 +1,8 @@
 package passive
 
 import (
+	"fmt"
+	"os"
 	"strings"
 
 	"golang.org/x/exp/maps"
@@ -167,6 +169,15 @@ func New(sourceNames, excludedSourceNames []string, useAllSources, useSourcesSup
 	for _, currentSource := range sources {
 		if warning, ok := sourceWarnings.Get(strings.ToLower(currentSource.Name())); ok {
 			gologger.Warning().Msg(warning)
+		}
+	}
+
+	// TODO: Consider refactoring this to avoid potential duplication issues
+	for _, source := range sources {
+		if source.NeedsKey() {
+			if apiKey := os.Getenv(fmt.Sprintf("%s_API_KEY", strings.ToUpper(source.Name()))); apiKey != "" {
+				source.AddApiKeys([]string{apiKey})
+			}
 		}
 	}
 
