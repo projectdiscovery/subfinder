@@ -94,7 +94,9 @@ func (r *Runner) RunEnumerationWithCtx(ctx context.Context) error {
 			return err
 		}
 		err = r.EnumerateMultipleDomainsWithCtx(ctx, f, outputs)
-		f.Close()
+		if closeErr := f.Close(); closeErr != nil {
+			gologger.Error().Msgf("Error closing file %s: %s", r.options.DomainsFile, closeErr)
+		}
 		return err
 	}
 
@@ -139,7 +141,9 @@ func (r *Runner) EnumerateMultipleDomainsWithCtx(ctx context.Context, reader io.
 
 			_, err = r.EnumerateSingleDomainWithCtx(ctx, domain, append(writers, file))
 
-			file.Close()
+			if closeErr := file.Close(); closeErr != nil {
+				gologger.Error().Msgf("Error closing file %s: %s", r.options.OutputFile, closeErr)
+			}
 		} else if r.options.OutputDirectory != "" {
 			outputFile := path.Join(r.options.OutputDirectory, domain)
 			if r.options.JSON {
@@ -157,7 +161,9 @@ func (r *Runner) EnumerateMultipleDomainsWithCtx(ctx context.Context, reader io.
 
 			_, err = r.EnumerateSingleDomainWithCtx(ctx, domain, append(writers, file))
 
-			file.Close()
+			if closeErr := file.Close(); closeErr != nil {
+				gologger.Error().Msgf("Error closing file %s: %s", outputFile, closeErr)
+			}
 		} else {
 			_, err = r.EnumerateSingleDomainWithCtx(ctx, domain, writers)
 		}

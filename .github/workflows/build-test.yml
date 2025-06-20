@@ -3,12 +3,12 @@ name: 🔨 Build Test
 on:
   pull_request:
     paths:
-      - '**.go'
-      - '**.mod'
+      - "**.go"
+      - "**.mod"
   workflow_dispatch:
     inputs:
       short:
-        description: 'Use -short flag for tests'
+        description: "Use -short flag for tests"
         required: false
         type: boolean
         default: false
@@ -21,8 +21,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: projectdiscovery/actions/setup/go@v1
+        with:
+          go-version-file: v2/go.mod
       - name: Run golangci-lint
-        uses: projectdiscovery/actions/golangci-lint/v2@v1
+        uses: golangci/golangci-lint-action@v8
         with:
           version: latest
           args: --timeout 5m
@@ -38,6 +40,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: projectdiscovery/actions/setup/go@v1
+        with:
+          go-version-file: v2/go.mod
       - run: go build ./...
         working-directory: v2/
 

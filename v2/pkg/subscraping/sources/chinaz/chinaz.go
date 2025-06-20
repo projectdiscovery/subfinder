@@ -48,7 +48,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		body, err := io.ReadAll(resp.Body)
 
-		resp.Body.Close()
+		session.DiscardHTTPResponse(resp)
 
 		SubdomainList := jsoniter.Get(body, "Result").Get("ContributingSubdomainList")
 

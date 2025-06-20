@@ -39,7 +39,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		defer resp.Body.Close()
+		defer session.DiscardHTTPResponse(resp)
 
 		scanner := bufio.NewScanner(resp.Body)
 		for scanner.Scan() {

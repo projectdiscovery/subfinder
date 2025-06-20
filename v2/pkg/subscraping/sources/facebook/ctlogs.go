@@ -45,7 +45,11 @@ func (k *apiKey) FetchAccessToken() {
 		k.Error = err
 		return
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			gologger.Error().Msgf("error closing response body: %s", err)
+		}
+	}()
 	bin, err := io.ReadAll(resp.Body)
 	if err != nil {
 		k.Error = err
@@ -113,7 +117,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				return
 			}
-			resp.Body.Close()
+			session.DiscardHTTPResponse(resp)
 			response := &response{}
 			if err := json.Unmarshal(bin, response); err != nil {
 				s.errors++

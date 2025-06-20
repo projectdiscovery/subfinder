@@ -77,7 +77,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			s.errors++
 			return
 		}
-		defer resp.Body.Close()
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
+			}
+		}()
 
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
@@ -99,7 +104,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		apiUrl := "https://app.netlas.io/api/domains/download/"
 		query := fmt.Sprintf("domain:*.%s AND NOT domain:%s", domain, domain)
-		requestBody := map[string]interface{}{
+		requestBody := map[string]any{
 			"q":           query,
 			"fields":      []string{"*"},
 			"source_type": "include",
@@ -124,7 +129,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			s.errors++
 			return
 		}
-		defer resp.Body.Close()
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
+			}
+		}()
 		body, err = io.ReadAll(resp.Body)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("error reading ressponse body")}
