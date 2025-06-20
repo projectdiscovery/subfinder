@@ -64,7 +64,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			session.DiscardHTTPResponse(resp)
 			return
 		}
-		resp.Body.Close()
+		session.DiscardHTTPResponse(resp)
 		var result DnsRepoResponse
 		err = json.Unmarshal(responseData, &result)
 		if err != nil {

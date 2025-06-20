@@ -49,9 +49,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		if randomApiKey == "" {
 			return
 		}
-		var cursor string = ""
+		var cursor = ""
 		for {
-			var url string = fmt.Sprintf("https://www.virustotal.com/api/v3/domains/%s/subdomains?limit=40", domain)
+			var url = fmt.Sprintf("https://www.virustotal.com/api/v3/domains/%s/subdomains?limit=40", domain)
 			if cursor != "" {
 				url = fmt.Sprintf("%s&cursor=%s", url, cursor)
 			}
@@ -62,7 +62,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				session.DiscardHTTPResponse(resp)
 				return
 			}
-			defer resp.Body.Close()
+			defer func() {
+				if err := resp.Body.Close(); err != nil {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+					s.errors++
+				}
+			}()
 
 			var data response
 			err = jsoniter.NewDecoder(resp.Body).Decode(&data)

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/retryablehttp-go"
 	"github.com/projectdiscovery/utils/generic"
 )
@@ -41,7 +42,11 @@ func TestFacebookSource(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			gologger.Error().Msgf("error closing response body: %s", err)
+		}
+	}()
 	bin, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatal(err)

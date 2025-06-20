@@ -67,11 +67,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
-			resp.Body.Close()
+			session.DiscardHTTPResponse(resp)
 			return
 		}
 
-		resp.Body.Close()
+		session.DiscardHTTPResponse(resp)
 
 		for _, record := range data.Result.Records {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Domain}

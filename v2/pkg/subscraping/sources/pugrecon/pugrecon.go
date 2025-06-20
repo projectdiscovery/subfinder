@@ -78,7 +78,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			session.DiscardHTTPResponse(resp)
 			return
 		}
-		defer resp.Body.Close()
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("failed to close response body: %w", err)}
+				s.errors++
+			}
+		}()
 
 		if resp.StatusCode != http.StatusOK {
 			errorMsg := fmt.Sprintf("received status code %d", resp.StatusCode)
@@ -87,7 +92,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			if json.NewDecoder(resp.Body).Decode(&apiResp) == nil && apiResp.Message != "" {
 				errorMsg = fmt.Sprintf("%s: %s", errorMsg, apiResp.Message)
 			}
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf(errorMsg)}
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", errorMsg)}
 			s.errors++
 			return
 		}
@@ -98,10 +103,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
 			return
-		}
-
-		if response.Message != "" && !response.Limited { // Handle potential non-error messages, except rate limit info
-			// Log or handle message if needed, but don't treat as hard error unless necessary
 		}
 
 		for _, subdomain := range response.Results {
