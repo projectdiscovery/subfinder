@@ -42,6 +42,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rsecloud"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shrewdeye"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatcrowd"
@@ -93,8 +94,7 @@ var AllSources = [...]subscraping.Source{
 	&whoisxmlapi.Source{},
 	&zoomeyeapi.Source{},
 	&facebook.Source{},
-	// &threatminer.Source{}, // failing  api
-	// &reconcloud.Source{}, // failing due to cloudflare bot protection
+	&shrewdeye.Source{},
 	&builtwith.Source{},
 	&hudsonrock.Source{},
 	&digitalyama.Source{},
