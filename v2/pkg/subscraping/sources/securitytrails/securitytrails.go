@@ -60,7 +60,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			var err error
 
 			if scrollId == "" {
-				var requestBody = []byte(fmt.Sprintf(`{"query":"apex_domain='%s'"}`, domain))
+				var requestBody = fmt.Appendf(nil, `{"query":"apex_domain='%s'"}`, domain)
 				resp, err = session.Post(ctx, "https://api.securitytrails.com/v1/domains/list?include_ips=false&scroll=true", "",
 					headers, bytes.NewReader(requestBody))
 			} else {
@@ -83,11 +83,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				s.errors++
-				resp.Body.Close()
+				session.DiscardHTTPResponse(resp)
 				return
 			}
 
-			resp.Body.Close()
+			session.DiscardHTTPResponse(resp)
 
 			for _, record := range securityTrailsResponse.Records {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Hostname}

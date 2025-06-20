@@ -63,10 +63,10 @@ func (s *Source) enumerate(ctx context.Context, session *subscraping.Session, ba
 	if err != nil {
 		results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
 		s.errors++
-		resp.Body.Close()
+		session.DiscardHTTPResponse(resp)
 		return
 	}
-	resp.Body.Close()
+	session.DiscardHTTPResponse(resp)
 
 	src := string(body)
 	for _, subdomain := range session.Extractor.Extract(src) {

@@ -56,7 +56,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				return
 			}
 
-			defer resp.Body.Close()
+			defer session.DiscardHTTPResponse(resp)
 
 			var response dnsdbLookupResponse
 			err = jsoniter.NewDecoder(resp.Body).Decode(&response)

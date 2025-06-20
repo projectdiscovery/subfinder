@@ -17,7 +17,11 @@ func createProviderConfigYAML(configFilePath string) error {
 	if err != nil {
 		return err
 	}
-	defer configFile.Close()
+	defer func() {
+		if err := configFile.Close(); err != nil {
+			gologger.Error().Msgf("Error closing config file: %s", err)
+		}
+	}()
 
 	sourcesRequiringApiKeysMap := make(map[string][]string)
 	for _, source := range passive.AllSources {

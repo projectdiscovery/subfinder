@@ -69,11 +69,11 @@ func (s *Source) getData(ctx context.Context, sourceURL string, apiKey string, s
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		s.errors++
-		resp.Body.Close()
+		session.DiscardHTTPResponse(resp)
 		return
 	}
 
-	resp.Body.Close()
+	session.DiscardHTTPResponse(resp)
 
 	metaErrors := bufforesponse.Meta.Errors
 

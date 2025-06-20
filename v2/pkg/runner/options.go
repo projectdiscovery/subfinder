@@ -244,6 +244,7 @@ func (options *Options) preProcessDomains() {
 var defaultRateLimits = []string{
 	"github=30/m",
 	"fullhunt=60/m",
+	"pugrecon=10/s",
 	fmt.Sprintf("robtex=%d/ms", uint(math.MaxUint)),
 	"securitytrails=1/s",
 	"shodan=1/s",

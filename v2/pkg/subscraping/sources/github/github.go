@@ -100,7 +100,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 	if isForbidden && ratelimitRemaining == 0 {
 		retryAfterSeconds, _ := strconv.ParseInt(resp.Header.Get("Retry-After"), 10, 64)
 		tokens.setCurrentTokenExceeded(retryAfterSeconds)
-		resp.Body.Close()
+		session.DiscardHTTPResponse(resp)
 
 		s.enumerate(ctx, searchURL, domainRegexp, tokens, session, results)
 	}
@@ -112,11 +112,11 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		s.errors++
-		resp.Body.Close()
+		session.DiscardHTTPResponse(resp)
 		return
 	}
 
-	resp.Body.Close()
+	session.DiscardHTTPResponse(resp)
 
 	err = s.proccesItems(ctx, data.Items, domainRegexp, s.Name(), session, results)
 	if err != nil {
@@ -173,7 +173,7 @@ func (s *Source) proccesItems(ctx context.Context, items []item, domainRegexp *r
 						s.results++
 					}
 				}
-				resp.Body.Close()
+				session.DiscardHTTPResponse(resp)
 			}
 
 			// find subdomains in text matches

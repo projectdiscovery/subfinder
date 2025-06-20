@@ -14,7 +14,6 @@ var (
 		"alienvault",
 		"anubis",
 		"bevigil",
-		"binaryedge",
 		"bufferover",
 		"c99",
 		"censys",
@@ -34,10 +33,12 @@ var (
 		"intelx",
 		"netlas",
 		"quake",
+		"pugrecon",
 		"rapiddns",
 		"redhuntlabs",
 		// "riddler", // failing due to cloudfront protection
 		"robtex",
+		"rsecloud",
 		"securitytrails",
 		"shodan",
 		"sitedossier",
@@ -79,6 +80,7 @@ var (
 		"redhuntlabs",
 		"robtex",
 		// "riddler", // failing due to cloudfront protection
+		"rsecloud",
 		"securitytrails",
 		"shodan",
 		"virustotal",
@@ -94,7 +96,6 @@ var (
 
 	expectedDefaultRecursiveSources = []string{
 		"alienvault",
-		"binaryedge",
 		"bufferover",
 		"certspotter",
 		"crtsh",
