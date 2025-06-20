@@ -98,11 +98,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
-			resp.Body.Close()
+			session.DiscardHTTPResponse(resp)
 			return
 		}
 
-		resp.Body.Close()
+		session.DiscardHTTPResponse(resp)
 
 		resultsURL := fmt.Sprintf("https://%s/phonebook/search/result?k=%s&id=%s&limit=10000", randomApiKey.host, randomApiKey.key, response.ID)
 		status := 0
@@ -119,7 +119,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				s.errors++
-				resp.Body.Close()
+				session.DiscardHTTPResponse(resp)
 				return
 			}
 
@@ -127,10 +127,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				s.errors++
-				resp.Body.Close()
+				session.DiscardHTTPResponse(resp)
 				return
 			}
-			resp.Body.Close()
+			session.DiscardHTTPResponse(resp)
 
 			status = response.Status
 			for _, hostname := range response.Selectors {

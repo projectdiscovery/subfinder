@@ -63,7 +63,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		var totalResults = -1
 
 		for {
-			var requestBody = []byte(fmt.Sprintf(`{"query":"domain: %s", "include":["service.http.host"], "latest": true, "size":%d, "start":%d}`, domain, pageSize, start))
+			var requestBody = fmt.Appendf(nil, `{"query":"domain: %s", "include":["service.http.host"], "latest": true, "size":%d, "start":%d}`, domain, pageSize, start)
 			resp, err := session.Post(ctx, "https://quake.360.net/api/v3/search/quake_service", "", map[string]string{
 				"Content-Type": "application/json", "X-QuakeToken": randomApiKey,
 			}, bytes.NewReader(requestBody))
@@ -79,10 +79,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				s.errors++
-				resp.Body.Close()
+				session.DiscardHTTPResponse(resp)
 				return
 			}
-			resp.Body.Close()
+			session.DiscardHTTPResponse(resp)
 
 			if response.Code != 0 {
 				results <- subscraping.Result{

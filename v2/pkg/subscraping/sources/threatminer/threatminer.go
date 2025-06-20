@@ -44,7 +44,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		defer resp.Body.Close()
+		defer session.DiscardHTTPResponse(resp)
 
 		var data response
 		err = jsoniter.NewDecoder(resp.Body).Decode(&data)

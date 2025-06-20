@@ -59,7 +59,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		var pages = 1
 		for currentPage := 1; currentPage <= pages; currentPage++ {
 			// hunter api doc https://hunter.qianxin.com/home/helpCenter?r=5-1-2
-			qbase64 := base64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("domain=\"%s\"", domain)))
+			qbase64 := base64.URLEncoding.EncodeToString(fmt.Appendf(nil, "domain=\"%s\"", domain))
 			resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://hunter.qianxin.com/openApi/search?api-key=%s&search=%s&page=%d&page_size=100&is_web=3", randomApiKey, qbase64, currentPage))
 			if err != nil && resp == nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -73,10 +73,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				s.errors++
-				resp.Body.Close()
+				session.DiscardHTTPResponse(resp)
 				return
 			}
-			resp.Body.Close()
+			session.DiscardHTTPResponse(resp)
 
 			if response.Code == 401 || response.Code == 400 {
 				results <- subscraping.Result{

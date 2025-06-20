@@ -14,6 +14,7 @@ import (
 	// postgres driver
 	_ "github.com/lib/pq"
 
+	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 	contextutil "github.com/projectdiscovery/utils/context"
 )
@@ -60,7 +61,11 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 		return 0
 	}
 
-	defer db.Close()
+	defer func() {
+		if closeErr := db.Close(); closeErr != nil {
+			gologger.Warning().Msgf("Could not close database connection: %s\n", closeErr)
+		}
+	}()
 
 	limitClause := ""
 	if all, ok := ctx.Value(contextutil.ContextArg("All")).(contextutil.ContextArg); ok {
@@ -119,7 +124,7 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 		}
 
 		count++
-		for _, subdomain := range strings.Split(data, "\n") {
+		for subdomain := range strings.SplitSeq(data, "\n") {
 			for _, value := range session.Extractor.Extract(subdomain) {
 				if value != "" {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}
@@ -145,14 +150,14 @@ func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, sessi
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		s.errors++
-		resp.Body.Close()
+		session.DiscardHTTPResponse(resp)
 		return false
 	}
 
-	resp.Body.Close()
+	session.DiscardHTTPResponse(resp)
 
 	for _, subdomain := range subdomains {
-		for _, sub := range strings.Split(subdomain.NameValue, "\n") {
+		for sub := range strings.SplitSeq(subdomain.NameValue, "\n") {
 			for _, value := range session.Extractor.Extract(sub) {
 				if value != "" {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}

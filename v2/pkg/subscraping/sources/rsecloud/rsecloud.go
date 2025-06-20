@@ -1,5 +1,4 @@
-// Package whoisxmlapi logic
-package whoisxmlapi
+package rsecloud
 
 import (
 	"context"
@@ -12,19 +11,11 @@ import (
 )
 
 type response struct {
-	Search string `json:"search"`
-	Result Result `json:"result"`
-}
-
-type Result struct {
-	Count   int      `json:"count"`
-	Records []Record `json:"records"`
-}
-
-type Record struct {
-	Domain    string `json:"domain"`
-	FirstSeen int    `json:"firstSeen"`
-	LastSeen  int    `json:"lastSeen"`
+	Count      int      `json:"count"`
+	Data       []string `json:"data"`
+	Page       int      `json:"page"`
+	PageSize   int      `json:"pagesize"`
+	TotalPages int      `json:"total_pages"`
 }
 
 // Source is the passive scraping agent
@@ -54,29 +45,42 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://subdomains.whoisxmlapi.com/api/v1?apiKey=%s&domainName=%s", randomApiKey, domain))
-		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
-			session.DiscardHTTPResponse(resp)
-			return
+		headers := map[string]string{"Content-Type": "application/json", "X-API-Key": randomApiKey}
+
+		fetchSubdomains := func(endpoint string) {
+			page := 1
+			for {
+				resp, err := session.Get(ctx, fmt.Sprintf("https://api.rsecloud.com/api/v2/subdomains/%s/%s?page=%d", endpoint, domain, page), "", headers)
+				if err != nil {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+					s.errors++
+					session.DiscardHTTPResponse(resp)
+					return
+				}
+
+				var rseCloudResponse response
+				err = jsoniter.NewDecoder(resp.Body).Decode(&rseCloudResponse)
+				session.DiscardHTTPResponse(resp)
+				if err != nil {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+					s.errors++
+					return
+				}
+
+				for _, subdomain := range rseCloudResponse.Data {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+					s.results++
+				}
+
+				if page >= rseCloudResponse.TotalPages {
+					break
+				}
+				page++
+			}
 		}
 
-		var data response
-		err = jsoniter.NewDecoder(resp.Body).Decode(&data)
-		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
-			session.DiscardHTTPResponse(resp)
-			return
-		}
-
-		session.DiscardHTTPResponse(resp)
-
-		for _, record := range data.Result.Records {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Domain}
-			s.results++
-		}
+		fetchSubdomains("active")
+		fetchSubdomains("passive")
 	}()
 
 	return results
@@ -84,7 +88,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 // Name returns the name of the source
 func (s *Source) Name() string {
-	return "whoisxmlapi"
+	return "rsecloud"
 }
 
 func (s *Source) IsDefault() bool {
@@ -92,7 +96,7 @@ func (s *Source) IsDefault() bool {
 }
 
 func (s *Source) HasRecursiveSupport() bool {
-	return false
+	return true
 }
 
 func (s *Source) NeedsKey() bool {

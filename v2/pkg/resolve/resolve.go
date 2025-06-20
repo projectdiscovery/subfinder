@@ -60,7 +60,7 @@ func (r *Resolver) NewResolutionPool(workers int, removeWildcard bool) *Resoluti
 	}
 
 	go func() {
-		for i := 0; i < workers; i++ {
+		for range workers {
 			resolutionPool.wg.Add(1)
 			go resolutionPool.resolveWorker()
 		}
@@ -73,7 +73,7 @@ func (r *Resolver) NewResolutionPool(workers int, removeWildcard bool) *Resoluti
 
 // InitWildcards inits the wildcard ips array
 func (r *ResolutionPool) InitWildcards(domain string) error {
-	for i := 0; i < maxWildcardChecks; i++ {
+	for range maxWildcardChecks {
 		uid := xid.New().String()
 
 		hosts, _ := r.DNSClient.Lookup(uid + "." + domain)

@@ -27,8 +27,8 @@ func RunSubfinderAndGetResults(debug bool, domain string, extra ...string) ([]st
 		return nil, err
 	}
 	var parts []string
-	items := strings.Split(string(data), "\n")
-	for _, i := range items {
+	items := strings.SplitSeq(string(data), "\n")
+	for i := range items {
 		if i != "" {
 			parts = append(parts, i)
 		}

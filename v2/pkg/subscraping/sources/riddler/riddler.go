@@ -48,7 +48,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				s.results++
 			}
 		}
-		resp.Body.Close()
+		session.DiscardHTTPResponse(resp)
 	}()
 
 	return results

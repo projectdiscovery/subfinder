@@ -97,7 +97,9 @@ func writePlainHostIP(_ string, results map[string]resolve.Result, writer io.Wri
 
 		_, err := bufwriter.WriteString(sb.String())
 		if err != nil {
-			bufwriter.Flush()
+			if flushErr := bufwriter.Flush(); flushErr != nil {
+				return errors.Join(err, flushErr)
+			}
 			return err
 		}
 		sb.Reset()
@@ -155,7 +157,9 @@ func writePlainHost(_ string, results map[string]resolve.HostEntry, writer io.Wr
 
 		_, err := bufwriter.WriteString(sb.String())
 		if err != nil {
-			bufwriter.Flush()
+			if flushErr := bufwriter.Flush(); flushErr != nil {
+				return errors.Join(err, flushErr)
+			}
 			return err
 		}
 		sb.Reset()
@@ -228,7 +232,9 @@ func writeSourcePlainHost(_ string, sourceMap map[string]map[string]struct{}, wr
 
 		_, err := bufwriter.WriteString(sb.String())
 		if err != nil {
-			bufwriter.Flush()
+			if flushErr := bufwriter.Flush(); flushErr != nil {
+				return errors.Join(err, flushErr)
+			}
 			return err
 		}
 		sb.Reset()
