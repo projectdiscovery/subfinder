@@ -116,7 +116,10 @@ OPTIMIZATION:
 ```sh
 go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 ```
-
+To get `linux` binary use this one line command
+```sh
+curl -sL -o subfinder.zip $(curl -sL "https://api.github.com/repos/projectdiscovery/subfinder/releases/latest" |grep "download_url"|grep "linux_$([ "$(uname -m)" = "x86_64" ] && echo "amd64" || uname -m)"|awk -F'"' '{ print $4}') && unzip -q ./subfinder.zip && rm ./subfinder.zip
+```
 Learn about more ways to install subfinder here: https://docs.projectdiscovery.io/tools/subfinder/install.
 
 ## Post Installation Instructions
