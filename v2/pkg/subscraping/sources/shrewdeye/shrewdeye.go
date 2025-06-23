@@ -85,7 +85,7 @@ func (s *Source) enumerate(ctx context.Context, domain string, session *subscrap
 		session.DiscardHTTPResponse(resp)
 		return
 	}
-	session.DiscardHTTPResponse(resp)
+	defer session.DiscardHTTPResponse(resp)
 
 	// Validate response status
 	if resp.StatusCode != http.StatusOK {
