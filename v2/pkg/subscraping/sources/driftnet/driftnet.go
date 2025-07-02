@@ -1,4 +1,3 @@
-// Package virustotal logic
 package driftnet
 
 import (
