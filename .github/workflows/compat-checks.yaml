@@ -16,5 +16,5 @@ jobs:
       - uses: actions/checkout@v4
       - uses: projectdiscovery/actions/setup/go/compat-checks@master
         with:
-          go-version-file: 'v2/go.mod'
+          go-version-file: 'go.mod'
 
