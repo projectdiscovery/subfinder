@@ -25,7 +25,6 @@ jobs:
         with:
           args: "release --clean"
           version: latest
-          workdir: v2/
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           SLACK_WEBHOOK: "${{ secrets.RELEASE_SLACK_WEBHOOK }}"
