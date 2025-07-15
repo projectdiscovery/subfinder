@@ -14,8 +14,8 @@ require (
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/gologger v1.1.54
 	github.com/projectdiscovery/ratelimit v0.0.81
-	github.com/projectdiscovery/retryablehttp-go v1.0.114
-	github.com/projectdiscovery/utils v0.4.20
+	github.com/projectdiscovery/retryablehttp-go v1.0.115
+	github.com/projectdiscovery/utils v0.4.21
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.10.0
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
@@ -45,7 +45,7 @@ require (
 	github.com/cheggaaa/pb/v3 v3.1.4 // indirect
 	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
-	github.com/dlclark/regexp2 v1.11.4 // indirect
+	github.com/dlclark/regexp2 v1.11.5 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dsnet/compress v0.0.2-0.20230904184137-39efe44ab707 // indirect
 	github.com/fatih/color v1.15.0 // indirect
@@ -78,11 +78,11 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.21 // indirect
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
 	github.com/projectdiscovery/blackrock v0.0.1 // indirect
-	github.com/projectdiscovery/cdncheck v1.1.23 // indirect
+	github.com/projectdiscovery/cdncheck v1.1.24 // indirect
 	github.com/projectdiscovery/fastdialer v0.4.1 // indirect
-	github.com/projectdiscovery/hmap v0.0.89 // indirect
+	github.com/projectdiscovery/hmap v0.0.90 // indirect
 	github.com/projectdiscovery/machineid v0.0.0-20240226150047-2e2c51e35983 // indirect
-	github.com/projectdiscovery/networkpolicy v0.1.15 // indirect
+	github.com/projectdiscovery/networkpolicy v0.1.16 // indirect
 	github.com/refraction-networking/utls v1.7.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
@@ -127,15 +127,15 @@ require (
 
 require (
 	github.com/cnf/structhash v0.0.0-20201127153200-e1b16c1ebc08 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
 	github.com/miekg/dns v1.1.62 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/projectdiscovery/goflags v0.1.74
-	github.com/projectdiscovery/retryabledns v1.0.101 // indirect
+	github.com/projectdiscovery/retryabledns v1.0.102 // indirect
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 )
