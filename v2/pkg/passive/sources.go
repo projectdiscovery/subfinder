@@ -34,8 +34,8 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hudsonrock"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hunter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/jsmon"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/leakix"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/netlas"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/pugrecon"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/quake"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rapiddns"
@@ -66,6 +66,7 @@ var AllSources = [...]subscraping.Source{
 	&chinaz.Source{},
 	&commoncrawl.Source{},
 	&crtsh.Source{},
+	&jsmon.Source{},
 	&digitorus.Source{},
 	&dnsdb.Source{},
 	&dnsdumpster.Source{},
@@ -76,7 +77,6 @@ var AllSources = [...]subscraping.Source{
 	&hackertarget.Source{},
 	&hunter.Source{},
 	&intelx.Source{},
-	&netlas.Source{},
 	&leakix.Source{},
 	&quake.Source{},
 	&pugrecon.Source{},
