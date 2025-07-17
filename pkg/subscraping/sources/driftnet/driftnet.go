@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -23,8 +24,8 @@ const (
 type Source struct {
 	apiKeys   []string
 	timeTaken time.Duration
-	errors    int
-	results   int
+	errors    atomic.Int32
+	results   atomic.Int32
 	skipped   bool
 }
 
@@ -60,8 +61,8 @@ type summaryResponse struct {
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	// Final results channel
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
+	s.errors.Store(0)
+	s.results.Store(0)
 
 	// Waitgroup for subsources
 	var wg sync.WaitGroup
@@ -114,8 +115,8 @@ func (s *Source) AddApiKeys(keys []string) {
 // Statistics returns statistics about the scraping process
 func (s *Source) Statistics() subscraping.Statistics {
 	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
+		Errors:    int(s.errors.Load()),
+		Results:   int(s.results.Load()),
 		TimeTaken: s.timeTaken,
 		Skipped:   s.skipped,
 	}
@@ -139,7 +140,7 @@ func (s *Source) runSubsource(ctx context.Context, domain string, session *subsc
 	resp, err := session.Get(ctx, url, "", headers)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-		s.errors++
+		s.errors.Add(1)
 		wg.Done()
 		return
 	}
@@ -150,7 +151,7 @@ func (s *Source) runSubsource(ctx context.Context, domain string, session *subsc
 	if resp.StatusCode != 200 {
 		if resp.StatusCode != 204 {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("request failed with status %d", resp.StatusCode)}
-			s.errors++
+			s.errors.Add(1)
 		}
 
 		wg.Done()
@@ -163,7 +164,7 @@ func (s *Source) runSubsource(ctx context.Context, domain string, session *subsc
 	err = decoder.Decode(&summary)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-		s.errors++
+		s.errors.Add(1)
 		wg.Done()
 		return
 	}
@@ -179,7 +180,7 @@ func (s *Source) runSubsource(ctx context.Context, domain string, session *subsc
 			results <- subscraping.Result{
 				Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain,
 			}
-			s.results++
+			s.results.Add(1)
 		}
 	}
 
