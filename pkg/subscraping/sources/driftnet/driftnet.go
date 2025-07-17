@@ -82,7 +82,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		go s.runSubsource(ctx, domain, session, results, &wg, &dedupe, endpoints[i])
 	}
 
-	// Return the result c
+	// Return the results channel
 	return results
 }
 
@@ -121,7 +121,7 @@ func (s *Source) Statistics() subscraping.Statistics {
 	}
 }
 
-// runSubsource
+// runSubsource queries a specific driftnet endpoint for subdomains and sends results to the channel
 func (s *Source) runSubsource(ctx context.Context, domain string, session *subscraping.Session, results chan subscraping.Result, wg *sync.WaitGroup, dedupe *sync.Map, epConfig endpointConfig) {
 	// Default headers
 	headers := map[string]string{
@@ -169,6 +169,11 @@ func (s *Source) runSubsource(ctx context.Context, domain string, session *subsc
 	}
 
 	for subdomain := range summary.Summary.Values {
+		// We can get certificate results which aren't actually subdomains of the target domain. Skip them.
+		if !strings.HasSuffix(subdomain, "."+domain) {
+			continue
+		}
+
 		// Avoid returning the same result more than once from the same source (can happen as we are using multiple endpoints)
 		if _, present := dedupe.LoadOrStore(strings.ToLower(subdomain), true); !present {
 			results <- subscraping.Result{
