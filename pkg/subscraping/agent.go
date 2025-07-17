@@ -137,7 +137,7 @@ func httpRequestWrapper(client *http.Client, request *http.Request) (*http.Respo
 		return nil, err
 	}
 
-	if response.StatusCode != http.StatusOK && response.StatusCode != http.StatusNoContent {
+	if response.StatusCode != http.StatusOK {
 		requestURL, _ := url.QueryUnescape(request.URL.String())
 
 		gologger.Debug().MsgFunc(func() string {
