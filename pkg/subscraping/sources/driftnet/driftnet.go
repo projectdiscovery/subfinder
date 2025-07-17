@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -136,8 +137,8 @@ func (s *Source) runSubsource(ctx context.Context, domain string, session *subsc
 	}
 
 	// Request
-	url := fmt.Sprintf("%s%s?%s%s&summarize=host&summary_context=%s&summary_limit=%d", baseURL, epConfig.endpoint, epConfig.param, domain, epConfig.context, summaryLimit)
-	resp, err := session.Get(ctx, url, "", headers)
+	requestURL := fmt.Sprintf("%s%s?%s%s&summarize=host&summary_context=%s&summary_limit=%d", baseURL, epConfig.endpoint, epConfig.param, url.QueryEscape(domain), epConfig.context, summaryLimit)
+	resp, err := session.Get(ctx, requestURL, "", headers)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		s.errors.Add(1)
