@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 	"sync"
@@ -140,8 +141,12 @@ func (s *Source) runSubsource(ctx context.Context, domain string, session *subsc
 	requestURL := fmt.Sprintf("%s%s?%s%s&summarize=host&summary_context=%s&summary_limit=%d", baseURL, epConfig.endpoint, epConfig.param, url.QueryEscape(domain), epConfig.context, summaryLimit)
 	resp, err := session.Get(ctx, requestURL, "", headers)
 	if err != nil {
-		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-		s.errors.Add(1)
+		// HTTP 204 is not an error from the Driftnet API
+		if resp == nil || resp.StatusCode != http.StatusNoContent {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.errors.Add(1)
+		}
+
 		wg.Done()
 		return
 	}
