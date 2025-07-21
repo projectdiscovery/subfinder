@@ -129,7 +129,7 @@ Learn about how to run Subfinder here: https://docs.projectdiscovery.io/tools/su
 
 ## Subfinder Go library
 
-Subfinder can also be used as library and a minimal examples of using subfinder SDK is available [here](v2/examples/main.go)
+Subfinder can also be used as library and a minimal examples of using subfinder SDK is available [here](examples/main.go)
 
 </td>
 </tr>
