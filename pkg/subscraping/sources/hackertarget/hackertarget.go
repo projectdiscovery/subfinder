@@ -99,5 +99,6 @@ func (s *Source) Statistics() subscraping.Statistics {
 		Errors:    s.errors,
 		Results:   s.results,
 		TimeTaken: s.timeTaken,
+		Skipped:   s.skipped,
 	}
 }
