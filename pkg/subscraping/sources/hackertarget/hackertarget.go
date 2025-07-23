@@ -16,6 +16,7 @@ type Source struct {
 	timeTaken time.Duration
 	errors    int
 	results   int
+	skipped   bool
 }
 
 // Run function returns all subdomains found with the service
@@ -31,10 +32,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}(time.Now())
 
 		htSearchUrl := fmt.Sprintf("https://api.hackertarget.com/hostsearch/?q=%s", domain)
-		if len(s.apiKeys) > 0 {
-			htSearchUrl = fmt.Sprintf("%s&apikey=%s", htSearchUrl, s.apiKeys[0])
+		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		if randomApiKey == "" {
+			s.skipped = true
+			return
 		}
-		fmt.Println(htSearchUrl)
+
+		htSearchUrl = fmt.Sprintf("%s&apikey=%s", htSearchUrl, randomApiKey)
+
 		resp, err := session.SimpleGet(ctx, htSearchUrl)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
