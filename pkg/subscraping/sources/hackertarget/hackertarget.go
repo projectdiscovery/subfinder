@@ -12,6 +12,7 @@ import (
 
 // Source is the passive scraping agent
 type Source struct {
+	apiKeys   []string
 	timeTaken time.Duration
 	errors    int
 	results   int
@@ -29,7 +30,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://api.hackertarget.com/hostsearch/?q=%s", domain))
+		htSearchUrl := fmt.Sprintf("https://api.hackertarget.com/hostsearch/?q=%s", domain)
+		if len(s.apiKeys) > 0 {
+			htSearchUrl = fmt.Sprintf("%s&apikey=%s", htSearchUrl, s.apiKeys[0])
+		}
+		fmt.Println(htSearchUrl)
+		resp, err := session.SimpleGet(ctx, htSearchUrl)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
@@ -78,8 +84,9 @@ func (s *Source) NeedsKey() bool {
 	return false
 }
 
-func (s *Source) AddApiKeys(_ []string) {
-	// no key needed
+// TODO: env variable will not work if NeedsKey is false, entire api key management needs to be refactored
+func (s *Source) AddApiKeys(keys []string) {
+	s.apiKeys = keys
 }
 
 func (s *Source) Statistics() subscraping.Statistics {
