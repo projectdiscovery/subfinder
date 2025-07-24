@@ -126,7 +126,7 @@ func (s *Source) processResponse(resp *http.Response, session *subscraping.Sessi
 	}
 }
 
-// emitResult sends a successful subdomain result
+// emitResult emits a successful subdomain result
 func (s *Source) emitResult(results chan<- subscraping.Result, subdomain string) {
 	results <- subscraping.Result{
 		Source: s.Name(),
