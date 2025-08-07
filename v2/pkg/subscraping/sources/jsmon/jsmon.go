@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -42,28 +43,36 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		// API keys structure: [baseUrl, authToken, workspaceId]
+		// Parse API key in format: baseUrl:apiKey:wkspId
 		var baseUrl, authToken, wkspId string
-		if len(s.apiKeys) >= 1 {
-			baseUrl = s.apiKeys[0]
-		}
-		if len(s.apiKeys) >= 2 {
-			authToken = s.apiKeys[1]
-		}
-		if len(s.apiKeys) >= 3 {
-			wkspId = s.apiKeys[2]
+		if len(s.apiKeys) > 0 {
+			apiKeyString := s.apiKeys[0]
+
+			// Find the last two colons to split properly
+			lastColonIndex := strings.LastIndex(apiKeyString, ":")
+			if lastColonIndex == -1 {
+				fmt.Printf("[DEBUG] No colons found in API key\n")
+				s.skipped = true
+				return
+			}
+
+			secondLastColonIndex := strings.LastIndex(apiKeyString[:lastColonIndex], ":")
+			if secondLastColonIndex == -1 {
+				fmt.Printf("[DEBUG] Only one colon found in API key\n")
+				s.skipped = true
+				return
+			}
+
+			baseUrl = apiKeyString[:secondLastColonIndex]
+			authToken = apiKeyString[secondLastColonIndex+1 : lastColonIndex]
+			wkspId = apiKeyString[lastColonIndex+1:]
+
 		}
 
-		// fmt.Printf("[DEBUG] API Keys parsed - baseUrl: %s, authToken: %s, wkspId: %s\n", baseUrl, authToken, wkspId)
-		// fmt.Printf("[DEBUG] Total API keys provided: %d\n", len(s.apiKeys))
+		subfinderScanURL := fmt.Sprintf("%s/api/v2/subfinderScan2?wkspId=%s", baseUrl, wkspId)
 
-		// Use the direct subfinderScan endpoint
-		subfinderScanURL := fmt.Sprintf("%s/api/v2/subfinderScan?wkspId=%s", baseUrl, wkspId)
-
-		// Prepare the request body with domain
 		requestBody := fmt.Sprintf(`{"domain":"%s"}`, domain)
 
-		// Prepare headers with Authorization
 		headers := map[string]string{
 			"X-Jsmon-Key":  authToken,
 			"Content-Type": "application/json",
@@ -90,26 +99,18 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		// Parse the response as a direct array of subdomains
-		var subdomains []string
-		err = jsoniter.NewDecoder(resp.Body).Decode(&subdomains)
+		var response subdomainsResponse
+		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
-			// Read response body for debugging
-			body, _ := io.ReadAll(resp.Body)
-			fmt.Printf("[DEBUG] Response body: %s\n", string(body))
-			fmt.Printf("[DEBUG] JSON decode error: %v\n", err)
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
 
-		fmt.Printf("[INF] Found %d subdomains\n", len(subdomains))
-
 		session.DiscardHTTPResponse(resp)
 
-		// Process subdomains
-		for _, subdomain := range subdomains {
+		for _, subdomain := range response.Subdomains {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 			s.results++
 		}
@@ -124,11 +125,11 @@ func (s *Source) Name() string {
 }
 
 func (s *Source) IsDefault() bool {
-	return false
+	return true
 }
 
 func (s *Source) HasRecursiveSupport() bool {
-	return true
+	return false
 }
 
 func (s *Source) NeedsKey() bool {
