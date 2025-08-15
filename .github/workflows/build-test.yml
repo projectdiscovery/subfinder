@@ -80,3 +80,4 @@ jobs:
 
       - name: Run Example
         run: go run .
+        working-directory: examples
