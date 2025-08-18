@@ -13,6 +13,10 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
+const (
+	baseUrl = "https://api.jsmon.sh"
+)
+
 type subdomainsResponse struct {
 	Subdomains []string `json:"subdomains"`
 	Status     string   `json:"status"`
@@ -43,8 +47,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		// Parse API key in format: baseUrl:apiKey:wkspId
-		var baseUrl, authToken, wkspId string
+		// Parse API key in format: apiKey:wkspId
+		var authToken, wkspId string
 		if len(s.apiKeys) > 0 {
 			apiKeyString := s.apiKeys[0]
 
@@ -55,16 +59,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				s.skipped = true
 				return
 			}
-
-			secondLastColonIndex := strings.LastIndex(apiKeyString[:lastColonIndex], ":")
-			if secondLastColonIndex == -1 {
-				fmt.Printf("[DEBUG] Only one colon found in API key\n")
-				s.skipped = true
-				return
-			}
-
-			baseUrl = apiKeyString[:secondLastColonIndex]
-			authToken = apiKeyString[secondLastColonIndex+1 : lastColonIndex]
+			authToken = apiKeyString[:lastColonIndex]
 			wkspId = apiKeyString[lastColonIndex+1:]
 
 		}
