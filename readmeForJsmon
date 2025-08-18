@@ -1,0 +1,26 @@
+## Using Jsmon as a Data Source in Subfinder
+
+Jsmon is now available as a subdomain data source in **Subfinder**. To use it, you need a Jsmon API key and a workspace ID.
+
+1. Clone and build Subfinder
+```bash
+    git clone https://github.com/projectdiscovery/subfinder.git
+    cd subfinder
+    go build .
+2. Get your Jsmon API Key and Workspace ID
+  Go to https://jsmon.sh/ and create an account.
+  After logging in, create a workspace.
+  From the dashboard, open the main menu → Jsmon API → API Keys / Quota.
+  Copy your API Key.
+  Note your Workspace ID (available in your workspace settings).
+3. Configure Subfinder for Jsmon
+  The Jsmon configuration format is:
+  apiKey:wkspId
+  apiKey → Your Jsmon API Key
+  wkspId → Your Workspace ID
+  Edit your Subfinder provider config file (~/.config/subfinder/provider-config.yaml) and add:
+  jsmon:
+    - "apiKey:yourWorkspaceId"
+4. Run Subfinder with Jsmon
+  Now you can run Subfinder using Jsmon as a source:
+  subfinder -d <domain> -sources jsmon
