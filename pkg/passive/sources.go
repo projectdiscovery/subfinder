@@ -35,6 +35,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hudsonrock"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hunter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/jsmon"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/leakix"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/netlas"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/pugrecon"
@@ -102,6 +103,7 @@ var AllSources = [...]subscraping.Source{
 	&builtwith.Source{},
 	&hudsonrock.Source{},
 	&digitalyama.Source{},
+	&jsmon.Source{},
 }
 
 var sourceWarnings = mapsutil.NewSyncLockMap[string, string](
