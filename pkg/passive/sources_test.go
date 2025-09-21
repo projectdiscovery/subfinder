@@ -57,6 +57,7 @@ var (
 		"builtwith",
 		"hudsonrock",
 		"digitalyama",
+		"urlscan",
 	}
 
 	expectedDefaultSources = []string{
@@ -94,6 +95,7 @@ var (
 		// "reconcloud",
 		"builtwith",
 		"digitalyama",
+		"urlscan",
 	}
 
 	expectedDefaultRecursiveSources = []string{
@@ -109,6 +111,7 @@ var (
 		"virustotal",
 		"leakix",
 		"facebook",
+		"urlscan",
 		// "reconcloud",
 	}
 )
