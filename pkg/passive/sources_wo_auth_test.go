@@ -33,6 +33,7 @@ func TestSourcesWithoutKeys(t *testing.T) {
 		"digitorus",      // failing with "Failed to retrieve certificate"
 		"dnsdumpster",    // failing with "unexpected status code 403 received"
 		"anubis",         // failing with "too many redirects"
+		"threatcrowd",    // failing with "randomly failing with unmarshal error when hit multiple times"
 	}
 
 	domain := "hackerone.com"
