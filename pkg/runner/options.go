@@ -118,6 +118,14 @@ func ParseOptions() *Options {
 		flagSet.BoolVarP(&options.HostIP, "ip", "oI", false, "include host IP in output (-active only)"),
 	)
 
+	if envConfig := os.Getenv("SUBFINDER_CONFIG"); envConfig != "" {
+		defaultConfigLocation = envConfig
+	}
+
+	if envProviderConfig := os.Getenv("SUBFINDER_PROVIDER_CONFIG"); envProviderConfig != "" {
+		defaultProviderConfigLocation = envProviderConfig
+	}
+
 	flagSet.CreateGroup("configuration", "Configuration",
 		flagSet.StringVar(&options.Config, "config", defaultConfigLocation, "flag config file"),
 		flagSet.StringVarP(&options.ProviderConfig, "provider-config", "pc", defaultProviderConfigLocation, "provider config file"),
