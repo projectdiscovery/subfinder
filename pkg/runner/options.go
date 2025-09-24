@@ -15,6 +15,7 @@ import (
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
+	envutil "github.com/projectdiscovery/utils/env"
 	fileutil "github.com/projectdiscovery/utils/file"
 	folderutil "github.com/projectdiscovery/utils/folder"
 	logutil "github.com/projectdiscovery/utils/log"
@@ -23,8 +24,8 @@ import (
 
 var (
 	configDir                     = folderutil.AppConfigDirOrDefault(".", "subfinder")
-	defaultConfigLocation         = filepath.Join(configDir, "config.yaml")
-	defaultProviderConfigLocation = filepath.Join(configDir, "provider-config.yaml")
+	defaultConfigLocation         = envutil.GetEnvOrDefault("SUBFINDER_CONFIG", filepath.Join(configDir, "config.yaml"))
+	defaultProviderConfigLocation = envutil.GetEnvOrDefault("SUBFINDER_PROVIDER_CONFIG", filepath.Join(configDir, "provider-config.yaml"))
 )
 
 // Options contains the configuration options for tuning
@@ -117,14 +118,6 @@ func ParseOptions() *Options {
 		flagSet.BoolVarP(&options.CaptureSources, "collect-sources", "cs", false, "include all sources in the output (-json only)"),
 		flagSet.BoolVarP(&options.HostIP, "ip", "oI", false, "include host IP in output (-active only)"),
 	)
-
-	if envConfig := os.Getenv("SUBFINDER_CONFIG"); envConfig != "" {
-		defaultConfigLocation = envConfig
-	}
-
-	if envProviderConfig := os.Getenv("SUBFINDER_PROVIDER_CONFIG"); envProviderConfig != "" {
-		defaultProviderConfigLocation = envProviderConfig
-	}
 
 	flagSet.CreateGroup("configuration", "Configuration",
 		flagSet.StringVar(&options.Config, "config", defaultConfigLocation, "flag config file"),
