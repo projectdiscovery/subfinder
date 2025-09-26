@@ -22,13 +22,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: projectdiscovery/actions/setup/go@v1
         with:
-          go-version-file: v2/go.mod
+          go-version-file: go.mod
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
           version: latest
           args: --timeout 5m
-          working-directory: v2/
 
   build:
     name: Test Builds
@@ -36,14 +35,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-13]
+        os: [ubuntu-latest, windows-latest, macOS-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: projectdiscovery/actions/setup/go@v1
         with:
-          go-version-file: v2/go.mod
+          go-version-file: go.mod
       - run: go build ./...
-        working-directory: v2/
 
       - name: Run tests
         env:
@@ -75,12 +73,11 @@ jobs:
         with:
           timeout_seconds: 360
           max_attempts: 3
-          command: cd v2; go test ./... -v ${{ github.event.inputs.short == 'true' && '-short' || '' }}
+          command: go test ./... -v ${{ github.event.inputs.short == 'true' && '-short' || '' }}
 
       - name: Race Condition Tests
         run: go build -race ./...
-        working-directory: v2/
 
       - name: Run Example
         run: go run .
-        working-directory: v2/examples
+        working-directory: examples
