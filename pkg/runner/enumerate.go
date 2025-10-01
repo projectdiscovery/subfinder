@@ -129,7 +129,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 				if _, ok := foundResults[result.Host]; !ok {
 					foundResults[result.Host] = result
 					if r.options.ResultCallback != nil {
-						r.options.ResultCallback(&resolve.HostEntry{Host: result.Host, Source: result.Source})
+						r.options.ResultCallback(&resolve.HostEntry{Domain: domain, Host: result.Host, Source: result.Source})
 					}
 				}
 			}
