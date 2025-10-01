@@ -94,7 +94,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 					}
 
 					hostEntry := resolve.HostEntry{Domain: domain, Host: subdomain, Source: result.Source}
-					if r.options.ResultCallback != nil {
+					if r.options.ResultCallback != nil && !r.options.RemoveWildcard {
 						r.options.ResultCallback(&hostEntry)
 					}
 
@@ -128,6 +128,9 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 				// Add the found subdomain to a map.
 				if _, ok := foundResults[result.Host]; !ok {
 					foundResults[result.Host] = result
+					if r.options.ResultCallback != nil {
+						r.options.ResultCallback(&resolve.HostEntry{Host: result.Host, Source: result.Source})
+					}
 				}
 			}
 		}
