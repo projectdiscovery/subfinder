@@ -109,6 +109,13 @@ OPTIMIZATION:
   -max-time int  minutes to wait for enumeration results (default 10)
 ```
 
+## Environment Variables
+
+Subfinder supports environment variables to specify custom paths for configuration files:
+
+- `SUBFINDER_CONFIG` - Path to config.yaml file (overrides default `$CONFIG/subfinder/config.yaml`)
+- `SUBFINDER_PROVIDER_CONFIG` - Path to provider-config.yaml file (overrides default `$CONFIG/subfinder/provider-config.yaml`)
+
 # Installation
 
 `subfinder` requires **go1.24** to install successfully. Run the following command to install the latest version:
