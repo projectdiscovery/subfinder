@@ -1,5 +1,5 @@
-// Package onhype logic
-package onhype
+// Package onyphe logic
+package onyphe
 
 import (
 	"context"
@@ -126,7 +126,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 // Name returns the name of the source
 func (s *Source) Name() string {
-	return "onhype"
+	return "onyphe"
 }
 
 func (s *Source) IsDefault() bool {
