@@ -265,11 +265,11 @@ func (r *Result) UnmarshalJSON(data []byte) error {
 	}
 
 	if len(raw.Forward) > 0 {
-		json.Unmarshal(raw.Forward, &r.Forward)
+		_ = json.Unmarshal(raw.Forward, &r.Forward)
 	}
 
 	if len(raw.Reverse) > 0 {
-		json.Unmarshal(raw.Reverse, &r.Reverse)
+		_ = json.Unmarshal(raw.Reverse, &r.Reverse)
 	}
 
 	if len(raw.Host) > 0 {
