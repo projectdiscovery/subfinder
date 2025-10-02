@@ -94,6 +94,9 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 					}
 
 					hostEntry := resolve.HostEntry{Domain: domain, Host: subdomain, Source: result.Source}
+					if r.options.ResultCallback != nil && !r.options.RemoveWildcard {
+						r.options.ResultCallback(&hostEntry)
+					}
 
 					uniqueMap[subdomain] = hostEntry
 					// If the user asked to remove wildcard then send on the resolve
@@ -125,6 +128,9 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 				// Add the found subdomain to a map.
 				if _, ok := foundResults[result.Host]; !ok {
 					foundResults[result.Host] = result
+					if r.options.ResultCallback != nil {
+						r.options.ResultCallback(&resolve.HostEntry{Domain: domain, Host: result.Host, Source: result.Source})
+					}
 				}
 			}
 		}
@@ -162,17 +168,6 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 		numberOfSubDomains = len(uniqueMap)
 	}
 
-	if r.options.ResultCallback != nil {
-		if r.options.RemoveWildcard {
-			for host, result := range foundResults {
-				r.options.ResultCallback(&resolve.HostEntry{Domain: host, Host: result.Host, Source: result.Source})
-			}
-		} else {
-			for _, v := range uniqueMap {
-				r.options.ResultCallback(&v)
-			}
-		}
-	}
 	gologger.Info().Msgf("Found %d subdomains for %s in %s\n", numberOfSubDomains, domain, duration)
 
 	if r.options.Statistics {
