@@ -130,6 +130,18 @@ Learn about more ways to install subfinder here: https://docs.projectdiscovery.i
 
 `subfinder` can be used right after the installation, however many sources required API keys to work. Learn more here: https://docs.projectdiscovery.io/tools/subfinder/install#post-install-configuration.
 
+### Censys configuration
+
+- Censys has migrated from the legacy Search API (`api_id:api_secret`) to the Platform API which requires a Personal Access Token (PAT).
+- Provide the PAT in your `provider-config.yaml` and, if your account has an Organization ID (Starter/Enterprise tiers), append it after a colon.
+
+```yaml
+censys:
+  - censys_pat_value:12345678-91011-1213
+```
+
+Subfinder will send the PAT as a bearer token together with the vendor media type header. Censys’ Platform API ties entitlements to the provided Organization ID, so requests without it either fall back to the free-tier limits or are rejected with `Missing organization id`. Free accounts do not receive API credits; if your account lacks an Org ID or API role, the call will still fail even with a PAT.
+
 ## Running Subfinder
 
 Learn about how to run Subfinder here: https://docs.projectdiscovery.io/tools/subfinder/running.
