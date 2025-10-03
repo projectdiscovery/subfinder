@@ -208,16 +208,16 @@ func (s *Source) AddApiKeys(keys []string) {
 			continue
 		}
 
-		token := raw
-		orgID := ""
-		if strings.Contains(raw, ":") {
-			parts := strings.SplitN(raw, ":", 2)
-			token = strings.TrimSpace(parts[0])
-			orgID = strings.TrimSpace(parts[1])
+		parts := strings.SplitN(raw, ":", 2)
+		if len(parts) != 2 {
+			gologger.Warning().Msg("censys source requires PAT entries to include an organization id (use PAT:ORG_ID); skipping")
+			continue
 		}
 
-		if token == "" {
-			gologger.Warning().Msg("censys source encountered an entry without a PAT token; skipping")
+		token := strings.TrimSpace(parts[0])
+		orgID := strings.TrimSpace(parts[1])
+		if token == "" || orgID == "" {
+			gologger.Warning().Msg("censys source encountered an entry with missing PAT or organization id; skipping")
 			continue
 		}
 

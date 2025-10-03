@@ -133,7 +133,7 @@ Learn about more ways to install subfinder here: https://docs.projectdiscovery.i
 ### Censys configuration
 
 - Censys has migrated from the legacy Search API (`api_id:api_secret`) to the Platform API which requires a Personal Access Token (PAT).
-- Provide the PAT in your `provider-config.yaml` and, if your account has an Organization ID (Starter/Enterprise tiers), append it after a colon.
+- Provide the PAT in your `provider-config.yaml` and append the organization ID (Starter/Enterprise tiers) after a colon. The Platform API rejects PAT-only requests.
 
 ```yaml
 censys:

@@ -5,24 +5,20 @@ import (
 	"testing"
 )
 
-func TestAddApiKeysStoresPersonalAccessTokens(t *testing.T) {
+func TestAddApiKeysRequiresOrgId(t *testing.T) {
 	source := Source{}
-	source.AddApiKeys([]string{"token-one", " token-two : org-id ", "legacy:id"})
+	source.AddApiKeys([]string{" token-one : org-1 ", "token-two:org-2", "missing", "no-org:", " :no-token"})
 
-	if len(source.apiKeys) != 3 {
-		t.Fatalf("expected 3 entries, got %d", len(source.apiKeys))
+	if len(source.apiKeys) != 2 {
+		t.Fatalf("expected 2 valid entries, got %d", len(source.apiKeys))
 	}
 
-	if source.apiKeys[0].token != "token-one" || source.apiKeys[0].orgID != "" {
-		t.Fatalf("expected first token to be 'token-one' without org, got token=%q org=%q", source.apiKeys[0].token, source.apiKeys[0].orgID)
+	if source.apiKeys[0].token != "token-one" || source.apiKeys[0].orgID != "org-1" {
+		t.Fatalf("expected first entry to be token-one/org-1, got token=%q org=%q", source.apiKeys[0].token, source.apiKeys[0].orgID)
 	}
 
-	if source.apiKeys[1].token != "token-two" || source.apiKeys[1].orgID != "org-id" {
-		t.Fatalf("expected trimmed token/org pairing, got token=%q org=%q", source.apiKeys[1].token, source.apiKeys[1].orgID)
-	}
-
-	if source.apiKeys[2].token != "legacy" || source.apiKeys[2].orgID != "id" {
-		t.Fatalf("expected legacy token to split as PAT+org, got token=%q org=%q", source.apiKeys[2].token, source.apiKeys[2].orgID)
+	if source.apiKeys[1].token != "token-two" || source.apiKeys[1].orgID != "org-2" {
+		t.Fatalf("expected second entry to be token-two/org-2, got token=%q org=%q", source.apiKeys[1].token, source.apiKeys[1].orgID)
 	}
 }
 
