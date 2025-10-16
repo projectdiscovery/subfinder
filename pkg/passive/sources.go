@@ -51,6 +51,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/whoisxmlapi"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/windvane"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeyeapi"
 	mapsutil "github.com/projectdiscovery/utils/maps"
 )
@@ -95,6 +96,7 @@ var AllSources = [...]subscraping.Source{
 	&virustotal.Source{},
 	&waybackarchive.Source{},
 	&whoisxmlapi.Source{},
+	&windvane.Source{},
 	&zoomeyeapi.Source{},
 	&facebook.Source{},
 	// &threatminer.Source{}, // failing  api
