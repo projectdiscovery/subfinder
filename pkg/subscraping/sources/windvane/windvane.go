@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -67,7 +66,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			var resp *http.Response
 			var err error
 
-			requestBody := fmt.Appendf(nil, `{"domain":"%s","page_request":{"page":%d,"count":%d}}`, domain, page, count)
+			requestBody, _ := json.Marshal(map[string]interface{}{"domain": domain, "page_request": map[string]int{"page": page, "count": count}})
 			resp, err = session.Post(ctx, "https://windvane.lichoin.com/trpc.backendhub.public.WindvaneService/ListSubDomain",
 				"", headers, bytes.NewReader(requestBody))
 
