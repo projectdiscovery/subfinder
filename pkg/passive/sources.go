@@ -37,6 +37,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/leakix"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/netlas"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/onyphe"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/pugrecon"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/quake"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rapiddns"
@@ -80,6 +81,7 @@ var AllSources = [...]subscraping.Source{
 	&hunter.Source{},
 	&intelx.Source{},
 	&netlas.Source{},
+	&onyphe.Source{},
 	&leakix.Source{},
 	&quake.Source{},
 	&pugrecon.Source{},
