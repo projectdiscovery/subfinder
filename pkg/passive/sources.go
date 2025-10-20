@@ -33,7 +33,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/github"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hackertarget"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hudsonrock"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hunter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/leakix"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/netlas"
@@ -78,7 +77,6 @@ var AllSources = [...]subscraping.Source{
 	&fullhunt.Source{},
 	&github.Source{},
 	&hackertarget.Source{},
-	&hunter.Source{},
 	&intelx.Source{},
 	&netlas.Source{},
 	&onyphe.Source{},
