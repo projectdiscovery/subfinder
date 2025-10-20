@@ -23,6 +23,8 @@ type Source struct {
 	timeTaken time.Duration
 	results   int
 	errors    int
+	apiKeys   []string
+	skipped   bool
 }
 
 // Run function returns all subdomains found with the service
@@ -37,7 +39,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://otx.alienvault.com/api/v1/indicators/domain/%s/passive_dns", domain))
+		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		if randomApiKey == "" {
+			s.skipped = true
+			return
+		}
+
+		resp, err := session.Get(ctx, fmt.Sprintf("https://otx.alienvault.com/api/v1/indicators/domain/%s/passive_dns", domain), "",
+			map[string]string{"Authorization": "Bearer " + randomApiKey})
 		if err != nil && resp == nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
@@ -86,11 +95,11 @@ func (s *Source) HasRecursiveSupport() bool {
 }
 
 func (s *Source) NeedsKey() bool {
-	return false
+	return true
 }
 
-func (s *Source) AddApiKeys(_ []string) {
-	// no key needed
+func (s *Source) AddApiKeys(keys []string) {
+	s.apiKeys = keys
 }
 
 func (s *Source) Statistics() subscraping.Statistics {
@@ -98,5 +107,6 @@ func (s *Source) Statistics() subscraping.Statistics {
 		Errors:    s.errors,
 		Results:   s.results,
 		TimeTaken: s.timeTaken,
+		Skipped:   s.skipped,
 	}
 }
