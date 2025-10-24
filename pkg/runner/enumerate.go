@@ -145,6 +145,16 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 				}
 			}
 		}
+
+		// Merge wildcard certificate information from uniqueMap into foundResults
+		// This handles cases where a later source marked a subdomain as wildcard
+		// after it was already sent to the resolution pool
+		for host, result := range foundResults {
+			if entry, ok := uniqueMap[host]; ok && entry.WildcardCertificate && !result.WildcardCertificate {
+				result.WildcardCertificate = true
+				foundResults[host] = result
+			}
+		}
 	}
 	wg.Wait()
 	outputWriter := NewOutputWriter(r.options.JSON)
