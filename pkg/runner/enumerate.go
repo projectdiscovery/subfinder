@@ -67,6 +67,9 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 				gologger.Warning().Msgf("Encountered an error with source %s: %s\n", result.Source, result.Error)
 			case subscraping.Subdomain:
 				subdomain := replacer.Replace(result.Value)
+				// check if this subdomain is actually a wildcard subdomain
+				// that may have furthur subdomains associated with it
+				isWildcard := strings.Contains(result.Value, "*."+subdomain)
 
 				// Validate the subdomain found and remove wildcards from
 				if !strings.HasSuffix(subdomain, "."+domain) {
@@ -90,10 +93,17 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 					// send the subdomain for resolution.
 					if _, ok := uniqueMap[subdomain]; ok {
 						skippedCounts[result.Source]++
+						// even if it is duplicate if it was not marked as wildcard before but this source says it is wildcard
+						// then we should mark it as wildcard
+						if !uniqueMap[subdomain].WildcardCertificate && isWildcard {
+							val := uniqueMap[subdomain]
+							val.WildcardCertificate = true
+							uniqueMap[subdomain] = val
+						}
 						continue
 					}
 
-					hostEntry := resolve.HostEntry{Domain: domain, Host: subdomain, Source: result.Source}
+					hostEntry := resolve.HostEntry{Domain: domain, Host: subdomain, Source: result.Source, WildcardCertificate: isWildcard}
 					if r.options.ResultCallback != nil && !r.options.RemoveWildcard {
 						r.options.ResultCallback(&hostEntry)
 					}
@@ -112,6 +122,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 		if r.options.RemoveWildcard {
 			close(resolutionPool.Tasks)
 		}
+
 		wg.Done()
 	}()
 
@@ -129,7 +140,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 				if _, ok := foundResults[result.Host]; !ok {
 					foundResults[result.Host] = result
 					if r.options.ResultCallback != nil {
-						r.options.ResultCallback(&resolve.HostEntry{Domain: domain, Host: result.Host, Source: result.Source})
+						r.options.ResultCallback(&resolve.HostEntry{Domain: domain, Host: result.Host, Source: result.Source, WildcardCertificate: result.WildcardCertificate})
 					}
 				}
 			}
