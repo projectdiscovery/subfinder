@@ -9,3 +9,4 @@ vendor/
 .devcontainer
 .vscode
 dist
+/subfinder

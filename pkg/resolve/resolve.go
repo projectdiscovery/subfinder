@@ -25,18 +25,20 @@ type ResolutionPool struct {
 
 // HostEntry defines a host with the source
 type HostEntry struct {
-	Domain string
-	Host   string
-	Source string
+	Domain              string
+	Host                string
+	Source              string
+	WildcardCertificate bool
 }
 
 // Result contains the result for a host resolution
 type Result struct {
-	Type   ResultType
-	Host   string
-	IP     string
-	Error  error
-	Source string
+	Type                ResultType
+	Host                string
+	IP                  string
+	Error               error
+	Source              string
+	WildcardCertificate bool
 }
 
 // ResultType is the type of result found
@@ -92,13 +94,13 @@ func (r *ResolutionPool) InitWildcards(domain string) error {
 func (r *ResolutionPool) resolveWorker() {
 	for task := range r.Tasks {
 		if !r.removeWildcard {
-			r.Results <- Result{Type: Subdomain, Host: task.Host, IP: "", Source: task.Source}
+			r.Results <- Result{Type: Subdomain, Host: task.Host, IP: "", Source: task.Source, WildcardCertificate: task.WildcardCertificate}
 			continue
 		}
 
 		hosts, err := r.DNSClient.Lookup(task.Host)
 		if err != nil {
-			r.Results <- Result{Type: Error, Host: task.Host, Source: task.Source, Error: err}
+			r.Results <- Result{Type: Error, Host: task.Host, Source: task.Source, Error: err, WildcardCertificate: task.WildcardCertificate}
 			continue
 		}
 
@@ -116,7 +118,7 @@ func (r *ResolutionPool) resolveWorker() {
 		}
 
 		if !skip {
-			r.Results <- Result{Type: Subdomain, Host: task.Host, IP: hosts[0], Source: task.Source}
+			r.Results <- Result{Type: Subdomain, Host: task.Host, IP: hosts[0], Source: task.Source, WildcardCertificate: task.WildcardCertificate}
 		}
 	}
 	r.wg.Done()
