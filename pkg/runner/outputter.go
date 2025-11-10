@@ -227,11 +227,12 @@ func writeSourcePlainHost(_ string, sourceMap map[string]map[string]struct{}, wr
 	for host, sources := range sourceMap {
 		sb.WriteString(host)
 		sb.WriteString(",[")
-		sourcesString := ""
+		var sourcesString strings.Builder
 		for source := range sources {
-			sourcesString += source + ","
+			sourcesString.WriteString(source)
+			sourcesString.WriteRune(',')
 		}
-		sb.WriteString(strings.Trim(sourcesString, ", "))
+		sb.WriteString(strings.TrimSuffix(sourcesString.String(), ","))
 		sb.WriteString("]\n")
 
 		_, err := bufwriter.WriteString(sb.String())
