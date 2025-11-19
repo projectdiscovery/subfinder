@@ -1,30 +1,34 @@
-// Package alienvault logic
-package alienvault
+// Package domainsproject logic
+package domainsproject
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
+
+	jsoniter "github.com/json-iterator/go"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-type alienvaultResponse struct {
-	Detail     string `json:"detail"`
-	Error      string `json:"error"`
-	PassiveDNS []struct {
-		Hostname string `json:"hostname"`
-	} `json:"passive_dns"`
-}
-
 // Source is the passive scraping agent
 type Source struct {
+	apiKeys   []apiKey
 	timeTaken time.Duration
-	results   int
 	errors    int
-	apiKeys   []string
+	results   int
 	skipped   bool
+}
+
+type apiKey struct {
+	username string
+	password string
+}
+
+type domainsProjectResponse struct {
+	Domains []string `json:"domains"`
+	Error   string   `json:"error"`
 }
 
 // Run function returns all subdomains found with the service
@@ -40,41 +44,56 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
-		if randomApiKey == "" {
+		if randomApiKey.username == "" || randomApiKey.password == "" {
 			s.skipped = true
 			return
 		}
 
-		resp, err := session.Get(ctx, fmt.Sprintf("https://otx.alienvault.com/api/v1/indicators/domain/%s/passive_dns", domain), "",
-			map[string]string{"Authorization": "Bearer " + randomApiKey})
-		if err != nil && resp == nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
-			session.DiscardHTTPResponse(resp)
-			return
-		}
-
-		var response alienvaultResponse
-		// Get the response body and decode
-		err = json.NewDecoder(resp.Body).Decode(&response)
+		searchURL := fmt.Sprintf("https://api.domainsproject.org/api/tld/search?domain=%s", domain)
+		resp, err := session.HTTPRequest(
+			ctx,
+			"GET",
+			searchURL,
+			"",
+			nil,
+			nil,
+			subscraping.BasicAuth{Username: randomApiKey.username, Password: randomApiKey.password},
+		)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
-		session.DiscardHTTPResponse(resp)
 
-		if response.Error != "" {
-			results <- subscraping.Result{
-				Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s, %s", response.Detail, response.Error),
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
 			}
+		}()
+
+		var response domainsProjectResponse
+		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
+		if err != nil {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.errors++
 			return
 		}
 
-		for _, record := range response.PassiveDNS {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Hostname}
-			s.results++
+		if response.Error != "" {
+			results <- subscraping.Result{
+				Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%v", response.Error),
+			}
+			s.errors++
+			return
+		}
+
+		for _, subdomain := range response.Domains {
+			if !strings.HasPrefix(subdomain, ".") {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				s.results++
+			}
 		}
 	}()
 
@@ -83,7 +102,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 // Name returns the name of the source
 func (s *Source) Name() string {
-	return "alienvault"
+	return "domainsproject"
 }
 
 func (s *Source) IsDefault() bool {
@@ -91,7 +110,7 @@ func (s *Source) IsDefault() bool {
 }
 
 func (s *Source) HasRecursiveSupport() bool {
-	return true
+	return false
 }
 
 func (s *Source) NeedsKey() bool {
@@ -99,7 +118,9 @@ func (s *Source) NeedsKey() bool {
 }
 
 func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+	s.apiKeys = subscraping.CreateApiKeys(keys, func(k, v string) apiKey {
+		return apiKey{k, v}
+	})
 }
 
 func (s *Source) Statistics() subscraping.Statistics {

@@ -25,6 +25,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitorus"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdb"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdumpster"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/domainsproject"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsrepo"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/driftnet"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/facebook"
@@ -33,10 +34,10 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/github"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hackertarget"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hudsonrock"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hunter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/leakix"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/netlas"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/onyphe"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/pugrecon"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/quake"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rapiddns"
@@ -51,6 +52,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/whoisxmlapi"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/windvane"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeyeapi"
 	mapsutil "github.com/projectdiscovery/utils/maps"
 )
@@ -70,15 +72,16 @@ var AllSources = [...]subscraping.Source{
 	&digitorus.Source{},
 	&dnsdb.Source{},
 	&dnsdumpster.Source{},
+	&domainsproject.Source{},
 	&dnsrepo.Source{},
 	&driftnet.Source{},
 	&fofa.Source{},
 	&fullhunt.Source{},
 	&github.Source{},
 	&hackertarget.Source{},
-	&hunter.Source{},
 	&intelx.Source{},
 	&netlas.Source{},
+	&onyphe.Source{},
 	&leakix.Source{},
 	&quake.Source{},
 	&pugrecon.Source{},
@@ -95,6 +98,7 @@ var AllSources = [...]subscraping.Source{
 	&virustotal.Source{},
 	&waybackarchive.Source{},
 	&whoisxmlapi.Source{},
+	&windvane.Source{},
 	&zoomeyeapi.Source{},
 	&facebook.Source{},
 	// &threatminer.Source{}, // failing  api
