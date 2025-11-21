@@ -2,55 +2,77 @@
 package censys
 
 import (
+	"bytes"
 	"context"
-	"strconv"
+	"fmt"
+	"net/http"
+	"strings"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
+	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
-	urlutil "github.com/projectdiscovery/utils/url"
 )
 
 const (
 	maxCensysPages = 10
 	maxPerPage     = 100
+	searchAPIUrl   = "https://api.platform.censys.io/v3/global/search/query"
+	authorization  = "Authorization"
+	bearerTokenFmt = "Bearer %s"
+	acceptHeader   = "application/vnd.censys.api.v3.search.v1+json"
+	orgHeader      = "X-Organization-ID"
 )
 
-type response struct {
-	Code   int    `json:"code"`
-	Status string `json:"status"`
-	Result result `json:"result"`
+type searchRequest struct {
+	Query     string   `json:"query"`
+	PageSize  int      `json:"page_size,omitempty"`
+	PageToken string   `json:"page_token,omitempty"`
+	Fields    []string `json:"fields,omitempty"`
 }
 
-type result struct {
-	Query      string  `json:"query"`
-	Total      float64 `json:"total"`
-	DurationMS int     `json:"duration_ms"`
-	Hits       []hit   `json:"hits"`
-	Links      links   `json:"links"`
+type searchResponse struct {
+	Result *searchResult `json:"result"`
 }
 
-type hit struct {
-	Parsed            parsed   `json:"parsed"`
-	Names             []string `json:"names"`
-	FingerprintSha256 string   `json:"fingerprint_sha256"`
+type searchResult struct {
+	Hits          []searchHit `json:"hits"`
+	NextPageToken string      `json:"next_page_token"`
 }
 
-type parsed struct {
-	ValidityPeriod validityPeriod `json:"validity_period"`
-	SubjectDN      string         `json:"subject_dn"`
-	IssuerDN       string         `json:"issuer_dn"`
+type searchHit struct {
+	Certificate *certificateAsset `json:"certificate_v1"`
+	Host        *hostAsset        `json:"host_v1"`
+	WebProperty *webPropertyAsset `json:"webproperty_v1"`
 }
 
-type validityPeriod struct {
-	NotAfter  string `json:"not_after"`
-	NotBefore string `json:"not_before"`
+type certificateAsset struct {
+	Resource *certificateResource `json:"resource"`
 }
 
-type links struct {
-	Next string `json:"next"`
-	Prev string `json:"prev"`
+type certificateResource struct {
+	Names []string `json:"names"`
+}
+
+type hostAsset struct {
+	Resource *hostResource `json:"resource"`
+}
+
+type hostResource struct {
+	DNS *hostDNS `json:"dns"`
+}
+
+type hostDNS struct {
+	Names []string `json:"names"`
+}
+
+type webPropertyAsset struct {
+	Resource *webPropertyResource `json:"resource"`
+}
+
+type webPropertyResource struct {
+	Hostname string `json:"hostname"`
 }
 
 // Source is the passive scraping agent
@@ -63,8 +85,8 @@ type Source struct {
 }
 
 type apiKey struct {
-	token  string
-	secret string
+	token string
+	orgID string
 }
 
 // Run function returns all subdomains found with the service
@@ -80,36 +102,48 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
-		if randomApiKey.token == "" || randomApiKey.secret == "" {
+		if randomApiKey.token == "" {
 			s.skipped = true
 			return
 		}
 
-		certSearchEndpoint := "https://search.censys.io/api/v2/certificates/search"
+		domainLower := strings.ToLower(domain)
+		seen := make(map[string]struct{})
 		cursor := ""
 		currentPage := 1
 		for {
-			certSearchEndpointUrl, err := urlutil.Parse(certSearchEndpoint)
+			reqBody := searchRequest{
+				Query:    domain,
+				PageSize: maxPerPage,
+			}
+			if cursor != "" {
+				reqBody.PageToken = cursor
+			}
+
+			payload, err := jsoniter.Marshal(reqBody)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				s.errors++
 				return
 			}
 
-			certSearchEndpointUrl.Params.Add("q", domain)
-			certSearchEndpointUrl.Params.Add("per_page", strconv.Itoa(maxPerPage))
-			if cursor != "" {
-				certSearchEndpointUrl.Params.Add("cursor", cursor)
+			headers := map[string]string{
+				"Content-Type": "application/json",
+				"Accept":       acceptHeader,
+				authorization:  fmt.Sprintf(bearerTokenFmt, randomApiKey.token),
+			}
+			if randomApiKey.orgID != "" {
+				headers[orgHeader] = randomApiKey.orgID
 			}
 
 			resp, err := session.HTTPRequest(
 				ctx,
-				"GET",
-				certSearchEndpointUrl.String(),
+				http.MethodPost,
+				searchAPIUrl,
 				"",
-				nil,
-				nil,
-				subscraping.BasicAuth{Username: randomApiKey.token, Password: randomApiKey.secret},
+				headers,
+				bytes.NewReader(payload),
+				subscraping.BasicAuth{},
 			)
 
 			if err != nil {
@@ -119,7 +153,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				return
 			}
 
-			var censysResponse response
+			var censysResponse searchResponse
 			err = jsoniter.NewDecoder(resp.Body).Decode(&censysResponse)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -130,15 +164,15 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			session.DiscardHTTPResponse(resp)
 
-			for _, hit := range censysResponse.Result.Hits {
-				for _, name := range hit.Names {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: name}
-					s.results++
-				}
+			if censysResponse.Result == nil || len(censysResponse.Result.Hits) == 0 {
+				break
 			}
 
-			// Exit the censys enumeration if last page is reached
-			cursor = censysResponse.Result.Links.Next
+			for _, hit := range censysResponse.Result.Hits {
+				s.emitFromHit(hit, domainLower, seen, results)
+			}
+
+			cursor = censysResponse.Result.NextPageToken
 			if cursor == "" || currentPage >= maxCensysPages {
 				break
 			}
@@ -167,9 +201,72 @@ func (s *Source) NeedsKey() bool {
 }
 
 func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = subscraping.CreateApiKeys(keys, func(k, v string) apiKey {
-		return apiKey{k, v}
-	})
+	s.apiKeys = nil
+	for _, key := range keys {
+		raw := strings.TrimSpace(key)
+		if raw == "" {
+			continue
+		}
+
+		parts := strings.SplitN(raw, ":", 2)
+		if len(parts) != 2 {
+			gologger.Warning().Msg("censys source requires PAT entries to include an organization id (use PAT:ORG_ID); skipping")
+			continue
+		}
+
+		token := strings.TrimSpace(parts[0])
+		orgID := strings.TrimSpace(parts[1])
+		if token == "" || orgID == "" {
+			gologger.Warning().Msg("censys source encountered an entry with missing PAT or organization id; skipping")
+			continue
+		}
+
+		s.apiKeys = append(s.apiKeys, apiKey{token: token, orgID: orgID})
+	}
+}
+
+func (s *Source) emitFromHit(hit searchHit, domainLower string, seen map[string]struct{}, results chan subscraping.Result) {
+	if hit.Certificate != nil && hit.Certificate.Resource != nil {
+		for _, name := range hit.Certificate.Resource.Names {
+			s.emitIfValid(name, domainLower, seen, results)
+		}
+	}
+
+	if hit.Host != nil && hit.Host.Resource != nil && hit.Host.Resource.DNS != nil {
+		for _, name := range hit.Host.Resource.DNS.Names {
+			s.emitIfValid(name, domainLower, seen, results)
+		}
+	}
+
+	if hit.WebProperty != nil && hit.WebProperty.Resource != nil {
+		s.emitIfValid(hit.WebProperty.Resource.Hostname, domainLower, seen, results)
+	}
+}
+
+func (s *Source) emitIfValid(candidate, domainLower string, seen map[string]struct{}, results chan subscraping.Result) {
+	name, ok := sanitizeCandidate(candidate, domainLower)
+	if !ok {
+		return
+	}
+	if _, alreadySeen := seen[name]; alreadySeen {
+		return
+	}
+	seen[name] = struct{}{}
+	results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: name}
+	s.results++
+}
+
+func sanitizeCandidate(value, domainLower string) (string, bool) {
+	name := strings.TrimSpace(strings.TrimSuffix(value, "."))
+	if name == "" {
+		return "", false
+	}
+	name = strings.TrimPrefix(name, "*.")
+	nameLower := strings.ToLower(name)
+	if nameLower == domainLower || strings.HasSuffix(nameLower, "."+domainLower) {
+		return nameLower, true
+	}
+	return "", false
 }
 
 func (s *Source) Statistics() subscraping.Statistics {
