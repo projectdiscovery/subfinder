@@ -58,6 +58,7 @@ jobs:
           FOFA_API_KEY: ${{secrets.FOFA_API_KEY}}
           FULLHUNT_API_KEY: ${{secrets.FULLHUNT_API_KEY}}
           GITHUB_API_KEY: ${{secrets.GITHUB_API_KEY}}
+          HUNTER_API_KEY: ${{secrets.HUNTER_API_KEY}}
           INTELX_API_KEY: ${{secrets.INTELX_API_KEY}}
           LEAKIX_API_KEY: ${{secrets.LEAKIX_API_KEY}}
           QUAKE_API_KEY: ${{secrets.QUAKE_API_KEY}}
