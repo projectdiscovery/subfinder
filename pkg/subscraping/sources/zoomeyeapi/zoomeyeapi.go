@@ -63,6 +63,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 		var pages = 1
 		for currentPage := 1; currentPage <= pages; currentPage++ {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
 			api := fmt.Sprintf("https://api.%s/domain/search?q=%s&type=1&s=1000&page=%d", host, domain, currentPage)
 			resp, err := session.Get(ctx, api, "", headers)
 			isForbidden := resp != nil && resp.StatusCode == http.StatusForbidden
@@ -87,8 +92,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			_ = resp.Body.Close()
 			pages = int(res.Total/1000) + 1
 			for _, r := range res.List {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: r.Name}
-				s.results++
+				select {
+				case <-ctx.Done():
+					return
+				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: r.Name}:
+					s.results++
+				}
 			}
 		}
 	}()
