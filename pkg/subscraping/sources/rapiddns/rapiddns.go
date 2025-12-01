@@ -36,6 +36,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		page := 1
 		maxPages := 1
 		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
 			resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://rapiddns.io/subdomain/%s?page=%d&full=1", domain, page))
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -56,8 +61,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			src := string(body)
 			for _, subdomain := range session.Extractor.Extract(src) {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-				s.results++
+				select {
+				case <-ctx.Done():
+					return
+				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
+					s.results++
+				}
 			}
 
 			if maxPages == 1 {
