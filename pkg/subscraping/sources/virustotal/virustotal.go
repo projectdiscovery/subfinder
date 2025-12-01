@@ -51,6 +51,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 		var cursor = ""
 		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
 			var url = fmt.Sprintf("https://www.virustotal.com/api/v3/domains/%s/subdomains?limit=40", domain)
 			if cursor != "" {
 				url = fmt.Sprintf("%s&cursor=%s", url, cursor)
@@ -78,8 +83,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 
 			for _, subdomain := range data.Data {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain.Id}
-				s.results++
+				select {
+				case <-ctx.Done():
+					return
+				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain.Id}:
+					s.results++
+				}
 			}
 			cursor = data.Meta.Cursor
 			if cursor == "" {
