@@ -85,6 +85,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		queryParams.Add("swclient", "subfinder")
 
 		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
 			url := urlTemplate + queryParams.Encode()
 
 			resp, err := session.Get(ctx, url, "", headers)
@@ -98,6 +103,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			var respCond string
 			reader := bufio.NewReader(resp.Body)
 			for {
+				select {
+				case <-ctx.Done():
+					session.DiscardHTTPResponse(resp)
+					return
+				default:
+				}
 				n, err := reader.ReadBytes('\n')
 				if err == io.EOF {
 					break
@@ -117,21 +128,18 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					return
 				}
 
-				// Condition is a scalar enum of string values: {“begin”, “ongoing”, “succeeded”, “limited”, “failed”}.
-				// "begin" will be the initiating Condition, this can be safely ignored. The data of interest will be in
-				// objects with Condition "" or "ongoing". Conditions "succeeded", "limited", and "failed" are terminating conditions.
-				// See https://www.domaintools.com/resources/user-guides/farsight-streaming-api-framing-protocol-documentation/
-				// for more details
 				respCond = response.Condition
 				if respCond == "" || respCond == "ongoing" {
 					if response.Obj.Name != "" {
-						results <- subscraping.Result{
-							Source: sourceName, Type: subscraping.Subdomain, Value: strings.TrimSuffix(response.Obj.Name, "."),
+						select {
+						case <-ctx.Done():
+							session.DiscardHTTPResponse(resp)
+							return
+						case results <- subscraping.Result{Source: sourceName, Type: subscraping.Subdomain, Value: strings.TrimSuffix(response.Obj.Name, ".")}:
+							s.results++
 						}
-						s.results++
 					}
 				} else if respCond != "begin" {
-					// if the respCond is not "", "ongoing", or "begin", then it is a terminating condition, so break out of the loop
 					break
 				}
 			}

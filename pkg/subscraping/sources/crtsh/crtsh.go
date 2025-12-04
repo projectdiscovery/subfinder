@@ -114,8 +114,12 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 
 	var count int
 	var data string
-	// Parse all the rows getting subdomains
 	for rows.Next() {
+		select {
+		case <-ctx.Done():
+			return count
+		default:
+		}
 		err := rows.Scan(&data)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -127,8 +131,12 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 		for subdomain := range strings.SplitSeq(data, "\n") {
 			for _, value := range session.Extractor.Extract(subdomain) {
 				if value != "" {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}
-					s.results++
+					select {
+					case <-ctx.Done():
+						return count
+					case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}:
+						s.results++
+					}
 				}
 			}
 		}
@@ -157,11 +165,20 @@ func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, sessi
 	session.DiscardHTTPResponse(resp)
 
 	for _, subdomain := range subdomains {
+		select {
+		case <-ctx.Done():
+			return true
+		default:
+		}
 		for sub := range strings.SplitSeq(subdomain.NameValue, "\n") {
 			for _, value := range session.Extractor.Extract(sub) {
 				if value != "" {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}
-					s.results++
+					select {
+					case <-ctx.Done():
+						return true
+					case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}:
+						s.results++
+					}
 				}
 			}
 		}

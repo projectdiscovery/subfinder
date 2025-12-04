@@ -66,18 +66,26 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		for _, cert := range response {
 			for _, subdomain := range cert.DNSNames {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-				s.results++
+				select {
+				case <-ctx.Done():
+					return
+				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
+					s.results++
+				}
 			}
 		}
 
-		// if the number of responses is zero, close the channel and return.
 		if len(response) == 0 {
 			return
 		}
 
 		id := response[len(response)-1].ID
 		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
 			reqURL := fmt.Sprintf("https://api.certspotter.com/v1/issuances?domain=%s&include_subdomains=true&expand=dns_names&after=%s", domain, id)
 
 			resp, err := session.Get(ctx, reqURL, cookies, headers)
@@ -103,8 +111,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			for _, cert := range response {
 				for _, subdomain := range cert.DNSNames {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-					s.results++
+					select {
+					case <-ctx.Done():
+						return
+					case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
+						s.results++
+					}
 				}
 			}
 

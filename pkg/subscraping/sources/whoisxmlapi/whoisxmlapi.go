@@ -74,8 +74,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		session.DiscardHTTPResponse(resp)
 
 		for _, record := range data.Result.Records {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Domain}
-			s.results++
+			select {
+			case <-ctx.Done():
+				return
+			case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Domain}:
+				s.results++
+			}
 		}
 	}()
 

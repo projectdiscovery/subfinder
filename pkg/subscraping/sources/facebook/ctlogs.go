@@ -103,7 +103,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		domainsURL := fmt.Sprintf(domainsUrl, key.AccessToken, domain)
 
 		for {
-			// unfortunately, this cannot be parllelized since pagination is cursor based
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
 			resp, err := session.Get(ctx, domainsURL, "", nil)
 			if err != nil {
 				s.errors++
@@ -126,14 +130,17 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 			for _, v := range response.Data {
 				for _, domain := range v.Domains {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: domain}
-					s.results++
+					select {
+					case <-ctx.Done():
+						return
+					case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: domain}:
+						s.results++
+					}
 				}
 			}
 			if response.Paging.Next == "" {
 				break
 			}
-			// cursor includes api key so no need to update it
 			domainsURL = updateParamInURL(response.Paging.Next, "limit", domainsPerPage)
 		}
 	}()

@@ -120,10 +120,13 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 		}(it)
 	}
 
-	// Links header, first, next, last...
 	linksHeader := linkheader.Parse(resp.Header.Get("Link"))
-	// Process the next link recursively
 	for _, link := range linksHeader {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
 		if link.Rel == "next" {
 			nextURL, err := url.QueryUnescape(link.URL)
 			if err != nil {

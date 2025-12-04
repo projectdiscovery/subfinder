@@ -89,6 +89,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		cursor := ""
 		currentPage := 1
 		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
 			certSearchEndpointUrl, err := urlutil.Parse(certSearchEndpoint)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -132,12 +137,15 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			for _, hit := range censysResponse.Result.Hits {
 				for _, name := range hit.Names {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: name}
-					s.results++
+					select {
+					case <-ctx.Done():
+						return
+					case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: name}:
+						s.results++
+					}
 				}
 			}
 
-			// Exit the censys enumeration if last page is reached
 			cursor = censysResponse.Result.Links.Next
 			if cursor == "" || currentPage >= maxCensysPages {
 				break

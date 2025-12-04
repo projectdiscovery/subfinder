@@ -63,8 +63,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		if len(response.CloudAssetsList) > 0 {
 			for _, cloudAsset := range response.CloudAssetsList {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: cloudAsset.Domain}
-				s.results++
+				select {
+				case <-ctx.Done():
+					return
+				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: cloudAsset.Domain}:
+					s.results++
+				}
 			}
 		}
 	}()
