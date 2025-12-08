@@ -2,14 +2,14 @@
 package censys
 
 import (
+	"bytes"
 	"context"
-	"strconv"
+	"net/http"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
-	urlutil "github.com/projectdiscovery/utils/url"
 )
 
 const (
@@ -17,54 +17,40 @@ const (
 	maxPerPage     = 100
 )
 
+// Platform API request body
+type searchRequest struct {
+	Query    string   `json:"query"`
+	Fields   []string `json:"fields,omitempty"`
+	PageSize int      `json:"page_size,omitempty"`
+	Cursor   string   `json:"cursor,omitempty"`
+}
+
+// Platform API response structures
 type response struct {
-	Code   int    `json:"code"`
-	Status string `json:"status"`
 	Result result `json:"result"`
 }
 
 type result struct {
-	Query      string  `json:"query"`
-	Total      float64 `json:"total"`
-	DurationMS int     `json:"duration_ms"`
-	Hits       []hit   `json:"hits"`
-	Links      links   `json:"links"`
+	Hits   []hit  `json:"hits"`
+	Cursor string `json:"cursor"`
+	Total  int64  `json:"total"`
 }
 
 type hit struct {
-	Parsed            parsed   `json:"parsed"`
-	Names             []string `json:"names"`
-	FingerprintSha256 string   `json:"fingerprint_sha256"`
+	Certificate certificate `json:"certificate"`
 }
 
-type parsed struct {
-	ValidityPeriod validityPeriod `json:"validity_period"`
-	SubjectDN      string         `json:"subject_dn"`
-	IssuerDN       string         `json:"issuer_dn"`
-}
-
-type validityPeriod struct {
-	NotAfter  string `json:"not_after"`
-	NotBefore string `json:"not_before"`
-}
-
-type links struct {
-	Next string `json:"next"`
-	Prev string `json:"prev"`
+type certificate struct {
+	Names []string `json:"names"`
 }
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys   []apiKey
+	apiKeys   []string
 	timeTaken time.Duration
 	errors    int
 	results   int
 	skipped   bool
-}
-
-type apiKey struct {
-	token  string
-	secret string
 }
 
 // Run function returns all subdomains found with the service
@@ -80,41 +66,51 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}(time.Now())
 
 		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
-		if randomApiKey.token == "" || randomApiKey.secret == "" {
+		if randomApiKey == "" {
 			s.skipped = true
 			return
 		}
 
-		certSearchEndpoint := "https://search.censys.io/api/v2/certificates/search"
+		searchEndpoint := "https://api.platform.censys.io/v3/global/search/query"
 		cursor := ""
 		currentPage := 1
+
 		for {
 			select {
 			case <-ctx.Done():
 				return
 			default:
 			}
-			certSearchEndpointUrl, err := urlutil.Parse(certSearchEndpoint)
+
+			// Build request body
+			reqBody := searchRequest{
+				Query:    "certificate.names: " + domain,
+				Fields:   []string{"certificate.names"},
+				PageSize: maxPerPage,
+			}
+			if cursor != "" {
+				reqBody.Cursor = cursor
+			}
+
+			bodyBytes, err := jsoniter.Marshal(reqBody)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				s.errors++
 				return
 			}
 
-			certSearchEndpointUrl.Params.Add("q", domain)
-			certSearchEndpointUrl.Params.Add("per_page", strconv.Itoa(maxPerPage))
-			if cursor != "" {
-				certSearchEndpointUrl.Params.Add("cursor", cursor)
-			}
-
+			// Make POST request with Bearer token auth
 			resp, err := session.HTTPRequest(
 				ctx,
-				"GET",
-				certSearchEndpointUrl.String(),
+				http.MethodPost,
+				searchEndpoint,
 				"",
-				nil,
-				nil,
-				subscraping.BasicAuth{Username: randomApiKey.token, Password: randomApiKey.secret},
+				map[string]string{
+					"Content-Type":  "application/json",
+					"Authorization": "Bearer " + randomApiKey,
+				},
+				bytes.NewReader(bodyBytes),
+				subscraping.BasicAuth{},
 			)
 
 			if err != nil {
@@ -136,7 +132,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			session.DiscardHTTPResponse(resp)
 
 			for _, hit := range censysResponse.Result.Hits {
-				for _, name := range hit.Names {
+				for _, name := range hit.Certificate.Names {
 					select {
 					case <-ctx.Done():
 						return
@@ -146,7 +142,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				}
 			}
 
-			cursor = censysResponse.Result.Links.Next
+			cursor = censysResponse.Result.Cursor
 			if cursor == "" || currentPage >= maxCensysPages {
 				break
 			}
@@ -175,9 +171,7 @@ func (s *Source) NeedsKey() bool {
 }
 
 func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = subscraping.CreateApiKeys(keys, func(k, v string) apiKey {
-		return apiKey{k, v}
-	})
+	s.apiKeys = keys
 }
 
 func (s *Source) Statistics() subscraping.Statistics {
