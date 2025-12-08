@@ -13,8 +13,20 @@ import (
 )
 
 const (
+	// maxCensysPages is the maximum number of pages to fetch from the API
 	maxCensysPages = 10
-	maxPerPage     = 100
+	// maxPerPage is the maximum number of results per page
+	maxPerPage = 100
+	// baseURL is the Censys Platform API base URL
+	baseURL = "https://api.platform.censys.io"
+	// searchEndpoint is the global data search query endpoint
+	searchEndpoint = "/v3/global/search/query"
+	// queryPrefix is the Censys query language prefix for certificate name search
+	queryPrefix = "certificate.names: "
+	// authHeaderPrefix is the Bearer token prefix for Authorization header
+	authHeaderPrefix = "Bearer "
+	// contentTypeJSON is the Content-Type header value for JSON
+	contentTypeJSON = "application/json"
 )
 
 // Platform API request body
@@ -65,13 +77,17 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
+		// PickRandom selects a random API key from configured keys.
+		// This enables load balancing when users configure multiple PATs
+		// (e.g., CENSYS_API_KEY=pat1,pat2,pat3) to distribute requests
+		// and avoid hitting rate limits on a single key.
 		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
 		if randomApiKey == "" {
 			s.skipped = true
 			return
 		}
 
-		searchEndpoint := "https://api.platform.censys.io/v3/global/search/query"
+		apiURL := baseURL + searchEndpoint
 		cursor := ""
 		currentPage := 1
 
@@ -84,7 +100,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			// Build request body
 			reqBody := searchRequest{
-				Query:    "certificate.names: " + domain,
+				Query:    queryPrefix + domain,
 				Fields:   []string{"certificate.names"},
 				PageSize: maxPerPage,
 			}
@@ -103,11 +119,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			resp, err := session.HTTPRequest(
 				ctx,
 				http.MethodPost,
-				searchEndpoint,
+				apiURL,
 				"",
 				map[string]string{
-					"Content-Type":  "application/json",
-					"Authorization": "Bearer " + randomApiKey,
+					"Content-Type":  contentTypeJSON,
+					"Authorization": authHeaderPrefix + randomApiKey,
 				},
 				bytes.NewReader(bodyBytes),
 				subscraping.BasicAuth{},
