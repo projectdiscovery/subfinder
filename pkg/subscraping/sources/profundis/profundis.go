@@ -106,7 +106,7 @@ func (s *Source) IsDefault() bool {
 }
 
 func (s *Source) HasRecursiveSupport() bool {
-	return true
+	return false
 }
 
 func (s *Source) NeedsKey() bool {
