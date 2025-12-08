@@ -111,7 +111,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			default:
 			}
 
-			// Build request body
 			reqBody := searchRequest{
 				Query:    queryPrefix + domain,
 				Fields:   []string{"cert.names"},
@@ -128,7 +127,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				return
 			}
 
-			// Build headers with Bearer token auth
 			headers := map[string]string{
 				"Content-Type":  contentTypeJSON,
 				"Authorization": authHeaderPrefix + randomApiKey.pat,
@@ -138,7 +136,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				headers[orgIDHeader] = randomApiKey.orgID
 			}
 
-			// Make POST request
 			resp, err := session.HTTPRequest(
 				ctx,
 				http.MethodPost,
@@ -158,7 +155,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			var censysResponse response
 			err = jsoniter.NewDecoder(resp.Body).Decode(&censysResponse)
-			resp.Body.Close()
+			_ = resp.Body.Close()
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				s.errors++
