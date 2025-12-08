@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"net/http"
+	"strings"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -22,12 +23,20 @@ const (
 	// searchEndpoint is the global data search query endpoint
 	searchEndpoint = "/v3/global/search/query"
 	// queryPrefix is the Censys query language prefix for certificate name search
-	queryPrefix = "certificate.names: "
+	queryPrefix = "cert.names: "
 	// authHeaderPrefix is the Bearer token prefix for Authorization header
 	authHeaderPrefix = "Bearer "
 	// contentTypeJSON is the Content-Type header value for JSON
 	contentTypeJSON = "application/json"
+	// orgIDHeader is the header name for organization ID
+	orgIDHeader = "X-Organization-ID"
 )
+
+// apiKey holds the Personal Access Token and optional Organization ID
+type apiKey struct {
+	pat   string
+	orgID string
+}
 
 // Platform API request body
 type searchRequest struct {
@@ -43,22 +52,26 @@ type response struct {
 }
 
 type result struct {
-	Hits   []hit  `json:"hits"`
-	Cursor string `json:"cursor"`
-	Total  int64  `json:"total"`
+	Hits          []hit  `json:"hits"`
+	TotalHits     int64  `json:"total_hits"`
+	NextPageToken string `json:"next_page_token"`
 }
 
 type hit struct {
-	Certificate certificate `json:"certificate"`
+	CertificateV1 certificateV1 `json:"certificate_v1"`
 }
 
-type certificate struct {
+type certificateV1 struct {
+	Resource resource `json:"resource"`
+}
+
+type resource struct {
 	Names []string `json:"names"`
 }
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys   []string
+	apiKeys   []apiKey
 	timeTaken time.Duration
 	errors    int
 	results   int
@@ -79,10 +92,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		// PickRandom selects a random API key from configured keys.
 		// This enables load balancing when users configure multiple PATs
-		// (e.g., CENSYS_API_KEY=pat1,pat2,pat3) to distribute requests
+		// (e.g., CENSYS_API_KEY=pat1:org1,pat2:org2) to distribute requests
 		// and avoid hitting rate limits on a single key.
 		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
-		if randomApiKey == "" {
+		if randomApiKey.pat == "" {
 			s.skipped = true
 			return
 		}
@@ -101,7 +114,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			// Build request body
 			reqBody := searchRequest{
 				Query:    queryPrefix + domain,
-				Fields:   []string{"certificate.names"},
+				Fields:   []string{"cert.names"},
 				PageSize: maxPerPage,
 			}
 			if cursor != "" {
@@ -115,16 +128,23 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				return
 			}
 
-			// Make POST request with Bearer token auth
+			// Build headers with Bearer token auth
+			headers := map[string]string{
+				"Content-Type":  contentTypeJSON,
+				"Authorization": authHeaderPrefix + randomApiKey.pat,
+			}
+			// Add Organization ID header if provided
+			if randomApiKey.orgID != "" {
+				headers[orgIDHeader] = randomApiKey.orgID
+			}
+
+			// Make POST request
 			resp, err := session.HTTPRequest(
 				ctx,
 				http.MethodPost,
 				apiURL,
 				"",
-				map[string]string{
-					"Content-Type":  contentTypeJSON,
-					"Authorization": authHeaderPrefix + randomApiKey,
-				},
+				headers,
 				bytes.NewReader(bodyBytes),
 				subscraping.BasicAuth{},
 			)
@@ -138,17 +158,15 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			var censysResponse response
 			err = jsoniter.NewDecoder(resp.Body).Decode(&censysResponse)
+			resp.Body.Close()
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				s.errors++
-				session.DiscardHTTPResponse(resp)
 				return
 			}
 
-			session.DiscardHTTPResponse(resp)
-
 			for _, hit := range censysResponse.Result.Hits {
-				for _, name := range hit.Certificate.Names {
+				for _, name := range hit.CertificateV1.Resource.Names {
 					select {
 					case <-ctx.Done():
 						return
@@ -158,7 +176,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				}
 			}
 
-			cursor = censysResponse.Result.Cursor
+			cursor = censysResponse.Result.NextPageToken
 			if cursor == "" || currentPage >= maxCensysPages {
 				break
 			}
@@ -186,8 +204,19 @@ func (s *Source) NeedsKey() bool {
 	return true
 }
 
+// AddApiKeys parses and adds API keys.
+// Format: "PAT:ORG_ID" where ORG_ID is required for paid accounts.
+// Example: "censys_xxx_token:12345678-91011-1213"
 func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+	s.apiKeys = subscraping.CreateApiKeys(keys, func(pat, orgID string) apiKey {
+		return apiKey{pat: pat, orgID: orgID}
+	})
+	// Also support single PAT without org ID for free users
+	for _, key := range keys {
+		if !strings.Contains(key, ":") && key != "" {
+			s.apiKeys = append(s.apiKeys, apiKey{pat: key, orgID: ""})
+		}
+	}
 }
 
 func (s *Source) Statistics() subscraping.Statistics {

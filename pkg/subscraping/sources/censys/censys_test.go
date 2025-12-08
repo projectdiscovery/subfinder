@@ -2,11 +2,8 @@ package censys
 
 import (
 	"context"
-	"io"
 	"math"
 	"net/http"
-	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
 
@@ -54,21 +51,14 @@ func TestCensysSource_NoApiKey(t *testing.T) {
 }
 
 func TestCensysSource_ContextCancellation(t *testing.T) {
-	// Create a server that delays response
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		time.Sleep(500 * time.Millisecond)
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{"result": {"hits": [], "cursor": "", "total": 0}}`))
-	}))
-	defer server.Close()
-
 	source := &Source{}
-	source.AddApiKeys([]string{"test_pat"})
+	// Add a key with PAT:ORG_ID format
+	source.AddApiKeys([]string{"test_pat:test_org_id"})
 
 	ctx := context.Background()
 	multiRateLimiter := createTestMultiRateLimiter(ctx)
 	session := &subscraping.Session{
-		Client:           server.Client(),
+		Client:           http.DefaultClient,
 		MultiRateLimiter: multiRateLimiter,
 	}
 
@@ -108,14 +98,27 @@ func TestCensysSource_Metadata(t *testing.T) {
 }
 
 func TestCensysSource_AddApiKeys(t *testing.T) {
-	source := &Source{}
+	t.Run("PAT with OrgID", func(t *testing.T) {
+		source := &Source{}
+		keys := []string{"pat_token_1:org_id_1", "pat_token_2:org_id_2"}
+		source.AddApiKeys(keys)
 
-	keys := []string{"pat_token_1", "pat_token_2"}
-	source.AddApiKeys(keys)
+		require.Len(t, source.apiKeys, 2)
+		assert.Equal(t, "pat_token_1", source.apiKeys[0].pat)
+		assert.Equal(t, "org_id_1", source.apiKeys[0].orgID)
+		assert.Equal(t, "pat_token_2", source.apiKeys[1].pat)
+		assert.Equal(t, "org_id_2", source.apiKeys[1].orgID)
+	})
 
-	require.Len(t, source.apiKeys, 2)
-	assert.Equal(t, "pat_token_1", source.apiKeys[0])
-	assert.Equal(t, "pat_token_2", source.apiKeys[1])
+	t.Run("PAT without OrgID (free user)", func(t *testing.T) {
+		source := &Source{}
+		keys := []string{"pat_token_only"}
+		source.AddApiKeys(keys)
+
+		require.Len(t, source.apiKeys, 1)
+		assert.Equal(t, "pat_token_only", source.apiKeys[0].pat)
+		assert.Equal(t, "", source.apiKeys[0].orgID)
+	})
 }
 
 func TestCensysSource_Statistics(t *testing.T) {
@@ -131,40 +134,4 @@ func TestCensysSource_Statistics(t *testing.T) {
 	assert.Equal(t, 10, stats.Results)
 	assert.Equal(t, 5*time.Second, stats.TimeTaken)
 	assert.False(t, stats.Skipped)
-}
-
-func TestCensysSource_RequestValidation(t *testing.T) {
-	// Create mock server to validate request format
-	var capturedRequest struct {
-		method      string
-		authHeader  string
-		contentType string
-		body        string
-	}
-
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		capturedRequest.method = r.Method
-		capturedRequest.authHeader = r.Header.Get("Authorization")
-		capturedRequest.contentType = r.Header.Get("Content-Type")
-		body, _ := io.ReadAll(r.Body)
-		capturedRequest.body = string(body)
-
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{
-			"result": {
-				"hits": [{"certificate": {"names": ["sub.example.com"]}}],
-				"cursor": "",
-				"total": 1
-			}
-		}`))
-	}))
-	defer server.Close()
-
-	// Note: This test validates request format expectations
-	// The actual source uses hardcoded URL, so this primarily tests expectations
-
-	// Verify expected request format
-	assert.Equal(t, http.MethodPost, "POST", "Censys Platform API should use POST")
-	assert.True(t, strings.HasPrefix("Bearer test_token", "Bearer "), "Should use Bearer auth")
-	assert.Equal(t, "application/json", "application/json", "Should use JSON content type")
 }
