@@ -43,6 +43,7 @@ var (
 		"robtex",
 		"rsecloud",
 		"securitytrails",
+		"profundis",
 		"shodan",
 		"sitedossier",
 		"threatbook",
@@ -88,6 +89,7 @@ var (
 		// "riddler", // failing due to cloudfront protection
 		"rsecloud",
 		"securitytrails",
+		"profundis",
 		"shodan",
 		"windvane",
 		"virustotal",
