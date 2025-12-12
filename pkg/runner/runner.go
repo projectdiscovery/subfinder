@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/projectdiscovery/gologger"
 	contextutil "github.com/projectdiscovery/utils/context"
@@ -80,6 +81,9 @@ func (r *Runner) RunEnumeration() error {
 
 // RunEnumerationWithCtx runs the subdomain enumeration flow on the targets specified
 func (r *Runner) RunEnumerationWithCtx(ctx context.Context) error {
+	timeout := time.Duration(r.options.Timeout) * time.Second
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 	outputs := []io.Writer{r.options.Output}
 
 	if len(r.options.Domain) > 0 {
