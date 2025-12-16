@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"net/url"
 	"strconv"
 	"time"
 
@@ -58,7 +59,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 // fetchAllPages fetches all pages of results using pagination
 func (s *Source) fetchAllPages(ctx context.Context, domain string, headers map[string]string, session *subscraping.Session, results chan subscraping.Result) {
-	baseURL := "https://api.merklemap.com/v1/search?query=" + "*." + domain
+	baseURL := "https://api.merklemap.com/v1/search?query=" + url.QueryEscape("*."+domain)
 	totalCount := math.MaxInt
 	processedResults := 0
 
@@ -66,14 +67,14 @@ func (s *Source) fetchAllPages(ctx context.Context, domain string, headers map[s
 	for page := 0; processedResults < totalCount; page++ {
 		pageResp, err := s.fetchPage(ctx, baseURL, page, headers, session)
 
-		if page == 0 {
-			totalCount = pageResp.Count
-		}
-
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
 			return
+		}
+
+		if page == 0 {
+			totalCount = pageResp.Count
 		}
 
 		// Stop if this page returned no results
