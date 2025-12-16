@@ -25,8 +25,8 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitorus"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdb"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdumpster"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/domainsproject"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsrepo"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/domainsproject"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/driftnet"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/facebook"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fofa"
@@ -36,6 +36,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hudsonrock"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/leakix"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/merklemap"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/netlas"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/onyphe"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/pugrecon"
@@ -81,6 +82,7 @@ var AllSources = [...]subscraping.Source{
 	&hackertarget.Source{},
 	&intelx.Source{},
 	&netlas.Source{},
+	&merklemap.Source{},
 	&onyphe.Source{},
 	&leakix.Source{},
 	&quake.Source{},
