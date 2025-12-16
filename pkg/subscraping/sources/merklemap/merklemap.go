@@ -34,16 +34,19 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			s.timeTaken = time.Since(startTime)
 			close(results)
 		}(time.Now())
+		// Pick an API key, skip if no key is found
+		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		if randomApiKey == "" {
+			s.skipped = true
+			return
+		}
+
 		// Default headers
 		headers := map[string]string{
 			"accept": "application/json",
 			// Set a user agent to prevent random one from pkg/subscraping/agent.go, it triggers the cloudflare protection of the api
-			"User-Agent": "subfinder",
-		}
-		// Pick an API key
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
-		if randomApiKey != "" {
-			headers["Authorization"] = "Bearer " + randomApiKey
+			"User-Agent":    "subfinder",
+			"Authorization": "Bearer " + randomApiKey,
 		}
 
 		// Fetch all pages with pagination
