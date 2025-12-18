@@ -48,6 +48,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/thc"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatcrowd"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
@@ -108,6 +109,7 @@ var AllSources = [...]subscraping.Source{
 	&builtwith.Source{},
 	&hudsonrock.Source{},
 	&digitalyama.Source{},
+	&thc.Source{},
 }
 
 var sourceWarnings = mapsutil.NewSyncLockMap[string, string](

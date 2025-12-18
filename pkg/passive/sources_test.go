@@ -60,6 +60,7 @@ var (
 		"builtwith",
 		"hudsonrock",
 		"digitalyama",
+		"thc",
 	}
 
 	expectedDefaultSources = []string{
@@ -100,6 +101,7 @@ var (
 		// "reconcloud",
 		"builtwith",
 		"digitalyama",
+		"thc",
 	}
 
 	expectedDefaultRecursiveSources = []string{
