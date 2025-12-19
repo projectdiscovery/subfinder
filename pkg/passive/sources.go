@@ -36,6 +36,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/hudsonrock"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/intelx"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/leakix"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/merklemap"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/netlas"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/onyphe"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/profundis"
@@ -83,6 +84,7 @@ var AllSources = [...]subscraping.Source{
 	&hackertarget.Source{},
 	&intelx.Source{},
 	&netlas.Source{},
+	&merklemap.Source{},
 	&onyphe.Source{},
 	&leakix.Source{},
 	&quake.Source{},

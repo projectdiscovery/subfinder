@@ -60,6 +60,7 @@ var (
 		"builtwith",
 		"hudsonrock",
 		"digitalyama",
+		"merklemap",
 		"thc",
 	}
 
@@ -117,6 +118,7 @@ var (
 		"virustotal",
 		"leakix",
 		"facebook",
+		"merklemap",
 		// "reconcloud",
 	}
 )
