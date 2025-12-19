@@ -59,6 +59,7 @@ var (
 		"builtwith",
 		"hudsonrock",
 		"digitalyama",
+		"merklemap",
 	}
 
 	expectedDefaultSources = []string{
@@ -113,6 +114,7 @@ var (
 		"virustotal",
 		"leakix",
 		"facebook",
+		"merklemap",
 		// "reconcloud",
 	}
 )
