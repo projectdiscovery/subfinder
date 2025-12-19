@@ -158,10 +158,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 
 		for _, item := range data {
-			results <- subscraping.Result{
-				Source: s.Name(), Type: subscraping.Subdomain, Value: item.Data.Domain,
+			select {
+			case <-ctx.Done():
+				return
+			case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: item.Data.Domain}:
+				s.results++
 			}
-			s.results++
 		}
 
 	}()

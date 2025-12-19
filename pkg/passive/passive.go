@@ -65,11 +65,15 @@ func (a *Agent) EnumerateSubdomainsWithCtx(ctx context.Context, domain string, p
 		for _, runner := range a.sources {
 			wg.Add(1)
 			go func(source subscraping.Source) {
+				defer wg.Done()
 				ctxWithValue := context.WithValue(ctx, subscraping.CtxSourceArg, source.Name())
 				for resp := range source.Run(ctxWithValue, domain, session) {
-					results <- resp
+					select {
+					case <-ctx.Done():
+						return
+					case results <- resp:
+					}
 				}
-				wg.Done()
 			}(runner)
 		}
 		wg.Wait()

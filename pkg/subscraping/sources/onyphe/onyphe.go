@@ -63,6 +63,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		pageSize := 1000
 
 		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
 			var resp *http.Response
 			var err error
 
@@ -89,6 +94,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			session.DiscardHTTPResponse(resp)
 
 			for _, record := range respOnyphe.Results {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+				}
 				for _, subdomain := range record.Subdomains {
 					if subdomain != "" {
 						results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}

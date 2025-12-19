@@ -138,6 +138,12 @@ func (s *Source) getSubdomains(ctx context.Context, searchURL, domain string, se
 
 			scanner := bufio.NewScanner(resp.Body)
 			for scanner.Scan() {
+				select {
+				case <-ctx.Done():
+					session.DiscardHTTPResponse(resp)
+					return false
+				default:
+				}
 				line := scanner.Text()
 				if line == "" {
 					continue
@@ -145,13 +151,17 @@ func (s *Source) getSubdomains(ctx context.Context, searchURL, domain string, se
 				line, _ = url.QueryUnescape(line)
 				for _, subdomain := range session.Extractor.Extract(line) {
 					if subdomain != "" {
-						// fix for triple encoded URL
 						subdomain = strings.ToLower(subdomain)
 						subdomain = strings.TrimPrefix(subdomain, "25")
 						subdomain = strings.TrimPrefix(subdomain, "2f")
 
-						results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-						s.results++
+						select {
+						case <-ctx.Done():
+							session.DiscardHTTPResponse(resp)
+							return false
+						case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
+							s.results++
+						}
 					}
 				}
 			}

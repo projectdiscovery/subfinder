@@ -50,16 +50,23 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		scanner := bufio.NewScanner(resp.Body)
 		for scanner.Scan() {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
 			line := scanner.Text()
 			if line == "" {
 				continue
 			}
 			subdomains := session.Extractor.Extract(line)
 			for _, subdomain := range subdomains {
-				results <- subscraping.Result{
-					Source: s.Name(), Type: subscraping.Subdomain, Value: strings.TrimPrefix(subdomain, "."),
+				select {
+				case <-ctx.Done():
+					return
+				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: strings.TrimPrefix(subdomain, ".")}:
+					s.results++
 				}
-				s.results++
 			}
 		}
 	}()

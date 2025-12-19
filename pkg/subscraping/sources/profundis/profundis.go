@@ -1,10 +1,12 @@
-// Package leakix logic
-package leakix
+// Package profundis logic
+package profundis
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
+	"strings"
 	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -30,54 +32,73 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			s.timeTaken = time.Since(startTime)
 			close(results)
 		}(time.Now())
-		// Default headers
-		headers := map[string]string{
-			"accept": "application/json",
-		}
-		// Pick an API key
+
 		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
-		if randomApiKey != "" {
-			headers["api-key"] = randomApiKey
+		if randomApiKey == "" {
+			s.skipped = true
+			return
 		}
-		// Request
-		resp, err := session.Get(ctx, "https://leakix.net/api/subdomains/"+domain, "", headers)
+
+		requestBody, err := json.Marshal(map[string]string{"domain": domain})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
 			return
 		}
 
-		defer session.DiscardHTTPResponse(resp)
-
-		if resp.StatusCode != 200 {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("request failed with status %d", resp.StatusCode)}
-			s.errors++
-			return
+		headers := map[string]string{
+			"Content-Type": "application/json",
+			"X-API-KEY":    randomApiKey,
+			"Accept":       "text/event-stream",
 		}
-		// Parse and return results
-		var subdomains []subResponse
-		decoder := json.NewDecoder(resp.Body)
-		err = decoder.Decode(&subdomains)
+
+		resp, err := session.Post(ctx, "https://api.profundis.io/api/v2/common/data/subdomains", "",
+			headers, bytes.NewReader(requestBody))
+
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
+			session.DiscardHTTPResponse(resp)
 			return
 		}
-		for _, result := range subdomains {
+
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
+			}
+		}()
+
+		scanner := bufio.NewScanner(resp.Body)
+		for scanner.Scan() {
 			select {
 			case <-ctx.Done():
 				return
-			case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: result.Subdomain}:
+			default:
+			}
+			line := strings.TrimSpace(scanner.Text())
+			if line == "" {
+				continue
+			}
+			select {
+			case <-ctx.Done():
+				return
+			case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: line}:
 				s.results++
 			}
 		}
+
+		if err := scanner.Err(); err != nil {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.errors++
+		}
 	}()
+
 	return results
 }
 
-// Name returns the name of the source
 func (s *Source) Name() string {
-	return "leakix"
+	return "profundis"
 }
 
 func (s *Source) IsDefault() bool {
@@ -85,7 +106,7 @@ func (s *Source) IsDefault() bool {
 }
 
 func (s *Source) HasRecursiveSupport() bool {
-	return true
+	return false
 }
 
 func (s *Source) NeedsKey() bool {
@@ -103,10 +124,4 @@ func (s *Source) Statistics() subscraping.Statistics {
 		TimeTaken: s.timeTaken,
 		Skipped:   s.skipped,
 	}
-}
-
-type subResponse struct {
-	Subdomain   string    `json:"subdomain"`
-	DistinctIps int       `json:"distinct_ips"`
-	LastSeen    time.Time `json:"last_seen"`
 }

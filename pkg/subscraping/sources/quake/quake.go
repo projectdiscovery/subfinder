@@ -63,6 +63,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		var totalResults = -1
 
 		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
 			var requestBody = fmt.Appendf(nil, `{"query":"domain: %s", "include":["service.http.host"], "latest": true, "size":%d, "start":%d}`, domain, pageSize, start)
 			resp, err := session.Post(ctx, "https://quake.360.net/api/v3/search/quake_service", "", map[string]string{
 				"Content-Type": "application/json", "X-QuakeToken": randomApiKey,
@@ -97,6 +102,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 
 			for _, quakeDomain := range response.Data {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+				}
 				subdomain := quakeDomain.Service.HTTP.Host
 				if strings.ContainsAny(subdomain, "暂无权限") {
 					continue

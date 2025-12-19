@@ -70,8 +70,12 @@ func (s *Source) enumerate(ctx context.Context, session *subscraping.Session, ba
 
 	src := string(body)
 	for _, subdomain := range session.Extractor.Extract(src) {
-		results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Subdomain, Value: subdomain}
-		s.results++
+		select {
+		case <-ctx.Done():
+			return
+		case results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Subdomain, Value: subdomain}:
+			s.results++
+		}
 	}
 
 	match := reNext.FindStringSubmatch(src)

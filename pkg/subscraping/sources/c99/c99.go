@@ -81,8 +81,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		for _, data := range response.Subdomains {
 			if !strings.HasPrefix(data.Subdomain, ".") {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: data.Subdomain}
-				s.results++
+				select {
+				case <-ctx.Done():
+					return
+				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: data.Subdomain}:
+					s.results++
+				}
 			}
 		}
 	}()

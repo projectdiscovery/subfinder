@@ -48,6 +48,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		page := 1
 		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
 
 			searchURL := fmt.Sprintf("https://api.shodan.io/dns/domain/%s?key=%s&page=%d", domain, randomApiKey, page)
 			resp, err := session.SimpleGet(ctx, searchURL)
@@ -75,6 +80,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 
 			for _, data := range response.Subdomains {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+				}
 				value := fmt.Sprintf("%s.%s", data, response.Domain)
 				results <- subscraping.Result{
 					Source: s.Name(), Type: subscraping.Subdomain, Value: value,

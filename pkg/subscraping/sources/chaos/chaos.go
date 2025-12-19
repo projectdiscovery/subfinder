@@ -20,7 +20,7 @@ type Source struct {
 }
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(_ context.Context, domain string, _ *subscraping.Session) <-chan subscraping.Result {
+func (s *Source) Run(ctx context.Context, domain string, _ *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 	s.errors = 0
 	s.results = 0
@@ -41,6 +41,11 @@ func (s *Source) Run(_ context.Context, domain string, _ *subscraping.Session) <
 		for result := range chaosClient.GetSubdomains(&chaos.SubdomainsRequest{
 			Domain: domain,
 		}) {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
 			if result.Error != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: result.Error}
 				s.errors++

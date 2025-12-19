@@ -63,6 +63,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		page := 1
 		count := 1000
 		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
 			var resp *http.Response
 			var err error
 
@@ -89,8 +94,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 
 			for _, record := range windvaneResponse.Data.List {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Domain}
-				s.results++
+				select {
+				case <-ctx.Done():
+					return
+				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Domain}:
+					s.results++
+				}
 			}
 
 			pageInfo := windvaneResponse.Data.PageResponse

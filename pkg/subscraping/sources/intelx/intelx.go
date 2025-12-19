@@ -107,6 +107,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		resultsURL := fmt.Sprintf("https://%s/phonebook/search/result?k=%s&id=%s&limit=10000", randomApiKey.host, randomApiKey.key, response.ID)
 		status := 0
 		for status == 0 || status == 3 {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
 			resp, err = session.Get(ctx, resultsURL, "", nil)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -134,10 +139,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			status = response.Status
 			for _, hostname := range response.Selectors {
-				results <- subscraping.Result{
-					Source: s.Name(), Type: subscraping.Subdomain, Value: hostname.Selectvalue,
+				select {
+				case <-ctx.Done():
+					return
+				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: hostname.Selectvalue}:
+					s.results++
 				}
-				s.results++
 			}
 		}
 	}()

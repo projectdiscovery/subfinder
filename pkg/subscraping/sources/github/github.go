@@ -129,6 +129,11 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 	linksHeader := linkheader.Parse(resp.Header.Get("Link"))
 	// Process the next link recursively
 	for _, link := range linksHeader {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
 		if link.Rel == "next" {
 			nextURL, err := url.QueryUnescape(link.URL)
 			if err != nil {
@@ -147,11 +152,21 @@ func (s *Source) proccesItems(ctx context.Context, items []item, domainRegexp *r
 	errChan := make(chan error, len(items))
 
 	for _, responseItem := range items {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
 		wg.Add(1)
 		go func(responseItem item) {
 			defer wg.Done()
 
-			// find subdomains in code
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
+
 			resp, err := session.SimpleGet(ctx, rawURL(responseItem.HTMLURL))
 			if err != nil {
 				if resp != nil && resp.StatusCode != http.StatusNotFound {
@@ -164,23 +179,42 @@ func (s *Source) proccesItems(ctx context.Context, items []item, domainRegexp *r
 			if resp.StatusCode == http.StatusOK {
 				scanner := bufio.NewScanner(resp.Body)
 				for scanner.Scan() {
+					select {
+					case <-ctx.Done():
+						session.DiscardHTTPResponse(resp)
+						return
+					default:
+					}
 					line := scanner.Text()
 					if line == "" {
 						continue
 					}
 					for _, subdomain := range domainRegexp.FindAllString(normalizeContent(line), -1) {
-						results <- subscraping.Result{Source: name, Type: subscraping.Subdomain, Value: subdomain}
-						s.results++
+						select {
+						case <-ctx.Done():
+							session.DiscardHTTPResponse(resp)
+							return
+						case results <- subscraping.Result{Source: name, Type: subscraping.Subdomain, Value: subdomain}:
+							s.results++
+						}
 					}
 				}
 				session.DiscardHTTPResponse(resp)
 			}
 
-			// find subdomains in text matches
 			for _, textMatch := range responseItem.TextMatches {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+				}
 				for _, subdomain := range domainRegexp.FindAllString(normalizeContent(textMatch.Fragment), -1) {
-					results <- subscraping.Result{Source: name, Type: subscraping.Subdomain, Value: subdomain}
-					s.results++
+					select {
+					case <-ctx.Done():
+						return
+					case results <- subscraping.Result{Source: name, Type: subscraping.Subdomain, Value: subdomain}:
+						s.results++
+					}
 				}
 			}
 		}(responseItem)

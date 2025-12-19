@@ -60,8 +60,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		for _, record := range append(response.Data.EmployeesUrls, response.Data.ClientsUrls...) {
 			for _, subdomain := range session.Extractor.Extract(record.URL) {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-				s.results++
+				select {
+				case <-ctx.Done():
+					return
+				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
+					s.results++
+				}
 			}
 		}
 

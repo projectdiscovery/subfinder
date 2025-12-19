@@ -76,6 +76,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		if response.Metadata.ResultCount > pageSize {
 			totalPages := (response.Metadata.ResultCount + pageSize - 1) / pageSize
 			for page := 1; page <= totalPages; page++ {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+				}
 				getUrl = fmt.Sprintf("%s?domain=%s&page=%d&page_size=%d", baseUrl, domain, page, pageSize)
 				resp, err := session.Get(ctx, getUrl, "", requestHeaders)
 				if err != nil {
@@ -96,14 +101,22 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				session.DiscardHTTPResponse(resp)
 
 				for _, subdomain := range response.Subdomains {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-					s.results++
+					select {
+					case <-ctx.Done():
+						return
+					case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
+						s.results++
+					}
 				}
 			}
 		} else {
 			for _, subdomain := range response.Subdomains {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-				s.results++
+				select {
+				case <-ctx.Done():
+					return
+				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
+					s.results++
+				}
 			}
 		}
 

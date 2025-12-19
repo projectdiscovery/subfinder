@@ -83,6 +83,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		if response.Size > 0 {
 			for _, subdomain := range response.Results {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+				}
 				if strings.HasPrefix(strings.ToLower(subdomain), "http://") || strings.HasPrefix(strings.ToLower(subdomain), "https://") {
 					subdomain = subdomain[strings.Index(subdomain, "//")+2:]
 				}
