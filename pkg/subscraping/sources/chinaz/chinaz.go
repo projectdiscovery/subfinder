@@ -55,9 +55,18 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		if SubdomainList.ToBool() {
 			_data := []byte(SubdomainList.ToString())
 			for i := 0; i < SubdomainList.Size(); i++ {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+				}
 				subdomain := jsoniter.Get(_data, i, "DataUrl").ToString()
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-				s.results++
+				select {
+				case <-ctx.Done():
+					return
+				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
+					s.results++
+				}
 			}
 		} else {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}

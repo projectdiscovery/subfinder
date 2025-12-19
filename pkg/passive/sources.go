@@ -39,6 +39,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/merklemap"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/netlas"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/onyphe"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/profundis"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/pugrecon"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/quake"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rapiddns"
@@ -48,6 +49,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/thc"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatcrowd"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
@@ -93,6 +95,7 @@ var AllSources = [...]subscraping.Source{
 	&robtex.Source{},
 	&rsecloud.Source{},
 	&securitytrails.Source{},
+	&profundis.Source{},
 	&shodan.Source{},
 	&sitedossier.Source{},
 	&threatbook.Source{},
@@ -108,6 +111,7 @@ var AllSources = [...]subscraping.Source{
 	&builtwith.Source{},
 	&hudsonrock.Source{},
 	&digitalyama.Source{},
+	&thc.Source{},
 }
 
 var sourceWarnings = mapsutil.NewSyncLockMap[string, string](

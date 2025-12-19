@@ -56,6 +56,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		headers := map[string]string{"Content-Type": "application/json", "APIKEY": randomApiKey}
 
 		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
 			var resp *http.Response
 			var err error
 
@@ -90,11 +95,20 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			session.DiscardHTTPResponse(resp)
 
 			for _, record := range securityTrailsResponse.Records {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Hostname}
-				s.results++
+				select {
+				case <-ctx.Done():
+					return
+				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Hostname}:
+					s.results++
+				}
 			}
 
 			for _, subdomain := range securityTrailsResponse.Subdomains {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+				}
 				if strings.HasSuffix(subdomain, ".") {
 					subdomain += domain
 				} else {

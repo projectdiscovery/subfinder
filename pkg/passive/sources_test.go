@@ -43,6 +43,7 @@ var (
 		"robtex",
 		"rsecloud",
 		"securitytrails",
+		"profundis",
 		"shodan",
 		"sitedossier",
 		"threatbook",
@@ -60,6 +61,7 @@ var (
 		"hudsonrock",
 		"digitalyama",
 		"merklemap",
+		"thc",
 	}
 
 	expectedDefaultSources = []string{
@@ -89,6 +91,7 @@ var (
 		// "riddler", // failing due to cloudfront protection
 		"rsecloud",
 		"securitytrails",
+		"profundis",
 		"shodan",
 		"windvane",
 		"virustotal",
@@ -99,6 +102,7 @@ var (
 		// "reconcloud",
 		"builtwith",
 		"digitalyama",
+		"thc",
 	}
 
 	expectedDefaultRecursiveSources = []string{

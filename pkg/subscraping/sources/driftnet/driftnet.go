@@ -176,17 +176,24 @@ func (s *Source) runSubsource(ctx context.Context, domain string, session *subsc
 	}
 
 	for subdomain := range summary.Summary.Values {
-		// We can get certificate results which aren't actually subdomains of the target domain. Skip them.
+		select {
+		case <-ctx.Done():
+			wg.Done()
+			return
+		default:
+		}
 		if !strings.HasSuffix(subdomain, "."+domain) {
 			continue
 		}
 
-		// Avoid returning the same result more than once from the same source (can happen as we are using multiple endpoints)
 		if _, present := dedupe.LoadOrStore(strings.ToLower(subdomain), true); !present {
-			results <- subscraping.Result{
-				Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain,
+			select {
+			case <-ctx.Done():
+				wg.Done()
+				return
+			case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
+				s.results.Add(1)
 			}
-			s.results.Add(1)
 		}
 	}
 

@@ -50,6 +50,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		fetchSubdomains := func(endpoint string) {
 			page := 1
 			for {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+				}
 				resp, err := session.Get(ctx, fmt.Sprintf("https://api.rsecloud.com/api/v2/subdomains/%s/%s?page=%d", endpoint, domain, page), "", headers)
 				if err != nil {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -68,8 +73,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				}
 
 				for _, subdomain := range rseCloudResponse.Data {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-					s.results++
+					select {
+					case <-ctx.Done():
+						return
+					case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
+						s.results++
+					}
 				}
 
 				if page >= rseCloudResponse.TotalPages {
