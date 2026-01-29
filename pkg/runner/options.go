@@ -69,6 +69,10 @@ type Options struct {
 	filterRegexes      []*regexp.Regexp
 	ResultCallback     OnResultCallback // OnResult callback
 	DisableUpdateCheck bool             // DisableUpdateCheck disable update checking
+
+	// VirusTotalResults limits the total number of results requested from VirusTotal.
+	// Must be a multiple of 40 if set (>0). YAML key: virustotal-res
+	VirusTotalResults int `yaml:"virustotal-res,omitempty"`
 }
 
 // OnResultCallback (hostResult)
@@ -128,6 +132,8 @@ func ParseOptions() *Options {
 		flagSet.BoolVarP(&options.RemoveWildcard, "active", "nW", false, "display active subdomains only"),
 		flagSet.StringVar(&options.Proxy, "proxy", "", "http proxy to use with subfinder"),
 		flagSet.BoolVarP(&options.ExcludeIps, "exclude-ip", "ei", false, "exclude IPs from the list of domains"),
+		// VirusTotal results limit flag (long: --virustotal-res, short: -vR)
+		flagSet.IntVarP(&options.VirusTotalResults, "virustotal-res", "vR", 0, "limit VirusTotal results (must be a multiple of 40). If 0 or not set, default behavior is used"),
 	)
 
 	flagSet.CreateGroup("debug", "Debug",

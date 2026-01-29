@@ -13,6 +13,11 @@ type CtxArg string
 
 const (
 	CtxSourceArg CtxArg = "source"
+
+	// VirustotalResultsCtxKey is the context key used to pass
+	// the VirusTotal results limit (int) from runner -> source.
+	// Value type: int
+	VirustotalResultsCtxKey CtxArg = "virustotal-res"
 )
 
 type CustomRateLimit struct {

@@ -40,6 +40,14 @@ func (options *Options) validateOptions() error {
 		return errors.New("hostip flag must be used with RemoveWildcard option")
 	}
 
+	// Validation for VirusTotal results limit: if provided (>0), must be multiple of 40
+	if options.VirusTotalResults < 0 {
+		return fmt.Errorf("virustotal-res cannot be negative")
+	}
+	if options.VirusTotalResults > 0 && options.VirusTotalResults%40 != 0 {
+		return fmt.Errorf("virustotal-res must be a multiple of 40")
+	}
+
 	if options.Match != nil {
 		options.matchRegexes = make([]*regexp.Regexp, len(options.Match))
 		var err error

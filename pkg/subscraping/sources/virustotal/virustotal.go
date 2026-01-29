@@ -47,6 +47,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
+		// Read the limit from context if present (key used by runner: "virustotal-res")
+		var maxResults int
+		if v := ctx.Value("virustotal-res"); v != nil {
+			if mr, ok := v.(int); ok {
+				maxResults = mr
+			}
+		}
+
 		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
 		if randomApiKey == "" {
 			return
@@ -91,6 +99,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					return
 				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain.Id}:
 					s.results++
+				}
+				if maxResults > 0 && s.results >= maxResults {
+					return
 				}
 			}
 			cursor = data.Meta.Cursor
