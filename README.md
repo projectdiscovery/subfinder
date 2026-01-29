@@ -96,6 +96,7 @@ CONFIGURATION:
   -nW, -active                  display active subdomains only
   -proxy string                 http proxy to use with subfinder
   -ei, -exclude-ip              exclude IPs from the list of domains
+  -vR, -virustotal-res int      limit VirusTotal results (must be a multiple of 40). If 0 or not set, default behavior is used
 
 DEBUG:
   -silent             show only subdomains in output
