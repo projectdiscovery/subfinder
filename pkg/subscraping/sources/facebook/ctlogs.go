@@ -10,7 +10,6 @@ import (
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/retryablehttp-go"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
-	errorutil "github.com/projectdiscovery/utils/errors"
 	"github.com/projectdiscovery/utils/generic"
 	urlutil "github.com/projectdiscovery/utils/url"
 )
@@ -128,7 +127,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			response := &response{}
 			if err := json.Unmarshal(bin, response); err != nil {
 				s.errors++
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: errorutil.NewWithErr(err).Msgf("failed to unmarshal response: %s", string(bin))}
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("failed to unmarshal response: %s: %w", string(bin), err)}
 				return
 			}
 			for _, v := range response.Data {
