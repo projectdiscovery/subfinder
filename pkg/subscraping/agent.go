@@ -46,7 +46,7 @@ func NewSession(domain string, proxy string, multiRateLimiter *ratelimit.MultiLi
 		Timeout:   time.Duration(timeout) * time.Second,
 	}
 
-	session := &Session{Client: client}
+	session := &Session{Client: client, Timeout: timeout}
 
 	// Initiate rate limit instance
 	session.MultiRateLimiter = multiRateLimiter

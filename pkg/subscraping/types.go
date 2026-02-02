@@ -89,6 +89,8 @@ type Session struct {
 	Client *http.Client
 	// Rate limit instance
 	MultiRateLimiter *ratelimit.MultiLimiter
+	// Timeout is the timeout in seconds for requests
+	Timeout int
 }
 
 // Result is a result structure returned by a source
