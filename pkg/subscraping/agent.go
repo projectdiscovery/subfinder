@@ -19,15 +19,27 @@ import (
 
 // NewSession creates a new session object for a domain
 func NewSession(domain string, proxy string, multiRateLimiter *ratelimit.MultiLimiter, timeout int) (*Session, error) {
+	// Create a custom dialer with timeout
+	dialer := &net.Dialer{
+		Timeout:   time.Duration(timeout) * time.Second,
+		KeepAlive: 30 * time.Second,
+	}
+
 	Transport := &http.Transport{
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 100,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
-		Dial: (&net.Dialer{
-			Timeout: time.Duration(timeout) * time.Second,
-		}).Dial,
+		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+			return dialer.DialContext(ctx, network, addr)
+		},
+		// Set timeouts for idle connections
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   time.Duration(timeout) * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+		// Disable HTTP/2 to avoid potential timeout issues
+		ForceAttemptHTTP2: false,
 	}
 
 	// Add proxy
