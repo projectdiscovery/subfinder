@@ -19,15 +19,21 @@ import (
 
 // NewSession creates a new session object for a domain
 func NewSession(domain string, proxy string, multiRateLimiter *ratelimit.MultiLimiter, timeout int) (*Session, error) {
+	timeoutDuration := time.Duration(timeout) * time.Second
+	
 	Transport := &http.Transport{
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 100,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
-		Dial: (&net.Dialer{
-			Timeout: time.Duration(timeout) * time.Second,
-		}).Dial,
+		DialContext: (&net.Dialer{
+			Timeout:   timeoutDuration,
+			KeepAlive: timeoutDuration,
+		}).DialContext,
+		TLSHandshakeTimeout:   timeoutDuration,
+		ResponseHeaderTimeout: timeoutDuration,
+		ExpectContinueTimeout: 1 * time.Second,
 	}
 
 	// Add proxy
@@ -43,7 +49,7 @@ func NewSession(domain string, proxy string, multiRateLimiter *ratelimit.MultiLi
 
 	client := &http.Client{
 		Transport: Transport,
-		Timeout:   time.Duration(timeout) * time.Second,
+		Timeout:   timeoutDuration,
 	}
 
 	session := &Session{Client: client}
