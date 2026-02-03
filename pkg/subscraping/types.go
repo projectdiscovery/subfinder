@@ -16,8 +16,8 @@ const (
 )
 
 type RateLimitSpec struct {
-    MaxCount uint
-    Duration time.Duration
+	MaxCount uint
+	Duration time.Duration
 }
 
 type CustomRateLimit struct {

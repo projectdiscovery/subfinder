@@ -60,7 +60,7 @@ func NewRunner(options *Options) (*Runner, error) {
 	// Initialize the custom rate limit
 	runner.rateLimit = &subscraping.CustomRateLimit{
 		Custom: mapsutil.SyncLockMap[string, subscraping.RateLimitSpec]{
-			Map: make(map[string]subscraping.RateLimitSpec),		},
+			Map: make(map[string]subscraping.RateLimitSpec)},
 	}
 
 	for source, sourceRateLimit := range options.RateLimits.AsMap() {
