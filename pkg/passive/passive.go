@@ -85,6 +85,11 @@ func (a *Agent) EnumerateSubdomainsWithCtx(ctx context.Context, domain string, p
 func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, rateLimit *subscraping.CustomRateLimit) (*ratelimit.MultiLimiter, error) {
 	var multiRateLimiter *ratelimit.MultiLimiter
 	var err error
+
+	if globalRateLimit < 0 {
+		globalRateLimit = 0
+	}
+
 	for _, source := range a.sources {
 		var rl uint
 		duration := time.Second
