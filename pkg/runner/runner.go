@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/projectdiscovery/gologger"
 	contextutil "github.com/projectdiscovery/utils/context"
@@ -58,14 +59,20 @@ func NewRunner(options *Options) (*Runner, error) {
 
 	// Initialize the custom rate limit
 	runner.rateLimit = &subscraping.CustomRateLimit{
-		Custom: mapsutil.SyncLockMap[string, uint]{
-			Map: make(map[string]uint),
-		},
+		Custom: mapsutil.SyncLockMap[string, subscraping.RateLimitSpec]{
+			Map: make(map[string]subscraping.RateLimitSpec)},
 	}
 
 	for source, sourceRateLimit := range options.RateLimits.AsMap() {
 		if sourceRateLimit.MaxCount > 0 && sourceRateLimit.MaxCount <= math.MaxUint {
-			_ = runner.rateLimit.Custom.Set(source, sourceRateLimit.MaxCount)
+			duration := sourceRateLimit.Duration
+			if duration == 0 {
+				duration = time.Second
+			}
+			_ = runner.rateLimit.Custom.Set(source, subscraping.RateLimitSpec{
+				MaxCount: uint(sourceRateLimit.MaxCount),
+				Duration: duration,
+			})
 		}
 	}
 
