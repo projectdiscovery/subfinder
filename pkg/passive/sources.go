@@ -11,6 +11,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/alienvault"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/anubis"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/bgptoolkit"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/bevigil"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/bufferover"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/builtwith"
@@ -65,6 +66,7 @@ import (
 var AllSources = [...]subscraping.Source{
 	&alienvault.Source{},
 	&anubis.Source{},
+	&bgptoolkit.Source{},
 	&bevigil.Source{},
 	&bufferover.Source{},
 	&builtwith.Source{},

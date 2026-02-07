@@ -13,6 +13,7 @@ var (
 	expectedAllSources = []string{
 		"alienvault",
 		"anubis",
+		"bgptoolkit",
 		"bevigil",
 		"bufferover",
 		"c99",
@@ -69,6 +70,7 @@ var (
 	expectedDefaultSources = []string{
 		"alienvault",
 		"anubis",
+		"bgptoolkit",
 		"bevigil",
 		"bufferover",
 		"c99",
@@ -111,6 +113,7 @@ var (
 
 	expectedDefaultRecursiveSources = []string{
 		"alienvault",
+		"bgptoolkit",
 		"bufferover",
 		"certspotter",
 		"crtsh",
