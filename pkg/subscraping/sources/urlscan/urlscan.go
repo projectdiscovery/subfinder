@@ -237,7 +237,7 @@ func (s *Source) makeRequestWithRetry(ctx context.Context, session *subscraping.
 				}
 				continue
 			}
-			return nil, fmt.Errorf("rate limited (status %d) after %d retries", resp.StatusCode, maxRetries+1)
+			return nil, fmt.Errorf("rate limited (status %d) after %d attempts", resp.StatusCode, maxRetries+1)
 		}
 
 		// For other errors (non-200, non-retryable status codes), return an error
