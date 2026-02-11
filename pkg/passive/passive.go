@@ -85,14 +85,35 @@ func (a *Agent) EnumerateSubdomainsWithCtx(ctx context.Context, domain string, p
 func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, rateLimit *subscraping.CustomRateLimit) (*ratelimit.MultiLimiter, error) {
 	var multiRateLimiter *ratelimit.MultiLimiter
 	var err error
+
+	// Clamp negative global rate limit to zero
+	if globalRateLimit < 0 {
+		globalRateLimit = 0
+	}
+
 	for _, source := range a.sources {
-		var rl uint
-		if sourceRateLimit, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
-			rl = sourceRateLimitOrDefault(uint(globalRateLimit), sourceRateLimit)
+		var maxCount uint
+		var duration time.Duration
+
+		if rateLimit != nil {
+			if spec, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
+				maxCount = spec.MaxCount
+				duration = spec.Duration
+			}
 		}
 
-		if rl > 0 {
-			multiRateLimiter, err = addRateLimiter(ctx, multiRateLimiter, source.Name(), rl, time.Second)
+		// Fall back to global rate limit if no per-source limit was found
+		if maxCount == 0 && globalRateLimit > 0 {
+			maxCount = uint(globalRateLimit)
+		}
+
+		// Default duration to 1 second if a rate limit is set but no duration specified
+		if maxCount > 0 && duration <= 0 {
+			duration = time.Second
+		}
+
+		if maxCount > 0 {
+			multiRateLimiter, err = addRateLimiter(ctx, multiRateLimiter, source.Name(), maxCount, duration)
 		} else {
 			multiRateLimiter, err = addRateLimiter(ctx, multiRateLimiter, source.Name(), math.MaxUint32, time.Millisecond)
 		}
@@ -102,13 +123,6 @@ func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, 
 		}
 	}
 	return multiRateLimiter, err
-}
-
-func sourceRateLimitOrDefault(defaultRateLimit uint, sourceRateLimit uint) uint {
-	if sourceRateLimit > 0 {
-		return sourceRateLimit
-	}
-	return defaultRateLimit
 }
 
 func addRateLimiter(ctx context.Context, multiRateLimiter *ratelimit.MultiLimiter, key string, maxCount uint, duration time.Duration) (*ratelimit.MultiLimiter, error) {

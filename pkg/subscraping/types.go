@@ -15,8 +15,15 @@ const (
 	CtxSourceArg CtxArg = "source"
 )
 
+// RateLimitSpec holds both the max request count and the time window duration
+// for a rate limit configuration.
+type RateLimitSpec struct {
+	MaxCount uint
+	Duration time.Duration
+}
+
 type CustomRateLimit struct {
-	Custom mapsutil.SyncLockMap[string, uint]
+	Custom mapsutil.SyncLockMap[string, RateLimitSpec]
 }
 
 // BasicAuth request's Authorization header
