@@ -11,6 +11,8 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
+// TestBuildMultiRateLimiter_PerSourceDuration verifies that per-source rate limits
+// with custom durations are correctly applied to the multi rate limiter.
 func TestBuildMultiRateLimiter_PerSourceDuration(t *testing.T) {
 	ctx := context.Background()
 	agent := New([]string{"crtsh", "hackertarget"}, []string{}, false, false)
@@ -29,6 +31,8 @@ func TestBuildMultiRateLimiter_PerSourceDuration(t *testing.T) {
 	require.NotNil(t, multiRateLimiter)
 }
 
+// TestBuildMultiRateLimiter_GlobalFallback verifies that sources without per-source
+// limits fall back to the global rate limit with a default 1-second duration.
 func TestBuildMultiRateLimiter_GlobalFallback(t *testing.T) {
 	ctx := context.Background()
 	agent := New([]string{"crtsh", "hackertarget"}, []string{}, false, false)
@@ -45,6 +49,8 @@ func TestBuildMultiRateLimiter_GlobalFallback(t *testing.T) {
 	require.NotNil(t, multiRateLimiter)
 }
 
+// TestBuildMultiRateLimiter_NilCustomRateLimit verifies that a nil CustomRateLimit
+// does not cause a panic and falls back to the global rate limit.
 func TestBuildMultiRateLimiter_NilCustomRateLimit(t *testing.T) {
 	ctx := context.Background()
 	agent := New([]string{"crtsh"}, []string{}, false, false)
@@ -55,6 +61,8 @@ func TestBuildMultiRateLimiter_NilCustomRateLimit(t *testing.T) {
 	require.NotNil(t, multiRateLimiter)
 }
 
+// TestBuildMultiRateLimiter_NegativeGlobalClamped verifies that negative global
+// rate limit values are clamped to zero, resulting in unlimited rate limiting.
 func TestBuildMultiRateLimiter_NegativeGlobalClamped(t *testing.T) {
 	ctx := context.Background()
 	agent := New([]string{"crtsh"}, []string{}, false, false)
@@ -71,6 +79,8 @@ func TestBuildMultiRateLimiter_NegativeGlobalClamped(t *testing.T) {
 	require.NotNil(t, multiRateLimiter)
 }
 
+// TestBuildMultiRateLimiter_PerSourceOverridesGlobal verifies that per-source rate
+// limits take precedence over the global rate limit for configured sources.
 func TestBuildMultiRateLimiter_PerSourceOverridesGlobal(t *testing.T) {
 	ctx := context.Background()
 	agent := New([]string{"crtsh", "hackertarget"}, []string{}, false, false)
@@ -89,6 +99,8 @@ func TestBuildMultiRateLimiter_PerSourceOverridesGlobal(t *testing.T) {
 	require.NotNil(t, multiRateLimiter)
 }
 
+// TestBuildMultiRateLimiter_ZeroGlobalNoPerSource verifies that when both global
+// and per-source rate limits are zero, sources default to unlimited throughput.
 func TestBuildMultiRateLimiter_ZeroGlobalNoPerSource(t *testing.T) {
 	ctx := context.Background()
 	agent := New([]string{"crtsh"}, []string{}, false, false)
