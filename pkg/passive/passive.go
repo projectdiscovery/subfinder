@@ -94,15 +94,20 @@ func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, 
 		var rl uint
 		duration := time.Second
 
-		if sourceRateLimit, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
-			rl = sourceRateLimitOrDefault(uint(globalRateLimit), sourceRateLimit.MaxCount)
-			if sourceRateLimit.Duration > 0 {
-				duration = sourceRateLimit.Duration
-			}
-		} else {
-			// Apply global rate limit when no per-source limit exists
-			rl = uint(globalRateLimit)
-		}
+        if rateLimit != nil {
+            if sourceRateLimit, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
+                rl = sourceRateLimitOrDefault(uint(globalRateLimit), sourceRateLimit.MaxCount)
+                if sourceRateLimit.Duration > 0 {
+                    duration = sourceRateLimit.Duration
+                }
+            } else {
+                // Apply global rate limit when no per-source limit exists
+                rl = uint(globalRateLimit)
+            }
+        } else {
+            // Apply global rate limit when no custom rate limit is provided
+            rl = uint(globalRateLimit)
+        }
 
 		if rl > 0 {
 			multiRateLimiter, err = addRateLimiter(ctx, multiRateLimiter, source.Name(), rl, duration)
