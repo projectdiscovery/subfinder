@@ -86,10 +86,11 @@ func TestBuildMultiRateLimiter_DefaultsToSecond(t *testing.T) {
 		},
 	}
 
+	// Duration is explicitly 0 so the fallback to time.Second is exercised.
 	crl := &subscraping.CustomRateLimit{
 		Custom: mapsutil.SyncLockMap[string, subscraping.RateLimitEntry]{
 			Map: map[string]subscraping.RateLimitEntry{
-				"fastsource": {MaxCount: 10, Duration: time.Second},
+				"fastsource": {MaxCount: 10, Duration: 0},
 			},
 		},
 	}
@@ -99,7 +100,7 @@ func TestBuildMultiRateLimiter_DefaultsToSecond(t *testing.T) {
 	require.NoError(t, err)
 	defer mrl.Stop()
 
-	// Should allow 10 requests per second — all should be available quickly.
+	// With the fallback duration of 1 second, 10 tokens should be available quickly.
 	start := time.Now()
 	for i := 0; i < 10; i++ {
 		require.NoError(t, mrl.Take("fastsource"))
