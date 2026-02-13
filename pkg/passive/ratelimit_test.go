@@ -109,6 +109,30 @@ func TestBuildMultiRateLimiter_DefaultsToSecond(t *testing.T) {
 		"10 tokens per second should be consumed quickly")
 }
 
+func TestBuildMultiRateLimiter_NilRateLimit(t *testing.T) {
+	agent := &Agent{
+		sources: []subscraping.Source{
+			stubSource{name: "testsource"},
+		},
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Passing nil rateLimit must not panic and should create an unlimited limiter.
+	mrl, err := agent.buildMultiRateLimiter(ctx, 0, nil)
+	require.NoError(t, err)
+	defer mrl.Stop()
+
+	start := time.Now()
+	for i := 0; i < 100; i++ {
+		require.NoError(t, mrl.Take("testsource"))
+	}
+	elapsed := time.Since(start)
+	require.Less(t, elapsed, time.Second,
+		"nil rateLimit should fall back to unlimited and not block")
+}
+
 func TestBuildMultiRateLimiter_GlobalFallback(t *testing.T) {
 	agent := &Agent{
 		sources: []subscraping.Source{

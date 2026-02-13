@@ -95,9 +95,11 @@ func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, 
 	for _, source := range a.sources {
 		var rl uint
 		var duration time.Duration
-		if entry, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
-			rl = sourceRateLimitOrDefault(uint(globalRateLimit), entry.MaxCount)
-			duration = entry.Duration
+		if rateLimit != nil {
+			if entry, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
+				rl = sourceRateLimitOrDefault(uint(globalRateLimit), entry.MaxCount)
+				duration = entry.Duration
+			}
 		}
 
 		if rl > 0 {
