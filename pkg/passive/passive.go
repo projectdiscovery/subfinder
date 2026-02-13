@@ -87,12 +87,17 @@ func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, 
 	var err error
 	for _, source := range a.sources {
 		var rl uint
-		if sourceRateLimit, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
-			rl = sourceRateLimitOrDefault(uint(globalRateLimit), sourceRateLimit)
+		var duration time.Duration
+		if entry, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
+			rl = sourceRateLimitOrDefault(uint(globalRateLimit), entry.MaxCount)
+			duration = entry.Duration
 		}
 
 		if rl > 0 {
-			multiRateLimiter, err = addRateLimiter(ctx, multiRateLimiter, source.Name(), rl, time.Second)
+			if duration <= 0 {
+				duration = time.Second
+			}
+			multiRateLimiter, err = addRateLimiter(ctx, multiRateLimiter, source.Name(), rl, duration)
 		} else {
 			multiRateLimiter, err = addRateLimiter(ctx, multiRateLimiter, source.Name(), math.MaxUint32, time.Millisecond)
 		}
