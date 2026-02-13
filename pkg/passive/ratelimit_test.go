@@ -43,7 +43,9 @@ func TestBuildMultiRateLimiter_RespectsSourceDuration(t *testing.T) {
 		},
 	}
 
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	mrl, err := agent.buildMultiRateLimiter(ctx, 0, crl)
 	require.NoError(t, err)
 	defer mrl.Stop()

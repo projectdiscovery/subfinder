@@ -13,12 +13,16 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
+// EnumerationOptions holds optional configuration for subdomain enumeration.
 type EnumerationOptions struct {
 	customRateLimiter *subscraping.CustomRateLimit
 }
 
+// EnumerateOption is a functional option for configuring EnumerationOptions.
 type EnumerateOption func(opts *EnumerationOptions)
 
+// WithCustomRateLimit returns an EnumerateOption that applies per-source rate
+// limiting using the provided CustomRateLimit configuration.
 func WithCustomRateLimit(crl *subscraping.CustomRateLimit) EnumerateOption {
 	return func(opts *EnumerationOptions) {
 		opts.customRateLimiter = crl
@@ -82,6 +86,9 @@ func (a *Agent) EnumerateSubdomainsWithCtx(ctx context.Context, domain string, p
 	return results
 }
 
+// buildMultiRateLimiter creates a MultiLimiter with per-source rate limits.
+// Each source uses its custom MaxCount and Duration from rateLimit if present,
+// falling back to an unlimited rate when no configuration is found.
 func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, rateLimit *subscraping.CustomRateLimit) (*ratelimit.MultiLimiter, error) {
 	var multiRateLimiter *ratelimit.MultiLimiter
 	var err error
@@ -109,6 +116,8 @@ func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, 
 	return multiRateLimiter, err
 }
 
+// sourceRateLimitOrDefault returns the source-specific rate limit if it is
+// positive, otherwise falls back to the provided default.
 func sourceRateLimitOrDefault(defaultRateLimit uint, sourceRateLimit uint) uint {
 	if sourceRateLimit > 0 {
 		return sourceRateLimit
@@ -116,6 +125,8 @@ func sourceRateLimitOrDefault(defaultRateLimit uint, sourceRateLimit uint) uint 
 	return defaultRateLimit
 }
 
+// addRateLimiter either creates a new MultiLimiter (when multiRateLimiter is nil)
+// or appends a rate limiter for the given key to an existing one.
 func addRateLimiter(ctx context.Context, multiRateLimiter *ratelimit.MultiLimiter, key string, maxCount uint, duration time.Duration) (*ratelimit.MultiLimiter, error) {
 	if multiRateLimiter == nil {
 		mrl, err := ratelimit.NewMultiLimiter(ctx, &ratelimit.Options{

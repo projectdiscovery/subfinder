@@ -15,11 +15,16 @@ const (
 	CtxSourceArg CtxArg = "source"
 )
 
+// RateLimitEntry holds the rate limit configuration for a single source,
+// specifying the maximum number of requests (MaxCount) allowed within a
+// given Duration window.
 type RateLimitEntry struct {
 	MaxCount uint
 	Duration time.Duration
 }
 
+// CustomRateLimit stores per-source rate limit configurations, mapping
+// each source name to its RateLimitEntry.
 type CustomRateLimit struct {
 	Custom mapsutil.SyncLockMap[string, RateLimitEntry]
 }
