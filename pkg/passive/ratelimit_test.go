@@ -134,7 +134,7 @@ func TestBuildMultiRateLimiter_NilRateLimit(t *testing.T) {
 		"nil rateLimit should fall back to unlimited and not block")
 }
 
-func TestBuildMultiRateLimiter_GlobalFallback(t *testing.T) {
+func TestBuildMultiRateLimiter_UnlimitedWhenUnconfigured(t *testing.T) {
 	agent := &Agent{
 		sources: []subscraping.Source{
 			stubSource{name: "unconfigured"},
