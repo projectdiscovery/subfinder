@@ -87,8 +87,13 @@ func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, 
 	var err error
 	for _, source := range a.sources {
 		var rl uint
+		// Check if there's a custom rate limit for this source
 		if sourceRateLimit, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
+			// Use custom rate limit if available, otherwise fall back to global
 			rl = sourceRateLimitOrDefault(uint(globalRateLimit), sourceRateLimit)
+		} else if globalRateLimit > 0 {
+			// If no custom rate limit but global rate limit is set, use global
+			rl = uint(globalRateLimit)
 		}
 
 		if rl > 0 {
