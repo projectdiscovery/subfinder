@@ -265,4 +265,5 @@ var defaultRateLimits = []string{
 	// "gitlab=2/s",
 	"github=83/m",
 	"hudsonrock=5/s",
+	"urlscan=1/s",
 }

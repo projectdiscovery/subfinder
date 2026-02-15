@@ -65,6 +65,7 @@ jobs:
           SECURITYTRAILS_API_KEY: ${{secrets.SECURITYTRAILS_API_KEY}}
           SHODAN_API_KEY: ${{secrets.SHODAN_API_KEY}}
           THREATBOOK_API_KEY: ${{secrets.THREATBOOK_API_KEY}}
+          URLSCAN_API_KEY: ${{secrets.URLSCAN_API_KEY}}
           VIRUSTOTAL_API_KEY: ${{secrets.VIRUSTOTAL_API_KEY}}
           WHOISXMLAPI_API_KEY: ${{secrets.WHOISXMLAPI_API_KEY}}
           ZOOMEYEAPI_API_KEY: ${{secrets.ZOOMEYEAPI_API_KEY}}

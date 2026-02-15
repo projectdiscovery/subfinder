@@ -63,6 +63,7 @@ var (
 		"digitalyama",
 		"merklemap",
 		"thc",
+		"urlscan",
 	}
 
 	expectedDefaultSources = []string{
@@ -105,6 +106,7 @@ var (
 		"builtwith",
 		"digitalyama",
 		"thc",
+		"urlscan",
 	}
 
 	expectedDefaultRecursiveSources = []string{
@@ -121,6 +123,7 @@ var (
 		"leakix",
 		"facebook",
 		"merklemap",
+		"urlscan",
 		// "reconcloud",
 	}
 )

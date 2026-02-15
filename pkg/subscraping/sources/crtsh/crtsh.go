@@ -56,7 +56,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, session *subscraping.Session, results chan subscraping.Result) int {
-	db, err := sql.Open("postgres", "host=crt.sh user=guest dbname=certwatch sslmode=disable binary_parameters=yes")
+	// connect_timeout: limits connection establishment time (in seconds)
+	// statement_timeout: limits query execution time (in milliseconds)
+	connStr := fmt.Sprintf("host=crt.sh user=guest dbname=certwatch sslmode=disable binary_parameters=yes connect_timeout=%d statement_timeout=%d", session.Timeout, session.Timeout*1000)
+	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		s.errors++

@@ -92,7 +92,7 @@ func (s *Source) HasRecursiveSupport() bool {
 }
 
 func (s *Source) KeyRequirement() subscraping.KeyRequirement {
-	return subscraping.OptionalKey
+	return subscraping.RequiredKey
 }
 
 func (s *Source) NeedsKey() bool {
