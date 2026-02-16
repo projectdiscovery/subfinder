@@ -89,6 +89,8 @@ func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, 
 		var rl uint
 		if sourceRateLimit, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
 			rl = sourceRateLimitOrDefault(uint(globalRateLimit), sourceRateLimit)
+		} else if globalRateLimit > 0 {
+			rl = uint(globalRateLimit)
 		}
 
 		if rl > 0 {
