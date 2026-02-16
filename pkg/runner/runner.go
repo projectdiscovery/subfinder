@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"time"
 	"strconv"
 	"strings"
 
@@ -58,14 +59,21 @@ func NewRunner(options *Options) (*Runner, error) {
 
 	// Initialize the custom rate limit
 	runner.rateLimit = &subscraping.CustomRateLimit{
-		Custom: mapsutil.SyncLockMap[string, uint]{
-			Map: make(map[string]uint),
+		Custom: mapsutil.SyncLockMap[string, subscraping.SourceRateLimit]{
+			Map: make(map[string]subscraping.SourceRateLimit),
 		},
 	}
 
 	for source, sourceRateLimit := range options.RateLimits.AsMap() {
 		if sourceRateLimit.MaxCount > 0 && sourceRateLimit.MaxCount <= math.MaxUint {
-			_ = runner.rateLimit.Custom.Set(source, sourceRateLimit.MaxCount)
+			duration := sourceRateLimit.Duration
+			if duration <= 0 {
+				duration = time.Second
+			}
+			_ = runner.rateLimit.Custom.Set(source, subscraping.SourceRateLimit{
+				MaxCount: sourceRateLimit.MaxCount,
+				Duration: duration,
+			})
 		}
 	}
 
