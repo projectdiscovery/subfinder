@@ -74,13 +74,7 @@ type Options struct {
 // OnResultCallback (hostResult)
 type OnResultCallback func(result *resolve.HostEntry)
 
-// ParseOptions parses the command line flags provided by a user
-func ParseOptions() *Options {
-	logutil.DisableDefaultLogger()
-
-	options := &Options{}
-
-	var err error
+func newFlagSet(options *Options) *goflags.FlagSet {
 	flagSet := goflags.NewFlagSet()
 	flagSet.SetDescription(`Subfinder is a subdomain discovery tool that discovers subdomains for websites by using passive online sources.`)
 
@@ -143,6 +137,17 @@ func ParseOptions() *Options {
 		flagSet.IntVar(&options.Timeout, "timeout", 30, "seconds to wait before timing out"),
 		flagSet.IntVar(&options.MaxEnumerationTime, "max-time", 10, "minutes to wait for enumeration results"),
 	)
+
+	return flagSet
+}
+
+// ParseOptions parses the command line flags provided by a user
+func ParseOptions() *Options {
+	logutil.DisableDefaultLogger()
+
+	options := &Options{}
+	var err error
+	flagSet := newFlagSet(options)
 
 	if err := flagSet.Parse(); err != nil {
 		fmt.Println(err.Error())
