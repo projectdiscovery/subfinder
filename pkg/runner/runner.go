@@ -10,7 +10,9 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
 	contextutil "github.com/projectdiscovery/utils/context"
 	fileutil "github.com/projectdiscovery/utils/file"
@@ -57,19 +59,32 @@ func NewRunner(options *Options) (*Runner, error) {
 	}
 
 	// Initialize the custom rate limit
-	runner.rateLimit = &subscraping.CustomRateLimit{
-		Custom: mapsutil.SyncLockMap[string, uint]{
-			Map: make(map[string]uint),
+	runner.rateLimit = buildCustomRateLimit(options.RateLimits.AsMap())
+
+	return runner, nil
+}
+
+func buildCustomRateLimit(rateLimits map[string]goflags.RateLimit) *subscraping.CustomRateLimit {
+	customRateLimit := &subscraping.CustomRateLimit{
+		Custom: mapsutil.SyncLockMap[string, subscraping.RateLimitSpec]{
+			Map: make(map[string]subscraping.RateLimitSpec),
 		},
 	}
 
-	for source, sourceRateLimit := range options.RateLimits.AsMap() {
+	for source, sourceRateLimit := range rateLimits {
 		if sourceRateLimit.MaxCount > 0 && sourceRateLimit.MaxCount <= math.MaxUint {
-			_ = runner.rateLimit.Custom.Set(source, sourceRateLimit.MaxCount)
+			duration := sourceRateLimit.Duration
+			if duration <= 0 {
+				duration = time.Second
+			}
+			_ = customRateLimit.Custom.Set(source, subscraping.RateLimitSpec{
+				MaxCount: sourceRateLimit.MaxCount,
+				Duration: duration,
+			})
 		}
 	}
 
-	return runner, nil
+	return customRateLimit
 }
 
 // RunEnumeration wraps RunEnumerationWithCtx with an empty context
