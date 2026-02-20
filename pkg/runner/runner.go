@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"io"
-	"math"
 	"os"
 	"path"
 	"regexp"
@@ -66,18 +65,18 @@ func NewRunner(options *Options) (*Runner, error) {
 
 func buildCustomRateLimit(rateLimits map[string]goflags.RateLimit) *subscraping.CustomRateLimit {
 	customRateLimit := &subscraping.CustomRateLimit{
-		Custom: mapsutil.SyncLockMap[string, subscraping.RateLimitSpec]{
-			Map: make(map[string]subscraping.RateLimitSpec),
-		},
+		Custom: *mapsutil.NewSyncLockMap[string, subscraping.RateLimitSpec](
+			mapsutil.WithMap(mapsutil.Map[string, subscraping.RateLimitSpec]{}),
+		),
 	}
 
 	for source, sourceRateLimit := range rateLimits {
-		if sourceRateLimit.MaxCount > 0 && sourceRateLimit.MaxCount <= math.MaxUint {
+		if sourceRateLimit.MaxCount > 0 {
 			duration := sourceRateLimit.Duration
 			if duration <= 0 {
 				duration = time.Second
 			}
-			_ = customRateLimit.Custom.Set(source, subscraping.RateLimitSpec{
+			_ = customRateLimit.Custom.Set(strings.ToLower(source), subscraping.RateLimitSpec{
 				MaxCount: sourceRateLimit.MaxCount,
 				Duration: duration,
 			})

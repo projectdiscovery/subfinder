@@ -14,7 +14,7 @@ func TestBuildCustomRateLimit(t *testing.T) {
 			MaxCount: 2,
 			Duration: time.Minute,
 		},
-		"github": {
+		"GitHub": {
 			MaxCount: 30,
 			Duration: 0,
 		},

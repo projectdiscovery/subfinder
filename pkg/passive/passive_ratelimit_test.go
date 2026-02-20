@@ -14,16 +14,12 @@ import (
 func TestBuildMultiRateLimiter_AppliesGlobalRateLimitWhenCustomMissing(t *testing.T) {
 	agent := newTestAgent("source1", "source2")
 
-	customRateLimit := &subscraping.CustomRateLimit{
-		Custom: mapsutil.SyncLockMap[string, subscraping.RateLimitSpec]{
-			Map: map[string]subscraping.RateLimitSpec{
-				"source1": {
-					MaxCount: 3,
-					Duration: time.Second,
-				},
-			},
+	customRateLimit := newCustomRateLimit(map[string]subscraping.RateLimitSpec{
+		"source1": {
+			MaxCount: 3,
+			Duration: time.Second,
 		},
-	}
+	})
 
 	multiRateLimiter, err := agent.buildMultiRateLimiter(context.Background(), 9, customRateLimit)
 	require.NoError(t, err)
@@ -59,16 +55,12 @@ func TestBuildMultiRateLimiter_AppliesGlobalRateLimitWhenCustomIsNil(t *testing.
 func TestBuildMultiRateLimiter_UsesCustomDuration(t *testing.T) {
 	agent := newTestAgent("source1")
 
-	customRateLimit := &subscraping.CustomRateLimit{
-		Custom: mapsutil.SyncLockMap[string, subscraping.RateLimitSpec]{
-			Map: map[string]subscraping.RateLimitSpec{
-				"source1": {
-					MaxCount: 2,
-					Duration: 150 * time.Millisecond,
-				},
-			},
+	customRateLimit := newCustomRateLimit(map[string]subscraping.RateLimitSpec{
+		"source1": {
+			MaxCount: 2,
+			Duration: 150 * time.Millisecond,
 		},
-	}
+	})
 
 	multiRateLimiter, err := agent.buildMultiRateLimiter(context.Background(), 100, customRateLimit)
 	require.NoError(t, err)
@@ -89,11 +81,7 @@ func TestBuildMultiRateLimiter_UsesCustomDuration(t *testing.T) {
 func TestBuildMultiRateLimiter_UnlimitedWhenNoRateLimitProvided(t *testing.T) {
 	agent := newTestAgent("source1")
 
-	customRateLimit := &subscraping.CustomRateLimit{
-		Custom: mapsutil.SyncLockMap[string, subscraping.RateLimitSpec]{
-			Map: make(map[string]subscraping.RateLimitSpec),
-		},
-	}
+	customRateLimit := newCustomRateLimit(map[string]subscraping.RateLimitSpec{})
 
 	multiRateLimiter, err := agent.buildMultiRateLimiter(context.Background(), 0, customRateLimit)
 	require.NoError(t, err)
@@ -111,6 +99,14 @@ func TestSourceRateLimitOrDefault(t *testing.T) {
 	require.Equal(t, uint(10), sourceRateLimitOrDefault(10, 0))
 	require.Equal(t, uint(5), sourceRateLimitOrDefault(10, 5))
 	require.Equal(t, uint(0), sourceRateLimitOrDefault(0, 0))
+}
+
+func newCustomRateLimit(initial map[string]subscraping.RateLimitSpec) *subscraping.CustomRateLimit {
+	return &subscraping.CustomRateLimit{
+		Custom: *mapsutil.NewSyncLockMap[string, subscraping.RateLimitSpec](
+			mapsutil.WithMap(mapsutil.Map[string, subscraping.RateLimitSpec](initial)),
+		),
+	}
 }
 
 func newTestAgent(sourceNames ...string) *Agent {
