@@ -10,3 +10,23 @@ vendor/
 .vscode
 dist
 /subfinder
+.venv/
+venv/
+node_modules/
+__pycache__/
+*.pyc
+.solari_*
+
+# Auto-added by Solari to prevent build artifact commits
+.solari_deps_installed
+*.egg-info/
+dist/
+build/
+.tox/
+.pytest_cache/
+.mypy_cache/
+target/
+.gradle/
+*.class
+.idea/
+.vscode/
