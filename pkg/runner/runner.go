@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"io"
-	"math"
 	"os"
 	"path"
 	"regexp"
@@ -58,14 +57,14 @@ func NewRunner(options *Options) (*Runner, error) {
 
 	// Initialize the custom rate limit
 	runner.rateLimit = &subscraping.CustomRateLimit{
-		Custom: mapsutil.SyncLockMap[string, uint]{
-			Map: make(map[string]uint),
+		Custom: mapsutil.SyncLockMap[string, subscraping.SourceRateLimit]{
+			Map: make(map[string]subscraping.SourceRateLimit),
 		},
 	}
 
 	for source, sourceRateLimit := range options.RateLimits.AsMap() {
-		if sourceRateLimit.MaxCount > 0 && sourceRateLimit.MaxCount <= math.MaxUint {
-			_ = runner.rateLimit.Custom.Set(source, sourceRateLimit.MaxCount)
+		if sourceRateLimit.MaxCount > 0 {
+			_ = runner.rateLimit.Custom.Set(source, subscraping.SourceRateLimit{MaxCount: sourceRateLimit.MaxCount, Duration: sourceRateLimit.Duration})
 		}
 	}
 

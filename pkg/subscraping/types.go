@@ -15,8 +15,13 @@ const (
 	CtxSourceArg CtxArg = "source"
 )
 
+type SourceRateLimit struct {
+	MaxCount uint
+	Duration time.Duration
+}
+
 type CustomRateLimit struct {
-	Custom mapsutil.SyncLockMap[string, uint]
+	Custom mapsutil.SyncLockMap[string, SourceRateLimit]
 }
 
 // BasicAuth request's Authorization header
