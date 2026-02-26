@@ -86,9 +86,9 @@ func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, 
 	var multiRateLimiter *ratelimit.MultiLimiter
 	var err error
 
-	global := uint(globalRateLimit)
-	if globalRateLimit < 0 {
-		global = 0
+	var global uint
+	if globalRateLimit > 0 {
+		global = uint(globalRateLimit)
 	}
 
 	for _, source := range a.sources {

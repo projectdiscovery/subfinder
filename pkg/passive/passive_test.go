@@ -32,6 +32,10 @@ func TestBuildMultiRateLimiter(t *testing.T) {
 		mrl, err := agent.buildMultiRateLimiter(ctx, 3, customRL)
 		require.NoError(t, err)
 		require.NotNil(t, mrl)
+
+		limit, err := mrl.GetLimit("hackertarget")
+		require.NoError(t, err)
+		require.Equal(t, uint(3), limit)
 	})
 
 	t.Run("NegativeGlobalRateLimitClampsToZero", func(t *testing.T) {
@@ -48,7 +52,7 @@ func TestBuildMultiRateLimiter(t *testing.T) {
 	t.Run("UnlimitedGlobalRateLimitBehavesLikeUnlimited", func(t *testing.T) {
 		agent := New([]string{"crtsh"}, []string{}, false, false)
 
-		mrl, err := agent.buildMultiRateLimiter(ctx, math.MaxInt32, nil)
+		mrl, err := agent.buildMultiRateLimiter(ctx, int(math.MaxUint32), nil)
 		require.NoError(t, err)
 		require.NotNil(t, mrl)
 	})
