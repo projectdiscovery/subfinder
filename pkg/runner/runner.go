@@ -64,7 +64,8 @@ func NewRunner(options *Options) (*Runner, error) {
 
 	for source, sourceRateLimit := range options.RateLimits.AsMap() {
 		if sourceRateLimit.MaxCount > 0 {
-			_ = runner.rateLimit.Custom.Set(source, subscraping.SourceRateLimit{MaxCount: sourceRateLimit.MaxCount, Duration: sourceRateLimit.Duration})
+			// normalize key: read path lowercases source names
+			_ = runner.rateLimit.Custom.Set(strings.ToLower(source), subscraping.SourceRateLimit{MaxCount: sourceRateLimit.MaxCount, Duration: sourceRateLimit.Duration})
 		}
 	}
 

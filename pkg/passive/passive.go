@@ -88,6 +88,10 @@ func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, 
 	for _, source := range a.sources {
 		var rl uint
 		duration := time.Second
+
+		// Default: if globalRateLimit is set, apply it unless a per-source override exists.
+		rl = sourceRateLimitOrDefault(uint(globalRateLimit), 0)
+
 		if rateLimit != nil {
 			if sourceRateLimit, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
 				rl = sourceRateLimitOrDefault(uint(globalRateLimit), sourceRateLimit.MaxCount)
