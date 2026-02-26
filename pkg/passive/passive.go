@@ -85,10 +85,19 @@ func (a *Agent) EnumerateSubdomainsWithCtx(ctx context.Context, domain string, p
 func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, rateLimit *subscraping.CustomRateLimit) (*ratelimit.MultiLimiter, error) {
 	var multiRateLimiter *ratelimit.MultiLimiter
 	var err error
+
+	global := uint(globalRateLimit)
+	if globalRateLimit < 0 {
+		global = 0
+	}
+
 	for _, source := range a.sources {
-		var rl uint
-		if sourceRateLimit, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
-			rl = sourceRateLimitOrDefault(uint(globalRateLimit), sourceRateLimit)
+		rl := global
+
+		if rateLimit != nil {
+			if sourceRateLimit, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
+				rl = sourceRateLimitOrDefault(global, sourceRateLimit)
+			}
 		}
 
 		if rl > 0 {
