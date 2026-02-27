@@ -85,14 +85,34 @@ func (a *Agent) EnumerateSubdomainsWithCtx(ctx context.Context, domain string, p
 func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, rateLimit *subscraping.CustomRateLimit) (*ratelimit.MultiLimiter, error) {
 	var multiRateLimiter *ratelimit.MultiLimiter
 	var err error
+
+	// Clamp negative global values to zero (unlimited).
+	var global uint
+	if globalRateLimit > 0 {
+		global = uint(globalRateLimit)
+	}
+
 	for _, source := range a.sources {
 		var rl uint
-		if sourceRateLimit, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
-			rl = sourceRateLimitOrDefault(uint(globalRateLimit), sourceRateLimit)
+		duration := time.Second // default time window for the -rl flag
+
+		if rateLimit != nil {
+			if sourceRL, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
+				// Per-source limit from -rls takes precedence, with global as fallback.
+				rl = sourceRateLimitOrDefault(global, sourceRL.MaxCount)
+				if sourceRL.Duration > 0 {
+					duration = sourceRL.Duration
+				}
+			} else {
+				// No per-source override: apply the global -rl value.
+				rl = global
+			}
+		} else {
+			rl = global
 		}
 
 		if rl > 0 {
-			multiRateLimiter, err = addRateLimiter(ctx, multiRateLimiter, source.Name(), rl, time.Second)
+			multiRateLimiter, err = addRateLimiter(ctx, multiRateLimiter, source.Name(), rl, duration)
 		} else {
 			multiRateLimiter, err = addRateLimiter(ctx, multiRateLimiter, source.Name(), math.MaxUint32, time.Millisecond)
 		}

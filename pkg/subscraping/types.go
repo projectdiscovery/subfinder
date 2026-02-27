@@ -15,8 +15,15 @@ const (
 	CtxSourceArg CtxArg = "source"
 )
 
+// SourceRateLimit holds the parsed rate limit for a specific source,
+// preserving both the request count and the time window (e.g. 2/m = 2 requests per minute).
+type SourceRateLimit struct {
+	MaxCount uint
+	Duration time.Duration
+}
+
 type CustomRateLimit struct {
-	Custom mapsutil.SyncLockMap[string, uint]
+	Custom mapsutil.SyncLockMap[string, SourceRateLimit]
 }
 
 // BasicAuth request's Authorization header

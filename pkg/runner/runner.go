@@ -4,12 +4,12 @@ import (
 	"bufio"
 	"context"
 	"io"
-	"math"
 	"os"
 	"path"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/projectdiscovery/gologger"
 	contextutil "github.com/projectdiscovery/utils/context"
@@ -56,16 +56,24 @@ func NewRunner(options *Options) (*Runner, error) {
 		return nil, err
 	}
 
-	// Initialize the custom rate limit
+	// Initialize the custom rate limit, preserving both count and duration
+	// from the parsed -rls flag values (e.g. sitedossier=2/m).
 	runner.rateLimit = &subscraping.CustomRateLimit{
-		Custom: mapsutil.SyncLockMap[string, uint]{
-			Map: make(map[string]uint),
+		Custom: mapsutil.SyncLockMap[string, subscraping.SourceRateLimit]{
+			Map: make(map[string]subscraping.SourceRateLimit),
 		},
 	}
 
 	for source, sourceRateLimit := range options.RateLimits.AsMap() {
-		if sourceRateLimit.MaxCount > 0 && sourceRateLimit.MaxCount <= math.MaxUint {
-			_ = runner.rateLimit.Custom.Set(source, sourceRateLimit.MaxCount)
+		if sourceRateLimit.MaxCount > 0 {
+			duration := sourceRateLimit.Duration
+			if duration <= 0 {
+				duration = time.Second
+			}
+			_ = runner.rateLimit.Custom.Set(strings.ToLower(source), subscraping.SourceRateLimit{
+				MaxCount: sourceRateLimit.MaxCount,
+				Duration: duration,
+			})
 		}
 	}
 
