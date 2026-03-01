@@ -64,6 +64,7 @@ func NewRunner(options *Options) (*Runner, error) {
 	}
 
 	for source, sourceRateLimit := range options.RateLimits.AsMap() {
+		source = strings.ToLower(source)
 		if sourceRateLimit.MaxCount > 0 && sourceRateLimit.MaxCount <= math.MaxUint {
 			_ = runner.rateLimit.Custom.Set(source, subscraping.RateLimit{
 				MaxCount: sourceRateLimit.MaxCount,
