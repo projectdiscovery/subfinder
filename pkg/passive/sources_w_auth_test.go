@@ -30,12 +30,9 @@ func TestSourcesWithKeys(t *testing.T) {
 
 	ctxParent := context.Background()
 	var multiRateLimiter *ratelimit.MultiLimiter
-	for _, source := range AllSources {
-		if !source.NeedsKey() {
-			continue
-		}
-		multiRateLimiter, _ = addRateLimiter(ctxParent, multiRateLimiter, source.Name(), math.MaxInt32, time.Millisecond)
-	}
+	// Use a nil multiRateLimiter for this test to ensure nil-safety when creating sessions.
+	// The test verifies that session creation and source runs behave correctly even when
+	// no per-source rate limiter is present.
 
 	session, err := subscraping.NewSession(domain, "", multiRateLimiter, timeout)
 	assert.Nil(t, err)
