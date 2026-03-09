@@ -9,12 +9,12 @@ import (
 
 func TestResolveSourceRateLimit(t *testing.T) {
 	customRates := &subscraping.CustomRateLimit{
-		Custom: mapsutil.SyncLockMap[string, uint]{
-			Map: map[string]uint{
+		Custom: *mapsutil.NewSyncLockMap[string, uint](
+			mapsutil.WithMap(mapsutil.Map[string, uint]{
 				"sitedossier": 2,
 				"github":      0,
-			},
-		},
+			}),
+		),
 	}
 
 	testCases := []struct {
@@ -43,6 +43,13 @@ func TestResolveSourceRateLimit(t *testing.T) {
 			globalRateLimit: 7,
 			customRates:     customRates,
 			sourceName:      "sitedossier",
+			expected:        2,
+		},
+		{
+			name:            "matches source specific override case insensitively",
+			globalRateLimit: 7,
+			customRates:     customRates,
+			sourceName:      "SiteDossier",
 			expected:        2,
 		},
 		{
