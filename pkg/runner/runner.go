@@ -69,9 +69,11 @@ func NewRunner(options *Options) (*Runner, error) {
 
 	for source, sourceRateLimit := range options.RateLimits.AsMap() {
 		if sourceRateLimit.MaxCount > 0 && sourceRateLimit.MaxCount <= math.MaxUint {
-			_ = runner.rateLimit.Custom.Set(source, sourceRateLimit.MaxCount)
+			// Normalize to lowercase so lookup in passive.go (strings.ToLower) always matches
+			lowerSource := strings.ToLower(source)
+			_ = runner.rateLimit.Custom.Set(lowerSource, sourceRateLimit.MaxCount)
 			if sourceRateLimit.Duration > 0 {
-				_ = runner.rateLimit.CustomDuration.Set(source, sourceRateLimit.Duration)
+				_ = runner.rateLimit.CustomDuration.Set(lowerSource, sourceRateLimit.Duration)
 			}
 		}
 	}

@@ -124,6 +124,30 @@ func TestBuildMultiRateLimiter_NilRateLimit(t *testing.T) {
 	assert.Equal(t, uint(globalRateLimit), limit, "source should use global rate limit when CustomRateLimit is nil")
 }
 
+// TestBuildMultiRateLimiter_CaseInsensitiveLookup verifies that per-source
+// limits work regardless of source name casing in the custom map.
+// The runner normalises keys to lowercase before storing; passive.go also
+// lowercases source.Name() before lookup — both sides must agree.
+func TestBuildMultiRateLimiter_CaseInsensitiveLookup(t *testing.T) {
+	agent := New([]string{"hackertarget"}, []string{}, false, false)
+
+	// Simulate a user providing a mixed-case source name via -rls (runner
+	// normalises these to lowercase before storing, so we mirror that here).
+	crl := newCustomRateLimit(
+		map[string]uint{"hackertarget": 8},
+		map[string]time.Duration{"hackertarget": time.Minute},
+	)
+
+	mrl, err := agent.buildMultiRateLimiter(context.Background(), 0, crl)
+	require.NoError(t, err)
+	require.NotNil(t, mrl)
+
+	// lookup uses source.Name() which returns lowercase "hackertarget"
+	limit, err := mrl.GetLimit("hackertarget")
+	require.NoError(t, err)
+	assert.Equal(t, uint(8), limit, "per-source limit should be found regardless of original casing in -rls flag")
+}
+
 // TestBuildMultiRateLimiter_NoLimits verifies that sources are unlimited when
 // neither -rl nor -rls is set.
 func TestBuildMultiRateLimiter_NoLimits(t *testing.T) {
