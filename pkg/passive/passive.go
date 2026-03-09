@@ -86,10 +86,7 @@ func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, 
 	var multiRateLimiter *ratelimit.MultiLimiter
 	var err error
 	for _, source := range a.sources {
-		var rl uint
-		if sourceRateLimit, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
-			rl = sourceRateLimitOrDefault(uint(globalRateLimit), sourceRateLimit)
-		}
+		rl := resolveSourceRateLimit(globalRateLimit, rateLimit, source.Name())
 
 		if rl > 0 {
 			multiRateLimiter, err = addRateLimiter(ctx, multiRateLimiter, source.Name(), rl, time.Second)
@@ -102,6 +99,23 @@ func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, 
 		}
 	}
 	return multiRateLimiter, err
+}
+
+func resolveSourceRateLimit(globalRateLimit int, rateLimit *subscraping.CustomRateLimit, sourceName string) uint {
+	defaultRateLimit := uint(0)
+	if globalRateLimit > 0 {
+		defaultRateLimit = uint(globalRateLimit)
+	}
+
+	if rateLimit == nil {
+		return defaultRateLimit
+	}
+
+	if sourceRateLimit, ok := rateLimit.Custom.Get(strings.ToLower(sourceName)); ok {
+		return sourceRateLimitOrDefault(defaultRateLimit, sourceRateLimit)
+	}
+
+	return defaultRateLimit
 }
 
 func sourceRateLimitOrDefault(defaultRateLimit uint, sourceRateLimit uint) uint {
