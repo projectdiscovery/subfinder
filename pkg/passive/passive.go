@@ -87,12 +87,22 @@ func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, 
 	var err error
 	for _, source := range a.sources {
 		var rl uint
-		if sourceRateLimit, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
+		duration := time.Second // default duration when a rate limit is active
+
+		sourceName := strings.ToLower(source.Name())
+		if sourceRateLimit, ok := rateLimit.Custom.Get(sourceName); ok {
 			rl = sourceRateLimitOrDefault(uint(globalRateLimit), sourceRateLimit)
+			// Use the per-source duration if explicitly set (e.g. -rls hackertarget=2/m)
+			if d, ok := rateLimit.CustomDuration.Get(sourceName); ok && d > 0 {
+				duration = d
+			}
+		} else if globalRateLimit > 0 {
+			// Apply the global -rl rate limit to sources without a per-source override
+			rl = uint(globalRateLimit)
 		}
 
 		if rl > 0 {
-			multiRateLimiter, err = addRateLimiter(ctx, multiRateLimiter, source.Name(), rl, time.Second)
+			multiRateLimiter, err = addRateLimiter(ctx, multiRateLimiter, source.Name(), rl, duration)
 		} else {
 			multiRateLimiter, err = addRateLimiter(ctx, multiRateLimiter, source.Name(), math.MaxUint32, time.Millisecond)
 		}

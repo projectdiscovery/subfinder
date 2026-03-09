@@ -16,7 +16,8 @@ const (
 )
 
 type CustomRateLimit struct {
-	Custom mapsutil.SyncLockMap[string, uint]
+	Custom         mapsutil.SyncLockMap[string, uint]
+	CustomDuration mapsutil.SyncLockMap[string, time.Duration]
 }
 
 // BasicAuth request's Authorization header
