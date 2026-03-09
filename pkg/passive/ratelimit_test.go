@@ -109,6 +109,21 @@ func TestBuildMultiRateLimiter_GlobalFallbackInCustomMap(t *testing.T) {
 	assert.Equal(t, uint(globalRateLimit), limit, "count-0 source should fall back to global rate limit")
 }
 
+// TestBuildMultiRateLimiter_NilRateLimit verifies that a nil CustomRateLimit
+// does not cause a panic and correctly applies the global rate limit.
+func TestBuildMultiRateLimiter_NilRateLimit(t *testing.T) {
+	agent := New([]string{"hackertarget"}, []string{}, false, false)
+
+	globalRateLimit := 5
+	mrl, err := agent.buildMultiRateLimiter(context.Background(), globalRateLimit, nil)
+	require.NoError(t, err)
+	require.NotNil(t, mrl)
+
+	limit, err := mrl.GetLimit("hackertarget")
+	require.NoError(t, err)
+	assert.Equal(t, uint(globalRateLimit), limit, "source should use global rate limit when CustomRateLimit is nil")
+}
+
 // TestBuildMultiRateLimiter_NoLimits verifies that sources are unlimited when
 // neither -rl nor -rls is set.
 func TestBuildMultiRateLimiter_NoLimits(t *testing.T) {
