@@ -69,6 +69,7 @@ type Options struct {
 	filterRegexes      []*regexp.Regexp
 	ResultCallback     OnResultCallback // OnResult callback
 	DisableUpdateCheck bool             // DisableUpdateCheck disable update checking
+	ReportFile         string           // ReportFile is the path to write the HTML report to
 }
 
 // OnResultCallback (hostResult)
@@ -118,6 +119,7 @@ func ParseOptions() *Options {
 		flagSet.StringVarP(&options.OutputDirectory, "output-dir", "oD", "", "directory to write output (-dL only)"),
 		flagSet.BoolVarP(&options.CaptureSources, "collect-sources", "cs", false, "include all sources in the output (-json only)"),
 		flagSet.BoolVarP(&options.HostIP, "ip", "oI", false, "include host IP in output (-active only)"),
+		flagSet.StringVarP(&options.ReportFile, "report", "oH", "", "generate self-contained HTML report to file"),
 	)
 
 	flagSet.CreateGroup("configuration", "Configuration",

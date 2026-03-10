@@ -28,6 +28,7 @@ type Runner struct {
 	passiveAgent   *passive.Agent
 	resolverClient *resolve.Resolver
 	rateLimit      *subscraping.CustomRateLimit
+	reportData     *ReportData
 }
 
 // NewRunner creates a new runner struct instance by parsing
@@ -67,6 +68,11 @@ func NewRunner(options *Options) (*Runner, error) {
 		if sourceRateLimit.MaxCount > 0 && sourceRateLimit.MaxCount <= math.MaxUint {
 			_ = runner.rateLimit.Custom.Set(source, sourceRateLimit.MaxCount)
 		}
+	}
+
+	// Initialize report data if HTML report is requested
+	if options.ReportFile != "" {
+		runner.reportData = NewReportData()
 	}
 
 	return runner, nil
@@ -171,5 +177,13 @@ func (r *Runner) EnumerateMultipleDomainsWithCtx(ctx context.Context, reader io.
 			return err
 		}
 	}
+
+	// Generate HTML report if requested
+	if r.options.ReportFile != "" && r.reportData != nil {
+		if reportErr := r.reportData.GenerateHTMLReport(r.options.ReportFile); reportErr != nil {
+			gologger.Error().Msgf("Could not generate HTML report: %s\n", reportErr)
+		}
+	}
+
 	return nil
 }

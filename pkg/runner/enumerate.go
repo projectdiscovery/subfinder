@@ -206,6 +206,18 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 		printStatistics(statistics)
 	}
 
+	// Collect data for HTML report if requested
+	if r.reportData != nil {
+		statistics := r.passiveAgent.GetStatistics()
+		for source, count := range skippedCounts {
+			if stat, ok := statistics[source]; ok {
+				stat.Results -= count
+				statistics[source] = stat
+			}
+		}
+		r.reportData.AddDomainData(domain, sourceMap, time.Since(now), statistics)
+	}
+
 	return sourceMap, nil
 }
 
