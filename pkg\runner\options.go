@@ -7,10 +7,8 @@ import (
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/gologger/formatter"
 	"github.com/projectdiscovery/gologger/levels"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
-
-// OnResultCallback is the callback function for results
-type OnResultCallback func(s *subscraping.Result)
 
 // Options contains the configuration options for tuning
 // the subdomain enumeration process.
@@ -41,10 +39,25 @@ type Options struct {
 	APIKey             goflags.StringSlice
 	Match              goflags.StringSlice
 	Filter             goflags.StringSlice
-	ResultCallback     OnResultCallback
+	ResultCallback     subscraping.OnResultCallback
 	DisableUpdateCheck bool
-	// Rate limiting options
-	RateLimit        int
-	RateLimitMinute  int
+	// RateLimit is the maximum number of requests per second
+	RateLimit int
+	// RateLimitMinute is the maximum number of requests per minute
+	RateLimitMinute int
+	// SourceRateLimits contains per-source rate limits in "source=N/duration" format
 	SourceRateLimits goflags.StringSlice
+}
+
+// configureOutput configures the output logging levels to use.
+func configureOutput(options *Options) {
+	if options.Verbose {
+		gologger.DefaultLogger.SetMaxLevel(levels.LevelVerbose)
+	}
+	if options.NoColor {
+		gologger.DefaultLogger.SetFormatter(formatter.NewCLI(true))
+	}
+	if options.Silent {
+		gologger.DefaultLogger.SetMaxLevel(levels.LevelSilent)
+	}
 }
