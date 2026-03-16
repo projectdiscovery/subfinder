@@ -2,7 +2,6 @@ package runner
 
 import (
 	"context"
-	"io"
 	"math"
 	"os"
 	"path/filepath"
@@ -24,4 +23,18 @@ type Runner struct {
 	resolverClient   *resolve.Resolver
 	rateLimiter      *ratelimit.Limiter
 	multiRateLimiter *ratelimit.MultiLimiter
+}
+
+// NewRunner creates a new runner struct instance by parsing
+// the configuration options, configuring sources, reading lists, etc.
+func NewRunner(options *Options) (*Runner, error) {
+	runner := &Runner{
+		options: options,
+	}
+
+	if err := runner.init(); err != nil {
+		return nil, err
+	}
+
+	return runner, nil
 }
