@@ -41,11 +41,11 @@ type Options struct {
 	Filter             goflags.StringSlice
 	ResultCallback     subscraping.OnResultCallback
 	DisableUpdateCheck bool
-	// RateLimit is the maximum number of requests per second
+	// RateLimit is the maximum number of http requests to be made per second (global)
 	RateLimit int
-	// RateLimitMinute is the maximum number of requests per minute
+	// RateLimitMinute is the maximum number of http requests to be made per minute (global)
 	RateLimitMinute int
-	// SourceRateLimits contains per-source rate limits in "source=N/duration" format
+	// SourceRateLimits is a list of source rate limits (source=N/duration)
 	SourceRateLimits goflags.StringSlice
 }
 
