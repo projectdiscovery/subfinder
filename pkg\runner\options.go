@@ -9,6 +9,9 @@ import (
 	"github.com/projectdiscovery/gologger/levels"
 )
 
+// OnResultCallback is the callback function for results
+type OnResultCallback func(s *subscraping.Result)
+
 // Options contains the configuration options for tuning
 // the subdomain enumeration process.
 type Options struct {
@@ -40,10 +43,8 @@ type Options struct {
 	Filter             goflags.StringSlice
 	ResultCallback     OnResultCallback
 	DisableUpdateCheck bool
-	// RateLimit is the global queries per second limit
+	// Rate limiting options
 	RateLimit        int
-	// RateLimitMinute is the global queries per minute limit
 	RateLimitMinute  int
-	// SourceRateLimits is the per-source rate limit
 	SourceRateLimits goflags.StringSlice
 }
