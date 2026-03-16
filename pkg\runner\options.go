@@ -41,15 +41,13 @@ type Options struct {
 	Filter             goflags.StringSlice
 	ResultCallback     subscraping.OnResultCallback
 	DisableUpdateCheck bool
-	// RateLimit is the maximum number of http requests to be made per second (global)
-	RateLimit int
-	// RateLimitMinute is the maximum number of http requests to be made per minute (global)
-	RateLimitMinute int
-	// SourceRateLimits is a list of source rate limits (source=N/duration)
+	// Rate limiting options
+	RateLimit        int
+	RateLimitMinute  int
 	SourceRateLimits goflags.StringSlice
 }
 
-// configureOutput configures the output logging levels to use.
+// configureOutput configures the output logging levels
 func configureOutput(options *Options) {
 	if options.Verbose {
 		gologger.DefaultLogger.SetMaxLevel(levels.LevelVerbose)
