@@ -3,6 +3,8 @@ package runner
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -12,37 +14,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
-// parseRateLimitValue parses rate limit string formats:
-// "N", "N/s", "N/m" into count and duration
-func parseRateLimitValue(s string) (uint, time.Duration, error) {
-	s = strings.TrimSpace(s)
-
-	if strings.HasSuffix(s, "/m") {
-		trimmed := strings.TrimSuffix(s, "/m")
-		var n uint
-		if _, err := fmt.Sscanf(trimmed, "%d", &n); err != nil {
-			return 0, 0, fmt.Errorf("invalid rate limit: %s", s)
-		}
-		return n, time.Minute, nil
-	}
-
-	if strings.HasSuffix(s, "/s") {
-		trimmed := strings.TrimSuffix(s, "/s")
-		var n uint
-		if _, err := fmt.Sscanf(trimmed, "%d", &n); err != nil {
-			return 0, 0, fmt.Errorf("invalid rate limit: %s", s)
-		}
-		return n, time.Second, nil
-	}
-
-	var n uint
-	if _, err := fmt.Sscanf(s, "%d", &n); err != nil {
-		return 0, 0, fmt.Errorf("invalid rate limit: %s", s)
-	}
-	return n, time.Second, nil
-}
-
-// initializeRateLimiters creates rate limiters from options
+// initializeRateLimiters creates rate limiters based on provided options
 func (r *Runner) initializeRateLimiters(ctx context.Context) error {
 	// Global rate limiter
 	if r.options.RateLimitMinute > 0 {
@@ -51,21 +23,16 @@ func (r *Runner) initializeRateLimiters(ctx context.Context) error {
 		r.rateLimiter = ratelimit.New(ctx, uint(r.options.RateLimit), time.Second)
 	}
 
-	// Per-source rate limiters
+	// Per-source rate limiters (-rls source=N/duration)
 	if len(r.options.SourceRateLimits) > 0 {
 		rlOpts := make([]*ratelimit.Options, 0, len(r.options.SourceRateLimits))
 		for _, item := range r.options.SourceRateLimits {
-			parts := strings.SplitN(item, "=", 2)
-			if len(parts) != 2 {
-				gologger.Warning().Msgf("Invalid source rate limit format: %s (expected source=N/duration)\n", item)
+			source, count, duration, parseErr := parseSourceRateLimitOption(item)
+			if parseErr != nil {
+				gologger.Warning().Msgf("Could not parse source rate limit '%s': %s\n", item, parseErr)
 				continue
 			}
-			source := strings.ToLower(strings.TrimSpace(parts[0]))
-			count, duration, err := parseRateLimitValue(parts[1])
-			if err != nil {
-				gologger.Warning().Msgf("Could not parse rate limit for source %s: %s\n", source, err)
-				continue
-			}
+			gologger.Debug().Msgf("Setting rate limit for source %s: %d per %s\n", source, count, duration)
 			rlOpts = append(rlOpts, &ratelimit.Options{
 				Key:         source,
 				IsUnlimited: false,
@@ -77,10 +44,47 @@ func (r *Runner) initializeRateLimiters(ctx context.Context) error {
 			var err error
 			r.multiRateLimiter, err = ratelimit.NewMultiLimiter(ctx, rlOpts...)
 			if err != nil {
-				return fmt.Errorf("could not create multi rate limiter: %s", err)
+				return fmt.Errorf("could not create multi rate limiter: %w", err)
 			}
 		}
 	}
 
 	return nil
+}
+
+// parseSourceRateLimitOption parses "source=N/duration" format
+func parseSourceRateLimitOption(item string) (source string, count uint, duration time.Duration, err error) {
+	parts := strings.SplitN(item, "=", 2)
+	if len(parts) != 2 {
+		err = fmt.Errorf("expected format source=N/duration, got: %s", item)
+		return
+	}
+	source = strings.ToLower(strings.TrimSpace(parts[0]))
+	count, duration, err = parseRateLimitValue(strings.TrimSpace(parts[1]))
+	return
+}
+
+// parseRateLimitValue parses "N", "N/s", "N/m" into count and duration
+func parseRateLimitValue(s string) (uint, time.Duration, error) {
+	s = strings.TrimSpace(s)
+	switch {
+	case strings.HasSuffix(s, "/m"):
+		n, err := parseUintStr(strings.TrimSuffix(s, "/m"))
+		return n, time.Minute, err
+	case strings.HasSuffix(s, "/s"):
+		n, err := parseUintStr(strings.TrimSuffix(s, "/s"))
+		return n, time.Second, err
+	default:
+		n, err := parseUintStr(s)
+		return n, time.Second, err
+	}
+}
+
+func parseUintStr(s string) (uint, error) {
+	var n uint
+	_, err := fmt.Sscanf(strings.TrimSpace(s), "%d", &n)
+	if err != nil {
+		return 0, fmt.Errorf("invalid number: %s", s)
+	}
+	return n, nil
 }
