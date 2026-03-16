@@ -3,6 +3,7 @@ package runner
 import (
 	"bufio"
 	"context"
+	"errors"
 	"io"
 	"math"
 	"os"
@@ -34,6 +35,9 @@ type Runner struct {
 // the configuration options, configuring sources, reading lists
 // and setting up loggers, etc.
 func NewRunner(options *Options) (*Runner, error) {
+	if options == nil {
+		return nil, errors.New("options cannot be nil")
+	}
 	options.ConfigureOutput()
 	runner := &Runner{options: options}
 
