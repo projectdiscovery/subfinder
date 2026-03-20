@@ -86,13 +86,19 @@ func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, 
 	var multiRateLimiter *ratelimit.MultiLimiter
 	var err error
 	for _, source := range a.sources {
-		var rl uint
-		if sourceRateLimit, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
-			rl = sourceRateLimitOrDefault(uint(globalRateLimit), sourceRateLimit)
+		// Start with the global rate limit; per-source limits override it
+		rl := uint(globalRateLimit)
+		duration := time.Second
+
+		if sourceConfig, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
+			if sourceConfig.MaxCount > 0 {
+				rl = sourceConfig.MaxCount
+				duration = sourceConfig.Duration
+			}
 		}
 
 		if rl > 0 {
-			multiRateLimiter, err = addRateLimiter(ctx, multiRateLimiter, source.Name(), rl, time.Second)
+			multiRateLimiter, err = addRateLimiter(ctx, multiRateLimiter, source.Name(), rl, duration)
 		} else {
 			multiRateLimiter, err = addRateLimiter(ctx, multiRateLimiter, source.Name(), math.MaxUint32, time.Millisecond)
 		}
@@ -102,13 +108,6 @@ func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, 
 		}
 	}
 	return multiRateLimiter, err
-}
-
-func sourceRateLimitOrDefault(defaultRateLimit uint, sourceRateLimit uint) uint {
-	if sourceRateLimit > 0 {
-		return sourceRateLimit
-	}
-	return defaultRateLimit
 }
 
 func addRateLimiter(ctx context.Context, multiRateLimiter *ratelimit.MultiLimiter, key string, maxCount uint, duration time.Duration) (*ratelimit.MultiLimiter, error) {
