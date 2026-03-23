@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: "Check out code"
         uses: actions/checkout@v6
-        with: 
+        with:
           fetch-depth: 0
 
       - uses: projectdiscovery/actions/setup/go@v1

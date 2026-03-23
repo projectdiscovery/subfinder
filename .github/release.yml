@@ -8,10 +8,10 @@ changelog:
         - "Type: Enhancement"
     - title: 🐞 Bug Fixes
       labels:
-        - "Type: Bug" 
+        - "Type: Bug"
     - title: 🔨 Maintenance
       labels:
-        - "Type: Maintenance" 
+        - "Type: Maintenance"
     - title: Other Changes
       labels:
         - "*"
