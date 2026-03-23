@@ -15,6 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: projectdiscovery/actions/setup/go/compat-checks@master
+      - uses: projectdiscovery/actions/setup/go/compat-checks@v1
         with:
           go-version-file: go.mod
