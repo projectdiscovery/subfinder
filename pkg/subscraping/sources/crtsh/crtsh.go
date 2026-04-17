@@ -79,32 +79,11 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 		}
 	}
 
-	query := fmt.Sprintf(`WITH ci AS (
-				SELECT min(sub.CERTIFICATE_ID) ID,
-					min(sub.ISSUER_CA_ID) ISSUER_CA_ID,
-					array_agg(DISTINCT sub.NAME_VALUE) NAME_VALUES,
-					x509_commonName(sub.CERTIFICATE) COMMON_NAME,
-					x509_notBefore(sub.CERTIFICATE) NOT_BEFORE,
-					x509_notAfter(sub.CERTIFICATE) NOT_AFTER,
-					encode(x509_serialNumber(sub.CERTIFICATE), 'hex') SERIAL_NUMBER
-					FROM (SELECT *
-							FROM certificate_and_identities cai
-							WHERE plainto_tsquery('certwatch', $1) @@ identities(cai.CERTIFICATE)
-								AND cai.NAME_VALUE ILIKE ('%%' || $1 || '%%')
-								%s
-						) sub
-					GROUP BY sub.CERTIFICATE
-			)
-			SELECT array_to_string(ci.NAME_VALUES, chr(10)) NAME_VALUE
-				FROM ci
-						LEFT JOIN LATERAL (
-							SELECT min(ctle.ENTRY_TIMESTAMP) ENTRY_TIMESTAMP
-								FROM ct_log_entry ctle
-								WHERE ctle.CERTIFICATE_ID = ci.ID
-						) le ON TRUE,
-					ca
-				WHERE ci.ISSUER_CA_ID = ca.ID
-				ORDER BY le.ENTRY_TIMESTAMP DESC NULLS LAST;`, limitClause)
+	query := fmt.Sprintf(`SELECT DISTINCT cai.NAME_VALUE
+			FROM certificate_and_identities cai
+			WHERE plainto_tsquery('certwatch', $1) @@ identities(cai.CERTIFICATE)
+			  AND cai.NAME_VALUE ILIKE ('%%' || $1 || '%%')
+			%s;`, limitClause)
 	rows, err := db.QueryContext(ctx, query, domain)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
