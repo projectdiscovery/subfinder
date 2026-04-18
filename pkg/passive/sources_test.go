@@ -63,6 +63,7 @@ var (
 		"merklemap",
 		"thc",
 		"urlscan",
+		"submd",
 	}
 
 	expectedDefaultSources = []string{
@@ -105,6 +106,7 @@ var (
 		"digitalyama",
 		"thc",
 		"urlscan",
+		"submd",
 	}
 
 	expectedDefaultRecursiveSources = []string{
