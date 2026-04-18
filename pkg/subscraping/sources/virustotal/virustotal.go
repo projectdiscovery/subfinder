@@ -49,7 +49,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		// Read the limit from context if present (key used by runner: "virustotal-res")
 		var maxResults int
-		if v := ctx.Value("virustotal-res"); v != nil {
+		if v := ctx.Value(subscraping.VirustotalResultsCtxKey); v != nil {
 			if mr, ok := v.(int); ok {
 				maxResults = mr
 			}
