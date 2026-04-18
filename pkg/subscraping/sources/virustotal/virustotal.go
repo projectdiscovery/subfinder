@@ -99,7 +99,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					return
 				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain.Id}:
 					s.results++
-				}
+		cursor = data.Meta.Cursor
+		if cursor == "" || (maxResults > 0 && s.results >= maxResults) {
+			break
+		}
 				if maxResults > 0 && s.results >= maxResults {
 					return
 				}
