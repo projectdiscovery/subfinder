@@ -23,6 +23,20 @@ type Source struct {
 // return full subdomains (e.g., "mail.hotmail.com") while others return just the
 // subdomain part (e.g., "mail"). #1778
 func normalizeSubdomain(subdomain, domain string) string {
+// normalizeSubdomain handles inconsistent upstream API responses where some domains
+// return full subdomains (e.g., "mail.hotmail.com") while others return just the
+// subdomain part (e.g., "mail"). #1778
+func normalizeSubdomain(subdomain, domain string) string {
+	if subdomain == domain {
+		return subdomain
+	}
+	domainLen := len(domain)
+	subdomainLen := len(subdomain)
+	if subdomainLen > domainLen+1 && subdomain[subdomainLen-domainLen-1] == '.' && subdomain[subdomainLen-domainLen:] == domain {
+		return subdomain
+	}
+	return subdomain + "." + domain
+}
 	domainLen := len(domain)
 	subdomainLen := len(subdomain)
 	value := subdomain + "." + domain
