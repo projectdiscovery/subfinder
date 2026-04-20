@@ -13,8 +13,14 @@ func TestNormalizeSubdomain(t *testing.T) {
 		domain    string
 		expected  string
 	}{
+  {
+   name:      "subdomain equals domain - apex returned as-is",
+   subdomain: "hotmail.com",
+   domain:    "hotmail.com",
+   expected:  "hotmail.com",
+  },
 		{
-			name:      "subdomain part only",
+		 name:      "subdomain part only",
 			subdomain: "mail",
 			domain:    "hotmail.com",
 			expected:  "mail.hotmail.com",
