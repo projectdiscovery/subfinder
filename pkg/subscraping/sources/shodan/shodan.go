@@ -60,6 +60,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			s.requests++
 			resp, err := session.SimpleGet(ctx, searchURL)
 			if err != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.errors++
 				session.DiscardHTTPResponse(resp)
 				return
 			}

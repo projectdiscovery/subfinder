@@ -50,31 +50,29 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 
 		body, err := io.ReadAll(resp.Body)
-
 		session.DiscardHTTPResponse(resp)
-
-		SubdomainList := jsoniter.Get(body, "Result").Get("ContributingSubdomainList")
-
-		if SubdomainList.ToBool() {
-			_data := []byte(SubdomainList.ToString())
-			for i := 0; i < SubdomainList.Size(); i++ {
-				select {
-				case <-ctx.Done():
-					return
-				default:
-				}
-				subdomain := jsoniter.Get(_data, i, "DataUrl").ToString()
-				select {
-				case <-ctx.Done():
-					return
-				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
-					s.results++
-				}
-			}
-		} else {
+		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
 			return
+		}
+
+		SubdomainList := jsoniter.Get(body, "Result").Get("ContributingSubdomainList")
+		if SubdomainList.ValueType() != jsoniter.ArrayValue {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("chinaz: unexpected response shape, missing Result.ContributingSubdomainList")}
+			s.errors++
+			return
+		}
+
+		_data := []byte(SubdomainList.ToString())
+		for i := 0; i < SubdomainList.Size(); i++ {
+			subdomain := jsoniter.Get(_data, i, "DataUrl").ToString()
+			select {
+			case <-ctx.Done():
+				return
+			case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
+				s.results++
+			}
 		}
 	}()
 
