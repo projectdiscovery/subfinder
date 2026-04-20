@@ -3,7 +3,6 @@ package chaos
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/projectdiscovery/chaos-client/pkg/chaos"
@@ -54,8 +53,16 @@ func (s *Source) Run(ctx context.Context, domain string, _ *subscraping.Session)
 				s.errors++
 				break
 			}
+			// upstream returns domain twice sometimes #1778
+			subdomain := result.Subdomain
+			domainLen := len(domain)
+			subdomainLen := len(subdomain)
+			value := subdomain + "." + domain
+			if subdomainLen > domainLen+1 && subdomain[subdomainLen-domainLen-1] == '.' && subdomain[subdomainLen-domainLen:] == domain {
+				value = subdomain
+			}
 			results <- subscraping.Result{
-				Source: s.Name(), Type: subscraping.Subdomain, Value: fmt.Sprintf("%s.%s", result.Subdomain, domain),
+				Source: s.Name(), Type: subscraping.Subdomain, Value: value,
 			}
 			s.results++
 		}
