@@ -19,6 +19,19 @@ type Source struct {
 	skipped   bool
 }
 
+// normalizeSubdomain handles inconsistent upstream API responses where some domains
+// return full subdomains (e.g., "mail.hotmail.com") while others return just the
+// subdomain part (e.g., "mail"). #1778
+func normalizeSubdomain(subdomain, domain string) string {
+	domainLen := len(domain)
+	subdomainLen := len(subdomain)
+	value := subdomain + "." + domain
+	if subdomainLen > domainLen+1 && subdomain[subdomainLen-domainLen-1] == '.' && subdomain[subdomainLen-domainLen:] == domain {
+		value = subdomain
+	}
+	return value
+}
+
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, _ *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
@@ -53,14 +66,7 @@ func (s *Source) Run(ctx context.Context, domain string, _ *subscraping.Session)
 				s.errors++
 				break
 			}
-			// upstream returns domain twice sometimes #1778
-			subdomain := result.Subdomain
-			domainLen := len(domain)
-			subdomainLen := len(subdomain)
-			value := subdomain + "." + domain
-			if subdomainLen > domainLen+1 && subdomain[subdomainLen-domainLen-1] == '.' && subdomain[subdomainLen-domainLen:] == domain {
-				value = subdomain
-			}
+			value := normalizeSubdomain(result.Subdomain, domain)
 			results <- subscraping.Result{
 				Source: s.Name(), Type: subscraping.Subdomain, Value: value,
 			}
