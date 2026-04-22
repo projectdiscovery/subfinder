@@ -258,8 +258,8 @@ github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 h1:o4JXh1EVt
 github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55/go.mod h1:OmDBASR4679mdNQnz2pUhc2G8CO2JrUAVFDRBDP/hJE=
 github.com/projectdiscovery/blackrock v0.0.1 h1:lHQqhaaEFjgf5WkuItbpeCZv2DUIE45k0VbGJyft6LQ=
 github.com/projectdiscovery/blackrock v0.0.1/go.mod h1:ANUtjDfaVrqB453bzToU+YB4cUbvBRpLvEwoWIwlTss=
-github.com/projectdiscovery/cdncheck v1.2.31 h1:8iD/MLDdMdMziM3RA5FkjUxO6kIwwgAoxWaL6RBIIl0=
-github.com/projectdiscovery/cdncheck v1.2.31/go.mod h1:6/B6caF1+97hR9cICMlzIYR8hpAN/y3AlJPHI2q48PQ=
+github.com/projectdiscovery/cdncheck v1.2.32 h1:Peyx26XBEiSM/FsfQzb61FPrB9ls72WANiKfzZPDYq4=
+github.com/projectdiscovery/cdncheck v1.2.32/go.mod h1:6/B6caF1+97hR9cICMlzIYR8hpAN/y3AlJPHI2q48PQ=
 github.com/projectdiscovery/chaos-client v0.5.2 h1:dN+7GXEypsJAbCD//dBcUxzAEAEH1fjc/7Rf4F/RiNU=
 github.com/projectdiscovery/chaos-client v0.5.2/go.mod h1:KnoJ/NJPhll42uaqlDga6oafFfNw5l2XI2ajRijtDuU=
 github.com/projectdiscovery/dnsx v1.2.3 h1:S87U9kYuuqqvMFyen8mZQy1FMuR5EGCsXHqfHPQAeuc=
