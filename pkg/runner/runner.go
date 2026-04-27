@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/projectdiscovery/gologger"
 	contextutil "github.com/projectdiscovery/utils/context"
@@ -61,11 +62,17 @@ func NewRunner(options *Options) (*Runner, error) {
 		Custom: mapsutil.SyncLockMap[string, uint]{
 			Map: make(map[string]uint),
 		},
+		CustomDuration: mapsutil.SyncLockMap[string, time.Duration]{
+			Map: make(map[string]time.Duration),
+		},
 	}
 
 	for source, sourceRateLimit := range options.RateLimits.AsMap() {
 		if sourceRateLimit.MaxCount > 0 && sourceRateLimit.MaxCount <= math.MaxUint {
 			_ = runner.rateLimit.Custom.Set(source, sourceRateLimit.MaxCount)
+			if sourceRateLimit.Duration > 0 {
+				_ = runner.rateLimit.CustomDuration.Set(source, sourceRateLimit.Duration)
+			}
 		}
 	}
 

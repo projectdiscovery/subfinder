@@ -54,7 +54,6 @@ var (
 		"windvane",
 		"zoomeyeapi",
 		"leakix",
-		"facebook",
 		// "threatminer",
 		// "reconcloud",
 		"reconeer",
@@ -64,6 +63,7 @@ var (
 		"merklemap",
 		"thc",
 		"urlscan",
+		"submd",
 	}
 
 	expectedDefaultSources = []string{
@@ -99,7 +99,6 @@ var (
 		"virustotal",
 		"whoisxmlapi",
 		"leakix",
-		"facebook",
 		// "threatminer",
 		// "reconcloud",
 		"reconeer",
@@ -107,6 +106,7 @@ var (
 		"digitalyama",
 		"thc",
 		"urlscan",
+		"submd",
 	}
 
 	expectedDefaultRecursiveSources = []string{
@@ -121,7 +121,6 @@ var (
 		"securitytrails",
 		"virustotal",
 		"leakix",
-		"facebook",
 		"merklemap",
 		"urlscan",
 		// "reconcloud",

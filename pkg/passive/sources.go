@@ -28,7 +28,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsrepo"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/domainsproject"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/driftnet"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/facebook"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fofa"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fullhunt"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/github"
@@ -50,6 +49,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/submd"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/thc"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatcrowd"
@@ -82,7 +82,6 @@ var AllSources = [...]subscraping.Source{
 	&dnsrepo.Source{},
 	&domainsproject.Source{},
 	&driftnet.Source{},
-	&facebook.Source{},
 	&fofa.Source{},
 	&fullhunt.Source{},
 	&github.Source{},
@@ -116,6 +115,7 @@ var AllSources = [...]subscraping.Source{
 	&whoisxmlapi.Source{},
 	&windvane.Source{},
 	&zoomeyeapi.Source{},
+	&submd.Source{},
 }
 
 var sourceWarnings = mapsutil.NewSyncLockMap[string, string](

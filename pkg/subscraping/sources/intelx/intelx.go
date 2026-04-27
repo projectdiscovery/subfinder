@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -125,14 +124,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 			var response searchResultType
 			err = jsoniter.NewDecoder(resp.Body).Decode(&response)
-			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
-				session.DiscardHTTPResponse(resp)
-				return
-			}
-
-			_, err = io.ReadAll(resp.Body)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				s.errors++

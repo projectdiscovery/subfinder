@@ -11,6 +11,7 @@ import (
 
 	"github.com/projectdiscovery/ratelimit"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
+	mapsutil "github.com/projectdiscovery/utils/maps"
 )
 
 type EnumerationOptions struct {
@@ -85,14 +86,21 @@ func (a *Agent) EnumerateSubdomainsWithCtx(ctx context.Context, domain string, p
 func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, rateLimit *subscraping.CustomRateLimit) (*ratelimit.MultiLimiter, error) {
 	var multiRateLimiter *ratelimit.MultiLimiter
 	var err error
-	for _, source := range a.sources {
-		var rl uint
-		if sourceRateLimit, ok := rateLimit.Custom.Get(strings.ToLower(source.Name())); ok {
-			rl = sourceRateLimitOrDefault(uint(globalRateLimit), sourceRateLimit)
+	if rateLimit == nil {
+		rateLimit = &subscraping.CustomRateLimit{
+			Custom: mapsutil.SyncLockMap[string, uint]{
+				Map: make(map[string]uint),
+			},
+			CustomDuration: mapsutil.SyncLockMap[string, time.Duration]{
+				Map: make(map[string]time.Duration),
+			},
 		}
+	}
+	for _, source := range a.sources {
+		rl, duration := resolveSourceRateLimit(globalRateLimit, rateLimit, source.Name())
 
 		if rl > 0 {
-			multiRateLimiter, err = addRateLimiter(ctx, multiRateLimiter, source.Name(), rl, time.Second)
+			multiRateLimiter, err = addRateLimiter(ctx, multiRateLimiter, source.Name(), rl, duration)
 		} else {
 			multiRateLimiter, err = addRateLimiter(ctx, multiRateLimiter, source.Name(), math.MaxUint32, time.Millisecond)
 		}
@@ -102,6 +110,30 @@ func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, 
 		}
 	}
 	return multiRateLimiter, err
+}
+
+// resolveSourceRateLimit returns the effective rate limit and duration for a source.
+// Priority: per-source custom limit > global -rl limit > unlimited.
+// Duration comes from -rls (e.g. hackertarget=2/m → 2 per minute), defaulting to per-second.
+func resolveSourceRateLimit(globalRateLimit int, rateLimit *subscraping.CustomRateLimit, sourceName string) (uint, time.Duration) {
+	duration := time.Second // default: requests per second
+
+	sourceLower := strings.ToLower(sourceName)
+	if sourceRL, ok := rateLimit.Custom.Get(sourceLower); ok {
+		rl := sourceRateLimitOrDefault(uint(max(globalRateLimit, 0)), sourceRL)
+		// Use per-source duration from -rls if set (e.g. "2/m" → time.Minute)
+		if d, ok := rateLimit.CustomDuration.Get(sourceLower); ok && d > 0 {
+			duration = d
+		}
+		return rl, duration
+	}
+
+	// No per-source limit: fall back to global -rl
+	if globalRateLimit > 0 {
+		return uint(globalRateLimit), duration
+	}
+
+	return 0, duration
 }
 
 func sourceRateLimitOrDefault(defaultRateLimit uint, sourceRateLimit uint) uint {

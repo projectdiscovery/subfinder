@@ -39,8 +39,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			htSearchUrl = fmt.Sprintf("%s&apikey=%s", htSearchUrl, randomApiKey)
 		}
 
-		htSearchUrl = fmt.Sprintf("%s&apikey=%s", htSearchUrl, randomApiKey)
-
 		s.requests++
 		resp, err := session.SimpleGet(ctx, htSearchUrl)
 		if err != nil {
