@@ -6,12 +6,11 @@ import (
 )
 
 func loadFromFile(file string) ([]string, error) {
-	chanItems, err := fileutil.ReadFile(file)
-	if err != nil {
-		return nil, err
-	}
 	var items []string
-	for item := range chanItems {
+	for item, err := range fileutil.Lines(file) {
+		if err != nil {
+			return nil, err
+		}
 		item = preprocessDomain(item)
 		if item == "" {
 			continue
