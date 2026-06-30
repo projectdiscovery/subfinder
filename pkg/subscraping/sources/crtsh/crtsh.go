@@ -93,6 +93,7 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 		s.errors++
 		return 0
 	}
+	defer rows.Close()
 	if err := rows.Err(); err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		s.errors++
