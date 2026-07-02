@@ -106,10 +106,10 @@ func TestVirustotalSource_FollowsCursorWhenUnlimited(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		// Three pages of one subdomain each, then the cursor terminates.
 		if n < 3 {
-			fmt.Fprintf(w, `{"data":[{"id":"sub%d.example.com"}],"meta":{"cursor":"next-%d"}}`, n, n)
+			_, _ = fmt.Fprintf(w, `{"data":[{"id":"sub%d.example.com"}],"meta":{"cursor":"next-%d"}}`, n, n)
 			return
 		}
-		fmt.Fprintf(w, `{"data":[{"id":"sub%d.example.com"}],"meta":{"cursor":""}}`, n)
+		_, _ = fmt.Fprintf(w, `{"data":[{"id":"sub%d.example.com"}],"meta":{"cursor":""}}`, n)
 	}))
 	defer server.Close()
 
@@ -132,7 +132,7 @@ func TestVirustotalSource_MaxResultsCapsPagination(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		// Always return one subdomain plus a non-empty cursor so the source
 		// would loop forever without the max-results cap.
-		fmt.Fprintf(w, `{"data":[{"id":"sub%d.example.com"}],"meta":{"cursor":"next-%d"}}`, n, n)
+		_, _ = fmt.Fprintf(w, `{"data":[{"id":"sub%d.example.com"}],"meta":{"cursor":"next-%d"}}`, n, n)
 	}))
 	defer server.Close()
 
@@ -155,10 +155,10 @@ func TestVirustotalSource_StopsWhenCursorEmpty(t *testing.T) {
 		n := atomic.AddInt32(&hits, 1)
 		w.Header().Set("Content-Type", "application/json")
 		if n == 1 {
-			fmt.Fprint(w, `{"data":[{"id":"a.example.com"}],"meta":{"cursor":"more"}}`)
+			_, _ = fmt.Fprint(w, `{"data":[{"id":"a.example.com"}],"meta":{"cursor":"more"}}`)
 			return
 		}
-		fmt.Fprint(w, `{"data":[{"id":"b.example.com"}],"meta":{"cursor":""}}`)
+		_, _ = fmt.Fprint(w, `{"data":[{"id":"b.example.com"}],"meta":{"cursor":""}}`)
 	}))
 	defer server.Close()
 
