@@ -47,6 +47,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
+		// Honor an optional per-source result limit to avoid unnecessary
+		// pagination requests (e.g. to stay within API quotas). 0 = no limit.
+		maxResults := session.MaxResults
+
 		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
 		if randomApiKey == "" {
 			return
@@ -91,6 +95,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					return
 				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain.Id}:
 					s.results++
+				}
+				if maxResults > 0 && s.results >= maxResults {
+					return
 				}
 			}
 			cursor = data.Meta.Cursor

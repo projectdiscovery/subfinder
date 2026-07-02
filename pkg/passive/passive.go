@@ -16,6 +16,7 @@ import (
 
 type EnumerationOptions struct {
 	customRateLimiter *subscraping.CustomRateLimit
+	maxResults        int
 }
 
 type EnumerateOption func(opts *EnumerationOptions)
@@ -23,6 +24,15 @@ type EnumerateOption func(opts *EnumerationOptions)
 func WithCustomRateLimit(crl *subscraping.CustomRateLimit) EnumerateOption {
 	return func(opts *EnumerationOptions) {
 		opts.customRateLimiter = crl
+	}
+}
+
+// WithMaxResults sets a per-source limit on the number of results emitted.
+// A value of 0 (the default) means no limit. Sources that paginate can honor
+// this to avoid unnecessary requests (e.g. to stay within API quotas).
+func WithMaxResults(maxResults int) EnumerateOption {
+	return func(opts *EnumerationOptions) {
+		opts.maxResults = maxResults
 	}
 }
 
@@ -58,6 +68,7 @@ func (a *Agent) EnumerateSubdomainsWithCtx(ctx context.Context, domain string, p
 			return
 		}
 		defer session.Close()
+		session.MaxResults = enumerateOptions.maxResults
 
 		ctx, cancel := context.WithTimeout(ctx, maxEnumTime)
 
