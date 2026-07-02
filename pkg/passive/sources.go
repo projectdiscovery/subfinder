@@ -28,7 +28,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsrepo"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/domainsproject"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/driftnet"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/facebook"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fofa"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/fullhunt"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/github"
@@ -49,10 +48,13 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rsecloud"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodanct"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/submd"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/thc"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatcrowd"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/urlscan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/whoisxmlapi"
@@ -66,6 +68,7 @@ var AllSources = [...]subscraping.Source{
 	&anubis.Source{},
 	&bevigil.Source{},
 	&bufferover.Source{},
+	&builtwith.Source{},
 	&c99.Source{},
 	&censys.Source{},
 	&certspotter.Source{},
@@ -73,47 +76,48 @@ var AllSources = [...]subscraping.Source{
 	&chinaz.Source{},
 	&commoncrawl.Source{},
 	&crtsh.Source{},
+	&digitalyama.Source{},
 	&digitorus.Source{},
 	&dnsdb.Source{},
 	&dnsdumpster.Source{},
-	&domainsproject.Source{},
 	&dnsrepo.Source{},
+	&domainsproject.Source{},
 	&driftnet.Source{},
 	&fofa.Source{},
 	&fullhunt.Source{},
 	&github.Source{},
 	&hackertarget.Source{},
+	&hudsonrock.Source{},
 	&intelx.Source{},
-	&netlas.Source{},
-	&merklemap.Source{},
-	&onyphe.Source{},
 	&leakix.Source{},
-	&quake.Source{},
+	&merklemap.Source{},
+	&netlas.Source{},
+	&onyphe.Source{},
+	&profundis.Source{},
 	&pugrecon.Source{},
+	&quake.Source{},
 	&rapiddns.Source{},
+	// &reconcloud.Source{}, // failing due to cloudflare bot protection
+	&reconeer.Source{},
 	&redhuntlabs.Source{},
 	// &riddler.Source{}, // failing due to cloudfront protection
 	&robtex.Source{},
 	&rsecloud.Source{},
 	&securitytrails.Source{},
-	&profundis.Source{},
 	&shodan.Source{},
+	&shodanct.Source{},
 	&sitedossier.Source{},
+	&thc.Source{},
 	&threatbook.Source{},
 	&threatcrowd.Source{},
+	// &threatminer.Source{}, // failing  api
+	&urlscan.Source{},
 	&virustotal.Source{},
 	&waybackarchive.Source{},
 	&whoisxmlapi.Source{},
 	&windvane.Source{},
 	&zoomeyeapi.Source{},
-	&facebook.Source{},
-	// &threatminer.Source{}, // failing  api
-	// &reconcloud.Source{}, // failing due to cloudflare bot protection
-	&reconeer.Source{},
-	&builtwith.Source{},
-	&hudsonrock.Source{},
-	&digitalyama.Source{},
-	&thc.Source{},
+	&submd.Source{},
 }
 
 var sourceWarnings = mapsutil.NewSyncLockMap[string, string](

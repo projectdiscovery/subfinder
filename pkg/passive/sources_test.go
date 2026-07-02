@@ -45,6 +45,7 @@ var (
 		"securitytrails",
 		"profundis",
 		"shodan",
+		"shodanct",
 		"sitedossier",
 		"threatbook",
 		"threatcrowd",
@@ -54,7 +55,6 @@ var (
 		"windvane",
 		"zoomeyeapi",
 		"leakix",
-		"facebook",
 		// "threatminer",
 		// "reconcloud",
 		"reconeer",
@@ -63,6 +63,8 @@ var (
 		"digitalyama",
 		"merklemap",
 		"thc",
+		"urlscan",
+		"submd",
 	}
 
 	expectedDefaultSources = []string{
@@ -94,17 +96,19 @@ var (
 		"securitytrails",
 		"profundis",
 		"shodan",
+		"shodanct",
 		"windvane",
 		"virustotal",
 		"whoisxmlapi",
 		"leakix",
-		"facebook",
 		// "threatminer",
 		// "reconcloud",
 		"reconeer",
 		"builtwith",
 		"digitalyama",
 		"thc",
+		"urlscan",
+		"submd",
 	}
 
 	expectedDefaultRecursiveSources = []string{
@@ -117,10 +121,11 @@ var (
 		"driftnet",
 		"hackertarget",
 		"securitytrails",
+		"shodanct",
 		"virustotal",
 		"leakix",
-		"facebook",
 		"merklemap",
+		"urlscan",
 		// "reconcloud",
 	}
 )

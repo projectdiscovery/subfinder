@@ -107,6 +107,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 		session.DiscardHTTPResponse(resp)
 
 		s.enumerate(ctx, searchURL, domainRegexp, tokens, session, results)
+		return
 	}
 
 	var data response

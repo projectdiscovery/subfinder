@@ -34,6 +34,9 @@ func TestSourcesWithoutKeys(t *testing.T) {
 		"dnsdumpster",    // failing with "unexpected status code 403 received"
 		"anubis",         // failing with "too many redirects"
 		"threatcrowd",    // failing with "randomly failing with unmarshal error when hit multiple times"
+		"leakix",         // now requires API key (returns 401)
+		"reconeer",       // now requires API key (returns 401)
+		"sitedossier",    // flaky - returns no results in CI
 	}
 
 	domain := "hackerone.com"

@@ -5,31 +5,31 @@ before:
     - go mod tidy
 
 builds:
-- env:
-  - CGO_ENABLED=0
-  goos:
-    - windows
-    - linux
-    - darwin
-  goarch:
-    - amd64
-    - '386'
-    - arm
-    - arm64
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - '386'
+      - arm
+      - arm64
 
-  ignore:
-    - goos: darwin
-      goarch: '386'
-    - goos: windows
-      goarch: 'arm'
+    ignore:
+      - goos: darwin
+        goarch: '386'
+      - goos: windows
+        goarch: 'arm'
 
-  binary: '{{ .ProjectName }}'
-  main: cmd/subfinder/main.go
+    binary: '{{ .ProjectName }}'
+    main: cmd/subfinder/main.go
 
 archives:
-- formats:
-    - zip
-  name_template: '{{ .ProjectName }}_{{ .Version }}_{{ if eq .Os "darwin" }}macOS{{ else }}{{ .Os }}{{ end }}_{{ .Arch }}'
+  - formats:
+      - zip
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ if eq .Os "darwin" }}macOS{{ else }}{{ .Os }}{{ end }}_{{ .Arch }}'
 
 checksum:
   algorithm: sha256

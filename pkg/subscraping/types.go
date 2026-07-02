@@ -16,7 +16,8 @@ const (
 )
 
 type CustomRateLimit struct {
-	Custom mapsutil.SyncLockMap[string, uint]
+	Custom         mapsutil.SyncLockMap[string, uint]
+	CustomDuration mapsutil.SyncLockMap[string, time.Duration]
 }
 
 // BasicAuth request's Authorization header
@@ -89,6 +90,8 @@ type Session struct {
 	Client *http.Client
 	// Rate limit instance
 	MultiRateLimiter *ratelimit.MultiLimiter
+	// Timeout is the timeout in seconds for requests
+	Timeout int
 	// MaxResults is the maximum number of results a source should emit
 	// before stopping. A value of 0 means no limit (default behavior).
 	// Sources that paginate can honor this to avoid unnecessary requests

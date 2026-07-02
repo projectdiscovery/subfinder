@@ -1,10 +1,10 @@
-// Package c99 logic
-package c99
+// Package shodanct logic
+package shodanct
 
 import (
 	"context"
 	"fmt"
-	"strings"
+	"net/http"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -14,22 +14,10 @@ import (
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys   []string
 	timeTaken time.Duration
 	errors    int
 	results   int
 	requests  int
-	skipped   bool
-}
-
-type dnsdbLookupResponse struct {
-	Success    bool `json:"success"`
-	Subdomains []struct {
-		Subdomain  string `json:"subdomain"`
-		IP         string `json:"ip"`
-		Cloudflare bool   `json:"cloudflare"`
-	} `json:"subdomains"`
-	Error string `json:"error"`
 }
 
 // Run function returns all subdomains found with the service
@@ -45,13 +33,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
-		if randomApiKey == "" {
-			s.skipped = true
-			return
-		}
-
-		searchURL := fmt.Sprintf("https://api.c99.nl/subdomainfinder?key=%s&domain=%s&json", randomApiKey, domain)
+		searchURL := fmt.Sprintf("https://ctl.shodan.io/api/v1/domain/%s/hostnames", domain)
 		s.requests++
 		resp, err := session.SimpleGet(ctx, searchURL)
 		if err != nil {
@@ -61,35 +43,31 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		defer func() {
-			if err := resp.Body.Close(); err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+		if resp.StatusCode != http.StatusOK {
+			results <- subscraping.Result{
+				Source: s.Name(), Type: subscraping.Error,
+				Error: fmt.Errorf("unexpected status code %d received from %s", resp.StatusCode, searchURL),
 			}
-		}()
+			s.errors++
+			session.DiscardHTTPResponse(resp)
+			return
+		}
 
-		var response dnsdbLookupResponse
-		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
+		defer session.DiscardHTTPResponse(resp)
+
+		var hostnames []string
+		if err := jsoniter.NewDecoder(resp.Body).Decode(&hostnames); err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
 			return
 		}
 
-		if response.Error != "" {
-			results <- subscraping.Result{
-				Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%v", response.Error),
-			}
-			s.errors++
-			return
-		}
-
-		for _, data := range response.Subdomains {
-			if !strings.HasPrefix(data.Subdomain, ".") {
+		for _, hostname := range hostnames {
+			for _, subdomain := range session.Extractor.Extract(hostname) {
 				select {
 				case <-ctx.Done():
 					return
-				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: data.Subdomain}:
+				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
 					s.results++
 				}
 			}
@@ -101,7 +79,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 // Name returns the name of the source
 func (s *Source) Name() string {
-	return "c99"
+	return "shodanct"
 }
 
 func (s *Source) IsDefault() bool {
@@ -109,19 +87,19 @@ func (s *Source) IsDefault() bool {
 }
 
 func (s *Source) HasRecursiveSupport() bool {
-	return false
+	return true
 }
 
 func (s *Source) KeyRequirement() subscraping.KeyRequirement {
-	return subscraping.RequiredKey
+	return subscraping.NoKey
 }
 
 func (s *Source) NeedsKey() bool {
 	return s.KeyRequirement() == subscraping.RequiredKey
 }
 
-func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+func (s *Source) AddApiKeys(_ []string) {
+	// no key needed
 }
 
 func (s *Source) Statistics() subscraping.Statistics {
@@ -130,6 +108,5 @@ func (s *Source) Statistics() subscraping.Statistics {
 		Results:   s.results,
 		Requests:  s.requests,
 		TimeTaken: s.timeTaken,
-		Skipped:   s.skipped,
 	}
 }
