@@ -70,9 +70,10 @@ type Options struct {
 	ResultCallback     OnResultCallback // OnResult callback
 	DisableUpdateCheck bool             // DisableUpdateCheck disable update checking
 
-	// VirusTotalResults limits the total number of results requested from VirusTotal.
-	// Must be a multiple of 40 if set (>0). YAML key: virustotal-res
-	VirusTotalResults int `yaml:"virustotal-res,omitempty"`
+	// MaxResults limits the number of results requested per source.
+	// A value of 0 (default) means no limit. Only sources that paginate
+	// honor this (currently virustotal), to help stay within API quotas.
+	MaxResults int `yaml:"max-results,omitempty"`
 }
 
 // OnResultCallback (hostResult)
@@ -132,8 +133,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVarP(&options.RemoveWildcard, "active", "nW", false, "display active subdomains only"),
 		flagSet.StringVar(&options.Proxy, "proxy", "", "http proxy to use with subfinder"),
 		flagSet.BoolVarP(&options.ExcludeIps, "exclude-ip", "ei", false, "exclude IPs from the list of domains"),
-		// VirusTotal results limit flag (long: --virustotal-res, short: -vR)
-		flagSet.IntVarP(&options.VirusTotalResults, "virustotal-res", "vR", 0, "limit VirusTotal results (must be a multiple of 40). If 0 or not set, default behavior is used"),
+		flagSet.IntVarP(&options.MaxResults, "max-results", "mr", 0, "limit the number of results per source (0 = unlimited; honored by paginating sources such as virustotal)"),
 	)
 
 	flagSet.CreateGroup("debug", "Debug",

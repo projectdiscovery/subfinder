@@ -47,13 +47,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		// Read the limit from context if present (key used by runner: "virustotal-res")
-		var maxResults int
-		if v := ctx.Value(subscraping.VirustotalResultsCtxKey); v != nil {
-			if mr, ok := v.(int); ok {
-				maxResults = mr
-			}
-		}
+		// Honor an optional per-source result limit to avoid unnecessary
+		// pagination requests (e.g. to stay within API quotas). 0 = no limit.
+		maxResults := session.MaxResults
 
 		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
 		if randomApiKey == "" {
@@ -99,10 +95,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					return
 				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain.Id}:
 					s.results++
-		cursor = data.Meta.Cursor
-		if cursor == "" || (maxResults > 0 && s.results >= maxResults) {
-			break
-		}
+				}
 				if maxResults > 0 && s.results >= maxResults {
 					return
 				}

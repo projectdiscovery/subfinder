@@ -48,15 +48,9 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 		}
 	}
 
-	// Prepare context values to pass to sources. If VirusTotalResults is set (>0), add it to context.
-	ctxWithValues := ctx
-	if r.options.VirusTotalResults > 0 {
-		ctxWithValues = context.WithValue(ctxWithValues, subscraping.VirustotalResultsCtxKey, r.options.VirusTotalResults)
-	}
-
 	// Run the passive subdomain enumeration
 	now := time.Now()
-	passiveResults := r.passiveAgent.EnumerateSubdomainsWithCtx(ctxWithValues, domain, r.options.Proxy, r.options.RateLimit, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute, passive.WithCustomRateLimit(r.rateLimit))
+	passiveResults := r.passiveAgent.EnumerateSubdomainsWithCtx(ctx, domain, r.options.Proxy, r.options.RateLimit, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute, passive.WithCustomRateLimit(r.rateLimit), passive.WithMaxResults(r.options.MaxResults))
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)

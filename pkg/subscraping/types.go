@@ -13,11 +13,6 @@ type CtxArg string
 
 const (
 	CtxSourceArg CtxArg = "source"
-
-	// VirustotalResultsCtxKey is the context key used to pass
-	// the VirusTotal results limit (int) from runner -> source.
-	// Value type: int
-	VirustotalResultsCtxKey CtxArg = "virustotal-res"
 )
 
 type CustomRateLimit struct {
@@ -94,6 +89,11 @@ type Session struct {
 	Client *http.Client
 	// Rate limit instance
 	MultiRateLimiter *ratelimit.MultiLimiter
+	// MaxResults is the maximum number of results a source should emit
+	// before stopping. A value of 0 means no limit (default behavior).
+	// Sources that paginate can honor this to avoid unnecessary requests
+	// (e.g. to stay within API quotas).
+	MaxResults int
 }
 
 // Result is a result structure returned by a source
