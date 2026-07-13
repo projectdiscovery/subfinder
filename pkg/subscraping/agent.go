@@ -17,6 +17,41 @@ import (
 	"github.com/projectdiscovery/gologger"
 )
 
+// maxResponseBodySize is the maximum number of bytes read from an untrusted
+// passive-source HTTP response body. Sources consume third-party (and in some
+// cases MITM-able, since TLS verification is skipped) responses; without a cap
+// a malicious/compromised upstream can stream an effectively unbounded body and
+// OOM the process, because the HTTP client Timeout bounds time, not size.
+//
+// 50MB is intentionally generous: legitimate subdomain lists — even large
+// certificate-transparency or bulk-API JSON responses — sit well under this,
+// so real sources are unaffected while pathological bodies are truncated.
+const maxResponseBodySize = 50 * 1024 * 1024 // 50MB
+
+// limitedResponseBody wraps a response body so that at most maxResponseBodySize
+// bytes can be read from it, while still closing the underlying body (so no
+// connection/body leak). It is applied centrally so every source inherits the
+// cap regardless of how it consumes the body (io.ReadAll, json.Decoder,
+// bufio.Scanner, etc.).
+type limitedResponseBody struct {
+	io.Reader // io.LimitReader over the original body
+	io.Closer // the original body's Close
+}
+
+// LimitResponseBody caps response.Body at maxResponseBodySize bytes in place.
+// It is idempotent-safe to call and preserves the original body's Close.
+// Exported so sources that (rarely) issue a raw client.Do — bypassing the
+// session's httpRequestWrapper — can opt into the same protection.
+func LimitResponseBody(response *http.Response) {
+	if response == nil || response.Body == nil {
+		return
+	}
+	response.Body = &limitedResponseBody{
+		Reader: io.LimitReader(response.Body, maxResponseBodySize),
+		Closer: response.Body,
+	}
+}
+
 // NewSession creates a new session object for a domain
 func NewSession(domain string, proxy string, multiRateLimiter *ratelimit.MultiLimiter, timeout int) (*Session, error) {
 	Transport := &http.Transport{
@@ -136,6 +171,10 @@ func httpRequestWrapper(client *http.Client, request *http.Request) (*http.Respo
 	if err != nil {
 		return nil, err
 	}
+
+	// Cap the untrusted response body centrally so every source (and the
+	// debug-logging path below) is bounded regardless of how it reads the body.
+	LimitResponseBody(response)
 
 	if response.StatusCode != http.StatusOK {
 		requestURL, _ := url.QueryUnescape(request.URL.String())
