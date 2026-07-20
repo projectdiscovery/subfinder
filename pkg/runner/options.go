@@ -141,7 +141,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVar(&options.Version, "version", false, "show version of subfinder"),
 		flagSet.BoolVar(&options.Verbose, "v", false, "show verbose output"),
 		flagSet.BoolVarP(&options.NoColor, "no-color", "nc", false, "disable color in output"),
-		flagSet.BoolVarP(&options.ListSources, "list-sources", "ls", false, "list all available sources"),
+		flagSet.BoolVarP(&options.ListSources, "list-sources", "ls", false, "list all available sources (-ls -oJ for JSON output)"),
 		flagSet.BoolVar(&options.Statistics, "stats", false, "report source statistics"),
 	)
 
@@ -229,6 +229,15 @@ func (options *Options) loadProvidersFrom(location string) {
 }
 
 func listSources(options *Options) {
+	// With -oJ, emit machine-readable JSONL so tooling can select sources
+	// programmatically instead of parsing the human-readable markers.
+	if options.JSON {
+		if err := writeSourcesJSON(options.Output); err != nil {
+			gologger.Fatal().Msgf("Could not write sources as JSON: %s\n", err)
+		}
+		return
+	}
+
 	gologger.Info().Msgf("Current list of available sources. [%d]\n", len(passive.AllSources))
 	gologger.Info().Msgf("Sources marked with an * require key(s) or token(s) to work.\n")
 	gologger.Info().Msgf("Sources marked with a ~ optionally support key(s) for better results.\n")

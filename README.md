@@ -103,7 +103,7 @@ DEBUG:
   -version            show version of subfinder
   -v                  show verbose output
   -nc, -no-color      disable color in output
-  -ls, -list-sources  list all available sources
+  -ls, -list-sources  list all available sources (-ls -oJ for JSON output)
 
 OPTIMIZATION:
   -timeout int   seconds to wait before timing out (default 30)
