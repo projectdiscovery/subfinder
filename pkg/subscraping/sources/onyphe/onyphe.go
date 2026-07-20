@@ -59,6 +59,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
+		// Honor an optional per-source result limit (0 = no limit) so a single
+		// domain can't drain an API quota by paginating to the end.
+		maxResults := session.MaxResults
+
 		headers := map[string]string{"Content-Type": "application/json", "Authorization": "bearer " + randomApiKey}
 
 		page := 1
@@ -96,6 +100,17 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			session.DiscardHTTPResponse(resp)
 
+			// emit sends a subdomain and reports whether the per-source result
+			// limit has been reached, so callers can stop paginating early.
+			emit := func(subdomain string) (capped bool) {
+				if subdomain == "" {
+					return false
+				}
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
+				s.results++
+				return maxResults > 0 && s.results >= maxResults
+			}
+
 			for _, record := range respOnyphe.Results {
 				select {
 				case <-ctx.Done():
@@ -103,25 +118,18 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				default:
 				}
 				for _, subdomain := range record.Subdomains {
-					if subdomain != "" {
-						results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-						s.results++
+					if emit(subdomain) {
+						return
 					}
 				}
-
-				if record.Hostname != "" {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Hostname}
-					s.results++
+				if emit(record.Hostname) {
+					return
 				}
-
-				if record.Forward != "" {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Forward}
-					s.results++
+				if emit(record.Forward) {
+					return
 				}
-
-				if record.Reverse != "" {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Reverse}
-					s.results++
+				if emit(record.Reverse) {
+					return
 				}
 			}
 

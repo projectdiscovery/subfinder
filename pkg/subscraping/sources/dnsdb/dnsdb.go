@@ -67,6 +67,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
+		// Honor an optional per-source result limit (0 = no limit) so a single
+		// domain can't drain an API quota by paginating to the end.
+		maxResults := session.MaxResults
+
 		headers := map[string]string{
 			"X-API-KEY": randomApiKey,
 			"Accept":    "application/x-ndjson",
@@ -141,6 +145,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 							return
 						case results <- subscraping.Result{Source: sourceName, Type: subscraping.Subdomain, Value: strings.TrimSuffix(response.Obj.Name, ".")}:
 							s.results++
+						}
+						if maxResults > 0 && s.results >= uint64(maxResults) {
+							session.DiscardHTTPResponse(resp)
+							return
 						}
 					}
 				} else if respCond != "begin" {

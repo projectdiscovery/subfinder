@@ -59,6 +59,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
+		// Honor an optional per-source result limit (0 = no limit) so a single
+		// domain can't drain an API quota by paginating to the end.
+		maxResults := session.MaxResults
+
 		// quake api doc https://quake.360.cn/quake/#/help
 		var pageSize = 500
 		var start = 0
@@ -116,6 +120,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				}
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
 				s.results++
+				if maxResults > 0 && s.results >= maxResults {
+					return
+				}
 			}
 
 			if len(response.Data) == 0 || start+pageSize >= totalResults {
