@@ -34,7 +34,10 @@ func (re *RegexSubdomainExtractor) Extract(text string) []string {
 		if hostnameContinues(text, idx[1]) {
 			continue
 		}
-		matches = append(matches, strings.ToLower(text[idx[0]:idx[1]]))
+		// Clone so the short subdomain doesn't keep the whole (potentially large)
+		// text backing array alive: strings.ToLower returns the input unchanged
+		// when it is already lowercase, which is the common case for hostnames.
+		matches = append(matches, strings.Clone(strings.ToLower(text[idx[0]:idx[1]])))
 	}
 	return matches
 }
