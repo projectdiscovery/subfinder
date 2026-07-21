@@ -100,14 +100,19 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			session.DiscardHTTPResponse(resp)
 
-			// emit sends a subdomain and reports whether the per-source result
-			// limit has been reached, so callers can stop paginating early.
-			emit := func(subdomain string) (capped bool) {
+			// emit sends a subdomain and reports whether the caller should stop:
+			// either because the context was cancelled or because the per-source
+			// result limit has been reached.
+			emit := func(subdomain string) (stop bool) {
 				if subdomain == "" {
 					return false
 				}
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-				s.results++
+				select {
+				case <-ctx.Done():
+					return true
+				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
+					s.results++
+				}
 				return maxResults > 0 && s.results >= maxResults
 			}
 
