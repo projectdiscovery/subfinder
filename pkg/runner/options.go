@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -141,7 +142,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVar(&options.Version, "version", false, "show version of subfinder"),
 		flagSet.BoolVar(&options.Verbose, "v", false, "show verbose output"),
 		flagSet.BoolVarP(&options.NoColor, "no-color", "nc", false, "disable color in output"),
-		flagSet.BoolVarP(&options.ListSources, "list-sources", "ls", false, "list all available sources (-ls -oJ for JSON output)"),
+		flagSet.BoolVarP(&options.ListSources, "list-sources", "ls", false, "list all available sources (-oJ for JSON)"),
 		flagSet.BoolVar(&options.Statistics, "stats", false, "report source statistics"),
 	)
 
@@ -228,12 +229,27 @@ func (options *Options) loadProvidersFrom(location string) {
 	}
 }
 
+var keyRequirementLabels = map[subscraping.KeyRequirement]string{
+	subscraping.NoKey:       "none",
+	subscraping.RequiredKey: "required",
+	subscraping.OptionalKey: "optional",
+}
+
 func listSources(options *Options) {
-	// With -oJ, emit machine-readable JSONL so tooling can select sources
-	// programmatically instead of parsing the human-readable markers.
+	// With -oJ, emit one JSON object per source so tooling can select sources
+	// by property instead of parsing the human-readable markers.
 	if options.JSON {
-		if err := writeSourcesJSON(options.Output); err != nil {
-			gologger.Fatal().Msgf("Could not write sources as JSON: %s\n", err)
+		encoder := json.NewEncoder(options.Output)
+		for _, source := range passive.AllSources {
+			err := encoder.Encode(struct {
+				Name           string `json:"name"`
+				Default        bool   `json:"default"`
+				Recursive      bool   `json:"recursive"`
+				KeyRequirement string `json:"keyRequirement"`
+			}{source.Name(), source.IsDefault(), source.HasRecursiveSupport(), keyRequirementLabels[source.KeyRequirement()]})
+			if err != nil {
+				gologger.Fatal().Msgf("Could not write sources as JSON: %s\n", err)
+			}
 		}
 		return
 	}
