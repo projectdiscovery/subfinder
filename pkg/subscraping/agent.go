@@ -102,7 +102,10 @@ func (s *Session) HTTPRequest(ctx context.Context, method, requestURL, cookies s
 		req.Header.Set(key, value)
 	}
 
-	sourceName := ctx.Value(CtxSourceArg).(string)
+	sourceName, ok := ctx.Value(CtxSourceArg).(string)
+	if !ok {
+		return nil, fmt.Errorf("missing or invalid source name in context")
+	}
 	mrlErr := s.MultiRateLimiter.Take(sourceName)
 	if mrlErr != nil {
 		return nil, mrlErr
