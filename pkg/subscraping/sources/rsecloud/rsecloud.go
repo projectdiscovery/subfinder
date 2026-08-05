@@ -47,6 +47,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
+		// Honor an optional per-source result limit (0 = no limit) so a single
+		// domain can't drain an API quota by paginating to the end.
+		maxResults := session.MaxResults
+
 		headers := map[string]string{"Content-Type": "application/json", "X-API-Key": randomApiKey}
 
 		fetchSubdomains := func(endpoint string) {
@@ -82,6 +86,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
 						s.results++
 					}
+					if maxResults > 0 && s.results >= maxResults {
+						return
+					}
 				}
 
 				if page >= rseCloudResponse.TotalPages {
@@ -92,6 +99,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 
 		fetchSubdomains("active")
+		if maxResults > 0 && s.results >= maxResults {
+			return
+		}
 		fetchSubdomains("passive")
 	}()
 

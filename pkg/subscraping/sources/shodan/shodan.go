@@ -48,6 +48,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
+		// Honor an optional per-source result limit (0 = no limit) so a single
+		// domain can't drain an API quota by paginating to the end.
+		maxResults := session.MaxResults
+
 		page := 1
 		for {
 			select {
@@ -95,6 +99,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					Source: s.Name(), Type: subscraping.Subdomain, Value: value,
 				}
 				s.results++
+				if maxResults > 0 && s.results >= maxResults {
+					return
+				}
 			}
 
 			if !response.More {

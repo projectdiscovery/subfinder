@@ -72,8 +72,8 @@ type Options struct {
 	DisableUpdateCheck bool             // DisableUpdateCheck disable update checking
 
 	// MaxResults limits the number of results requested per source.
-	// A value of 0 (default) means no limit. Only sources that paginate
-	// honor this (currently virustotal), to help stay within API quotas.
+	// A value of 0 (default) means no limit. Sources that paginate honor this
+	// by stopping early once the limit is reached, to help stay within API quotas.
 	MaxResults int `yaml:"max-results,omitempty"`
 }
 
@@ -134,7 +134,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVarP(&options.RemoveWildcard, "active", "nW", false, "display active subdomains only"),
 		flagSet.StringVar(&options.Proxy, "proxy", "", "http proxy to use with subfinder"),
 		flagSet.BoolVarP(&options.ExcludeIps, "exclude-ip", "ei", false, "exclude IPs from the list of domains"),
-		flagSet.IntVarP(&options.MaxResults, "max-results", "mr", 0, "limit the number of results per source (0 = unlimited; honored by paginating sources such as virustotal)"),
+		flagSet.IntVarP(&options.MaxResults, "max-results", "mr", 0, "limit the number of results per source (0 = unlimited; honored by paginating sources)"),
 	)
 
 	flagSet.CreateGroup("debug", "Debug",

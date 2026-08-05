@@ -65,6 +65,10 @@ func (s *Source) fetchAllPages(ctx context.Context, domain string, headers map[s
 	totalCount := math.MaxInt
 	processedResults := 0
 
+	// Honor an optional per-source result limit (0 = no limit) so a single
+	// domain can't drain an API quota by paginating to the end.
+	maxResults := session.MaxResults
+
 	// Iterate through all pages
 	for page := 0; processedResults < totalCount; page++ {
 		pageResp, err := s.fetchPage(ctx, baseURL, page, headers, session)
@@ -90,6 +94,9 @@ func (s *Source) fetchAllPages(ctx context.Context, domain string, headers map[s
 			}
 			s.results++
 			processedResults++
+			if maxResults > 0 && s.results >= maxResults {
+				return
+			}
 		}
 
 	}

@@ -130,6 +130,9 @@ func (s *Source) Statistics() subscraping.Statistics {
 }
 
 func (s *Source) getSubdomains(ctx context.Context, searchURL, domain string, session *subscraping.Session, results chan subscraping.Result) bool {
+	// Honor an optional per-source result limit (0 = no limit) so a single
+	// domain can't trigger scanning every index to the end.
+	maxResults := session.MaxResults
 	for {
 		select {
 		case <-ctx.Done():
@@ -170,6 +173,10 @@ func (s *Source) getSubdomains(ctx context.Context, searchURL, domain string, se
 							return false
 						case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
 							s.results++
+						}
+						if maxResults > 0 && s.results >= maxResults {
+							session.DiscardHTTPResponse(resp)
+							return false
 						}
 					}
 				}
