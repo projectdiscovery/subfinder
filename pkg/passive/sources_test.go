@@ -2,11 +2,12 @@ package passive
 
 import (
 	"fmt"
+	"maps"
+	"slices"
 	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/exp/maps"
 )
 
 var (
@@ -146,7 +147,7 @@ func TestSourceCategorization(t *testing.T) {
 
 	assert.ElementsMatch(t, expectedDefaultSources, defaultSources)
 	assert.ElementsMatch(t, expectedDefaultRecursiveSources, recursiveSources)
-	assert.ElementsMatch(t, expectedAllSources, maps.Keys(NameSourceMap))
+	assert.ElementsMatch(t, expectedAllSources, slices.Collect(maps.Keys(NameSourceMap)))
 }
 
 // Review: not sure if this test is necessary/useful
