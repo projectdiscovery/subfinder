@@ -2,19 +2,18 @@ package runner
 
 import (
 	"fmt"
-	"sort"
+	"maps"
+	"slices"
 	"strings"
 	"time"
 
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
-	"golang.org/x/exp/maps"
 )
 
 func printStatistics(stats map[string]subscraping.Statistics) {
 
-	sources := maps.Keys(stats)
-	sort.Strings(sources)
+	sources := slices.Sorted(maps.Keys(stats))
 
 	var lines []string
 	var skipped []string
