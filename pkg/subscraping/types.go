@@ -92,6 +92,11 @@ type Session struct {
 	MultiRateLimiter *ratelimit.MultiLimiter
 	// Timeout is the timeout in seconds for requests
 	Timeout int
+	// MaxResults is the maximum number of results a source should emit
+	// before stopping. A value of 0 means no limit (default behavior).
+	// Sources that paginate can honor this to avoid unnecessary requests
+	// (e.g. to stay within API quotas).
+	MaxResults int
 }
 
 // Result is a result structure returned by a source

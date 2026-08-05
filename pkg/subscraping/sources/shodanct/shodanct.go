@@ -1,5 +1,5 @@
-// Package anubis logic
-package anubis
+// Package shodanct logic
+package shodanct
 
 import (
 	"context"
@@ -33,8 +33,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
+		searchURL := fmt.Sprintf("https://ctl.shodan.io/api/v1/domain/%s/hostnames", domain)
 		s.requests++
-		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://anubisdb.com/anubis/subdomains/%s", domain))
+		resp, err := session.SimpleGet(ctx, searchURL)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			s.errors++
@@ -43,30 +44,34 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			session.DiscardHTTPResponse(resp)
-			return
-		}
-
-		var subdomains []string
-		err = jsoniter.NewDecoder(resp.Body).Decode(&subdomains)
-		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			results <- subscraping.Result{
+				Source: s.Name(), Type: subscraping.Error,
+				Error: fmt.Errorf("unexpected status code %d received from %s", resp.StatusCode, searchURL),
+			}
 			s.errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
 
-		session.DiscardHTTPResponse(resp)
+		defer session.DiscardHTTPResponse(resp)
 
-		for _, record := range subdomains {
-			select {
-			case <-ctx.Done():
-				return
-			case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record}:
-				s.results++
-			}
+		var hostnames []string
+		if err := jsoniter.NewDecoder(resp.Body).Decode(&hostnames); err != nil {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.errors++
+			return
 		}
 
+		for _, hostname := range hostnames {
+			for _, subdomain := range session.Extractor.Extract(hostname) {
+				select {
+				case <-ctx.Done():
+					return
+				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
+					s.results++
+				}
+			}
+		}
 	}()
 
 	return results
@@ -74,7 +79,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 // Name returns the name of the source
 func (s *Source) Name() string {
-	return "anubis"
+	return "shodanct"
 }
 
 func (s *Source) IsDefault() bool {
@@ -82,7 +87,7 @@ func (s *Source) IsDefault() bool {
 }
 
 func (s *Source) HasRecursiveSupport() bool {
-	return false
+	return true
 }
 
 func (s *Source) KeyRequirement() subscraping.KeyRequirement {

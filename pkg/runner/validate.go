@@ -40,6 +40,11 @@ func (options *Options) validateOptions() error {
 		return errors.New("hostip flag must be used with RemoveWildcard option")
 	}
 
+	// The per-source results limit cannot be negative.
+	if options.MaxResults < 0 {
+		return fmt.Errorf("max-results cannot be negative")
+	}
+
 	if options.Match != nil {
 		options.matchRegexes = make([]*regexp.Regexp, len(options.Match))
 		var err error

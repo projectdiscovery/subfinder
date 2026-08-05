@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/exp/slices"
 
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/gologger/levels"
@@ -32,7 +32,7 @@ func TestSourcesWithoutKeys(t *testing.T) {
 		"alienvault",     // 503 Service Temporarily Unavailable
 		"digitorus",      // failing with "Failed to retrieve certificate"
 		"dnsdumpster",    // failing with "unexpected status code 403 received"
-		"anubis",         // failing with "too many redirects"
+		"anubis",         // previously failed on jonlu.ca (Cloudflare 403 / redirects); endpoint moved to anubisdb.com
 		"threatcrowd",    // failing with "randomly failing with unmarshal error when hit multiple times"
 		"leakix",         // now requires API key (returns 401)
 		"reconeer",       // now requires API key (returns 401)

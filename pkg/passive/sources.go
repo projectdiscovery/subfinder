@@ -2,10 +2,10 @@ package passive
 
 import (
 	"fmt"
+	"maps"
 	"os"
+	"slices"
 	"strings"
-
-	"golang.org/x/exp/maps"
 
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -48,6 +48,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rsecloud"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodanct"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/submd"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/thc"
@@ -104,6 +105,7 @@ var AllSources = [...]subscraping.Source{
 	&rsecloud.Source{},
 	&securitytrails.Source{},
 	&shodan.Source{},
+	&shodanct.Source{},
 	&sitedossier.Source{},
 	&thc.Source{},
 	&threatbook.Source{},
@@ -178,7 +180,7 @@ func New(sourceNames, excludedSourceNames []string, useAllSources, useSourcesSup
 		gologger.Fatal().Msg("No sources selected for this search")
 	}
 
-	gologger.Debug().Msgf("Selected source(s) for this search: %s", strings.Join(maps.Keys(sources), ", "))
+	gologger.Debug().Msgf("Selected source(s) for this search: %s", strings.Join(slices.Sorted(maps.Keys(sources)), ", "))
 
 	for _, currentSource := range sources {
 		if warning, ok := sourceWarnings.Get(strings.ToLower(currentSource.Name())); ok {
@@ -196,7 +198,7 @@ func New(sourceNames, excludedSourceNames []string, useAllSources, useSourcesSup
 	}
 
 	// Create the agent, insert the sources and remove the excluded sources
-	agent := &Agent{sources: maps.Values(sources)}
+	agent := &Agent{sources: slices.Collect(maps.Values(sources))}
 
 	return agent
 }

@@ -4,6 +4,7 @@ package virustotal
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -47,6 +48,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
+		// Honor an optional per-source result limit to avoid unnecessary
+		// pagination requests (e.g. to stay within API quotas). 0 = no limit.
+		maxResults := session.MaxResults
+
 		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
 		if randomApiKey == "" {
 			return
@@ -65,20 +70,27 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			s.requests++
 			resp, err := session.Get(ctx, url, "", map[string]string{"x-apikey": randomApiKey})
 			if err != nil {
+				// The free tier grants 500 requests/day; once it is exhausted every
+				// call returns HTTP 429. Surface an actionable message instead of the
+				// generic "unexpected status code 429" so operators know to supply an
+				// enterprise key or lower the scope (see #1718).
+				if resp != nil && resp.StatusCode == http.StatusTooManyRequests {
+					err = fmt.Errorf("virustotal quota exhausted (HTTP 429); some subdomains for %s may be missing", domain)
+				}
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				s.errors++
 				session.DiscardHTTPResponse(resp)
 				return
 			}
-			defer func() {
-				if err := resp.Body.Close(); err != nil {
-					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-					s.errors++
-				}
-			}()
 
 			var data response
 			err = jsoniter.NewDecoder(resp.Body).Decode(&data)
+			// Close the body per iteration; deferring inside the loop would keep
+			// every page's body (and its connection) open until the goroutine exits.
+			if closeErr := resp.Body.Close(); closeErr != nil {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: closeErr}
+				s.errors++
+			}
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				s.errors++
@@ -91,6 +103,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					return
 				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain.Id}:
 					s.results++
+				}
+				if maxResults > 0 && s.results >= maxResults {
+					return
 				}
 			}
 			cursor = data.Meta.Cursor

@@ -96,13 +96,14 @@ CONFIGURATION:
   -nW, -active                  display active subdomains only
   -proxy string                 http proxy to use with subfinder
   -ei, -exclude-ip              exclude IPs from the list of domains
+  -mr, -max-results int         limit the number of results per source (0 = unlimited; honored by paginating sources such as virustotal)
 
 DEBUG:
   -silent             show only subdomains in output
   -version            show version of subfinder
   -v                  show verbose output
   -nc, -no-color      disable color in output
-  -ls, -list-sources  list all available sources
+  -ls, -list-sources  list all available sources (-oJ for JSON)
 
 OPTIMIZATION:
   -timeout int   seconds to wait before timing out (default 30)
