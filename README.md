@@ -125,6 +125,8 @@ Subfinder supports environment variables to specify custom paths for configurati
 go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 ```
 
+On Windows, `go install` puts the binary in `%USERPROFILE%\go\bin` (or `$env:GOBIN`). Add that folder to `PATH` and open a **new** terminal before running `subfinder`.
+
 Learn about more ways to install subfinder here: https://docs.projectdiscovery.io/tools/subfinder/install.
 
 ## Post Installation Instructions
