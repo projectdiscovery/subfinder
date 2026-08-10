@@ -74,6 +74,11 @@ type Options struct {
 	// A value of 0 (default) means no limit. Only sources that paginate
 	// honor this (currently virustotal), to help stay within API quotas.
 	MaxResults int `yaml:"max-results,omitempty"`
+
+	// MaxResponseBodySize limits bytes read from passive-source HTTP response
+	// bodies. A value of 0 (default) means no limit. When set, oversized bodies
+	// are truncated to protect against unbounded memory use.
+	MaxResponseBodySize int `yaml:"response-size-read,omitempty"`
 }
 
 // OnResultCallback (hostResult)
@@ -148,6 +153,7 @@ func ParseOptions() *Options {
 	flagSet.CreateGroup("optimization", "Optimization",
 		flagSet.IntVar(&options.Timeout, "timeout", 30, "seconds to wait before timing out"),
 		flagSet.IntVar(&options.MaxEnumerationTime, "max-time", 10, "minutes to wait for enumeration results"),
+		flagSet.IntVarP(&options.MaxResponseBodySize, "response-size-read", "rsr", 0, "max response body size to read in bytes from passive sources (0 = unlimited)"),
 	)
 
 	if err := flagSet.Parse(); err != nil {

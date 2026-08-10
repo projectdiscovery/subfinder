@@ -17,19 +17,8 @@ import (
 	"github.com/projectdiscovery/gologger"
 )
 
-// maxResponseBodySize is the maximum number of bytes read from an untrusted
-// passive-source HTTP response body. Sources consume third-party (and in some
-// cases MITM-able, since TLS verification is skipped) responses; without a cap
-// a malicious/compromised upstream can stream an effectively unbounded body and
-// OOM the process, because the HTTP client Timeout bounds time, not size.
-//
-// 50MB is intentionally generous: legitimate subdomain lists — even large
-// certificate-transparency or bulk-API JSON responses — sit well under this,
-// so real sources are unaffected while pathological bodies are truncated.
-const maxResponseBodySize = 50 * 1024 * 1024 // 50MB
-
-// limitedResponseBody wraps a response body so that at most maxResponseBodySize
-// bytes can be read from it, while still closing the underlying body (so no
+// limitedResponseBody wraps a response body so that at most maxSize bytes can
+// be read from it, while still closing the underlying body (so no
 // connection/body leak). It is applied centrally so every source inherits the
 // cap regardless of how it consumes the body (io.ReadAll, json.Decoder,
 // bufio.Scanner, etc.).
@@ -38,16 +27,17 @@ type limitedResponseBody struct {
 	io.Closer // the original body's Close
 }
 
-// LimitResponseBody caps response.Body at maxResponseBodySize bytes in place.
-// It is idempotent-safe to call and preserves the original body's Close.
+// LimitResponseBody caps response.Body at maxSize bytes in place when maxSize
+// is greater than zero. A maxSize of 0 or less leaves the body unchanged
+// (unlimited; the default). It preserves the original body's Close.
 // Exported so sources that (rarely) issue a raw client.Do — bypassing the
 // session's httpRequestWrapper — can opt into the same protection.
-func LimitResponseBody(response *http.Response) {
-	if response == nil || response.Body == nil {
+func LimitResponseBody(response *http.Response, maxSize int64) {
+	if response == nil || response.Body == nil || maxSize <= 0 {
 		return
 	}
 	response.Body = &limitedResponseBody{
-		Reader: io.LimitReader(response.Body, maxResponseBodySize),
+		Reader: io.LimitReader(response.Body, maxSize),
 		Closer: response.Body,
 	}
 }
@@ -143,7 +133,7 @@ func (s *Session) HTTPRequest(ctx context.Context, method, requestURL, cookies s
 		return nil, mrlErr
 	}
 
-	return httpRequestWrapper(s.Client, req)
+	return httpRequestWrapper(s.Client, req, s.MaxResponseBodySize)
 }
 
 // DiscardHTTPResponse discards the response content by demand
@@ -166,15 +156,15 @@ func (s *Session) Close() {
 	s.Client.CloseIdleConnections()
 }
 
-func httpRequestWrapper(client *http.Client, request *http.Request) (*http.Response, error) {
+func httpRequestWrapper(client *http.Client, request *http.Request, maxResponseBodySize int64) (*http.Response, error) {
 	response, err := client.Do(request)
 	if err != nil {
 		return nil, err
 	}
 
-	// Cap the untrusted response body centrally so every source (and the
-	// debug-logging path below) is bounded regardless of how it reads the body.
-	LimitResponseBody(response)
+	// Optionally cap the untrusted response body centrally so every source
+	// (and the debug-logging path below) inherits the same bound when enabled.
+	LimitResponseBody(response, maxResponseBodySize)
 
 	if response.StatusCode != http.StatusOK {
 		requestURL, _ := url.QueryUnescape(request.URL.String())
