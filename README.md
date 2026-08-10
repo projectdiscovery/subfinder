@@ -106,8 +106,9 @@ DEBUG:
   -ls, -list-sources  list all available sources (-oJ for JSON)
 
 OPTIMIZATION:
-  -timeout int   seconds to wait before timing out (default 30)
-  -max-time int  minutes to wait for enumeration results (default 10)
+  -timeout int                  seconds to wait before timing out (default 30)
+  -max-time int                 minutes to wait for enumeration results (default 10)
+  -rsr, -response-size-read int max response body size to read in bytes from passive sources (0 = unlimited)
 ```
 
 ## Environment Variables

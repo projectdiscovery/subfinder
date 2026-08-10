@@ -45,6 +45,11 @@ func (options *Options) validateOptions() error {
 		return fmt.Errorf("max-results cannot be negative")
 	}
 
+	// The response body size limit cannot be negative.
+	if options.MaxResponseBodySize < 0 {
+		return fmt.Errorf("response-size-read cannot be negative")
+	}
+
 	if options.Match != nil {
 		options.matchRegexes = make([]*regexp.Regexp, len(options.Match))
 		var err error

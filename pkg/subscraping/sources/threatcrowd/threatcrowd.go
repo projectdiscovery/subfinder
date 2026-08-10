@@ -54,6 +54,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			s.errors++
 			return
 		}
+		// This source issues a raw client.Do (bypassing the session's
+		// httpRequestWrapper), so apply the response-body size cap explicitly
+		// when configured (0 = unlimited).
+		subscraping.LimitResponseBody(resp, session.MaxResponseBodySize)
 		defer func() {
 			if err := resp.Body.Close(); err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
