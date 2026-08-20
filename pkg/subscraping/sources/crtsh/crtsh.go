@@ -77,7 +77,9 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 		s.errors++
 		return 0
 	}
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	if _, err := conn.ExecContext(ctx, fmt.Sprintf("SET statement_timeout = %d;", session.Timeout*1000)); err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
