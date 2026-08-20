@@ -71,7 +71,15 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 		}
 	}()
 
-	if _, err := db.ExecContext(ctx, fmt.Sprintf("SET statement_timeout = %d;", session.Timeout*1000)); err != nil {
+	conn, err := db.Conn(ctx)
+	if err != nil {
+		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		s.errors++
+		return 0
+	}
+	defer conn.Close()
+
+	if _, err := conn.ExecContext(ctx, fmt.Sprintf("SET statement_timeout = %d;", session.Timeout*1000)); err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		s.errors++
 		return 0
@@ -92,7 +100,7 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 				WHERE plainto_tsquery('certwatch', $1) @@ identities(cai.CERTIFICATE)
 					AND cai.NAME_VALUE ILIKE ('%%' || $1 || '%%')
 				%s;`, limitClause)
-	rows, err := db.QueryContext(ctx, query, domain)
+	rows, err := conn.QueryContext(ctx, query, domain)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		s.errors++
