@@ -57,8 +57,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, session *subscraping.Session, results chan subscraping.Result) int {
 	// connect_timeout: limits connection establishment time (in seconds)
-	// statement_timeout: limits query execution time (in milliseconds)
-	connStr := fmt.Sprintf("host=crt.sh user=guest dbname=certwatch sslmode=disable binary_parameters=yes connect_timeout=%d statement_timeout=%d", session.Timeout, session.Timeout*1000)
+	connStr := fmt.Sprintf("host=crt.sh user=guest dbname=certwatch sslmode=disable binary_parameters=yes connect_timeout=%d", session.Timeout)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -71,6 +70,12 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 			gologger.Warning().Msgf("Could not close database connection: %s\n", closeErr)
 		}
 	}()
+
+	if _, err := db.ExecContext(ctx, fmt.Sprintf("SET statement_timeout = %d;", session.Timeout*1000)); err != nil {
+		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+		s.errors++
+		return 0
+	}
 
 	limitClause := ""
 	if all, ok := ctx.Value(contextutil.ContextArg("All")).(contextutil.ContextArg); ok {
