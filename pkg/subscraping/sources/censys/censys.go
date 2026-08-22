@@ -102,6 +102,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
+		// Honor an optional per-source result limit (0 = no limit) so a single
+		// domain can't drain an API quota by paginating to the end.
+		maxResults := session.MaxResults
+
 		apiURL := baseURL + searchEndpoint
 		cursor := ""
 		currentPage := 1
@@ -172,6 +176,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 						return
 					case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: name}:
 						s.results++
+					}
+					if maxResults > 0 && s.results >= maxResults {
+						return
 					}
 				}
 			}

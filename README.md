@@ -96,7 +96,7 @@ CONFIGURATION:
   -nW, -active                  display active subdomains only
   -proxy string                 http proxy to use with subfinder
   -ei, -exclude-ip              exclude IPs from the list of domains
-  -mr, -max-results int         limit the number of results per source (0 = unlimited; honored by paginating sources such as virustotal)
+  -mr, -max-results int         limit the number of results per source (0 = unlimited; honored by paginating sources)
 
 DEBUG:
   -silent             show only subdomains in output
@@ -106,8 +106,9 @@ DEBUG:
   -ls, -list-sources  list all available sources (-oJ for JSON)
 
 OPTIMIZATION:
-  -timeout int   seconds to wait before timing out (default 30)
-  -max-time int  minutes to wait for enumeration results (default 10)
+  -timeout int                  seconds to wait before timing out (default 30)
+  -max-time int                 minutes to wait for enumeration results (default 10)
+  -rsr, -response-size-read int max response body size to read in bytes from passive sources (0 = unlimited)
 ```
 
 ## Environment Variables

@@ -15,8 +15,9 @@ import (
 )
 
 type EnumerationOptions struct {
-	customRateLimiter *subscraping.CustomRateLimit
-	maxResults        int
+	customRateLimiter   *subscraping.CustomRateLimit
+	maxResults          int
+	maxResponseBodySize int64
 }
 
 type EnumerateOption func(opts *EnumerationOptions)
@@ -33,6 +34,14 @@ func WithCustomRateLimit(crl *subscraping.CustomRateLimit) EnumerateOption {
 func WithMaxResults(maxResults int) EnumerateOption {
 	return func(opts *EnumerationOptions) {
 		opts.maxResults = maxResults
+	}
+}
+
+// WithMaxResponseBodySize sets a cap on bytes read from passive-source HTTP
+// response bodies. A value of 0 (the default) means no limit.
+func WithMaxResponseBodySize(maxResponseBodySize int64) EnumerateOption {
+	return func(opts *EnumerationOptions) {
+		opts.maxResponseBodySize = maxResponseBodySize
 	}
 }
 
@@ -69,6 +78,7 @@ func (a *Agent) EnumerateSubdomainsWithCtx(ctx context.Context, domain string, p
 		}
 		defer session.Close()
 		session.MaxResults = enumerateOptions.maxResults
+		session.MaxResponseBodySize = enumerateOptions.maxResponseBodySize
 
 		ctx, cancel := context.WithTimeout(ctx, maxEnumTime)
 

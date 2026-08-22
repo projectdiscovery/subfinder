@@ -43,6 +43,7 @@ var (
 		// "riddler", // failing due to cloudfront protection
 		"robtex",
 		"rsecloud",
+		"scanmalware",
 		"securitytrails",
 		"profundis",
 		"shodan",
@@ -94,6 +95,7 @@ var (
 		"robtex",
 		// "riddler", // failing due to cloudfront protection
 		"rsecloud",
+		"scanmalware",
 		"securitytrails",
 		"profundis",
 		"shodan",
@@ -107,7 +109,6 @@ var (
 		"reconeer",
 		"builtwith",
 		"digitalyama",
-		"thc",
 		"urlscan",
 		"submd",
 	}
@@ -121,6 +122,7 @@ var (
 		"digitorus",
 		"driftnet",
 		"hackertarget",
+		"scanmalware",
 		"securitytrails",
 		"shodanct",
 		"virustotal",

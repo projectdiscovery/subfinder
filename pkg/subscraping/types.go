@@ -97,6 +97,11 @@ type Session struct {
 	// Sources that paginate can honor this to avoid unnecessary requests
 	// (e.g. to stay within API quotas).
 	MaxResults int
+	// MaxResponseBodySize is the maximum number of bytes read from a
+	// passive-source HTTP response body. A value of 0 means no limit
+	// (default behavior). When set, bodies are truncated via LimitReader
+	// so a malicious or oversized upstream cannot OOM the process.
+	MaxResponseBodySize int64
 }
 
 // Result is a result structure returned by a source

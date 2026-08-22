@@ -17,6 +17,31 @@ import (
 	"github.com/projectdiscovery/gologger"
 )
 
+// limitedResponseBody wraps a response body so that at most maxSize bytes can
+// be read from it, while still closing the underlying body (so no
+// connection/body leak). It is applied centrally so every source inherits the
+// cap regardless of how it consumes the body (io.ReadAll, json.Decoder,
+// bufio.Scanner, etc.).
+type limitedResponseBody struct {
+	io.Reader // io.LimitReader over the original body
+	io.Closer // the original body's Close
+}
+
+// LimitResponseBody caps response.Body at maxSize bytes in place when maxSize
+// is greater than zero. A maxSize of 0 or less leaves the body unchanged
+// (unlimited; the default). It preserves the original body's Close.
+// Exported so sources that (rarely) issue a raw client.Do — bypassing the
+// session's httpRequestWrapper — can opt into the same protection.
+func LimitResponseBody(response *http.Response, maxSize int64) {
+	if response == nil || response.Body == nil || maxSize <= 0 {
+		return
+	}
+	response.Body = &limitedResponseBody{
+		Reader: io.LimitReader(response.Body, maxSize),
+		Closer: response.Body,
+	}
+}
+
 // NewSession creates a new session object for a domain
 func NewSession(domain string, proxy string, multiRateLimiter *ratelimit.MultiLimiter, timeout int) (*Session, error) {
 	Transport := &http.Transport{
@@ -25,9 +50,9 @@ func NewSession(domain string, proxy string, multiRateLimiter *ratelimit.MultiLi
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
-		Dial: (&net.Dialer{
+		DialContext: (&net.Dialer{
 			Timeout: time.Duration(timeout) * time.Second,
-		}).Dial,
+		}).DialContext,
 	}
 
 	// Add proxy
@@ -108,7 +133,7 @@ func (s *Session) HTTPRequest(ctx context.Context, method, requestURL, cookies s
 		return nil, mrlErr
 	}
 
-	return httpRequestWrapper(s.Client, req)
+	return httpRequestWrapper(s.Client, req, s.MaxResponseBodySize)
 }
 
 // DiscardHTTPResponse discards the response content by demand
@@ -131,11 +156,15 @@ func (s *Session) Close() {
 	s.Client.CloseIdleConnections()
 }
 
-func httpRequestWrapper(client *http.Client, request *http.Request) (*http.Response, error) {
+func httpRequestWrapper(client *http.Client, request *http.Request, maxResponseBodySize int64) (*http.Response, error) {
 	response, err := client.Do(request)
 	if err != nil {
 		return nil, err
 	}
+
+	// Optionally cap the untrusted response body centrally so every source
+	// (and the debug-logging path below) inherits the same bound when enabled.
+	LimitResponseBody(response, maxResponseBodySize)
 
 	if response.StatusCode != http.StatusOK {
 		requestURL, _ := url.QueryUnescape(request.URL.String())
