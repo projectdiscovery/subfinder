@@ -109,7 +109,6 @@ var (
 		"reconeer",
 		"builtwith",
 		"digitalyama",
-		"thc",
 		"urlscan",
 		"submd",
 	}
