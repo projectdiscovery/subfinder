@@ -46,6 +46,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/redhuntlabs"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/robtex"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rsecloud"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/scanmalware"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodanct"
@@ -103,6 +104,7 @@ var AllSources = [...]subscraping.Source{
 	// &riddler.Source{}, // failing due to cloudfront protection
 	&robtex.Source{},
 	&rsecloud.Source{},
+	&scanmalware.Source{},
 	&securitytrails.Source{},
 	&shodan.Source{},
 	&shodanct.Source{},
