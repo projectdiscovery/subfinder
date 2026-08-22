@@ -50,9 +50,9 @@ func NewSession(domain string, proxy string, multiRateLimiter *ratelimit.MultiLi
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
-		Dial: (&net.Dialer{
+		DialContext: (&net.Dialer{
 			Timeout: time.Duration(timeout) * time.Second,
-		}).Dial,
+		}).DialContext,
 	}
 
 	// Add proxy
