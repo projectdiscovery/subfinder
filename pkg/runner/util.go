@@ -35,6 +35,12 @@ func preprocessDomain(s string) string {
 	// usable by dnsx instead of silently failing.
 	s = strings.TrimPrefix(s, "https://")
 	s = strings.TrimPrefix(s, "http://")
+	if atIdx := strings.LastIndex(s, "@"); atIdx != -1 {
+		// Only strip userinfo if @ is before path delimiter
+		if slashIdx := strings.Index(s, "/"); slashIdx == -1 || atIdx < slashIdx {
+			s = s[atIdx+1:]
+		}
+	}
 	if idx := strings.IndexAny(s, "/?#"); idx != -1 {
 		s = s[:idx]
 	}

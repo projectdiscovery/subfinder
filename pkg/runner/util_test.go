@@ -29,6 +29,7 @@ func TestPreprocessDomain(t *testing.T) {
 		{"quoted and spaced", "  \"example.com\" ", "example.com"},
 		{"comment line", "# a comment", ""},
 		{"inline comment", "example.com # note", "example.com"},
+		{"user auth in url", "https://user:pass@example.com/path", "example.com"},
 		{"empty", "", ""},
 	}
 	for _, tt := range tests {
