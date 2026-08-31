@@ -123,7 +123,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 
 	session.DiscardHTTPResponse(resp)
 
-	err = s.proccesItems(ctx, data.Items, domainRegexp, s.Name(), session, results)
+	err = s.processItems(ctx, data.Items, domainRegexp, s.Name(), session, results)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		s.errors.Add(1)
@@ -151,8 +151,8 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 	}
 }
 
-// proccesItems process github response items
-func (s *Source) proccesItems(ctx context.Context, items []item, domainRegexp *regexp.Regexp, name string, session *subscraping.Session, results chan subscraping.Result) error {
+// processItems processes GitHub response items.
+func (s *Source) processItems(ctx context.Context, items []item, domainRegexp *regexp.Regexp, name string, session *subscraping.Session, results chan subscraping.Result) error {
 	var wg sync.WaitGroup
 	errChan := make(chan error, len(items))
 
