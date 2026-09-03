@@ -25,12 +25,15 @@ func TestPreprocessDomain(t *testing.T) {
 		{"trailing slash", "example.com/", "example.com"},
 		{"ip with scheme", "https://8.8.8.8", "8.8.8.8"},
 		{"resolver host port kept", "8.8.8.8:53", "8.8.8.8:53"},
+		{"https scheme with custom port", "https://example.com:8443/api", "example.com:8443"},
+		{"http scheme with custom port", "http://sub.example.com:8080?q=1", "sub.example.com:8080"},
 		{"wildcard kept", "*.example.com", "*.example.com"},
 		{"quoted and spaced", "  \"example.com\" ", "example.com"},
 		{"comment line", "# a comment", ""},
 		{"inline comment", "example.com # note", "example.com"},
 		{"empty", "", ""},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := preprocessDomain(tt.in); got != tt.want {

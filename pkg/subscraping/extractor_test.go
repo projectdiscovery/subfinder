@@ -73,7 +73,20 @@ func TestRegexSubdomainExtractor_Extract(t *testing.T) {
 			text:   "notexample.com",
 			want:   nil,
 		},
+		{
+			name:   "bracketed and json quoted subdomains",
+			domain: "example.com",
+			text:   `{"domain":"api.example.com","alt":["test.example.com"]}`,
+			want:   []string{"api.example.com", "test.example.com"},
+		},
+		{
+			name:   "subdomains in full URL context",
+			domain: "example.com",
+			text:   `https://auth.example.com/login?redirect=https://admin.example.com:8080`,
+			want:   []string{"auth.example.com", "admin.example.com"},
+		},
 	}
+
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
