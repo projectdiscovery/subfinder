@@ -104,10 +104,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 // sendError matches the subdomain path: results is unbuffered, so a consumer
 // that stopped reading after cancellation would otherwise block the send.
 func (s *Source) sendError(ctx context.Context, results chan<- subscraping.Result, err error) {
+	// Count the error even when cancellation wins the select, so Statistics
+	// reports what went wrong rather than only what was delivered.
+	s.errors++
 	select {
 	case <-ctx.Done():
 	case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}:
-		s.errors++
 	}
 }
 
