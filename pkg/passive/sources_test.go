@@ -12,6 +12,7 @@ import (
 
 var (
 	expectedAllSources = []string{
+		"abuseipdb",
 		"alienvault",
 		"anubis",
 		"bevigil",
@@ -70,6 +71,7 @@ var (
 	}
 
 	expectedDefaultSources = []string{
+		"abuseipdb",
 		"alienvault",
 		"anubis",
 		"bevigil",

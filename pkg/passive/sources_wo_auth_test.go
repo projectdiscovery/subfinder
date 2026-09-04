@@ -24,6 +24,7 @@ func TestSourcesWithoutKeys(t *testing.T) {
 	}
 
 	ignoredSources := []string{
+		"abuseipdb",      // Cloudflare managed challenge (403) once an IP has made repeated requests
 		"commoncrawl",    // commoncrawl is under resourced and will likely time-out so step over it for this test https://groups.google.com/u/2/g/common-crawl/c/3QmQjFA_3y4/m/vTbhGqIBBQAJ
 		"riddler",        // failing due to cloudfront protection
 		"crtsh",          // Fails in GH Action (possibly IP-based ban) causing a timeout.
