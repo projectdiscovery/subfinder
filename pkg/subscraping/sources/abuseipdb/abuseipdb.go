@@ -53,6 +53,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
+		// Honor an optional per-source result limit (0 = no limit). One request
+		// serves the whole page, so this caps what is emitted rather than
+		// saving a fetch the way it does for the paginating sources.
+		maxResults := session.MaxResults
+
 		s.requests++
 		resp, err := session.Get(ctx, fmt.Sprintf("https://www.abuseipdb.com/whois/%s", root), sessionCookie, nil)
 		if err != nil {
@@ -94,6 +99,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				return
 			case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
 				s.results++
+			}
+
+			if maxResults > 0 && s.results >= maxResults {
+				return
 			}
 		}
 	}()
