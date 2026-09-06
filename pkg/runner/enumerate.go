@@ -66,10 +66,11 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 			case subscraping.Error:
 				gologger.Warning().Msgf("Encountered an error with source %s: %s\n", result.Source, result.Error)
 			case subscraping.Subdomain:
-				subdomain := replacer.Replace(result.Value)
+				value := normalizeSubdomain(result.Value)
+				subdomain := replacer.Replace(value)
 				// check if this subdomain is actually a wildcard subdomain
 				// that may have furthur subdomains associated with it
-				isWildcard := strings.Contains(result.Value, "*."+subdomain)
+				isWildcard := strings.Contains(value, "*."+subdomain)
 
 				// Validate the subdomain found and remove wildcards from
 				if !strings.HasSuffix(subdomain, "."+domain) {
