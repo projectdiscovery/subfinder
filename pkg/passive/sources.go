@@ -51,6 +51,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodanct"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/subdomaincenter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/submd"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/thc"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
@@ -109,6 +110,7 @@ var AllSources = [...]subscraping.Source{
 	&shodan.Source{},
 	&shodanct.Source{},
 	&sitedossier.Source{},
+	&subdomaincenter.Source{},
 	&thc.Source{},
 	&threatbook.Source{},
 	&threatcrowd.Source{},
