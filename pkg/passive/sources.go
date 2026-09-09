@@ -1,11 +1,13 @@
 package passive
 
 import (
+	"context"
 	"fmt"
 	"maps"
 	"os"
 	"slices"
 	"strings"
+	"sync"
 
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -64,62 +66,66 @@ import (
 	mapsutil "github.com/projectdiscovery/utils/maps"
 )
 
-var AllSources = [...]subscraping.Source{
-	&alienvault.Source{},
-	&anubis.Source{},
-	&bevigil.Source{},
-	&bufferover.Source{},
-	&builtwith.Source{},
-	&c99.Source{},
-	&censys.Source{},
-	&certspotter.Source{},
-	&chaos.Source{},
-	&chinaz.Source{},
-	&commoncrawl.Source{},
-	&crtsh.Source{},
-	&digitalyama.Source{},
-	&digitorus.Source{},
-	&dnsdb.Source{},
-	&dnsdumpster.Source{},
-	&dnsrepo.Source{},
-	&domainsproject.Source{},
-	&driftnet.Source{},
-	&fofa.Source{},
-	&fullhunt.Source{},
-	&github.Source{},
-	&hackertarget.Source{},
-	&hudsonrock.Source{},
-	&intelx.Source{},
-	&leakix.Source{},
-	&merklemap.Source{},
-	&netlas.Source{},
-	&onyphe.Source{},
-	&profundis.Source{},
-	&pugrecon.Source{},
-	&quake.Source{},
-	&rapiddns.Source{},
-	// &reconcloud.Source{}, // failing due to cloudflare bot protection
-	&reconeer.Source{},
-	&redhuntlabs.Source{},
-	// &riddler.Source{}, // failing due to cloudfront protection
-	&robtex.Source{},
-	&rsecloud.Source{},
-	&scanmalware.Source{},
-	&securitytrails.Source{},
-	&shodan.Source{},
-	&shodanct.Source{},
-	&sitedossier.Source{},
-	&thc.Source{},
-	&threatbook.Source{},
-	&threatcrowd.Source{},
-	// &threatminer.Source{}, // failing  api
-	&urlscan.Source{},
-	&virustotal.Source{},
-	&waybackarchive.Source{},
-	&whoisxmlapi.Source{},
-	&windvane.Source{},
-	&zoomeyeapi.Source{},
-	&submd.Source{},
+var AllSources = newSources()
+
+func newSources() [52]subscraping.Source {
+	return [...]subscraping.Source{
+		&alienvault.Source{},
+		&anubis.Source{},
+		&bevigil.Source{},
+		&bufferover.Source{},
+		&builtwith.Source{},
+		&c99.Source{},
+		&censys.Source{},
+		&certspotter.Source{},
+		&chaos.Source{},
+		&chinaz.Source{},
+		&commoncrawl.Source{},
+		&crtsh.Source{},
+		&digitalyama.Source{},
+		&digitorus.Source{},
+		&dnsdb.Source{},
+		&dnsdumpster.Source{},
+		&dnsrepo.Source{},
+		&domainsproject.Source{},
+		&driftnet.Source{},
+		&fofa.Source{},
+		&fullhunt.Source{},
+		&github.Source{},
+		&hackertarget.Source{},
+		&hudsonrock.Source{},
+		&intelx.Source{},
+		&leakix.Source{},
+		&merklemap.Source{},
+		&netlas.Source{},
+		&onyphe.Source{},
+		&profundis.Source{},
+		&pugrecon.Source{},
+		&quake.Source{},
+		&rapiddns.Source{},
+		// &reconcloud.Source{}, // failing due to cloudflare bot protection
+		&reconeer.Source{},
+		&redhuntlabs.Source{},
+		// &riddler.Source{}, // failing due to cloudfront protection
+		&robtex.Source{},
+		&rsecloud.Source{},
+		&scanmalware.Source{},
+		&securitytrails.Source{},
+		&shodan.Source{},
+		&shodanct.Source{},
+		&sitedossier.Source{},
+		&thc.Source{},
+		&threatbook.Source{},
+		&threatcrowd.Source{},
+		// &threatminer.Source{}, // failing  api
+		&urlscan.Source{},
+		&virustotal.Source{},
+		&waybackarchive.Source{},
+		&whoisxmlapi.Source{},
+		&windvane.Source{},
+		&zoomeyeapi.Source{},
+		&submd.Source{},
+	}
 }
 
 var sourceWarnings = mapsutil.NewSyncLockMap[string, string](
@@ -127,9 +133,13 @@ var sourceWarnings = mapsutil.NewSyncLockMap[string, string](
 
 var NameSourceMap = make(map[string]subscraping.Source, len(AllSources))
 
+var builtinSources = make(map[string]subscraping.Source, len(AllSources))
+var customSourceGates sync.Map
+
 func init() {
 	for _, currentSource := range AllSources {
 		NameSourceMap[strings.ToLower(currentSource.Name())] = currentSource
+		builtinSources[strings.ToLower(currentSource.Name())] = currentSource
 	}
 }
 
@@ -142,21 +152,115 @@ type Agent struct {
 
 // New creates a new agent for passive subdomain discovery
 func New(sourceNames, excludedSourceNames []string, useAllSources, useSourcesSupportingRecurse bool) *Agent {
-	sources := make(map[string]subscraping.Source, len(AllSources))
+	agent := selectSources(AllSources[:], NameSourceMap, sourceNames, excludedSourceNames, useAllSources, useSourcesSupportingRecurse)
+	for _, source := range agent.sources {
+		keyReq := source.KeyRequirement()
+		if keyReq == subscraping.RequiredKey || keyReq == subscraping.OptionalKey {
+			if apiKey := os.Getenv(fmt.Sprintf("%s_API_KEY", strings.ToUpper(source.Name()))); apiKey != "" {
+				source.AddApiKeys([]string{apiKey})
+			}
+		}
+	}
+	return agent
+}
+
+// NewWithProviderConfig creates independently owned built-in sources using effective
+// provider keys supplied by the caller. Registered custom sources are preserved and
+// serialized across agents. It does not read environment variables. Register custom
+// sources before constructing agents; registry mutation during enumeration is unsafe.
+func NewWithProviderConfig(sourceNames, excludedSourceNames []string, useAllSources, useSourcesSupportingRecurse bool, keys map[string][]string) *Agent {
+	available := newSources()
+	byName := make(map[string]subscraping.Source, len(available))
+	for _, source := range available {
+		byName[strings.ToLower(source.Name())] = source
+	}
+	agent := selectSources(AllSources[:], NameSourceMap, sourceNames, excludedSourceNames, useAllSources, useSourcesSupportingRecurse)
+	for i, source := range agent.sources {
+		name := strings.ToLower(source.Name())
+		providerKeys := slices.Clone(keys[name])
+		if source == builtinSources[name] {
+			source = byName[name]
+			source.AddApiKeys(providerKeys)
+		} else {
+			gate, _ := customSourceGates.LoadOrStore(name, make(chan struct{}, 1))
+			source = &serializedSource{Source: source, gate: gate.(chan struct{}), keys: providerKeys}
+		}
+		agent.sources[i] = source
+	}
+	return agent
+}
+
+// Custom sources have no cloning contract. Hold their gate through result draining
+// and statistics capture so mutable run state cannot leak between domains.
+type serializedSource struct {
+	subscraping.Source
+	gate  chan struct{}
+	mu    sync.Mutex
+	keys  []string
+	stats subscraping.Statistics
+}
+
+func (s *serializedSource) AddApiKeys(keys []string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.keys = slices.Clone(keys)
+}
+
+func (s *serializedSource) Statistics() subscraping.Statistics {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.stats
+}
+
+func (s *serializedSource) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
+	results := make(chan subscraping.Result)
+	go func() {
+		defer close(results)
+		select {
+		case s.gate <- struct{}{}:
+		case <-ctx.Done():
+			return
+		}
+		defer func() { <-s.gate }()
+		if ctx.Err() != nil {
+			return
+		}
+		s.mu.Lock()
+		keys := slices.Clone(s.keys)
+		s.mu.Unlock()
+		if len(keys) > 0 {
+			s.Source.AddApiKeys(keys)
+		}
+		for result := range s.Source.Run(ctx, domain, session) {
+			select {
+			case results <- result:
+			case <-ctx.Done():
+				// Keep draining custom sources that use unconditional channel sends.
+			}
+		}
+		s.mu.Lock()
+		s.stats = s.Source.Statistics()
+		s.mu.Unlock()
+	}()
+	return results
+}
+
+func selectSources(available []subscraping.Source, byName map[string]subscraping.Source, sourceNames, excludedSourceNames []string, useAllSources, useSourcesSupportingRecurse bool) *Agent {
+	sources := make(map[string]subscraping.Source, len(available))
 
 	if useAllSources {
-		maps.Copy(sources, NameSourceMap)
+		maps.Copy(sources, byName)
 	} else {
 		if len(sourceNames) > 0 {
 			for _, source := range sourceNames {
-				if NameSourceMap[source] == nil {
+				if byName[source] == nil {
 					gologger.Warning().Msgf("There is no source with the name: %s", source)
 				} else {
-					sources[source] = NameSourceMap[source]
+					sources[source] = byName[source]
 				}
 			}
 		} else {
-			for _, currentSource := range AllSources {
+			for _, currentSource := range available {
 				if currentSource.IsDefault() {
 					sources[currentSource.Name()] = currentSource
 				}
@@ -187,15 +291,6 @@ func New(sourceNames, excludedSourceNames []string, useAllSources, useSourcesSup
 	for _, currentSource := range sources {
 		if warning, ok := sourceWarnings.Get(strings.ToLower(currentSource.Name())); ok {
 			gologger.Warning().Msg(warning)
-		}
-	}
-
-	for _, source := range sources {
-		keyReq := source.KeyRequirement()
-		if keyReq == subscraping.RequiredKey || keyReq == subscraping.OptionalKey {
-			if apiKey := os.Getenv(fmt.Sprintf("%s_API_KEY", strings.ToUpper(source.Name()))); apiKey != "" {
-				source.AddApiKeys([]string{apiKey})
-			}
 		}
 	}
 

@@ -128,7 +128,14 @@ func (s *Session) HTTPRequest(ctx context.Context, method, requestURL, cookies s
 	}
 
 	sourceName := ctx.Value(CtxSourceArg).(string)
-	mrlErr := s.MultiRateLimiter.Take(sourceName)
+
+	var mrlErr error
+	if s.RequestLimiter != nil {
+		mrlErr = s.RequestLimiter.Wait(ctx, sourceName)
+	} else {
+		mrlErr = s.MultiRateLimiter.Take(sourceName)
+	}
+
 	if mrlErr != nil {
 		return nil, mrlErr
 	}
@@ -152,7 +159,10 @@ func (s *Session) DiscardHTTPResponse(response *http.Response) {
 
 // Close the session
 func (s *Session) Close() {
-	s.MultiRateLimiter.Stop()
+	if s.MultiRateLimiter != nil {
+		s.MultiRateLimiter.Stop()
+	}
+
 	s.Client.CloseIdleConnections()
 }
 
