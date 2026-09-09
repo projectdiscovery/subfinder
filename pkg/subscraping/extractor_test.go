@@ -73,6 +73,18 @@ func TestRegexSubdomainExtractor_Extract(t *testing.T) {
 			text:   "notexample.com",
 			want:   nil,
 		},
+		{
+			name:   "underscore in service record subdomains",
+			domain: "example.com",
+			text:   "_sip._tcp.example.com",
+			want:   []string{"_sip._tcp.example.com"},
+		},
+		{
+			name:   "subdomains embedded in json or array brackets",
+			domain: "example.com",
+			text:   "[\"app.example.com\",\"admin.example.com\"]",
+			want:   []string{"app.example.com", "admin.example.com"},
+		},
 	}
 
 	for _, tt := range tests {
