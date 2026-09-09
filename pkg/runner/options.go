@@ -46,7 +46,7 @@ type Options struct {
 	OnlyRecursive      bool                // Recursive specifies whether to use only recursive subdomain enumeration sources
 	All                bool                // All specifies whether to use all (slow) sources.
 	Statistics         bool                // Statistics specifies whether to report source statistics
-	Threads            int                 // Threads controls the number of threads to use for active enumerations
+	Threads            int                 // Threads bounds concurrent domains and total active DNS lookups
 	Timeout            int                 // Timeout is the seconds to wait for sources to respond
 	MaxEnumerationTime int                 // MaxEnumerationTime is the maximum amount of time in minutes to wait for enumeration
 	Domain             goflags.StringSlice // Domain is the domain to find subdomains for
@@ -115,7 +115,7 @@ func ParseOptions() *Options {
 	flagSet.CreateGroup("rate-limit", "Rate-limit",
 		flagSet.IntVarP(&options.RateLimit, "rate-limit", "rl", 0, "maximum number of http requests to send per second (global)"),
 		flagSet.RateLimitMapVarP(&options.RateLimits, "rate-limits", "rls", defaultRateLimits, "maximum number of http requests to send per second for providers in key=value format (-rls hackertarget=10/m)", goflags.NormalizedStringSliceOptions),
-		flagSet.IntVar(&options.Threads, "t", 10, "number of concurrent goroutines for resolving (-active only)"),
+		flagSet.IntVar(&options.Threads, "t", 10, "maximum concurrent domains and active DNS lookups"),
 	)
 
 	flagSet.CreateGroup("update", "Update",
@@ -222,7 +222,7 @@ func ParseOptions() *Options {
 }
 
 // loadProvidersFrom runs the app with source config
-func (options *Options) loadProvidersFrom(location string) {
+func (options *Options) loadProvidersFrom(location string) map[string][]string {
 	// todo: move elsewhere
 	if len(options.Resolvers) == 0 {
 		options.Resolvers = resolve.DefaultResolvers
@@ -230,9 +230,11 @@ func (options *Options) loadProvidersFrom(location string) {
 
 	// We skip bailing out if file doesn't exist because we'll create it
 	// at the end of options parsing from default via goflags.
-	if err := UnmarshalFrom(location); err != nil && (!strings.Contains(err.Error(), "file doesn't exist") || errors.Is(err, os.ErrNotExist)) {
+	keys, err := loadProviderConfig(location)
+	if err != nil && (!strings.Contains(err.Error(), "file doesn't exist") || errors.Is(err, os.ErrNotExist)) {
 		gologger.Error().Msgf("Could not read providers from %s: %s\n", location, err)
 	}
+	return keys
 }
 
 var keyRequirementLabels = map[subscraping.KeyRequirement]string{

@@ -3,6 +3,8 @@ package runner
 import (
 	"bufio"
 	"context"
+	"errors"
+	"fmt"
 	"io"
 	"math"
 	"os"
@@ -10,6 +12,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/projectdiscovery/gologger"
@@ -25,10 +28,14 @@ import (
 // Runner is an instance of the subdomain enumeration
 // client used to orchestrate the whole process.
 type Runner struct {
-	options        *Options
-	passiveAgent   *passive.Agent
-	resolverClient *resolve.Resolver
-	rateLimit      *subscraping.CustomRateLimit
+	options           *Options
+	passiveAgent      *passive.Agent
+	resolverClient    *resolve.Resolver
+	rateLimit         *subscraping.CustomRateLimit
+	newPassiveAgent   func() *passive.Agent
+	sharedRateLimiter subscraping.RequestLimiter
+	outputMu          *sync.Mutex
+	domainOutput      bool
 }
 
 // NewRunner creates a new runner struct instance by parsing
@@ -38,18 +45,20 @@ func NewRunner(options *Options) (*Runner, error) {
 	options.ConfigureOutput()
 	runner := &Runner{options: options}
 
+	var providerKeys map[string][]string
+
 	// Check if the application loading with any provider configuration, then take it
 	// Otherwise load the default provider config
 	if fileutil.FileExists(options.ProviderConfig) {
 		gologger.Info().Msgf("Loading provider config from %s", options.ProviderConfig)
-		options.loadProvidersFrom(options.ProviderConfig)
+		providerKeys = options.loadProvidersFrom(options.ProviderConfig)
 	} else {
 		gologger.Info().Msgf("Loading provider config from the default location: %s", defaultProviderConfigLocation)
-		options.loadProvidersFrom(defaultProviderConfigLocation)
+		providerKeys = options.loadProvidersFrom(defaultProviderConfigLocation)
 	}
 
 	// Initialize the passive subdomain enumeration engine
-	runner.initializePassiveEngine()
+	runner.initializePassiveEngine(providerKeys)
 
 	// Initialize the subdomain resolver
 	err := runner.initializeResolver()
@@ -120,63 +129,139 @@ func (r *Runner) EnumerateMultipleDomains(reader io.Reader, writers []io.Writer)
 	return r.EnumerateMultipleDomainsWithCtx(ctx, reader, writers)
 }
 
-// EnumerateMultipleDomainsWithCtx enumerates subdomains for multiple domains
-// We keep enumerating subdomains for a given domain until we reach an error
-func (r *Runner) EnumerateMultipleDomainsWithCtx(ctx context.Context, reader io.Reader, writers []io.Writer) error {
-	var err error
-	scanner := bufio.NewScanner(reader)
-	ip, _ := regexp.Compile(`^([0-9\.]+$)`)
-	for scanner.Scan() {
-		domain := preprocessDomain(scanner.Text())
-		domain = replacer.Replace(domain)
+// EnumerateMultipleDomainsWithCtx enumerates at most Threads domains concurrently.
+// Completed domains are written together; domain output order is unspecified.
+func (r *Runner) EnumerateMultipleDomainsWithCtx(ctx context.Context, reader io.Reader, writers []io.Writer) (err error) {
+	if r.options.Threads < 0 {
+		return fmt.Errorf("threads must be positive")
+	}
+	// SDK callers historically could leave Threads unset for passive enumeration.
 
-		if domain == "" || (r.options.ExcludeIps && ip.MatchString(domain)) {
+	workers := max(1, r.options.Threads)
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	limiter, err := r.passiveAgent.NewRateLimiter(ctx, r.options.RateLimit, r.rateLimit)
+	if err != nil {
+		return fmt.Errorf("create batch rate limiter: %w", err)
+	}
+	defer limiter.Close()
+
+	batch := *r
+	options := *r.options
+	batch.options = &options
+	batch.sharedRateLimiter = limiter
+	batch.outputMu = &sync.Mutex{}
+	batch.domainOutput = true
+
+	if options.RemoveWildcard {
+		batch.resolverClient = r.resolverClient.WithConcurrencyLimit(workers)
+	}
+
+	if callback := options.ResultCallback; callback != nil {
+		options.ResultCallback = func(entry *resolve.HostEntry) {
+			batch.outputMu.Lock()
+			defer batch.outputMu.Unlock()
+			callback(entry)
+		}
+	}
+
+	var sharedFile *os.File
+	defer func() {
+		if sharedFile != nil {
+			err = errors.Join(err, sharedFile.Close())
+		}
+	}()
+
+	jobs := make(chan string)
+
+	var wg sync.WaitGroup
+	var firstError error
+	var errorOnce sync.Once
+
+	fail := func(err error) {
+		errorOnce.Do(func() { firstError = err; cancel() })
+	}
+
+	for range workers {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for domain := range jobs {
+				if ctx.Err() != nil {
+					return
+				}
+
+				worker := batch
+				worker.passiveAgent = r.newPassiveAgent()
+
+				if _, err := worker.EnumerateSingleDomainWithCtx(ctx, domain, writers); err != nil {
+					fail(err)
+					return
+				}
+			}
+		}()
+	}
+
+	scanner := bufio.NewScanner(reader)
+	ip := regexp.MustCompile(`^([0-9\.]+$)`)
+
+scan:
+	for ctx.Err() == nil && scanner.Scan() {
+		domain := replacer.Replace(preprocessDomain(scanner.Text()))
+		if domain == "" || (options.ExcludeIps && ip.MatchString(domain)) {
 			continue
 		}
 
-		var file *os.File
-		// If the user has specified an output file, use that output file instead
-		// of creating a new output file for each domain. Else create a new file
-		// for each domain in the directory.
-		if r.options.OutputFile != "" {
-			outputWriter := NewOutputWriter(r.options.JSON)
-			file, err = outputWriter.createFile(r.options.OutputFile, true)
+		// Validate destinations before spending provider requests. Open the shared
+		// output only after the first accepted domain so empty input has no effects.
+		if options.OutputFile != "" && sharedFile == nil {
+			sharedFile, err = NewOutputWriter(options.JSON).createFile(options.OutputFile, true)
 			if err != nil {
-				gologger.Error().Msgf("Could not create file %s for %s: %s\n", r.options.OutputFile, r.options.Domain, err)
-				return err
+				fail(err)
+				break
 			}
 
-			_, err = r.EnumerateSingleDomainWithCtx(ctx, domain, append(writers, file))
-
-			if closeErr := file.Close(); closeErr != nil {
-				gologger.Error().Msgf("Error closing file %s: %s", r.options.OutputFile, closeErr)
-			}
-		} else if r.options.OutputDirectory != "" {
-			outputFile := path.Join(r.options.OutputDirectory, domain)
-			if r.options.JSON {
-				outputFile += ".json"
-			} else {
-				outputFile += ".txt"
+			writers = append(append([]io.Writer(nil), writers...), sharedFile)
+			batch.domainOutput = false
+		} else if options.OutputFile == "" && options.OutputDirectory != "" {
+			suffix := ".txt"
+			if options.JSON {
+				suffix = ".json"
 			}
 
-			outputWriter := NewOutputWriter(r.options.JSON)
-			file, err = outputWriter.createFile(outputFile, false)
-			if err != nil {
-				gologger.Error().Msgf("Could not create file %s for %s: %s\n", r.options.OutputFile, r.options.Domain, err)
-				return err
+			batch.outputMu.Lock()
+
+			file, openErr := NewOutputWriter(options.JSON).createFile(path.Join(options.OutputDirectory, domain+suffix), true)
+			if openErr == nil {
+				openErr = file.Close()
 			}
 
-			_, err = r.EnumerateSingleDomainWithCtx(ctx, domain, append(writers, file))
+			batch.outputMu.Unlock()
 
-			if closeErr := file.Close(); closeErr != nil {
-				gologger.Error().Msgf("Error closing file %s: %s", outputFile, closeErr)
+			if openErr != nil {
+				fail(openErr)
+				break
 			}
-		} else {
-			_, err = r.EnumerateSingleDomainWithCtx(ctx, domain, writers)
 		}
-		if err != nil {
-			return err
+
+		select {
+		case <-ctx.Done():
+			break scan
+		case jobs <- domain:
 		}
 	}
-	return nil
+
+	if err := scanner.Err(); err != nil {
+		fail(fmt.Errorf("read domains: %w", err))
+	}
+
+	close(jobs)
+	wg.Wait()
+
+	if firstError != nil {
+		return firstError
+	}
+
+	return ctx.Err()
 }

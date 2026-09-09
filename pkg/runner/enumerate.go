@@ -2,7 +2,10 @@ package runner
 
 import (
 	"context"
+	"errors"
 	"io"
+	"os"
+	"path"
 	"strings"
 	"sync"
 	"time"
@@ -40,7 +43,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 	// If yes, create the resolution pool and get the wildcards for the current domain
 	var resolutionPool *resolve.ResolutionPool
 	if r.options.RemoveWildcard {
-		resolutionPool = r.resolverClient.NewResolutionPool(r.options.Threads, r.options.RemoveWildcard)
+		resolutionPool = r.resolverClient.NewResolutionPoolWithCtx(ctx, max(1, r.options.Threads), r.options.RemoveWildcard)
 		err := resolutionPool.InitWildcards(domain)
 		if err != nil {
 			// Log the error but don't quit.
@@ -50,7 +53,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 
 	// Run the passive subdomain enumeration
 	now := time.Now()
-	passiveResults := r.passiveAgent.EnumerateSubdomainsWithCtx(ctx, domain, r.options.Proxy, r.options.RateLimit, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute, passive.WithCustomRateLimit(r.rateLimit), passive.WithMaxResults(r.options.MaxResults), passive.WithMaxResponseBodySize(int64(r.options.MaxResponseBodySize)))
+	passiveResults := r.passiveAgent.EnumerateSubdomainsWithCtx(ctx, domain, r.options.Proxy, r.options.RateLimit, r.options.Timeout, time.Duration(r.options.MaxEnumerationTime)*time.Minute, passive.WithCustomRateLimit(r.rateLimit), passive.WithMaxResults(r.options.MaxResults), passive.WithMaxResponseBodySize(int64(r.options.MaxResponseBodySize)), passive.WithRateLimiter(r.sharedRateLimiter))
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
@@ -62,6 +65,10 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 	// Process the results in a separate goroutine
 	go func() {
 		for result := range passiveResults {
+			if ctx.Err() != nil {
+				continue
+			}
+
 			switch result.Type {
 			case subscraping.Error:
 				gologger.Warning().Msgf("Encountered an error with source %s: %s\n", result.Source, result.Error)
@@ -113,7 +120,10 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 					// queue. Otherwise, if mode is not verbose print the results on
 					// the screen as they are discovered.
 					if r.options.RemoveWildcard {
-						resolutionPool.Tasks <- hostEntry
+						select {
+						case resolutionPool.Tasks <- hostEntry:
+						case <-ctx.Done():
+						}
 					}
 				}
 			}
@@ -145,7 +155,11 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 				}
 			}
 		}
+	}
 
+	wg.Wait()
+
+	if r.options.RemoveWildcard {
 		// Merge wildcard certificate information from uniqueMap into foundResults
 		// This handles cases where a later source marked a subdomain as wildcard
 		// after it was already sent to the resolution pool
@@ -156,10 +170,45 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 			}
 		}
 	}
-	wg.Wait()
+
+	if r.outputMu != nil {
+		r.outputMu.Lock()
+		defer r.outputMu.Unlock()
+	}
+
 	outputWriter := NewOutputWriter(r.options.JSON)
+
+	var file *os.File
+
+	if r.domainOutput {
+		filename := r.options.OutputFile
+		appendToFile := filename != ""
+		if filename == "" && r.options.OutputDirectory != "" {
+			filename = path.Join(r.options.OutputDirectory, domain)
+			if r.options.JSON {
+				filename += ".json"
+			} else {
+				filename += ".txt"
+			}
+		}
+
+		if filename != "" {
+			var err error
+
+			file, err = outputWriter.createFile(filename, appendToFile)
+			if err != nil {
+				return nil, err
+			}
+
+			// Each domain owns its writer slice. File creation and all writes are
+			// serialized, including repeated domains targeting the same output path.
+			writers = append(append([]io.Writer(nil), writers...), file)
+		}
+	}
+
 	// Now output all results in output writers
 	var err error
+
 	for _, writer := range writers {
 		if r.options.HostIP {
 			err = outputWriter.WriteHostIP(domain, foundResults, writer)
@@ -174,8 +223,19 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 				}
 			}
 		}
+
 		if err != nil {
 			gologger.Error().Msgf("Could not write results for %s: %s\n", domain, err)
+			if file != nil {
+				err = errors.Join(err, file.Close())
+			}
+
+			return nil, err
+		}
+	}
+
+	if file != nil {
+		if err := file.Close(); err != nil {
 			return nil, err
 		}
 	}
@@ -203,6 +263,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 				statistics[source] = stat
 			}
 		}
+
 		printStatistics(statistics)
 	}
 
@@ -217,6 +278,7 @@ func (r *Runner) filterAndMatchSubdomain(subdomain string) bool {
 			}
 		}
 	}
+
 	if r.options.matchRegexes != nil {
 		for _, match := range r.options.matchRegexes {
 			if m := match.MatchString(subdomain); m {
@@ -225,5 +287,6 @@ func (r *Runner) filterAndMatchSubdomain(subdomain string) bool {
 		}
 		return false
 	}
+
 	return true
 }
