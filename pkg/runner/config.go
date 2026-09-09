@@ -18,6 +18,7 @@ func createProviderConfigYAML(configFilePath string) error {
 	if err != nil {
 		return err
 	}
+
 	defer func() {
 		if err := configFile.Close(); err != nil {
 			gologger.Error().Msgf("Error closing config file: %s", err)
@@ -38,13 +39,7 @@ func createProviderConfigYAML(configFilePath string) error {
 
 // UnmarshalFrom writes the marshaled yaml config to disk
 func UnmarshalFrom(file string) error {
-	reader, err := fileutil.SubstituteConfigFromEnvVars(file)
-	if err != nil {
-		return err
-	}
-
-	sourceApiKeysMap := map[string][]string{}
-	err = yaml.NewDecoder(reader).Decode(sourceApiKeysMap)
+	sourceApiKeysMap, err := loadProviderConfig(file)
 	for _, source := range passive.AllSources {
 		sourceName := strings.ToLower(source.Name())
 		apiKeys := sourceApiKeysMap[sourceName]
@@ -53,5 +48,18 @@ func UnmarshalFrom(file string) error {
 			source.AddApiKeys(apiKeys)
 		}
 	}
+
 	return err
+}
+
+func loadProviderConfig(file string) (map[string][]string, error) {
+	reader, err := fileutil.SubstituteConfigFromEnvVars(file)
+	if err != nil {
+		return nil, err
+	}
+
+	sourceApiKeysMap := map[string][]string{}
+	err = yaml.NewDecoder(reader).Decode(sourceApiKeysMap)
+
+	return sourceApiKeysMap, err
 }

@@ -81,6 +81,11 @@ type SubdomainExtractor interface {
 	Extract(text string) []string
 }
 
+// RequestLimiter waits for permission to send a source request.
+type RequestLimiter interface {
+	Wait(context.Context, string) error
+}
+
 // Session is the option passed to the source, an option is created
 // uniquely for each source.
 type Session struct {
@@ -90,6 +95,9 @@ type Session struct {
 	Client *http.Client
 	// Rate limit instance
 	MultiRateLimiter *ratelimit.MultiLimiter
+	// RequestLimiter, when set, replaces MultiRateLimiter for HTTP requests.
+	// Its lifetime belongs to the caller and may span multiple sessions.
+	RequestLimiter RequestLimiter
 	// Timeout is the timeout in seconds for requests
 	Timeout int
 	// MaxResults is the maximum number of results a source should emit

@@ -1,6 +1,7 @@
 package resolve
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -19,6 +20,7 @@ type ResolutionPool struct {
 	Results        chan Result
 	wg             *sync.WaitGroup
 	removeWildcard bool
+	ctx            context.Context
 
 	wildcardIPs map[string]struct{}
 }
@@ -52,7 +54,14 @@ const (
 
 // NewResolutionPool creates a pool of resolvers for resolving subdomains of a given domain
 func (r *Resolver) NewResolutionPool(workers int, removeWildcard bool) *ResolutionPool {
+	return r.NewResolutionPoolWithCtx(context.Background(), workers, removeWildcard)
+}
+
+// NewResolutionPoolWithCtx creates a pool that stops on cancellation.
+// Producers must also observe ctx when sending Tasks, and close Tasks when finished.
+func (r *Resolver) NewResolutionPoolWithCtx(ctx context.Context, workers int, removeWildcard bool) *ResolutionPool {
 	resolutionPool := &ResolutionPool{
+		ctx:            ctx,
 		Resolver:       r,
 		Tasks:          make(chan HostEntry),
 		Results:        make(chan Result),
@@ -62,11 +71,17 @@ func (r *Resolver) NewResolutionPool(workers int, removeWildcard bool) *Resoluti
 	}
 
 	go func() {
-		for range workers {
-			resolutionPool.wg.Add(1)
-			go resolutionPool.resolveWorker()
+		if r.lookupSlots != nil {
+			resolutionPool.dispatch(workers)
+		} else {
+			for range workers {
+				resolutionPool.wg.Add(1)
+				go resolutionPool.resolveWorker()
+			}
 		}
+
 		resolutionPool.wg.Wait()
+
 		close(resolutionPool.Results)
 	}()
 
@@ -78,7 +93,11 @@ func (r *ResolutionPool) InitWildcards(domain string) error {
 	for range maxWildcardChecks {
 		uid := xid.New().String()
 
-		hosts, _ := r.DNSClient.Lookup(uid + "." + domain)
+		hosts, _ := r.lookup(r.ctx, uid+"."+domain)
+		if err := r.ctx.Err(); err != nil {
+			return err
+		}
+
 		if len(hosts) == 0 {
 			return fmt.Errorf("%s is not a wildcard domain", domain)
 		}
@@ -88,38 +107,118 @@ func (r *ResolutionPool) InitWildcards(domain string) error {
 			r.wildcardIPs[host] = struct{}{}
 		}
 	}
+
 	return nil
 }
 
 func (r *ResolutionPool) resolveWorker() {
-	for task := range r.Tasks {
-		if !r.removeWildcard {
-			r.Results <- Result{Type: Subdomain, Host: task.Host, IP: "", Source: task.Source, WildcardCertificate: task.WildcardCertificate}
-			continue
-		}
+	defer r.wg.Done()
 
-		hosts, err := r.DNSClient.Lookup(task.Host)
-		if err != nil {
-			r.Results <- Result{Type: Error, Host: task.Host, Source: task.Source, Error: err, WildcardCertificate: task.WildcardCertificate}
-			continue
-		}
-
-		if len(hosts) == 0 {
-			continue
-		}
-
-		var skip bool
-		for _, host := range hosts {
-			// Ignore the host if it exists in wildcard ips map
-			if _, ok := r.wildcardIPs[host]; ok {
-				skip = true
-				break
+	for {
+		var task HostEntry
+		select {
+		case <-r.ctx.Done():
+			return
+		case next, ok := <-r.Tasks:
+			if !ok {
+				return
 			}
+
+			task = next
 		}
 
-		if !skip {
-			r.Results <- Result{Type: Subdomain, Host: task.Host, IP: hosts[0], Source: task.Source, WildcardCertificate: task.WildcardCertificate}
+		r.resolveTask(task)
+	}
+}
+
+// dispatch reserves capacity before starting a worker, so separate domain pools
+// do not each park a full set of workers waiting for the shared DNS limit.
+func (r *ResolutionPool) dispatch(workers int) {
+	if workers < 1 {
+		return
+	}
+
+	localSlots := make(chan struct{}, workers)
+
+	for {
+		select {
+		case <-r.ctx.Done():
+			return
+		case task, ok := <-r.Tasks:
+			if !ok {
+				return
+			}
+
+			select {
+			case localSlots <- struct{}{}:
+			case <-r.ctx.Done():
+				return
+			}
+
+			if err := r.acquire(r.ctx); err != nil {
+				return
+			}
+
+			r.wg.Add(1)
+
+			go func() {
+				defer r.wg.Done()
+				defer func() {
+					<-r.lookupSlots
+					<-localSlots
+				}()
+
+				r.resolveTask(task)
+			}()
 		}
 	}
-	r.wg.Done()
+}
+
+func (r *ResolutionPool) resolveTask(task HostEntry) {
+	if r.ctx.Err() != nil {
+		return
+	}
+
+	if !r.removeWildcard {
+		r.sendResult(Result{Type: Subdomain, Host: task.Host, IP: "", Source: task.Source, WildcardCertificate: task.WildcardCertificate})
+
+		return
+	}
+
+	// A bounded pool already holds its slot until this result is delivered.
+	hosts, err := r.DNSClient.Lookup(task.Host)
+	if err != nil {
+		r.sendResult(Result{Type: Error, Host: task.Host, Source: task.Source, Error: err, WildcardCertificate: task.WildcardCertificate})
+
+		return
+	}
+
+	if len(hosts) == 0 {
+		return
+	}
+
+	var skip bool
+	for _, host := range hosts {
+		// Ignore the host if it exists in wildcard ips map
+		if _, ok := r.wildcardIPs[host]; ok {
+			skip = true
+
+			break
+		}
+	}
+
+	if !skip {
+		r.sendResult(Result{Type: Subdomain, Host: task.Host, IP: hosts[0], Source: task.Source, WildcardCertificate: task.WildcardCertificate})
+	}
+}
+
+func (r *ResolutionPool) sendResult(result Result) {
+	if r.ctx.Err() != nil {
+		return
+	}
+
+	select {
+	case r.Results <- result:
+	case <-r.ctx.Done():
+	}
 }
