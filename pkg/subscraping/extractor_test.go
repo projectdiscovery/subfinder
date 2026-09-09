@@ -73,6 +73,18 @@ func TestRegexSubdomainExtractor_Extract(t *testing.T) {
 			text:   "notexample.com",
 			want:   nil,
 		},
+		{
+			name:   "tab and crlf delimited subdomains",
+			domain: "example.com",
+			text:   "auth.example.com\tapi.example.com\r\ncdn.example.com",
+			want:   []string{"auth.example.com", "api.example.com", "cdn.example.com"},
+		},
+		{
+			name:   "url encoded query string candidate extraction",
+			domain: "example.com",
+			text:   "https://target.net/redirect?dest=gateway.example.com&ref=portal.example.com",
+			want:   []string{"gateway.example.com", "portal.example.com"},
+		},
 	}
 
 	for _, tt := range tests {
