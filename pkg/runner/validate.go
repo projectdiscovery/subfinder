@@ -28,9 +28,10 @@ func (options *Options) validateOptions() error {
 	}
 
 	// Validate threads and options
-	if options.Threads == 0 {
-		return errors.New("threads cannot be zero")
+	if options.Threads <= 0 {
+		return errors.New("threads must be positive")
 	}
+
 	if options.Timeout == 0 {
 		return errors.New("timeout cannot be zero")
 	}
