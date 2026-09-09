@@ -47,6 +47,7 @@ func NewSession(domain string, proxy string, multiRateLimiter *ratelimit.MultiLi
 	Transport := &http.Transport{
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 100,
+		IdleConnTimeout:     90 * time.Second,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
@@ -113,7 +114,6 @@ func (s *Session) HTTPRequest(ctx context.Context, method, requestURL, cookies s
 	req.Header.Set("User-Agent", uarand.GetRandom())
 	req.Header.Set("Accept", "*/*")
 	req.Header.Set("Accept-Language", "en")
-	req.Header.Set("Connection", "close")
 
 	if basicAuth.Username != "" || basicAuth.Password != "" {
 		req.SetBasicAuth(basicAuth.Username, basicAuth.Password)
