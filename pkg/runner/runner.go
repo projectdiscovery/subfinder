@@ -133,7 +133,7 @@ func (r *Runner) EnumerateMultipleDomains(reader io.Reader, writers []io.Writer)
 // Completed domains are written together; domain output order is unspecified.
 func (r *Runner) EnumerateMultipleDomainsWithCtx(ctx context.Context, reader io.Reader, writers []io.Writer) (err error) {
 	if r.options.Threads < 0 {
-		return fmt.Errorf("threads must be positive")
+		return errors.New("threads must not be negative")
 	}
 	// SDK callers historically could leave Threads unset for passive enumeration.
 
