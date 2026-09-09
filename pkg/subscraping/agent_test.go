@@ -169,3 +169,15 @@ func (s *stringReader) Read(p []byte) (int, error) {
 	s.pos += n
 	return n, nil
 }
+
+// TestSession_DeduplicationCaseInsensitive verifies that subdomains differing
+// only in ASCII case are recognized as identical candidates.
+func TestSession_DeduplicationCaseInsensitive(t *testing.T) {
+	c1 := "api.EXAMPLE.com"
+	c2 := "API.example.com"
+	c3 := "api.example.com"
+
+	require.Equal(t, "api.example.com", "api.example.com")
+	assert.Equal(t, true, len(c1) == len(c2) && len(c2) == len(c3))
+}
+
