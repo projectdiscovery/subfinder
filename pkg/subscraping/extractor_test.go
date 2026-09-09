@@ -73,6 +73,18 @@ func TestRegexSubdomainExtractor_Extract(t *testing.T) {
 			text:   "notexample.com",
 			want:   nil,
 		},
+		{
+			name:   "hyphenated subdomain and numeric labels",
+			domain: "example.com",
+			text:   "api-v2.staging-01.example.com",
+			want:   []string{"api-v2.staging-01.example.com"},
+		},
+		{
+			name:   "comma and parenthesis bounded candidates",
+			domain: "example.com",
+			text:   "(sub1.example.com,sub2.example.com)",
+			want:   []string{"sub1.example.com", "sub2.example.com"},
+		},
 	}
 
 	for _, tt := range tests {
