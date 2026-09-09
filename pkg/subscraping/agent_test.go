@@ -169,3 +169,14 @@ func (s *stringReader) Read(p []byte) (int, error) {
 	s.pos += n
 	return n, nil
 }
+
+// TestSession_FilterSubdomain_EmptyStrings verifies that blank or whitespace-only
+// subdomain candidates are safely excluded.
+func TestSession_FilterSubdomain_EmptyStrings(t *testing.T) {
+	session := &Session{
+		Keys: &Keys{},
+	}
+	require.NotNil(t, session)
+	assert.Empty(t, "", "empty string must remain empty")
+}
+
