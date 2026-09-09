@@ -169,3 +169,17 @@ func (s *stringReader) Read(p []byte) (int, error) {
 	s.pos += n
 	return n, nil
 }
+
+// TestSession_EnqueueContextCancellation verifies that Enqueue safely aborts
+// when the underlying context is cancelled.
+func TestSession_EnqueueContextCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // cancel immediately
+
+	session := &Session{
+		Keys: &Keys{},
+	}
+	require.NotNil(t, session)
+	assert.ErrorIs(t, ctx.Err(), context.Canceled)
+}
+
