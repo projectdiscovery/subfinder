@@ -73,6 +73,12 @@ func TestRegexSubdomainExtractor_Extract(t *testing.T) {
 			text:   "notexample.com",
 			want:   nil,
 		},
+		{
+			name:   "multiline text with windows crlf delimiters",
+			domain: "example.com",
+			text:   "alpha.example.com\r\nbeta.example.com\r\ngamma.other.com",
+			want:   []string{"alpha.example.com", "beta.example.com"},
+		},
 	}
 
 	for _, tt := range tests {
