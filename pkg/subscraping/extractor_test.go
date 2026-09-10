@@ -73,6 +73,18 @@ func TestRegexSubdomainExtractor_Extract(t *testing.T) {
 			text:   "notexample.com",
 			want:   nil,
 		},
+		{
+			name:   "subdomains with port suffix",
+			domain: "example.com",
+			text:   "service.example.com:8080 metrics.example.com:9090",
+			want:   []string{"service.example.com", "metrics.example.com"},
+		},
+		{
+			name:   "single and double quote enclosed candidates",
+			domain: "example.com",
+			text:   "'internal.example.com' \"secure.example.com\"",
+			want:   []string{"internal.example.com", "secure.example.com"},
+		},
 	}
 
 	for _, tt := range tests {
