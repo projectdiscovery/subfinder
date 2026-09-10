@@ -73,6 +73,12 @@ func TestRegexSubdomainExtractor_Extract(t *testing.T) {
 			text:   "notexample.com",
 			want:   nil,
 		},
+		{
+			name:   "comma and semicolon separated subdomain lists",
+			domain: "example.com",
+			text:   "app.example.com,api.example.com;admin.example.com",
+			want:   []string{"app.example.com", "api.example.com", "admin.example.com"},
+		},
 	}
 
 	for _, tt := range tests {
