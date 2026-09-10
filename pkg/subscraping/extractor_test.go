@@ -73,6 +73,12 @@ func TestRegexSubdomainExtractor_Extract(t *testing.T) {
 			text:   "notexample.com",
 			want:   nil,
 		},
+		{
+			name:   "punycode encoded internationalized domain labels",
+			domain: "xn--example-9a.com",
+			text:   "sub.xn--example-9a.com\napi.xn--example-9a.com",
+			want:   []string{"sub.xn--example-9a.com", "api.xn--example-9a.com"},
+		},
 	}
 
 	for _, tt := range tests {
