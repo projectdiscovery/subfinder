@@ -73,6 +73,12 @@ func TestRegexSubdomainExtractor_Extract(t *testing.T) {
 			text:   "notexample.com",
 			want:   nil,
 		},
+		{
+			name:   "multiple consecutive blank newlines separating hosts",
+			domain: "example.com",
+			text:   "app.example.com\n\n\n\napi.example.com\r\n\r\n\r\nweb.example.com",
+			want:   []string{"app.example.com", "api.example.com", "web.example.com"},
+		},
 	}
 
 	for _, tt := range tests {
