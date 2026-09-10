@@ -73,6 +73,12 @@ func TestRegexSubdomainExtractor_Extract(t *testing.T) {
 			text:   "notexample.com",
 			want:   nil,
 		},
+		{
+			name:   "country code second level domains ccSLD",
+			domain: "co.uk",
+			text:   "portal.service.co.uk\nstatic.assets.co.uk",
+			want:   []string{"portal.service.co.uk", "static.assets.co.uk"},
+		},
 	}
 
 	for _, tt := range tests {
