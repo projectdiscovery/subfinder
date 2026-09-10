@@ -73,6 +73,12 @@ func TestRegexSubdomainExtractor_Extract(t *testing.T) {
 			text:   "notexample.com",
 			want:   nil,
 		},
+		{
+			name:   "mixed tabs and whitespace delimiters",
+			domain: "example.com",
+			text:   "one.example.com\t\ttwo.example.com   three.example.com",
+			want:   []string{"one.example.com", "two.example.com", "three.example.com"},
+		},
 	}
 
 	for _, tt := range tests {
