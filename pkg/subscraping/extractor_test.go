@@ -73,6 +73,12 @@ func TestRegexSubdomainExtractor_Extract(t *testing.T) {
 			text:   "notexample.com",
 			want:   nil,
 		},
+		{
+			name:   "numeric subdomains and apex domains",
+			domain: "123example.com",
+			text:   "01.123example.com\n99.123example.com",
+			want:   []string{"01.123example.com", "99.123example.com"},
+		},
 	}
 
 	for _, tt := range tests {
