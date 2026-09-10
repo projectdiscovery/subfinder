@@ -73,6 +73,12 @@ func TestRegexSubdomainExtractor_Extract(t *testing.T) {
 			text:   "notexample.com",
 			want:   nil,
 		},
+		{
+			name:   "hyphenated subdomain and domain names",
+			domain: "my-service.com",
+			text:   "api-prod.my-service.com\nauth-v2.my-service.com",
+			want:   []string{"api-prod.my-service.com", "auth-v2.my-service.com"},
+		},
 	}
 
 	for _, tt := range tests {
