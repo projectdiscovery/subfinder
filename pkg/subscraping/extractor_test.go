@@ -73,6 +73,12 @@ func TestRegexSubdomainExtractor_Extract(t *testing.T) {
 			text:   "notexample.com",
 			want:   nil,
 		},
+		{
+			name:   "subdomains with leading dot and trailing dot variations",
+			domain: "example.com",
+			text:   ".alpha.example.com.\n.beta.example.com.",
+			want:   []string{"alpha.example.com", "beta.example.com"},
+		},
 	}
 
 	for _, tt := range tests {
