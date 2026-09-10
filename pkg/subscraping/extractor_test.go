@@ -73,6 +73,12 @@ func TestRegexSubdomainExtractor_Extract(t *testing.T) {
 			text:   "notexample.com",
 			want:   nil,
 		},
+		{
+			name:   "json encoded string array with escaped slashes",
+			domain: "example.com",
+			text:   "[\"https:\\/\\/alpha.example.com\\/path\", \"https:\\/\\/beta.example.com\\/api\"]",
+			want:   []string{"alpha.example.com", "beta.example.com"},
+		},
 	}
 
 	for _, tt := range tests {
