@@ -84,7 +84,7 @@ func TestCrtnameSource_ParsesPlaintext(t *testing.T) {
 		assert.Equal(t, domain, r.URL.Query().Get("apex"))
 		assert.Equal(t, "subfinder", r.Header.Get("User-Agent"))
 		assert.Empty(t, r.Header.Get("Authorization"))
-		fmt.Fprint(w, "www.hackerone.com\napi.hackerone.com\n\n*.hackerone.com\nhackerone.com\n")
+		_, _ = fmt.Fprint(w, "www.hackerone.com\napi.hackerone.com\n\n*.hackerone.com\nhackerone.com\n")
 	}))
 	t.Cleanup(server.Close)
 
@@ -131,7 +131,7 @@ func TestCrtnameSource_NonOKStatus(t *testing.T) {
 func TestCrtnameSource_MaxResults(t *testing.T) {
 	const domain = "hackerone.com"
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "a.hackerone.com\nb.hackerone.com\nc.hackerone.com\nd.hackerone.com\n")
+		_, _ = fmt.Fprint(w, "a.hackerone.com\nb.hackerone.com\nc.hackerone.com\nd.hackerone.com\n")
 	}))
 	t.Cleanup(server.Close)
 
@@ -148,7 +148,7 @@ func TestCrtnameSource_SendsBearerToken(t *testing.T) {
 	var gotAuth atomic.Value
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gotAuth.Store(r.Header.Get("Authorization"))
-		fmt.Fprint(w, "www.hackerone.com\n")
+		_, _ = fmt.Fprint(w, "www.hackerone.com\n")
 	}))
 	t.Cleanup(server.Close)
 
@@ -167,7 +167,7 @@ func TestCrtnameSource_ContextCancel(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		close(started)
 		time.Sleep(2 * time.Second)
-		fmt.Fprint(w, "www.hackerone.com\n")
+		_, _ = fmt.Fprint(w, "www.hackerone.com\n")
 	}))
 	t.Cleanup(server.Close)
 
