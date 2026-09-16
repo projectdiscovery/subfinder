@@ -22,6 +22,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/chaos"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/chinaz"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/commoncrawl"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtname"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtsh"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitalyama"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitorus"
@@ -68,7 +69,7 @@ import (
 
 var AllSources = newSources()
 
-func newSources() [52]subscraping.Source {
+func newSources() [53]subscraping.Source {
 	return [...]subscraping.Source{
 		&alienvault.Source{},
 		&anubis.Source{},
@@ -81,6 +82,7 @@ func newSources() [52]subscraping.Source {
 		&chaos.Source{},
 		&chinaz.Source{},
 		&commoncrawl.Source{},
+		&crtname.Source{},
 		&crtsh.Source{},
 		&digitalyama.Source{},
 		&digitorus.Source{},
