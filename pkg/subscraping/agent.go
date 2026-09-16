@@ -47,6 +47,7 @@ func NewSession(domain string, proxy string, multiRateLimiter *ratelimit.MultiLi
 	Transport := &http.Transport{
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 100,
+		IdleConnTimeout:     90 * time.Second,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
@@ -113,7 +114,6 @@ func (s *Session) HTTPRequest(ctx context.Context, method, requestURL, cookies s
 	req.Header.Set("User-Agent", uarand.GetRandom())
 	req.Header.Set("Accept", "*/*")
 	req.Header.Set("Accept-Language", "en")
-	req.Header.Set("Connection", "close")
 
 	if basicAuth.Username != "" || basicAuth.Password != "" {
 		req.SetBasicAuth(basicAuth.Username, basicAuth.Password)
@@ -128,7 +128,14 @@ func (s *Session) HTTPRequest(ctx context.Context, method, requestURL, cookies s
 	}
 
 	sourceName := ctx.Value(CtxSourceArg).(string)
-	mrlErr := s.MultiRateLimiter.Take(sourceName)
+
+	var mrlErr error
+	if s.RequestLimiter != nil {
+		mrlErr = s.RequestLimiter.Wait(ctx, sourceName)
+	} else {
+		mrlErr = s.MultiRateLimiter.Take(sourceName)
+	}
+
 	if mrlErr != nil {
 		return nil, mrlErr
 	}
@@ -152,7 +159,10 @@ func (s *Session) DiscardHTTPResponse(response *http.Response) {
 
 // Close the session
 func (s *Session) Close() {
-	s.MultiRateLimiter.Stop()
+	if s.MultiRateLimiter != nil {
+		s.MultiRateLimiter.Stop()
+	}
+
 	s.Client.CloseIdleConnections()
 }
 

@@ -2,16 +2,40 @@ package runner
 
 import (
 	"net"
+	"os"
+	"slices"
 	"strings"
 
 	"github.com/projectdiscovery/dnsx/libs/dnsx"
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
 
 // initializePassiveEngine creates the passive engine and loads sources etc
-func (r *Runner) initializePassiveEngine() {
-	r.passiveAgent = passive.New(r.options.Sources, r.options.ExcludeSources, r.options.All, r.options.OnlyRecursive)
+func (r *Runner) initializePassiveEngine(providerKeys map[string][]string) {
+	// Snapshot credentials and selection once. Workers own fresh adapters, not
+	// copies of the global sources or their mutable enumeration state.
+	keys := make(map[string][]string, len(providerKeys))
+	for name, values := range providerKeys {
+		keys[name] = slices.Clone(values)
+	}
+
+	for _, source := range passive.NameSourceMap {
+		requirement := source.KeyRequirement()
+		if requirement == subscraping.RequiredKey || requirement == subscraping.OptionalKey {
+			if value := os.Getenv(strings.ToUpper(source.Name()) + "_API_KEY"); value != "" {
+				keys[strings.ToLower(source.Name())] = []string{value}
+			}
+		}
+	}
+
+	sources, excluded := slices.Clone(r.options.Sources), slices.Clone(r.options.ExcludeSources)
+	all, recursive := r.options.All, r.options.OnlyRecursive
+	r.newPassiveAgent = func() *passive.Agent {
+		return passive.NewWithProviderConfig(sources, excluded, all, recursive, keys)
+	}
+	r.passiveAgent = r.newPassiveAgent()
 }
 
 // initializeResolver creates the resolver used to resolve the found subdomains

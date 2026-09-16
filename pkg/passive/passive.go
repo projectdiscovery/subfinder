@@ -15,12 +15,21 @@ import (
 )
 
 type EnumerationOptions struct {
+	rateLimiter         subscraping.RequestLimiter
 	customRateLimiter   *subscraping.CustomRateLimit
 	maxResults          int
 	maxResponseBodySize int64
 }
 
 type EnumerateOption func(opts *EnumerationOptions)
+
+// WithRateLimiter borrows a request budget shared across enumerations.
+// It overrides per-enumeration limits; sessions do not own its lifetime.
+func WithRateLimiter(limiter subscraping.RequestLimiter) EnumerateOption {
+	return func(opts *EnumerationOptions) {
+		opts.rateLimiter = limiter
+	}
+}
 
 func WithCustomRateLimit(crl *subscraping.CustomRateLimit) EnumerateOption {
 	return func(opts *EnumerationOptions) {
@@ -62,7 +71,15 @@ func (a *Agent) EnumerateSubdomainsWithCtx(ctx context.Context, domain string, p
 			enumerateOption(&enumerateOptions)
 		}
 
-		multiRateLimiter, err := a.buildMultiRateLimiter(ctx, rateLimit, enumerateOptions.customRateLimiter)
+		var multiRateLimiter *ratelimit.MultiLimiter
+		var err error
+		borrowedLegacy := false
+		if limiter, ok := enumerateOptions.rateLimiter.(*RateLimiter); ok && limiter.legacy != nil {
+			multiRateLimiter = limiter.legacy
+			borrowedLegacy = true
+		} else if enumerateOptions.rateLimiter == nil {
+			multiRateLimiter, err = a.buildMultiRateLimiter(ctx, rateLimit, enumerateOptions.customRateLimiter)
+		}
 		if err != nil {
 			results <- subscraping.Result{
 				Type: subscraping.Error, Error: fmt.Errorf("could not init multi rate limiter for %s: %s", domain, err),
@@ -71,12 +88,20 @@ func (a *Agent) EnumerateSubdomainsWithCtx(ctx context.Context, domain string, p
 		}
 		session, err := subscraping.NewSession(domain, proxy, multiRateLimiter, timeout)
 		if err != nil {
+			if !borrowedLegacy && multiRateLimiter != nil {
+				multiRateLimiter.Stop()
+			}
 			results <- subscraping.Result{
 				Type: subscraping.Error, Error: fmt.Errorf("could not init passive session for %s: %s", domain, err),
 			}
 			return
 		}
-		defer session.Close()
+		session.RequestLimiter = enumerateOptions.rateLimiter
+		if borrowedLegacy {
+			defer session.Client.CloseIdleConnections()
+		} else {
+			defer session.Close()
+		}
 		session.MaxResults = enumerateOptions.maxResults
 		session.MaxResponseBodySize = enumerateOptions.maxResponseBodySize
 
@@ -132,7 +157,10 @@ func (a *Agent) buildMultiRateLimiter(ctx context.Context, globalRateLimit int, 
 		}
 
 		if err != nil {
-			break
+			if multiRateLimiter != nil {
+				multiRateLimiter.Stop()
+			}
+			return nil, err
 		}
 	}
 	return multiRateLimiter, err
