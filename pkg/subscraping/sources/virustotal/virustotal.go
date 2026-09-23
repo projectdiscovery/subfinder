@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -27,24 +28,28 @@ type Meta struct {
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys   []string
-	timeTaken time.Duration
-	errors    int
-	results   int
-	requests  int
-	skipped   bool
+	apiKeys []string
+
+	mu    sync.Mutex
+	stats subscraping.Statistics
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
 
 	go func() {
+		// The source is shared across concurrent domains (subfinder -dL/-t runs one
+		// *Source per selected source, not per domain), so counters live on the stack
+		// for this run and are only published to s.stats, under the lock, once, at the
+		// end. Mutating s's fields directly here raced with every other domain's
+		// concurrent Run() and Statistics() call.
+		var stats subscraping.Statistics
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			stats.TimeTaken = time.Since(startTime)
+			s.mu.Lock()
+			s.stats = stats
+			s.mu.Unlock()
 			close(results)
 		}(time.Now())
 
@@ -67,7 +72,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			if cursor != "" {
 				url = fmt.Sprintf("%s&cursor=%s", url, cursor)
 			}
-			s.requests++
+			stats.Requests++
 			resp, err := session.Get(ctx, url, "", map[string]string{"x-apikey": randomApiKey})
 			if err != nil {
 				// The free tier grants 500 requests/day; once it is exhausted every
@@ -78,7 +83,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					err = fmt.Errorf("virustotal quota exhausted (HTTP 429); some subdomains for %s may be missing", domain)
 				}
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				stats.Errors++
 				session.DiscardHTTPResponse(resp)
 				return
 			}
@@ -89,11 +94,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			// every page's body (and its connection) open until the goroutine exits.
 			if closeErr := resp.Body.Close(); closeErr != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: closeErr}
-				s.errors++
+				stats.Errors++
 			}
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				stats.Errors++
 				return
 			}
 
@@ -102,9 +107,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				case <-ctx.Done():
 					return
 				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain.Id}:
-					s.results++
+					stats.Results++
 				}
-				if maxResults > 0 && s.results >= maxResults {
+				if maxResults > 0 && stats.Results >= maxResults {
 					return
 				}
 			}
@@ -143,12 +148,9 @@ func (s *Source) AddApiKeys(keys []string) {
 	s.apiKeys = keys
 }
 
+// Statistics returns a snapshot of the most recently completed run.
 func (s *Source) Statistics() subscraping.Statistics {
-	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		Requests:  s.requests,
-		TimeTaken: s.timeTaken,
-		Skipped:   s.skipped,
-	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.stats
 }

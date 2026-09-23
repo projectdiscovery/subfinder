@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -190,4 +192,76 @@ func TestVirustotalSource_RateLimitedReturnsActionableError(t *testing.T) {
 	assert.Contains(t, errs[0].Error(), "429")
 	assert.Equal(t, 1, source.Statistics().Requests, "must not retry past the first 429")
 	assert.Equal(t, 1, source.Statistics().Errors)
+}
+
+// The source is shared across every domain in a -dL/-t run: subfinder builds one
+// *Source per selected source, not one per domain (see selectSources). Two domains
+// racing through Run() concurrently must not corrupt each other's counters, and a
+// still-running domain's in-flight requests must not leak into Statistics() before
+// its own run publishes (#1947).
+func TestVirustotalSource_ConcurrentRunsDoNotCorruptStatistics(t *testing.T) {
+	firstStarted := make(chan struct{})
+	releaseFirst := make(chan struct{})
+	var closeOnce sync.Once
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		domain := r.URL.Query().Get("domain")
+		if strings.Contains(r.URL.Path, "first.example") {
+			closeOnce.Do(func() { close(firstStarted) })
+			select {
+			case <-releaseFirst:
+			case <-r.Context().Done():
+				return
+			}
+		}
+		w.Header().Set("Content-Type", "application/json")
+		switch {
+		case strings.Contains(r.URL.Path, "first.example"):
+			_, _ = fmt.Fprint(w, `{"data":[{"id":"one.first.example"}],"meta":{"cursor":""}}`)
+		case strings.Contains(r.URL.Path, "second.example"):
+			_, _ = fmt.Fprint(w, `{"data":[{"id":"one.second.example"},{"id":"two.second.example"}],"meta":{"cursor":""}}`)
+		default:
+			t.Errorf("unexpected domain in request: %s", domain)
+		}
+	}))
+	defer server.Close()
+
+	source := &Source{}
+	source.AddApiKeys([]string{"test-key"})
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	ctxWithValue := context.WithValue(ctx, subscraping.CtxSourceArg, "virustotal")
+
+	firstResults := source.Run(ctxWithValue, "first.example", newTestSession(t, server, 0))
+	select {
+	case <-firstStarted:
+	case <-ctx.Done():
+		t.Fatal("first run did not start its request")
+	}
+
+	// The first run is blocked mid-request. Statistics must still read as the
+	// zero value here, not a half-written snapshot of the in-flight run.
+	if stats := source.Statistics(); stats != (subscraping.Statistics{}) {
+		t.Errorf("unfinished first run published statistics: %+v", stats)
+	}
+
+	secondSubs, secondErrs := runSource(t, source, newTestSession(t, server, 0), "second.example")
+	assert.Empty(t, secondErrs)
+	assert.ElementsMatch(t, []string{"one.second.example", "two.second.example"}, secondSubs)
+	if stats := source.Statistics(); stats.Requests != 1 || stats.Results != 2 {
+		t.Errorf("second run's statistics corrupted by concurrent first run: %+v", stats)
+	}
+
+	close(releaseFirst)
+	var firstSubs []string
+	for r := range firstResults {
+		if r.Type == subscraping.Subdomain {
+			firstSubs = append(firstSubs, r.Value)
+		}
+	}
+	assert.Equal(t, []string{"one.first.example"}, firstSubs)
+	if stats := source.Statistics(); stats.Requests != 1 || stats.Results != 1 {
+		t.Errorf("first run's own statistics corrupted after publishing: %+v", stats)
+	}
 }
