@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -28,23 +29,23 @@ type response struct {
 // Source is the passive scraping agent
 type Source struct {
 	apiKeys   []string
-	timeTaken time.Duration
-	errors    int
-	results   int
-	requests  int
+	timeTaken atomic.Int64 // nanoseconds; cast to time.Duration on read
+	errors    atomic.Int32
+	results   atomic.Int32
+	requests  atomic.Int32
 	skipped   bool
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
+	s.errors.Store(0)
+	s.results.Store(0)
+	s.requests.Store(0)
 
 	go func() {
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			s.timeTaken.Store(int64(time.Since(startTime)))
 			close(results)
 		}(time.Now())
 
@@ -72,22 +73,22 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			if scrollId == "" {
 				var requestBody = fmt.Appendf(nil, `{"query":"apex_domain='%s'"}`, domain)
-				s.requests++
+				s.requests.Add(1)
 				resp, err = session.Post(ctx, "https://api.securitytrails.com/v1/domains/list?include_ips=false&scroll=true", "",
 					headers, bytes.NewReader(requestBody))
 			} else {
-				s.requests++
+				s.requests.Add(1)
 				resp, err = session.Get(ctx, fmt.Sprintf("https://api.securitytrails.com/v1/scroll/%s", scrollId), "", headers)
 			}
 
 			if err != nil && ptr.Safe(resp).StatusCode == 403 {
-				s.requests++
+				s.requests.Add(1)
 				resp, err = session.Get(ctx, fmt.Sprintf("https://api.securitytrails.com/v1/domain/%s/subdomains", domain), "", headers)
 			}
 
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				s.errors.Add(1)
 				session.DiscardHTTPResponse(resp)
 				return
 			}
@@ -96,7 +97,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			err = jsoniter.NewDecoder(resp.Body).Decode(&securityTrailsResponse)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				s.errors.Add(1)
 				session.DiscardHTTPResponse(resp)
 				return
 			}
@@ -108,7 +109,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				case <-ctx.Done():
 					return
 				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Hostname}:
-					s.results++
+					s.results.Add(1)
 				}
 				if maxResults > 0 && s.results >= maxResults {
 					return
@@ -127,7 +128,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					subdomain = subdomain + "." + domain
 				}
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-				s.results++
+				s.results.Add(1)
 				if maxResults > 0 && s.results >= maxResults {
 					return
 				}
@@ -171,10 +172,10 @@ func (s *Source) AddApiKeys(keys []string) {
 
 func (s *Source) Statistics() subscraping.Statistics {
 	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		TimeTaken: s.timeTaken,
+		Errors:    int(s.errors.Load()),
+		Results:   int(s.results.Load()),
+		TimeTaken: time.Duration(s.timeTaken.Load()),
 		Skipped:   s.skipped,
-		Requests:  s.requests,
+		Requests:  int(s.requests.Load()),
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"sync/atomic"
 	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -35,22 +36,22 @@ type pageInfo struct {
 
 type Source struct {
 	apiKeys   []string
-	timeTaken time.Duration
-	errors    int
-	results   int
-	requests  int
+	timeTaken atomic.Int64 // nanoseconds; cast to time.Duration on read
+	errors    atomic.Int32
+	results   atomic.Int32
+	requests  atomic.Int32
 	skipped   bool
 }
 
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
+	s.errors.Store(0)
+	s.results.Store(0)
+	s.requests.Store(0)
 
 	go func() {
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			s.timeTaken.Store(int64(time.Since(startTime)))
 			close(results)
 		}(time.Now())
 
@@ -74,13 +75,13 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			var err error
 
 			requestBody, _ := json.Marshal(map[string]interface{}{"domain": domain, "page_request": map[string]int{"page": page, "count": count}})
-			s.requests++
+			s.requests.Add(1)
 			resp, err = session.Post(ctx, "https://windvane.lichoin.com/trpc.backendhub.public.WindvaneService/ListSubDomain",
 				"", headers, bytes.NewReader(requestBody))
 
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				s.errors.Add(1)
 				session.DiscardHTTPResponse(resp)
 				return
 			}
@@ -91,7 +92,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			err = json.NewDecoder(resp.Body).Decode(&windvaneResponse)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				s.errors.Add(1)
 				session.DiscardHTTPResponse(resp)
 				return
 			}
@@ -101,7 +102,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				case <-ctx.Done():
 					return
 				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Domain}:
-					s.results++
+					s.results.Add(1)
 				}
 			}
 
@@ -153,10 +154,10 @@ func (s *Source) AddApiKeys(keys []string) {
 
 func (s *Source) Statistics() subscraping.Statistics {
 	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		TimeTaken: s.timeTaken,
+		Errors:    int(s.errors.Load()),
+		Results:   int(s.results.Load()),
+		TimeTaken: time.Duration(s.timeTaken.Load()),
 		Skipped:   s.skipped,
-		Requests:  s.requests,
+		Requests:  int(s.requests.Load()),
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -25,22 +26,22 @@ type ResponseMetadata struct {
 
 type Source struct {
 	apiKeys   []string
-	timeTaken time.Duration
-	errors    int
-	results   int
-	requests  int
+	timeTaken atomic.Int64 // nanoseconds; cast to time.Duration on read
+	errors    atomic.Int32
+	results   atomic.Int32
+	requests  atomic.Int32
 	skipped   bool
 }
 
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
+	s.errors.Store(0)
+	s.results.Store(0)
+	s.requests.Store(0)
 	pageSize := 1000
 	go func() {
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			s.timeTaken.Store(int64(time.Since(startTime)))
 			close(results)
 		}(time.Now())
 
@@ -62,12 +63,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		baseUrl := randomApiInfo[0] + ":" + randomApiInfo[1]
 		requestHeaders := map[string]string{"X-BLOBR-KEY": randomApiInfo[2], "User-Agent": "subfinder"}
 		getUrl := fmt.Sprintf("%s?domain=%s&page=1&page_size=%d", baseUrl, domain, pageSize)
-		s.requests++
+		s.requests.Add(1)
 		resp, err := session.Get(ctx, getUrl, "", requestHeaders)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("encountered error: %v; note: if you get a 'limit has been reached' error, head over to https://devportal.redhuntlabs.com", err)}
 			session.DiscardHTTPResponse(resp)
-			s.errors++
+			s.errors.Add(1)
 			return
 		}
 		var response Response
@@ -75,7 +76,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			session.DiscardHTTPResponse(resp)
-			s.errors++
+			s.errors.Add(1)
 			return
 		}
 
@@ -89,12 +90,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				default:
 				}
 				getUrl = fmt.Sprintf("%s?domain=%s&page=%d&page_size=%d", baseUrl, domain, page, pageSize)
-				s.requests++
+				s.requests.Add(1)
 				resp, err := session.Get(ctx, getUrl, "", requestHeaders)
 				if err != nil {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("encountered error: %v; note: if you get a 'limit has been reached' error, head over to https://devportal.redhuntlabs.com", err)}
 					session.DiscardHTTPResponse(resp)
-					s.errors++
+					s.errors.Add(1)
 					return
 				}
 
@@ -102,7 +103,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				if err != nil {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 					session.DiscardHTTPResponse(resp)
-					s.errors++
+					s.errors.Add(1)
 					continue
 				}
 
@@ -113,7 +114,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					case <-ctx.Done():
 						return
 					case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
-						s.results++
+						s.results.Add(1)
 					}
 					if maxResults > 0 && s.results >= maxResults {
 						return
@@ -126,7 +127,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				case <-ctx.Done():
 					return
 				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
-					s.results++
+					s.results.Add(1)
 				}
 				if maxResults > 0 && s.results >= maxResults {
 					return
@@ -164,10 +165,10 @@ func (s *Source) AddApiKeys(keys []string) {
 
 func (s *Source) Statistics() subscraping.Statistics {
 	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		TimeTaken: s.timeTaken,
+		Errors:    int(s.errors.Load()),
+		Results:   int(s.results.Load()),
+		TimeTaken: time.Duration(s.timeTaken.Load()),
 		Skipped:   s.skipped,
-		Requests:  s.requests,
+		Requests:  int(s.requests.Load()),
 	}
 }

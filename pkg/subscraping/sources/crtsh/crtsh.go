@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -26,22 +27,22 @@ type subdomain struct {
 
 // Source is the passive scraping agent
 type Source struct {
-	timeTaken time.Duration
-	errors    int
-	results   int
-	requests  int
+	timeTaken atomic.Int64 // nanoseconds; cast to time.Duration on read
+	errors    atomic.Int32
+	results   atomic.Int32
+	requests  atomic.Int32
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
+	s.errors.Store(0)
+	s.results.Store(0)
+	s.requests.Store(0)
 
 	go func() {
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			s.timeTaken.Store(int64(time.Since(startTime)))
 			close(results)
 		}(time.Now())
 
@@ -61,7 +62,7 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-		s.errors++
+		s.errors.Add(1)
 		return 0
 	}
 
@@ -74,7 +75,7 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 	conn, err := db.Conn(ctx)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-		s.errors++
+		s.errors.Add(1)
 		return 0
 	}
 	defer func() {
@@ -83,7 +84,7 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 
 	if _, err := conn.ExecContext(ctx, fmt.Sprintf("SET statement_timeout = %d;", session.Timeout*1000)); err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-		s.errors++
+		s.errors.Add(1)
 		return 0
 	}
 
@@ -105,13 +106,13 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 	rows, err := conn.QueryContext(ctx, query, domain)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-		s.errors++
+		s.errors.Add(1)
 		return 0
 	}
 	defer rows.Close() //nolint:errcheck
 	if err := rows.Err(); err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-		s.errors++
+		s.errors.Add(1)
 		return 0
 	}
 
@@ -126,7 +127,7 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 		err := rows.Scan(&data)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			s.errors.Add(1)
 			return count
 		}
 
@@ -138,7 +139,7 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 					case <-ctx.Done():
 						return count
 					case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}:
-						s.results++
+						s.results.Add(1)
 					}
 				}
 			}
@@ -148,11 +149,11 @@ func (s *Source) getSubdomainsFromSQL(ctx context.Context, domain string, sessio
 }
 
 func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, session *subscraping.Session, results chan subscraping.Result) bool {
-	s.requests++
+	s.requests.Add(1)
 	resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://crt.sh/?q=%%25.%s&output=json", domain))
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-		s.errors++
+		s.errors.Add(1)
 		session.DiscardHTTPResponse(resp)
 		return false
 	}
@@ -161,7 +162,7 @@ func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, sessi
 	err = jsoniter.NewDecoder(resp.Body).Decode(&subdomains)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-		s.errors++
+		s.errors.Add(1)
 		session.DiscardHTTPResponse(resp)
 		return false
 	}
@@ -181,7 +182,7 @@ func (s *Source) getSubdomainsFromHTTP(ctx context.Context, domain string, sessi
 					case <-ctx.Done():
 						return true
 					case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}:
-						s.results++
+						s.results.Add(1)
 					}
 				}
 			}
@@ -218,9 +219,9 @@ func (s *Source) AddApiKeys(_ []string) {
 
 func (s *Source) Statistics() subscraping.Statistics {
 	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		Requests:  s.requests,
-		TimeTaken: s.timeTaken,
+		Errors:    int(s.errors.Load()),
+		Results:   int(s.results.Load()),
+		Requests:  int(s.requests.Load()),
+		TimeTaken: time.Duration(s.timeTaken.Load()),
 	}
 }

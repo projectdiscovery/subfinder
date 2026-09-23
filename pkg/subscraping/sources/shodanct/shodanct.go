@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"sync/atomic"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -14,31 +15,31 @@ import (
 
 // Source is the passive scraping agent
 type Source struct {
-	timeTaken time.Duration
-	errors    int
-	results   int
-	requests  int
+	timeTaken atomic.Int64 // nanoseconds; cast to time.Duration on read
+	errors    atomic.Int32
+	results   atomic.Int32
+	requests  atomic.Int32
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
+	s.errors.Store(0)
+	s.results.Store(0)
+	s.requests.Store(0)
 
 	go func() {
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			s.timeTaken.Store(int64(time.Since(startTime)))
 			close(results)
 		}(time.Now())
 
 		searchURL := fmt.Sprintf("https://ctl.shodan.io/api/v1/domain/%s/hostnames", domain)
-		s.requests++
+		s.requests.Add(1)
 		resp, err := session.SimpleGet(ctx, searchURL)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			s.errors.Add(1)
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -48,7 +49,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				Source: s.Name(), Type: subscraping.Error,
 				Error: fmt.Errorf("unexpected status code %d received from %s", resp.StatusCode, searchURL),
 			}
-			s.errors++
+			s.errors.Add(1)
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -58,7 +59,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		var hostnames []string
 		if err := jsoniter.NewDecoder(resp.Body).Decode(&hostnames); err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			s.errors.Add(1)
 			return
 		}
 
@@ -68,7 +69,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				case <-ctx.Done():
 					return
 				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
-					s.results++
+					s.results.Add(1)
 				}
 			}
 		}
@@ -104,9 +105,9 @@ func (s *Source) AddApiKeys(_ []string) {
 
 func (s *Source) Statistics() subscraping.Statistics {
 	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		Requests:  s.requests,
-		TimeTaken: s.timeTaken,
+		Errors:    int(s.errors.Load()),
+		Results:   int(s.results.Load()),
+		Requests:  int(s.requests.Load()),
+		TimeTaken: time.Duration(s.timeTaken.Load()),
 	}
 }

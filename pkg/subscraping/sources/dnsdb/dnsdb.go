@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -40,23 +41,23 @@ type dnsdbObj struct {
 // Source is the passive scraping agent
 type Source struct {
 	apiKeys   []string
-	timeTaken time.Duration
-	errors    int
+	timeTaken atomic.Int64 // nanoseconds; cast to time.Duration on read
+	errors    atomic.Int32
 	results   uint64
-	requests  int
+	requests  atomic.Int32
 	skipped   bool
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
+	s.errors.Store(0)
+	s.results.Store(0)
+	s.requests.Store(0)
 
 	go func() {
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			s.timeTaken.Store(int64(time.Since(startTime)))
 			close(results)
 		}(time.Now())
 
@@ -76,11 +77,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			"Accept":    "application/x-ndjson",
 		}
 
-		s.requests++
+		s.requests.Add(1)
 		offsetMax, err := getMaxOffset(ctx, session, headers)
 		if err != nil {
 			results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
-			s.errors++
+			s.errors.Add(1)
 			return
 		}
 
@@ -99,11 +100,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 			url := urlTemplate + queryParams.Encode()
 
-			s.requests++
+			s.requests.Add(1)
 			resp, err := session.Get(ctx, url, "", headers)
 			if err != nil {
 				results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
-				s.errors++
+				s.errors.Add(1)
 				session.DiscardHTTPResponse(resp)
 				return
 			}
@@ -122,7 +123,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					break
 				} else if err != nil {
 					results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
-					s.errors++
+					s.errors.Add(1)
 					session.DiscardHTTPResponse(resp)
 					return
 				}
@@ -131,7 +132,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				err = jsoniter.Unmarshal(n, &response)
 				if err != nil {
 					results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
-					s.errors++
+					s.errors.Add(1)
 					session.DiscardHTTPResponse(resp)
 					return
 				}
@@ -144,7 +145,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 							session.DiscardHTTPResponse(resp)
 							return
 						case results <- subscraping.Result{Source: sourceName, Type: subscraping.Subdomain, Value: strings.TrimSuffix(response.Obj.Name, ".")}:
-							s.results++
+							s.results.Add(1)
 						}
 						if maxResults > 0 && s.results >= uint64(maxResults) {
 							session.DiscardHTTPResponse(resp)
@@ -171,7 +172,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				// DNSDB's terminating jsonl object's cond is not "limited" or succeeded" (#3), this is an error, notify the user.
 				err = fmt.Errorf("%s terminated with condition: %s", sourceName, respCond)
 				results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
-				s.errors++
+				s.errors.Add(1)
 			}
 
 			session.DiscardHTTPResponse(resp)
@@ -209,10 +210,10 @@ func (s *Source) AddApiKeys(keys []string) {
 
 func (s *Source) Statistics() subscraping.Statistics {
 	return subscraping.Statistics{
-		Errors:    s.errors,
+		Errors:    int(s.errors.Load()),
 		Results:   int(s.results),
-		Requests:  s.requests,
-		TimeTaken: s.timeTaken,
+		Requests:  int(s.requests.Load()),
+		TimeTaken: time.Duration(s.timeTaken.Load()),
 		Skipped:   s.skipped,
 	}
 }

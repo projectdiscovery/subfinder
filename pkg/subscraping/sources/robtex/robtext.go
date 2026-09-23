@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"sync/atomic"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -22,9 +23,9 @@ const (
 // Source is the passive scraping agent
 type Source struct {
 	apiKeys   []string
-	timeTaken time.Duration
-	errors    int
-	results   int
+	timeTaken atomic.Int64 // nanoseconds; cast to time.Duration on read
+	errors    atomic.Int32
+	results   atomic.Int32
 	skipped   bool
 }
 
@@ -37,12 +38,12 @@ type result struct {
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
+	s.errors.Store(0)
+	s.results.Store(0)
 
 	go func() {
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			s.timeTaken.Store(int64(time.Since(startTime)))
 			close(results)
 		}(time.Now())
 
@@ -57,7 +58,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		ips, err := enumerate(ctx, session, fmt.Sprintf("%s/forward/%s?key=%s", baseURL, domain, randomApiKey), headers)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			s.errors.Add(1)
 			return
 		}
 
@@ -71,7 +72,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				domains, err := enumerate(ctx, session, fmt.Sprintf("%s/reverse/%s?key=%s", baseURL, result.Rrdata, randomApiKey), headers)
 				if err != nil {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-					s.errors++
+					s.errors.Add(1)
 					return
 				}
 				for _, result := range domains {
@@ -79,7 +80,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					case <-ctx.Done():
 						return
 					case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: result.Rrdata}:
-						s.results++
+						s.results.Add(1)
 					}
 				}
 			}
@@ -145,9 +146,9 @@ func (s *Source) AddApiKeys(keys []string) {
 
 func (s *Source) Statistics() subscraping.Statistics {
 	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		TimeTaken: s.timeTaken,
+		Errors:    int(s.errors.Load()),
+		Results:   int(s.results.Load()),
+		TimeTaken: time.Duration(s.timeTaken.Load()),
 		Skipped:   s.skipped,
 	}
 }

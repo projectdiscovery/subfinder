@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"regexp"
+	"sync/atomic"
 	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -20,22 +21,22 @@ var reNext = regexp.MustCompile(`<a href="([A-Za-z0-9/.]+)"><b>`)
 
 // Source is the passive scraping agent
 type Source struct {
-	timeTaken time.Duration
-	errors    int
-	results   int
-	requests  int
+	timeTaken atomic.Int64 // nanoseconds; cast to time.Duration on read
+	errors    atomic.Int32
+	results   atomic.Int32
+	requests  atomic.Int32
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
+	s.errors.Store(0)
+	s.results.Store(0)
+	s.requests.Store(0)
 
 	go func() {
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			s.timeTaken.Store(int64(time.Since(startTime)))
 			close(results)
 		}(time.Now())
 
@@ -52,12 +53,12 @@ func (s *Source) enumerate(ctx context.Context, session *subscraping.Session, ba
 	default:
 	}
 
-	s.requests++
+	s.requests.Add(1)
 	resp, err := session.SimpleGet(ctx, baseURL)
 	isnotfound := resp != nil && resp.StatusCode == http.StatusNotFound
 	if err != nil && !isnotfound {
 		results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
-		s.errors++
+		s.errors.Add(1)
 		session.DiscardHTTPResponse(resp)
 		return
 	}
@@ -65,7 +66,7 @@ func (s *Source) enumerate(ctx context.Context, session *subscraping.Session, ba
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Error, Error: err}
-		s.errors++
+		s.errors.Add(1)
 		session.DiscardHTTPResponse(resp)
 		return
 	}
@@ -77,7 +78,7 @@ func (s *Source) enumerate(ctx context.Context, session *subscraping.Session, ba
 		case <-ctx.Done():
 			return
 		case results <- subscraping.Result{Source: "sitedossier", Type: subscraping.Subdomain, Value: subdomain}:
-			s.results++
+			s.results.Add(1)
 		}
 	}
 
@@ -114,9 +115,9 @@ func (s *Source) AddApiKeys(_ []string) {
 
 func (s *Source) Statistics() subscraping.Statistics {
 	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		TimeTaken: s.timeTaken,
-		Requests:  s.requests,
+		Errors:    int(s.errors.Load()),
+		Results:   int(s.results.Load()),
+		TimeTaken: time.Duration(s.timeTaken.Load()),
+		Requests:  int(s.requests.Load()),
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sync/atomic"
 	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -20,22 +21,22 @@ type threatCrowdResponse struct {
 
 // Source implements the subscraping.Source interface for ThreatCrowd.
 type Source struct {
-	timeTaken time.Duration
-	errors    int
-	results   int
-	requests  int
+	timeTaken atomic.Int64 // nanoseconds; cast to time.Duration on read
+	errors    atomic.Int32
+	results   atomic.Int32
+	requests  atomic.Int32
 }
 
 // Run queries the ThreatCrowd API for the given domain and returns found subdomains.
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
+	s.errors.Store(0)
+	s.results.Store(0)
+	s.requests.Store(0)
 
 	go func(startTime time.Time) {
 		defer func() {
-			s.timeTaken = time.Since(startTime)
+			s.timeTaken.Store(int64(time.Since(startTime)))
 			close(results)
 		}()
 
@@ -43,15 +44,15 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			s.errors.Add(1)
 			return
 		}
 
-		s.requests++
+		s.requests.Add(1)
 		resp, err := session.Client.Do(req)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			s.errors.Add(1)
 			return
 		}
 		// This source issues a raw client.Do (bypassing the session's
@@ -61,27 +62,27 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		defer func() {
 			if err := resp.Body.Close(); err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				s.errors.Add(1)
 			}
 		}()
 
 		if resp.StatusCode != http.StatusOK {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("unexpected status code: %d", resp.StatusCode)}
-			s.errors++
+			s.errors.Add(1)
 			return
 		}
 
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			s.errors.Add(1)
 			return
 		}
 
 		var tcResponse threatCrowdResponse
 		if err := json.Unmarshal(body, &tcResponse); err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			s.errors.Add(1)
 			return
 		}
 
@@ -91,7 +92,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				case <-ctx.Done():
 					return
 				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
-					s.results++
+					s.results.Add(1)
 				}
 			}
 		}
@@ -131,9 +132,9 @@ func (s *Source) AddApiKeys(_ []string) {}
 // Statistics returns usage statistics.
 func (s *Source) Statistics() subscraping.Statistics {
 	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		TimeTaken: s.timeTaken,
-		Requests:  s.requests,
+		Errors:    int(s.errors.Load()),
+		Results:   int(s.results.Load()),
+		TimeTaken: time.Duration(s.timeTaken.Load()),
+		Requests:  int(s.requests.Load()),
 	}
 }

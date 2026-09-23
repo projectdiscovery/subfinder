@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"sync/atomic"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -21,10 +22,10 @@ type response struct {
 
 // Source is the passive scraping agent
 type Source struct {
-	timeTaken time.Duration
-	errors    int
-	results   int
-	requests  int
+	timeTaken atomic.Int64 // nanoseconds; cast to time.Duration on read
+	errors    atomic.Int32
+	results   atomic.Int32
+	requests  atomic.Int32
 	skipped   bool
 }
 
@@ -37,13 +38,13 @@ type requestBody struct {
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
+	s.errors.Store(0)
+	s.results.Store(0)
+	s.requests.Store(0)
 
 	go func() {
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			s.timeTaken.Store(int64(time.Since(startTime)))
 			close(results)
 		}(time.Now())
 
@@ -61,15 +62,15 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			bodyBytes, err := json.Marshal(reqBody)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				s.errors.Add(1)
 				return
 			}
 
-			s.requests++
+			s.requests.Add(1)
 			resp, err := session.Post(ctx, apiURL, "", headers, bytes.NewReader(bodyBytes))
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				s.errors.Add(1)
 				session.DiscardHTTPResponse(resp)
 				return
 			}
@@ -79,13 +80,13 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			session.DiscardHTTPResponse(resp)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				s.errors.Add(1)
 				return
 			}
 
 			for _, domainRecord := range thcResponse.Domains {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: domainRecord.Domain}
-				s.results++
+				s.results.Add(1)
 			}
 
 			pageState = thcResponse.NextPageState
@@ -126,10 +127,10 @@ func (s *Source) AddApiKeys(_ []string) {
 
 func (s *Source) Statistics() subscraping.Statistics {
 	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		TimeTaken: s.timeTaken,
+		Errors:    int(s.errors.Load()),
+		Results:   int(s.results.Load()),
+		TimeTaken: time.Duration(s.timeTaken.Load()),
 		Skipped:   s.skipped,
-		Requests:  s.requests,
+		Requests:  int(s.requests.Load()),
 	}
 }

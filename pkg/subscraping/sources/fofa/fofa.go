@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -24,10 +25,10 @@ type fofaResponse struct {
 // Source is the passive scraping agent
 type Source struct {
 	apiKeys   []apiKey
-	timeTaken time.Duration
-	errors    int
-	results   int
-	requests  int
+	timeTaken atomic.Int64 // nanoseconds; cast to time.Duration on read
+	errors    atomic.Int32
+	results   atomic.Int32
+	requests  atomic.Int32
 	skipped   bool
 }
 
@@ -39,13 +40,13 @@ type apiKey struct {
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
+	s.errors.Store(0)
+	s.results.Store(0)
+	s.requests.Store(0)
 
 	go func() {
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			s.timeTaken.Store(int64(time.Since(startTime)))
 			close(results)
 		}(time.Now())
 
@@ -57,11 +58,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		// fofa api doc https://fofa.info/static_pages/api_help
 		qbase64 := base64.StdEncoding.EncodeToString(fmt.Appendf(nil, "domain=\"%s\"", domain))
-		s.requests++
+		s.requests.Add(1)
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://fofa.info/api/v1/search/all?full=true&fields=host&page=1&size=10000&email=%s&key=%s&qbase64=%s", randomApiKey.username, randomApiKey.secret, qbase64))
 		if err != nil && resp == nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			s.errors.Add(1)
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -70,7 +71,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			s.errors.Add(1)
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -80,7 +81,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			results <- subscraping.Result{
 				Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%s", response.ErrMsg),
 			}
-			s.errors++
+			s.errors.Add(1)
 			return
 		}
 
@@ -99,7 +100,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					subdomain = re.ReplaceAllString(subdomain, "")
 				}
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-				s.results++
+				s.results.Add(1)
 			}
 		}
 	}()
@@ -136,10 +137,10 @@ func (s *Source) AddApiKeys(keys []string) {
 
 func (s *Source) Statistics() subscraping.Statistics {
 	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		Requests:  s.requests,
-		TimeTaken: s.timeTaken,
+		Errors:    int(s.errors.Load()),
+		Results:   int(s.results.Load()),
+		Requests:  int(s.requests.Load()),
+		TimeTaken: time.Duration(s.timeTaken.Load()),
 		Skipped:   s.skipped,
 	}
 }

@@ -20,7 +20,7 @@ import (
 // Source is the passive scraping agent
 type Source struct {
 	apiKeys   []string
-	timeTaken time.Duration
+	timeTaken atomic.Int64 // nanoseconds; cast to time.Duration on read
 	errors    atomic.Int32
 	results   atomic.Int32
 	requests  atomic.Int32
@@ -43,7 +43,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 	go func() {
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			s.timeTaken.Store(int64(time.Since(startTime)))
 			close(results)
 		}(time.Now())
 
@@ -183,7 +183,7 @@ func (s *Source) Statistics() subscraping.Statistics {
 		Errors:    int(s.errors.Load()),
 		Results:   int(s.results.Load()),
 		Requests:  int(s.requests.Load()),
-		TimeTaken: s.timeTaken,
+		TimeTaken: time.Duration(s.timeTaken.Load()),
 		Skipped:   s.skipped,
 	}
 }

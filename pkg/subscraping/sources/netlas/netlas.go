@@ -5,6 +5,7 @@ import (
 	"context"
 	"io"
 	"strings"
+	"sync/atomic"
 
 	"encoding/json"
 	"fmt"
@@ -40,22 +41,22 @@ const communityDownloadCap = 200
 // Source is the passive scraping agent
 type Source struct {
 	apiKeys   []string
-	timeTaken time.Duration
-	errors    int
-	results   int
-	requests  int
+	timeTaken atomic.Int64 // nanoseconds; cast to time.Duration on read
+	errors    atomic.Int32
+	results   atomic.Int32
+	requests  atomic.Int32
 	skipped   bool
 }
 
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
+	s.errors.Store(0)
+	s.results.Store(0)
+	s.requests.Store(0)
 
 	go func() {
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			s.timeTaken.Store(int64(time.Since(startTime)))
 			close(results)
 		}(time.Now())
 
@@ -68,7 +69,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		// Pick an API key
 		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
-		s.requests++
+		s.requests.Add(1)
 		resp1, err := session.HTTPRequest(ctx, http.MethodGet, countUrl, "", map[string]string{
 			"accept":    "application/json",
 			"X-API-Key": randomApiKey,
@@ -76,21 +77,21 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			s.errors.Add(1)
 			session.DiscardHTTPResponse(resp1)
 			return
 		}
 		defer func() {
 			if err := resp1.Body.Close(); err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				s.errors.Add(1)
 			}
 		}()
 
 		body, err := io.ReadAll(resp1.Body)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("error reading response body")}
-			s.errors++
+			s.errors.Add(1)
 			return
 		}
 
@@ -99,7 +100,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		err = json.Unmarshal(body, &domainsCount)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			s.errors.Add(1)
 			return
 		}
 
@@ -116,35 +117,35 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		jsonRequestBody, err := json.Marshal(requestBody)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("error marshaling request body")}
-			s.errors++
+			s.errors.Add(1)
 			return
 		}
 
 		// Pick an API key
 		randomApiKey = subscraping.PickRandom(s.apiKeys, s.Name())
 
-		s.requests++
+		s.requests.Add(1)
 		resp2, err := session.HTTPRequest(ctx, http.MethodPost, apiUrl, "", map[string]string{
 			"accept":       "application/json",
 			"X-API-Key":    randomApiKey,
 			"Content-Type": "application/json"}, strings.NewReader(string(jsonRequestBody)), subscraping.BasicAuth{})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			s.errors.Add(1)
 			session.DiscardHTTPResponse(resp2)
 			return
 		}
 		defer func() {
 			if err := resp2.Body.Close(); err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				s.errors.Add(1)
 			}
 		}()
 
 		body, err = io.ReadAll(resp2.Body)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("error reading response body")}
-			s.errors++
+			s.errors.Add(1)
 			return
 		}
 
@@ -153,7 +154,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		err = json.Unmarshal(body, &data)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			s.errors.Add(1)
 			return
 		}
 
@@ -162,7 +163,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			case <-ctx.Done():
 				return
 			case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: item.Data.Domain}:
-				s.results++
+				s.results.Add(1)
 			}
 		}
 
@@ -198,10 +199,10 @@ func (s *Source) AddApiKeys(keys []string) {
 
 func (s *Source) Statistics() subscraping.Statistics {
 	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		Requests:  s.requests,
-		TimeTaken: s.timeTaken,
+		Errors:    int(s.errors.Load()),
+		Results:   int(s.results.Load()),
+		Requests:  int(s.requests.Load()),
+		TimeTaken: time.Duration(s.timeTaken.Load()),
 		Skipped:   s.skipped,
 	}
 }
