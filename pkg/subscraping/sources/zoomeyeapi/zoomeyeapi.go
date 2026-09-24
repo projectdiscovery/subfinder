@@ -6,7 +6,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -23,44 +25,45 @@ type zoomeyeResults struct {
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys   []string
-	timeTaken time.Duration
-	errors    int
-	results   int
-	requests  int
-	skipped   bool
+	mu      sync.Mutex
+	stats   subscraping.Statistics
+	apiKeys []string
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
+	s.mu.Lock()
+	apiKeys := s.apiKeys
+	s.mu.Unlock()
 
 	go func() {
+		var stats subscraping.Statistics
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			stats.TimeTaken = time.Since(startTime)
+			s.mu.Lock()
+			s.stats = stats
+			s.mu.Unlock()
 			close(results)
 		}(time.Now())
 
 		reportError := func(err error) {
-			s.errors++
+			stats.Errors++
 			select {
 			case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}:
 			case <-ctx.Done():
 			}
 		}
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
 		if randomApiKey == "" {
-			s.skipped = true
+			stats.Skipped = true
 			return
 		}
 
 		randomApiInfo := strings.Split(randomApiKey, ":")
 		if len(randomApiInfo) != 2 {
-			s.skipped = true
+			stats.Skipped = true
 			return
 		}
 		host := randomApiInfo[0]
@@ -95,7 +98,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				reportError(fmt.Errorf("encode ZoomEye search request: %w", err))
 				return
 			}
-			s.requests++
+			stats.Requests++
 			resp, err := session.Post(ctx, api, "", headers, bytes.NewReader(body))
 			if err != nil {
 				if resp != nil {
@@ -125,7 +128,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				case <-ctx.Done():
 					return
 				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: r.Domain}:
-					s.results++
+					stats.Results++
 				}
 			}
 			if len(res.Data) == 0 || currentPage >= (res.Total-1)/pageSize+1 {
@@ -159,15 +162,14 @@ func (s *Source) NeedsKey() bool {
 }
 
 func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.apiKeys = slices.Clone(keys)
 }
 
+// Statistics returns a snapshot of the most recently completed run.
 func (s *Source) Statistics() subscraping.Statistics {
-	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		TimeTaken: s.timeTaken,
-		Skipped:   s.skipped,
-		Requests:  s.requests,
-	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.stats
 }

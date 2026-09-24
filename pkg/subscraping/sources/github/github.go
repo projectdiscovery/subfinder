@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -40,43 +41,55 @@ type response struct {
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys   []string
-	timeTaken time.Duration
-	errors    atomic.Int32
-	results   atomic.Int32
-	requests  atomic.Int32
-	skipped   bool
+	mu      sync.Mutex
+	stats   subscraping.Statistics
+	apiKeys []string
+}
+
+// runState holds counters shared only by workers of one run.
+type runState struct {
+	errors   atomic.Int32
+	results  atomic.Int32
+	requests atomic.Int32
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors.Store(0)
-	s.results.Store(0)
-	s.requests.Store(0)
+	s.mu.Lock()
+	apiKeys := s.apiKeys
+	s.mu.Unlock()
 
 	go func() {
+		var stats subscraping.Statistics
+		var run runState
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			stats.TimeTaken = time.Since(startTime)
+			stats.Errors = int(run.errors.Load())
+			stats.Results = int(run.results.Load())
+			stats.Requests = int(run.requests.Load())
+			s.mu.Lock()
+			s.stats = stats
+			s.mu.Unlock()
 			close(results)
 		}(time.Now())
 
-		if len(s.apiKeys) == 0 {
+		if len(apiKeys) == 0 {
 			gologger.Debug().Msgf("Cannot use the %s source because there was no key defined for it.", s.Name())
-			s.skipped = true
+			stats.Skipped = true
 			return
 		}
 
-		tokens := NewTokenManager(s.apiKeys)
+		tokens := NewTokenManager(apiKeys)
 
 		searchURL := fmt.Sprintf("https://api.github.com/search/code?per_page=100&q=%s&sort=created&order=asc", domain)
-		s.enumerate(ctx, searchURL, domainRegexp(domain), tokens, session, results)
+		s.enumerate(ctx, searchURL, domainRegexp(domain), tokens, session, results, &run)
 	}()
 
 	return results
 }
 
-func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *regexp.Regexp, tokens *Tokens, session *subscraping.Session, results chan subscraping.Result) {
+func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *regexp.Regexp, tokens *Tokens, session *subscraping.Session, results chan subscraping.Result, run *runState) {
 	select {
 	case <-ctx.Done():
 		return
@@ -89,12 +102,12 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 	}
 
 	// Initial request to GitHub search
-	s.requests.Add(1)
+	run.requests.Add(1)
 	resp, err := session.Get(ctx, searchURL, "", headers)
 	isForbidden := resp != nil && resp.StatusCode == http.StatusForbidden
 	if err != nil && !isForbidden {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-		s.errors.Add(1)
+		run.errors.Add(1)
 		session.DiscardHTTPResponse(resp)
 		return
 	}
@@ -106,7 +119,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 		tokens.setCurrentTokenExceeded(retryAfterSeconds)
 		session.DiscardHTTPResponse(resp)
 
-		s.enumerate(ctx, searchURL, domainRegexp, tokens, session, results)
+		s.enumerate(ctx, searchURL, domainRegexp, tokens, session, results, run)
 		return
 	}
 
@@ -116,17 +129,17 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 	err = jsoniter.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-		s.errors.Add(1)
+		run.errors.Add(1)
 		session.DiscardHTTPResponse(resp)
 		return
 	}
 
 	session.DiscardHTTPResponse(resp)
 
-	err = s.processItems(ctx, data.Items, domainRegexp, s.Name(), session, results)
+	err = s.processItems(ctx, data.Items, domainRegexp, s.Name(), session, results, run)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-		s.errors.Add(1)
+		run.errors.Add(1)
 		return
 	}
 
@@ -143,16 +156,16 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 			nextURL, err := url.QueryUnescape(link.URL)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors.Add(1)
+				run.errors.Add(1)
 				return
 			}
-			s.enumerate(ctx, nextURL, domainRegexp, tokens, session, results)
+			s.enumerate(ctx, nextURL, domainRegexp, tokens, session, results, run)
 		}
 	}
 }
 
 // processItems processes GitHub response items.
-func (s *Source) processItems(ctx context.Context, items []item, domainRegexp *regexp.Regexp, name string, session *subscraping.Session, results chan subscraping.Result) error {
+func (s *Source) processItems(ctx context.Context, items []item, domainRegexp *regexp.Regexp, name string, session *subscraping.Session, results chan subscraping.Result, run *runState) error {
 	var wg sync.WaitGroup
 	errChan := make(chan error, len(items))
 
@@ -172,7 +185,7 @@ func (s *Source) processItems(ctx context.Context, items []item, domainRegexp *r
 			default:
 			}
 
-			s.requests.Add(1)
+			run.requests.Add(1)
 			resp, err := session.SimpleGet(ctx, rawURL(responseItem.HTMLURL))
 			if err != nil {
 				if resp != nil && resp.StatusCode != http.StatusNotFound {
@@ -201,7 +214,7 @@ func (s *Source) processItems(ctx context.Context, items []item, domainRegexp *r
 							session.DiscardHTTPResponse(resp)
 							return
 						case results <- subscraping.Result{Source: name, Type: subscraping.Subdomain, Value: subdomain}:
-							s.results.Add(1)
+							run.results.Add(1)
 						}
 					}
 				}
@@ -219,7 +232,7 @@ func (s *Source) processItems(ctx context.Context, items []item, domainRegexp *r
 					case <-ctx.Done():
 						return
 					case results <- subscraping.Result{Source: name, Type: subscraping.Subdomain, Value: subdomain}:
-						s.results.Add(1)
+						run.results.Add(1)
 					}
 				}
 			}
@@ -280,15 +293,14 @@ func (s *Source) NeedsKey() bool {
 }
 
 func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.apiKeys = slices.Clone(keys)
 }
 
+// Statistics returns a snapshot of the most recently completed run.
 func (s *Source) Statistics() subscraping.Statistics {
-	return subscraping.Statistics{
-		Errors:    int(s.errors.Load()),
-		Results:   int(s.results.Load()),
-		Requests:  int(s.requests.Load()),
-		TimeTaken: s.timeTaken,
-		Skipped:   s.skipped,
-	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.stats
 }

@@ -9,7 +9,9 @@ import (
 	"io"
 	"math"
 	"net/url"
+	"slices"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -17,30 +19,31 @@ import (
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys   []string
-	timeTaken time.Duration
-	errors    int
-	results   int
-	requests  int
-	skipped   bool
+	mu      sync.Mutex
+	stats   subscraping.Statistics
+	apiKeys []string
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
+	s.mu.Lock()
+	apiKeys := s.apiKeys
+	s.mu.Unlock()
 
 	go func() {
+		var stats subscraping.Statistics
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			stats.TimeTaken = time.Since(startTime)
+			s.mu.Lock()
+			s.stats = stats
+			s.mu.Unlock()
 			close(results)
 		}(time.Now())
 		// Pick an API key, skip if no key is found
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
 		if randomApiKey == "" {
-			s.skipped = true
+			stats.Skipped = true
 			return
 		}
 
@@ -54,13 +57,13 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		// Fetch all pages with pagination
 		// https://www.merklemap.com/documentation/search
-		s.fetchAllPages(ctx, domain, headers, session, results)
+		s.fetchAllPages(ctx, domain, headers, session, results, &stats)
 	}()
 	return results
 }
 
 // fetchAllPages fetches all pages of results using pagination
-func (s *Source) fetchAllPages(ctx context.Context, domain string, headers map[string]string, session *subscraping.Session, results chan subscraping.Result) {
+func (s *Source) fetchAllPages(ctx context.Context, domain string, headers map[string]string, session *subscraping.Session, results chan subscraping.Result, stats *subscraping.Statistics) {
 	baseURL := "https://api.merklemap.com/v1/search?query=" + url.QueryEscape("*."+domain)
 	totalCount := math.MaxInt
 	processedResults := 0
@@ -71,11 +74,11 @@ func (s *Source) fetchAllPages(ctx context.Context, domain string, headers map[s
 
 	// Iterate through all pages
 	for page := 0; processedResults < totalCount; page++ {
-		pageResp, err := s.fetchPage(ctx, baseURL, page, headers, session)
+		pageResp, err := s.fetchPage(ctx, baseURL, page, headers, session, stats)
 
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			stats.Errors++
 			return
 		}
 
@@ -92,9 +95,9 @@ func (s *Source) fetchAllPages(ctx context.Context, domain string, headers map[s
 			results <- subscraping.Result{
 				Source: s.Name(), Type: subscraping.Subdomain, Value: result.Hostname,
 			}
-			s.results++
+			stats.Results++
 			processedResults++
-			if maxResults > 0 && s.results >= maxResults {
+			if maxResults > 0 && stats.Results >= maxResults {
 				return
 			}
 		}
@@ -103,10 +106,10 @@ func (s *Source) fetchAllPages(ctx context.Context, domain string, headers map[s
 }
 
 // fetchPage fetches a single page of results
-func (s *Source) fetchPage(ctx context.Context, baseURL string, page int, headers map[string]string, session *subscraping.Session) (*response, error) {
+func (s *Source) fetchPage(ctx context.Context, baseURL string, page int, headers map[string]string, session *subscraping.Session, stats *subscraping.Statistics) (*response, error) {
 	url := baseURL + "&page=" + strconv.Itoa(page)
 
-	s.requests++
+	stats.Requests++
 	resp, err := session.Get(ctx, url, "", headers)
 	if err != nil {
 		return nil, err
@@ -158,17 +161,16 @@ func (s *Source) NeedsKey() bool {
 }
 
 func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.apiKeys = slices.Clone(keys)
 }
 
+// Statistics returns a snapshot of the most recently completed run.
 func (s *Source) Statistics() subscraping.Statistics {
-	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		TimeTaken: s.timeTaken,
-		Skipped:   s.skipped,
-		Requests:  s.requests,
-	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.stats
 }
 
 type response struct {

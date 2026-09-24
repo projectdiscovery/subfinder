@@ -123,10 +123,12 @@ func TestCensysSource_AddApiKeys(t *testing.T) {
 
 func TestCensysSource_Statistics(t *testing.T) {
 	source := &Source{
-		errors:    2,
-		results:   10,
-		timeTaken: 5 * time.Second,
-		skipped:   false,
+		stats: subscraping.Statistics{
+			Errors:    2,
+			Results:   10,
+			TimeTaken: 5 * time.Second,
+			Skipped:   false,
+		},
 	}
 
 	stats := source.Statistics()
