@@ -12,6 +12,7 @@ require (
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/gologger v1.1.72
 	github.com/projectdiscovery/ratelimit v0.0.88
+	github.com/projectdiscovery/retryablehttp-go v1.3.24
 	github.com/projectdiscovery/utils v0.11.2
 	github.com/rs/xid v1.5.0
 	github.com/stretchr/testify v1.12.1
@@ -69,7 +70,6 @@ require (
 	github.com/projectdiscovery/hmap v0.0.102 // indirect
 	github.com/projectdiscovery/machineid v0.0.0-20250715113114-c77eb3567582 // indirect
 	github.com/projectdiscovery/networkpolicy v0.1.48 // indirect
-	github.com/projectdiscovery/retryablehttp-go v1.3.24 // indirect
 	github.com/refraction-networking/utls v1.8.2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect

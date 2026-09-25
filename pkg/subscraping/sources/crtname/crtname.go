@@ -6,7 +6,9 @@ import (
 	"context"
 	"net/http"
 	"net/url"
+	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -16,31 +18,33 @@ const searchURL = "https://crt.name/v1/search?apex="
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys   []string
-	timeTaken time.Duration
-	errors    int
-	results   int
-	requests  int
+	mu      sync.Mutex
+	stats   subscraping.Statistics
+	apiKeys []string
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
+	s.mu.Lock()
+	apiKeys := s.apiKeys
+	s.mu.Unlock()
 
 	go func() {
+		var stats subscraping.Statistics
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			stats.TimeTaken = time.Since(startTime)
+			s.mu.Lock()
+			s.stats = stats
+			s.mu.Unlock()
 			close(results)
 		}(time.Now())
 
-		s.requests++
-		resp, err := s.fetch(ctx, domain, session)
+		stats.Requests++
+		resp, err := s.fetch(ctx, domain, session, apiKeys)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			stats.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -66,27 +70,27 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				case <-ctx.Done():
 					return
 				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
-					s.results++
+					stats.Results++
 				}
-				if maxResults > 0 && s.results >= maxResults {
+				if maxResults > 0 && stats.Results >= maxResults {
 					return
 				}
 			}
 		}
 		if err := scanner.Err(); err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			stats.Errors++
 		}
 	}()
 
 	return results
 }
 
-func (s *Source) fetch(ctx context.Context, domain string, session *subscraping.Session) (*http.Response, error) {
+func (s *Source) fetch(ctx context.Context, domain string, session *subscraping.Session, apiKeys []string) (*http.Response, error) {
 	endpoint := searchURL + url.QueryEscape(domain)
 	headers := map[string]string{"User-Agent": "subfinder"}
-	if len(s.apiKeys) > 0 {
-		headers["Authorization"] = "Bearer " + subscraping.PickRandom(s.apiKeys, s.Name())
+	if len(apiKeys) > 0 {
+		headers["Authorization"] = "Bearer " + subscraping.PickRandom(apiKeys, s.Name())
 	}
 	return session.Get(ctx, endpoint, "", headers)
 }
@@ -113,14 +117,14 @@ func (s *Source) NeedsKey() bool {
 }
 
 func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.apiKeys = slices.Clone(keys)
 }
 
+// Statistics returns a snapshot of the most recently completed run.
 func (s *Source) Statistics() subscraping.Statistics {
-	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		Requests:  s.requests,
-		TimeTaken: s.timeTaken,
-	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.stats
 }

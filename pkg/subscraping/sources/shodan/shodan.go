@@ -4,6 +4,8 @@ package shodan
 import (
 	"context"
 	"fmt"
+	"slices"
+	"sync"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -13,12 +15,9 @@ import (
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys   []string
-	timeTaken time.Duration
-	errors    int
-	results   int
-	requests  int
-	skipped   bool
+	mu      sync.Mutex
+	stats   subscraping.Statistics
+	apiKeys []string
 }
 
 type dnsdbLookupResponse struct {
@@ -32,19 +31,23 @@ type dnsdbLookupResponse struct {
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
+	s.mu.Lock()
+	apiKeys := s.apiKeys
+	s.mu.Unlock()
 
 	go func() {
+		var stats subscraping.Statistics
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			stats.TimeTaken = time.Since(startTime)
+			s.mu.Lock()
+			s.stats = stats
+			s.mu.Unlock()
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
 		if randomApiKey == "" {
-			s.skipped = true
+			stats.Skipped = true
 			return
 		}
 
@@ -61,11 +64,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 
 			searchURL := fmt.Sprintf("https://api.shodan.io/dns/domain/%s?key=%s&page=%d", domain, randomApiKey, page)
-			s.requests++
+			stats.Requests++
 			resp, err := session.SimpleGet(ctx, searchURL)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				stats.Errors++
 				session.DiscardHTTPResponse(resp)
 				return
 			}
@@ -76,7 +79,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				stats.Errors++
 				return
 			}
 
@@ -84,7 +87,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				results <- subscraping.Result{
 					Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("%v", response.Error),
 				}
-				s.errors++
+				stats.Errors++
 				return
 			}
 
@@ -98,8 +101,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				results <- subscraping.Result{
 					Source: s.Name(), Type: subscraping.Subdomain, Value: value,
 				}
-				s.results++
-				if maxResults > 0 && s.results >= maxResults {
+				stats.Results++
+				if maxResults > 0 && stats.Results >= maxResults {
 					return
 				}
 			}
@@ -135,16 +138,16 @@ func (s *Source) NeedsKey() bool {
 	return s.KeyRequirement() == subscraping.RequiredKey
 }
 
+// AddApiKeys copies keys for subsequent runs.
 func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.apiKeys = slices.Clone(keys)
 }
 
+// Statistics returns a snapshot of the most recently completed run.
 func (s *Source) Statistics() subscraping.Statistics {
-	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		Requests:  s.requests,
-		TimeTaken: s.timeTaken,
-		Skipped:   s.skipped,
-	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.stats
 }

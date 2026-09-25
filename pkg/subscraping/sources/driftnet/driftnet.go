@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -24,12 +25,17 @@ const (
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys   []string
-	timeTaken time.Duration
-	errors    atomic.Int32
-	results   atomic.Int32
-	requests  atomic.Int32
-	skipped   bool
+	mu      sync.Mutex
+	stats   subscraping.Statistics
+	apiKeys []string
+}
+
+// runState is shared by the endpoints of one enumeration.
+type runState struct {
+	apiKeys  []string
+	errors   atomic.Int32
+	results  atomic.Int32
+	requests atomic.Int32
 }
 
 // endpointConfig describes a driftnet endpoint that can used
@@ -64,9 +70,9 @@ type summaryResponse struct {
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	// Final results channel
 	results := make(chan subscraping.Result)
-	s.errors.Store(0)
-	s.results.Store(0)
-	s.requests.Store(0)
+	s.mu.Lock()
+	run := &runState{apiKeys: s.apiKeys}
+	s.mu.Unlock()
 
 	// Waitgroup for subsources
 	var wg sync.WaitGroup
@@ -78,13 +84,21 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	// Close down results when all subsources finished
 	go func(startTime time.Time) {
 		wg.Wait()
-		s.timeTaken = time.Since(startTime)
+		stats := subscraping.Statistics{
+			TimeTaken: time.Since(startTime),
+			Errors:    int(run.errors.Load()),
+			Results:   int(run.results.Load()),
+			Requests:  int(run.requests.Load()),
+		}
+		s.mu.Lock()
+		s.stats = stats
+		s.mu.Unlock()
 		close(results)
 	}(time.Now())
 
 	// Start up requests for all subsources
 	for i := range endpoints {
-		go s.runSubsource(ctx, domain, session, results, &wg, &dedupe, endpoints[i])
+		go s.runSubsource(ctx, domain, session, results, &wg, &dedupe, endpoints[i], run)
 	}
 
 	// Return the results channel
@@ -116,44 +130,42 @@ func (s *Source) NeedsKey() bool {
 	return s.KeyRequirement() == subscraping.RequiredKey
 }
 
-// AddApiKeys provides us with the API key(s)
+// AddApiKeys copies keys for subsequent runs.
 func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.apiKeys = slices.Clone(keys)
 }
 
-// Statistics returns statistics about the scraping process
+// Statistics returns a snapshot of the most recently completed run.
 func (s *Source) Statistics() subscraping.Statistics {
-	return subscraping.Statistics{
-		Errors:    int(s.errors.Load()),
-		Results:   int(s.results.Load()),
-		Requests:  int(s.requests.Load()),
-		TimeTaken: s.timeTaken,
-		Skipped:   s.skipped,
-	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.stats
 }
 
 // runSubsource queries a specific driftnet endpoint for subdomains and sends results to the channel
-func (s *Source) runSubsource(ctx context.Context, domain string, session *subscraping.Session, results chan subscraping.Result, wg *sync.WaitGroup, dedupe *sync.Map, epConfig endpointConfig) {
+func (s *Source) runSubsource(ctx context.Context, domain string, session *subscraping.Session, results chan subscraping.Result, wg *sync.WaitGroup, dedupe *sync.Map, epConfig endpointConfig, run *runState) {
 	// Default headers
 	headers := map[string]string{
 		"accept": "application/json",
 	}
 
 	// Pick an API key
-	randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+	randomApiKey := subscraping.PickRandom(run.apiKeys, s.Name())
 	if randomApiKey != "" {
 		headers["authorization"] = "Bearer " + randomApiKey
 	}
 
 	// Request
 	requestURL := fmt.Sprintf("%s%s?%s%s&summarize=host&summary_context=%s&summary_limit=%d", baseURL, epConfig.endpoint, epConfig.param, url.QueryEscape(domain), epConfig.context, summaryLimit)
-	s.requests.Add(1)
+	run.requests.Add(1)
 	resp, err := session.Get(ctx, requestURL, "", headers)
 	if err != nil {
 		// HTTP 204 is not an error from the Driftnet API
 		if resp == nil || resp.StatusCode != http.StatusNoContent {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors.Add(1)
+			run.errors.Add(1)
 		}
 
 		wg.Done()
@@ -166,7 +178,7 @@ func (s *Source) runSubsource(ctx context.Context, domain string, session *subsc
 	if resp.StatusCode != 200 {
 		if resp.StatusCode != 204 {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("request failed with status %d", resp.StatusCode)}
-			s.errors.Add(1)
+			run.errors.Add(1)
 		}
 
 		wg.Done()
@@ -179,7 +191,7 @@ func (s *Source) runSubsource(ctx context.Context, domain string, session *subsc
 	err = decoder.Decode(&summary)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-		s.errors.Add(1)
+		run.errors.Add(1)
 		wg.Done()
 		return
 	}
@@ -201,7 +213,7 @@ func (s *Source) runSubsource(ctx context.Context, domain string, session *subsc
 				wg.Done()
 				return
 			case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
-				s.results.Add(1)
+				run.results.Add(1)
 			}
 		}
 	}

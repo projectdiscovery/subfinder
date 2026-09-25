@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -19,12 +20,16 @@ import (
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys   []string
-	timeTaken time.Duration
-	errors    atomic.Int32
-	results   atomic.Int32
-	requests  atomic.Int32
-	skipped   bool
+	mu      sync.Mutex
+	stats   subscraping.Statistics
+	apiKeys []string
+}
+
+// runState holds counters shared only by workers of one run.
+type runState struct {
+	errors   atomic.Int32
+	results  atomic.Int32
+	requests atomic.Int32
 }
 
 type item struct {
@@ -37,17 +42,25 @@ type item struct {
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors.Store(0)
-	s.results.Store(0)
-	s.requests.Store(0)
+	s.mu.Lock()
+	apiKeys := s.apiKeys
+	s.mu.Unlock()
 
 	go func() {
+		var stats subscraping.Statistics
+		var run runState
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			stats.TimeTaken = time.Since(startTime)
+			stats.Errors = int(run.errors.Load())
+			stats.Results = int(run.results.Load())
+			stats.Requests = int(run.requests.Load())
+			s.mu.Lock()
+			s.stats = stats
+			s.mu.Unlock()
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
 		if randomApiKey == "" {
 			return
 		}
@@ -55,25 +68,25 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		headers := map[string]string{"PRIVATE-TOKEN": randomApiKey}
 
 		searchURL := fmt.Sprintf("https://gitlab.com/api/v4/search?scope=blobs&search=%s&per_page=100", domain)
-		s.enumerate(ctx, searchURL, domainRegexp(domain), headers, session, results)
+		s.enumerate(ctx, searchURL, domainRegexp(domain), headers, session, results, &run)
 
 	}()
 
 	return results
 }
 
-func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *regexp.Regexp, headers map[string]string, session *subscraping.Session, results chan subscraping.Result) {
+func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *regexp.Regexp, headers map[string]string, session *subscraping.Session, results chan subscraping.Result, run *runState) {
 	select {
 	case <-ctx.Done():
 		return
 	default:
 	}
 
-	s.requests.Add(1)
+	run.requests.Add(1)
 	resp, err := session.Get(ctx, searchURL, "", headers)
 	if err != nil && resp == nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-		s.errors.Add(1)
+		run.errors.Add(1)
 		session.DiscardHTTPResponse(resp)
 		return
 	}
@@ -84,7 +97,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 	err = jsoniter.NewDecoder(resp.Body).Decode(&items)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-		s.errors.Add(1)
+		run.errors.Add(1)
 		return
 	}
 
@@ -93,16 +106,17 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 
 	for _, it := range items {
 		go func(item item) {
+			defer wg.Done()
 			// The original item.Path causes 404 error because the Gitlab API is expecting the url encoded path
 			fileUrl := fmt.Sprintf("https://gitlab.com/api/v4/projects/%d/repository/files/%s/raw?ref=%s", item.ProjectId, url.QueryEscape(item.Path), item.Ref)
-			s.requests.Add(1)
+			run.requests.Add(1)
 			resp, err := session.Get(ctx, fileUrl, "", headers)
 			if err != nil {
 				if resp == nil || (resp != nil && resp.StatusCode != http.StatusNotFound) {
 					session.DiscardHTTPResponse(resp)
 
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-					s.errors.Add(1)
+					run.errors.Add(1)
 					return
 				}
 			}
@@ -116,12 +130,11 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 					}
 					for _, subdomain := range domainRegexp.FindAllString(line, -1) {
 						results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}
-						s.results.Add(1)
+						run.results.Add(1)
 					}
 				}
 				session.DiscardHTTPResponse(resp)
 			}
-			defer wg.Done()
 		}(it)
 	}
 
@@ -136,11 +149,11 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 			nextURL, err := url.QueryUnescape(link.URL)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors.Add(1)
+				run.errors.Add(1)
 				return
 			}
 
-			s.enumerate(ctx, nextURL, domainRegexp, headers, session, results)
+			s.enumerate(ctx, nextURL, domainRegexp, headers, session, results, run)
 		}
 	}
 
@@ -174,16 +187,14 @@ func (s *Source) NeedsKey() bool {
 }
 
 func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.apiKeys = slices.Clone(keys)
 }
 
-// Statistics returns the statistics for the source
+// Statistics returns a snapshot of the most recently completed run.
 func (s *Source) Statistics() subscraping.Statistics {
-	return subscraping.Statistics{
-		Errors:    int(s.errors.Load()),
-		Results:   int(s.results.Load()),
-		Requests:  int(s.requests.Load()),
-		TimeTaken: s.timeTaken,
-		Skipped:   s.skipped,
-	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.stats
 }
