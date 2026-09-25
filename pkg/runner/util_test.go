@@ -3,6 +3,7 @@ package runner
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -37,6 +38,55 @@ func TestPreprocessDomain(t *testing.T) {
 				t.Fatalf("preprocessDomain(%q) = %q, want %q", tt.in, got, tt.want)
 			}
 		})
+	}
+}
+
+func TestNormalizeSubdomain(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		want string
+	}{
+		{"bare subdomain", "www.example.com", "www.example.com"},
+		{"trailing dot", "www.example.com.", "www.example.com"},
+		{"uppercase", "WWW.Example.COM", "www.example.com"},
+		{"uppercase and trailing dot", "WWW.EXAMPLE.COM.", "www.example.com"},
+		{"wildcard kept", "*.sub.example.com", "*.sub.example.com"},
+		{"wildcard and trailing dot", "*.sub.example.com.", "*.sub.example.com"},
+		{"empty", "", ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := normalizeSubdomain(tt.in); got != tt.want {
+				t.Fatalf("normalizeSubdomain(%q) = %q, want %q", tt.in, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSubdomainPassesDomainGate(t *testing.T) {
+	domain := "example.com"
+	// Values as reported verbatim by sources that do not normalize their
+	// output: trailing-dot FQDNs from DNS-centric APIs, mixed-case hosts
+	// from certificate data and code search matches.
+	for _, value := range []string{
+		"www.example.com",
+		"www.example.com.",
+		"WWW.Example.com",
+		"dev.EXAMPLE.com",
+		"*.sub.example.com.",
+		"https://www.EXAMPLE.com",
+	} {
+		subdomain := replacer.Replace(normalizeSubdomain(value))
+		if !strings.HasSuffix(subdomain, "."+domain) {
+			t.Fatalf("expected %q to pass the domain gate, got %q", value, subdomain)
+		}
+	}
+	for _, value := range []string{"example.com", "notexample.com", "foo.example.com.evil.org"} {
+		subdomain := replacer.Replace(normalizeSubdomain(value))
+		if strings.HasSuffix(subdomain, "."+domain) {
+			t.Fatalf("expected %q to be rejected by the domain gate, got %q", value, subdomain)
+		}
 	}
 }
 
