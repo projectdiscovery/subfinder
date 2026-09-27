@@ -66,6 +66,8 @@ type Options struct {
 	ExcludeIps         bool
 	Match              goflags.StringSlice
 	Filter             goflags.StringSlice
+	MatchRegex         goflags.StringSlice // MatchRegex contains regular expressions to include in results
+	FilterRegex        goflags.StringSlice // FilterRegex contains regular expressions to exclude from results
 	matchRegexes       []*regexp.Regexp
 	filterRegexes      []*regexp.Regexp
 	ResultCallback     OnResultCallback // OnResult callback
@@ -110,6 +112,8 @@ func ParseOptions() *Options {
 	flagSet.CreateGroup("filter", "Filter",
 		flagSet.StringSliceVarP(&options.Match, "match", "m", nil, "subdomain or list of subdomain to match (file or comma separated)", goflags.FileNormalizedStringSliceOptions),
 		flagSet.StringSliceVarP(&options.Filter, "filter", "f", nil, " subdomain or list of subdomain to filter (file or comma separated)", goflags.FileNormalizedStringSliceOptions),
+		flagSet.StringSliceVar(&options.MatchRegex, "match-regex", nil, "regular expression to match subdomains (repeat for multiple expressions)", goflags.StringSliceOptions),
+		flagSet.StringSliceVar(&options.FilterRegex, "filter-regex", nil, "regular expression to filter subdomains (repeat for multiple expressions)", goflags.StringSliceOptions),
 	)
 
 	flagSet.CreateGroup("rate-limit", "Rate-limit",

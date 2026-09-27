@@ -71,6 +71,8 @@ SOURCE:
 FILTER:
   -m, -match string[]   subdomain or list of subdomain to match (file or comma separated)
   -f, -filter string[]   subdomain or list of subdomain to filter (file or comma separated)
+  -match-regex string[]  regular expression to match subdomains (repeat for multiple expressions)
+  -filter-regex string[] regular expression to filter subdomains (repeat for multiple expressions)
 
 RATE-LIMIT:
   -rl, -rate-limit int  maximum number of http requests to send per second
@@ -135,6 +137,25 @@ Learn about more ways to install subfinder here: https://docs.projectdiscovery.i
 ## Running Subfinder
 
 Learn about how to run Subfinder here: https://docs.projectdiscovery.io/tools/subfinder/running.
+
+### Filtering results with regular expressions
+
+Use `-match-regex` and `-filter-regex` for Go regular expressions. For example,
+find numbered API or web hosts while excluding development environments:
+
+```sh
+subfinder -d example.com -match-regex '^(api|web)[0-9]{1,3}\.' -filter-regex '(^|\.)dev\.'
+```
+
+Repeat either flag to supply multiple expressions. Commas inside expressions,
+such as `{1,3}`, are preserved. Expressions match any part of the hostname;
+use `^` and `$` to match the entire hostname.
+
+The existing `-match` and `-filter` wildcard patterns retain their behavior.
+A hostname must match at least one supplied match pattern or regular expression,
+and any matching filter excludes it. Filtering happens before active DNS
+resolution, output, and result callbacks. SDK callers can set `Options.MatchRegex`
+and `Options.FilterRegex`; invalid expressions return an error from `NewRunner`.
 
 ## Subfinder Go library
 

@@ -51,23 +51,8 @@ func (options *Options) validateOptions() error {
 		return fmt.Errorf("response-size-read cannot be negative")
 	}
 
-	if options.Match != nil {
-		options.matchRegexes = make([]*regexp.Regexp, len(options.Match))
-		var err error
-		for i, re := range options.Match {
-			if options.matchRegexes[i], err = regexp.Compile(stripRegexString(re)); err != nil {
-				return errors.New("invalid value for match regex option")
-			}
-		}
-	}
-	if options.Filter != nil {
-		options.filterRegexes = make([]*regexp.Regexp, len(options.Filter))
-		var err error
-		for i, re := range options.Filter {
-			if options.filterRegexes[i], err = regexp.Compile(stripRegexString(re)); err != nil {
-				return errors.New("invalid value for filter regex option")
-			}
-		}
+	if err := options.compileFilters(); err != nil {
+		return err
 	}
 
 	sources := mapsutil.GetKeys(passive.NameSourceMap)
@@ -78,6 +63,41 @@ func (options *Options) validateOptions() error {
 	}
 	return nil
 }
+
+// compileFilters is also called by NewRunner so SDK users do not need to parse
+// command-line options to initialize their result filters.
+func (options *Options) compileFilters() error {
+	for _, group := range []struct {
+		name     string
+		patterns []string
+		regexes  []string
+		target   *[]*regexp.Regexp
+	}{
+		{"match", options.Match, options.MatchRegex, &options.matchRegexes},
+		{"filter", options.Filter, options.FilterRegex, &options.filterRegexes},
+	} {
+		*group.target = nil
+		if group.patterns != nil || group.regexes != nil {
+			*group.target = make([]*regexp.Regexp, 0, len(group.patterns)+len(group.regexes))
+		}
+		for _, pattern := range group.patterns {
+			re, err := regexp.Compile(stripRegexString(pattern))
+			if err != nil {
+				return fmt.Errorf("invalid value for %s option %q: %w", group.name, pattern, err)
+			}
+			*group.target = append(*group.target, re)
+		}
+		for _, pattern := range group.regexes {
+			re, err := regexp.Compile(pattern)
+			if err != nil {
+				return fmt.Errorf("invalid value for %s-regex option %q: %w", group.name, pattern, err)
+			}
+			*group.target = append(*group.target, re)
+		}
+	}
+	return nil
+}
+
 func stripRegexString(val string) string {
 	val = strings.ReplaceAll(val, ".", "\\.")
 	val = strings.ReplaceAll(val, "*", ".*")
