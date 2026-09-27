@@ -24,6 +24,8 @@ func TestRegexResultFilters(t *testing.T) {
 		want    bool
 	}{
 		{"no filters", Options{}, "www.example.com", true},
+		{"empty regex filters", Options{MatchRegex: []string{}, FilterRegex: []string{}}, "www.example.com", true},
+		{"legacy empty match", Options{Match: []string{}}, "www.example.com", false},
 		{"numbered hosts", Options{MatchRegex: []string{`^api[0-9]{1,3}\.example\.com$`}}, "api12.example.com", true},
 		{"numbered hosts reject letters", Options{MatchRegex: []string{`^api[0-9]{1,3}\.example\.com$`}}, "apiab.example.com", false},
 		{"alternation", Options{MatchRegex: []string{`^(api|web)\.`}}, "web.example.com", true},
@@ -43,6 +45,28 @@ func TestRegexResultFilters(t *testing.T) {
 			require.NoError(t, tt.options.compileFilters())
 			r := &Runner{options: &tt.options}
 			require.Equal(t, tt.want, r.filterAndMatchSubdomain(tt.host))
+		})
+	}
+}
+
+func TestRegexFilterFailedRecompilePreservesFilters(t *testing.T) {
+	for _, invalidGroup := range []string{"match", "filter"} {
+		t.Run(invalidGroup, func(t *testing.T) {
+			options := &Options{MatchRegex: []string{`^api`}, FilterRegex: []string{`^api-dev\.`}}
+			require.NoError(t, options.compileFilters())
+			r := &Runner{options: options}
+			options.MatchRegex = []string{`^web`}
+			options.FilterRegex = []string{`^web-dev\.`}
+			if invalidGroup == "match" {
+				options.MatchRegex = append(options.MatchRegex, "[")
+			} else {
+				options.FilterRegex = append(options.FilterRegex, "[")
+			}
+			_, err := NewRunner(options)
+			require.Error(t, err)
+			require.True(t, r.filterAndMatchSubdomain("api.example.com"))
+			require.False(t, r.filterAndMatchSubdomain("api-dev.example.com"))
+			require.False(t, r.filterAndMatchSubdomain("web.example.com"))
 		})
 	}
 }
@@ -69,10 +93,12 @@ func TestRegexFiltersEnumeration(t *testing.T) {
 		name   string
 		json   bool
 		legacy bool
+		empty  bool
 	}{
 		{name: "text"},
 		{name: "json", json: true},
 		{name: "SDK wildcard filters", legacy: true},
+		{name: "SDK empty regex filters", empty: true},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			source := &delayedSource{}
@@ -97,12 +123,17 @@ func TestRegexFiltersEnumeration(t *testing.T) {
 				options.Match = []string{"www.target-*.example"}
 				options.Filter = []string{"www.target-1.example", "www.target-abc.example"}
 			}
+			want := []string{"www.target-22.example"}
+			if tt.empty {
+				options.MatchRegex, options.FilterRegex = []string{}, []string{}
+				want = []string{"www.target-1.example", "www.target-22.example", "www.target-abc.example"}
+			}
 			r, err := NewRunner(options)
 			require.NoError(t, err)
 			var output strings.Builder
 			err = r.EnumerateMultipleDomainsWithCtx(context.Background(), strings.NewReader("target-1.example\ntarget-22.example\ntarget-abc.example\n"), []io.Writer{&output})
 			require.NoError(t, err)
-			require.Equal(t, []string{"www.target-22.example"}, callbacks)
+			require.ElementsMatch(t, want, callbacks)
 			if tt.json {
 				var result struct {
 					Host string `json:"host"`
@@ -110,7 +141,7 @@ func TestRegexFiltersEnumeration(t *testing.T) {
 				require.NoError(t, json.Unmarshal([]byte(output.String()), &result))
 				require.Equal(t, "www.target-22.example", result.Host)
 			} else {
-				require.Equal(t, "www.target-22.example\n", output.String())
+				require.ElementsMatch(t, want, strings.Fields(output.String()))
 			}
 		})
 	}

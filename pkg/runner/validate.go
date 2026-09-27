@@ -67,17 +67,19 @@ func (options *Options) validateOptions() error {
 // compileFilters is also called by NewRunner so SDK users do not need to parse
 // command-line options to initialize their result filters.
 func (options *Options) compileFilters() error {
+	var matchRegexes, filterRegexes []*regexp.Regexp
 	for _, group := range []struct {
 		name     string
 		patterns []string
 		regexes  []string
 		target   *[]*regexp.Regexp
 	}{
-		{"match", options.Match, options.MatchRegex, &options.matchRegexes},
-		{"filter", options.Filter, options.FilterRegex, &options.filterRegexes},
+		{"match", options.Match, options.MatchRegex, &matchRegexes},
+		{"filter", options.Filter, options.FilterRegex, &filterRegexes},
 	} {
-		*group.target = nil
-		if group.patterns != nil || group.regexes != nil {
+		// Preserve legacy empty wildcard-list behavior, but an empty regex list
+		// must behave like an unset regex option.
+		if group.patterns != nil || len(group.regexes) > 0 {
 			*group.target = make([]*regexp.Regexp, 0, len(group.patterns)+len(group.regexes))
 		}
 		for _, pattern := range group.patterns {
@@ -95,6 +97,9 @@ func (options *Options) compileFilters() error {
 			*group.target = append(*group.target, re)
 		}
 	}
+	// Publish both groups only after compilation succeeds. An invalid new
+	// expression must not replace filters already used by an existing runner.
+	options.matchRegexes, options.filterRegexes = matchRegexes, filterRegexes
 	return nil
 }
 
