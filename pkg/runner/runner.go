@@ -42,6 +42,10 @@ type Runner struct {
 // the configuration options, configuring sources, reading lists
 // and setting up loggers, etc.
 func NewRunner(options *Options) (*Runner, error) {
+	// Compile into this runner's copy; another runner may still be reading the
+	// caller's options. The compiled slices are replaced, never modified in place.
+	ownedOptions := *options
+	options = &ownedOptions
 	if err := options.compileFilters(); err != nil {
 		return nil, err
 	}

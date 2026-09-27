@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -15,6 +16,49 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
 	"github.com/stretchr/testify/require"
 )
+
+func TestNewRunnerSharedOptions(t *testing.T) {
+	providerConfig := filepath.Join(t.TempDir(), "providers.yaml")
+	require.NoError(t, os.WriteFile(providerConfig, []byte("{}"), 0600))
+	options := &Options{ProviderConfig: providerConfig, Resolvers: []string{"127.0.0.1"}, MatchRegex: []string{`^www\.`}, Threads: 1}
+	first, err := NewRunner(options)
+	require.NoError(t, err)
+	require.NotSame(t, options, first.options)
+	require.Nil(t, options.matchRegexes, "initialization must not rewrite caller-owned filters")
+
+	stop, started := make(chan struct{}), make(chan struct{})
+	var readers sync.WaitGroup
+	readers.Add(1)
+	go func() {
+		defer readers.Done()
+		close(started)
+		for {
+			select {
+			case <-stop:
+				return
+			default:
+				if !first.filterAndMatchSubdomain("www.example.com") {
+					t.Error("another initialization changed the first runner's filters")
+					return
+				}
+			}
+		}
+	}()
+	t.Cleanup(func() { close(stop); readers.Wait() })
+	<-started
+	for range 5 {
+		second, err := NewRunner(options)
+		require.NoError(t, err)
+		require.True(t, second.filterAndMatchSubdomain("www.example.com"))
+	}
+	// Replacing caller configuration for a later runner must not change an
+	// already initialized runner's compiled filters.
+	options.MatchRegex = []string{`^api\.`}
+	second, err := NewRunner(options)
+	require.NoError(t, err)
+	require.True(t, second.filterAndMatchSubdomain("api.example.com"))
+	require.False(t, first.filterAndMatchSubdomain("api.example.com"))
+}
 
 func TestRegexResultFilters(t *testing.T) {
 	for _, tt := range []struct {
