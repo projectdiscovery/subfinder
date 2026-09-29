@@ -111,10 +111,13 @@ func (s *Source) fetchPage(ctx context.Context, baseURL string, page int, header
 
 	stats.Requests++
 	resp, err := session.Get(ctx, url, "", headers)
+	// Registered before the error check: a non-200 reply comes back as a
+	// response and an error together, and returning here would leave that body
+	// undrained. DiscardHTTPResponse ignores a nil response.
+	defer session.DiscardHTTPResponse(resp)
 	if err != nil {
 		return nil, err
 	}
-	defer session.DiscardHTTPResponse(resp)
 
 	if resp.StatusCode != 200 {
 		respBody, err := io.ReadAll(resp.Body)

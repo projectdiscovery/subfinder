@@ -51,6 +51,9 @@ type runState struct {
 	errors   atomic.Int32
 	results  atomic.Int32
 	requests atomic.Int32
+	// rateLimitRetries bounds the 403 retry below. It is shared through the
+	// whole run, so the recursion cannot reset it by starting over.
+	rateLimitRetries atomic.Int32
 }
 
 // Run function returns all subdomains found with the service
@@ -118,6 +121,20 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 		retryAfterSeconds, _ := strconv.ParseInt(resp.Header.Get("Retry-After"), 10, 64)
 		tokens.setCurrentTokenExceeded(retryAfterSeconds)
 		session.DiscardHTTPResponse(resp)
+
+		// Tokens.Get hands the pool out round robin without skipping the ones
+		// already marked exceeded, so when every token is rate limited this
+		// retry had nothing to stop it: one stack frame per 403, recursing
+		// until the process died with a stack overflow. Give each token one
+		// attempt, then report the rate limit and let the run end.
+		if int(run.rateLimitRetries.Add(1)) > len(tokens.pool) {
+			results <- subscraping.Result{
+				Source: s.Name(), Type: subscraping.Error,
+				Error: fmt.Errorf("github rate limit reached on every token, results may be incomplete"),
+			}
+			run.errors.Add(1)
+			return
+		}
 
 		s.enumerate(ctx, searchURL, domainRegexp, tokens, session, results, run)
 		return
