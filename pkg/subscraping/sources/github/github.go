@@ -51,9 +51,6 @@ type runState struct {
 	errors   atomic.Int32
 	results  atomic.Int32
 	requests atomic.Int32
-	// rateLimitRetries bounds the 403 retry below. It is shared through the
-	// whole run, so the recursion cannot reset it by starting over.
-	rateLimitRetries atomic.Int32
 }
 
 // Run function returns all subdomains found with the service
@@ -86,13 +83,16 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		tokens := NewTokenManager(apiKeys)
 
 		searchURL := fmt.Sprintf("https://api.github.com/search/code?per_page=100&q=%s&sort=created&order=asc", domain)
-		s.enumerate(ctx, searchURL, domainRegexp(domain), tokens, session, results, &run)
+		s.enumerate(ctx, searchURL, domainRegexp(domain), tokens, session, results, &run, 0)
 	}()
 
 	return results
 }
 
-func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *regexp.Regexp, tokens *Tokens, session *subscraping.Session, results chan subscraping.Result, run *runState) {
+// retries counts the rate-limit retries already spent on this URL. A new URL
+// starts over at zero, so a page that succeeds does not eat into the budget of
+// the pages after it.
+func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *regexp.Regexp, tokens *Tokens, session *subscraping.Session, results chan subscraping.Result, run *runState, retries int) {
 	select {
 	case <-ctx.Done():
 		return
@@ -126,8 +126,8 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 		// already marked exceeded, so when every token is rate limited this
 		// retry had nothing to stop it: one stack frame per 403, recursing
 		// until the process died with a stack overflow. Give each token one
-		// attempt, then report the rate limit and let the run end.
-		if int(run.rateLimitRetries.Add(1)) > len(tokens.pool) {
+		// attempt at this URL, then report the rate limit and let the run end.
+		if retries+1 >= len(tokens.pool) {
 			results <- subscraping.Result{
 				Source: s.Name(), Type: subscraping.Error,
 				Error: fmt.Errorf("github rate limit reached on every token, results may be incomplete"),
@@ -136,7 +136,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 			return
 		}
 
-		s.enumerate(ctx, searchURL, domainRegexp, tokens, session, results, run)
+		s.enumerate(ctx, searchURL, domainRegexp, tokens, session, results, run, retries+1)
 		return
 	}
 
@@ -176,7 +176,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 				run.errors.Add(1)
 				return
 			}
-			s.enumerate(ctx, nextURL, domainRegexp, tokens, session, results, run)
+			s.enumerate(ctx, nextURL, domainRegexp, tokens, session, results, run, 0)
 		}
 	}
 }
