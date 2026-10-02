@@ -11,6 +11,7 @@ import (
 
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/activedns"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/alienvault"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/anubis"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/bevigil"
@@ -69,8 +70,9 @@ import (
 
 var AllSources = newSources()
 
-func newSources() [53]subscraping.Source {
+func newSources() [54]subscraping.Source {
 	return [...]subscraping.Source{
+		&activedns.Source{},
 		&alienvault.Source{},
 		&anubis.Source{},
 		&bevigil.Source{},

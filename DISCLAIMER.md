@@ -2,6 +2,7 @@
 
 Subfinder leverages multiple open APIs, it is developed for individuals to help them for research or internal work. If you wish to incorporate this tool into a commercial offering or purposes, you must agree to the Terms of the leveraged services:
 
+- ActiveDNS: https://activedns.net/tools/subfinder/
 - Bufferover:  https://tls.bufferover.run
 - CommonCrawl: https://commoncrawl.org/terms-of-use/full
 - certspotter: https://sslmate.com/terms

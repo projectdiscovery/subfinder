@@ -15,6 +15,7 @@ import (
 	"github.com/projectdiscovery/retryablehttp-go"
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/activedns"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/alienvault"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/anubis"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/bevigil"
@@ -417,6 +418,7 @@ func mockChaosClient(t *testing.T, source subscraping.Source, transport http.Rou
 // Include inactive implementations: callers can still instantiate them directly.
 func concurrencySources() []subscraping.Source {
 	return []subscraping.Source{
+		&activedns.Source{},
 		&alienvault.Source{},
 		&anubis.Source{},
 		&bevigil.Source{},

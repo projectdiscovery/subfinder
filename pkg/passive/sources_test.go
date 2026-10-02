@@ -12,6 +12,7 @@ import (
 
 var (
 	expectedAllSources = []string{
+		"activedns",
 		"alienvault",
 		"anubis",
 		"bevigil",
@@ -71,6 +72,7 @@ var (
 	}
 
 	expectedDefaultSources = []string{
+		"activedns",
 		"alienvault",
 		"anubis",
 		"bevigil",
@@ -116,6 +118,7 @@ var (
 	}
 
 	expectedDefaultRecursiveSources = []string{
+		"activedns",
 		"alienvault",
 		"bufferover",
 		"certspotter",
