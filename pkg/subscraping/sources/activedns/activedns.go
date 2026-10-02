@@ -90,8 +90,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				return
 			}
 			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				stats.Errors++
+				s.trySendError(ctx, results, err, &stats)
 				session.DiscardHTTPResponse(resp)
 				return
 			}
@@ -100,8 +99,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			err = json.NewDecoder(resp.Body).Decode(&data)
 			session.DiscardHTTPResponse(resp)
 			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				stats.Errors++
+				s.trySendError(ctx, results, err, &stats)
 				return
 			}
 
@@ -117,11 +115,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 							continue
 						}
 						seen[subdomain] = struct{}{}
-						select {
-						case <-ctx.Done():
+						if !s.trySendResult(ctx, results, subdomain, &stats) {
 							return
-						case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
-							stats.Results++
 						}
 						if maxResults > 0 && stats.Results >= maxResults {
 							return
@@ -134,8 +129,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				return
 			}
 			if data.NextCursor <= cursor {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("pagination cursor did not advance past %d", cursor)}
-				stats.Errors++
+				s.trySendError(ctx, results, fmt.Errorf("pagination cursor did not advance past %d", cursor), &stats)
 				return
 			}
 			cursor = data.NextCursor
@@ -143,6 +137,27 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	}()
 
 	return results
+}
+
+// trySendResult emits a subdomain result, honoring ctx cancellation.
+// Returns false if the context was cancelled and the caller should stop.
+func (s *Source) trySendResult(ctx context.Context, ch chan<- subscraping.Result, value string, stats *subscraping.Statistics) bool {
+	select {
+	case <-ctx.Done():
+		return false
+	case ch <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: value}:
+		stats.Results++
+		return true
+	}
+}
+
+// trySendError emits an error result, honoring ctx cancellation.
+func (s *Source) trySendError(ctx context.Context, ch chan<- subscraping.Result, err error, stats *subscraping.Statistics) {
+	select {
+	case <-ctx.Done():
+	case ch <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}:
+		stats.Errors++
+	}
 }
 
 // Name returns the name of the source
