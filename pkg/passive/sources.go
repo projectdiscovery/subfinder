@@ -54,6 +54,7 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodanct"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/subdomaincenter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/submd"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/thc"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
@@ -69,7 +70,7 @@ import (
 
 var AllSources = newSources()
 
-func newSources() [53]subscraping.Source {
+func newSources() [54]subscraping.Source {
 	return [...]subscraping.Source{
 		&alienvault.Source{},
 		&anubis.Source{},
@@ -116,6 +117,7 @@ func newSources() [53]subscraping.Source {
 		&shodan.Source{},
 		&shodanct.Source{},
 		&sitedossier.Source{},
+		&subdomaincenter.Source{},
 		&thc.Source{},
 		&threatbook.Source{},
 		&threatcrowd.Source{},

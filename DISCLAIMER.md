@@ -9,6 +9,7 @@ Subfinder leverages multiple open APIs, it is developed for individuals to help 
 - dnsdumpster: https://hackertarget.com/terms
 - Google Transparency: https://policies.google.com/terms
 - Alienvault: https://www.alienvault.com/terms/website-terms-of-use07may2018
+- Subdomain Center: https://www.subdomain.center/
 
 ---
 

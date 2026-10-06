@@ -68,6 +68,7 @@ var (
 		"thc",
 		"urlscan",
 		"submd",
+		"subdomaincenter",
 	}
 
 	expectedDefaultSources = []string{
@@ -113,6 +114,7 @@ var (
 		"digitalyama",
 		"urlscan",
 		"submd",
+		"subdomaincenter",
 	}
 
 	expectedDefaultRecursiveSources = []string{
@@ -131,6 +133,7 @@ var (
 		"leakix",
 		"merklemap",
 		"urlscan",
+		"subdomaincenter",
 		// "reconcloud",
 	}
 )
