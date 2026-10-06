@@ -69,10 +69,10 @@ SOURCE:
   -es, -exclude-sources string[]  sources to exclude from enumeration (-es alienvault,zoomeyeapi)
 
 FILTER:
-  -m, -match string[]   subdomain or list of subdomain to match (file or comma separated)
-  -f, -filter string[]   subdomain or list of subdomain to filter (file or comma separated)
-  -match-regex string[]  regular expression to match subdomains (repeat for multiple expressions)
-  -filter-regex string[] regular expression to filter subdomains (repeat for multiple expressions)
+  -m, -match string[]     subdomain or list of subdomain to match (file or comma separated)
+  -f, -filter string[]     subdomain or list of subdomain to filter (file or comma separated)
+  -match-regex string[]   regex or list of regex to match on output subdomain (cli, file)
+  -filter-regex string[]  regex or list of regex to filter on output subdomain (cli, file)
 
 RATE-LIMIT:
   -rl, -rate-limit int  maximum number of http requests to send per second
@@ -85,7 +85,7 @@ UPDATE:
 
 OUTPUT:
   -o, -output string       file to write output to
-  -oJ, -json               write output in JSONL(ines) format
+  -oJ, -json               write output in JSONL format
   -oD, -output-dir string  directory to write output (-dL only)
   -cs, -collect-sources    include all sources in the output (-json only)
   -oI, -ip                 include host IP in output (-active only)
@@ -140,22 +140,11 @@ Learn about how to run Subfinder here: https://docs.projectdiscovery.io/tools/su
 
 ### Filtering results with regular expressions
 
-Use `-match-regex` and `-filter-regex` for Go regular expressions. For example,
-find numbered API or web hosts while excluding development environments:
+`-match-regex` and `-filter-regex` take Go regular expressions, repeated or from a file (one per line), and combine with `-match` and `-filter`:
 
 ```sh
 subfinder -d example.com -match-regex '^(api|web)[0-9]{1,3}\.' -filter-regex '(^|\.)dev\.'
 ```
-
-Repeat either flag to supply multiple expressions. Commas inside expressions,
-such as `{1,3}`, are preserved. Expressions match any part of the hostname;
-use `^` and `$` to match the entire hostname.
-
-The existing `-match` and `-filter` wildcard patterns retain their behavior.
-A hostname must match at least one supplied match pattern or regular expression,
-and any matching filter excludes it. Filtering happens before active DNS
-resolution, output, and result callbacks. SDK callers can set `Options.MatchRegex`
-and `Options.FilterRegex`; invalid expressions return an error from `NewRunner`.
 
 ## Subfinder Go library
 

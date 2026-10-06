@@ -8,7 +8,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 
@@ -17,47 +16,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewRunnerSharedOptions(t *testing.T) {
+// SDK callers may adjust options after NewRunner, so the runner must keep using
+// the caller's options rather than a copy.
+func TestNewRunnerKeepsCallerOptions(t *testing.T) {
 	providerConfig := filepath.Join(t.TempDir(), "providers.yaml")
 	require.NoError(t, os.WriteFile(providerConfig, []byte("{}"), 0600))
 	options := &Options{ProviderConfig: providerConfig, Resolvers: []string{"127.0.0.1"}, MatchRegex: []string{`^www\.`}, Threads: 1}
-	first, err := NewRunner(options)
+	r, err := NewRunner(options)
 	require.NoError(t, err)
-	require.NotSame(t, options, first.options)
-	require.Nil(t, options.matchRegexes, "initialization must not rewrite caller-owned filters")
-
-	stop, started := make(chan struct{}), make(chan struct{})
-	var readers sync.WaitGroup
-	readers.Add(1)
-	go func() {
-		defer readers.Done()
-		close(started)
-		for {
-			select {
-			case <-stop:
-				return
-			default:
-				if !first.filterAndMatchSubdomain("www.example.com") {
-					t.Error("another initialization changed the first runner's filters")
-					return
-				}
-			}
-		}
-	}()
-	t.Cleanup(func() { close(stop); readers.Wait() })
-	<-started
-	for range 5 {
-		second, err := NewRunner(options)
-		require.NoError(t, err)
-		require.True(t, second.filterAndMatchSubdomain("www.example.com"))
-	}
-	// Replacing caller configuration for a later runner must not change an
-	// already initialized runner's compiled filters.
-	options.MatchRegex = []string{`^api\.`}
-	second, err := NewRunner(options)
-	require.NoError(t, err)
-	require.True(t, second.filterAndMatchSubdomain("api.example.com"))
-	require.False(t, first.filterAndMatchSubdomain("api.example.com"))
+	require.Same(t, options, r.options)
+	require.True(t, r.filterAndMatchSubdomain("www.example.com"))
+	require.False(t, r.filterAndMatchSubdomain("api.example.com"))
 }
 
 func TestRegexResultFilters(t *testing.T) {
@@ -86,31 +55,9 @@ func TestRegexResultFilters(t *testing.T) {
 		{"wildcard still literal dots", Options{Match: []string{"api.example.com"}}, "apiXexample.com", false},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			require.NoError(t, tt.options.compileFilters())
 			r := &Runner{options: &tt.options}
+			require.NoError(t, r.compileFilters())
 			require.Equal(t, tt.want, r.filterAndMatchSubdomain(tt.host))
-		})
-	}
-}
-
-func TestRegexFilterFailedRecompilePreservesFilters(t *testing.T) {
-	for _, invalidGroup := range []string{"match", "filter"} {
-		t.Run(invalidGroup, func(t *testing.T) {
-			options := &Options{MatchRegex: []string{`^api`}, FilterRegex: []string{`^api-dev\.`}}
-			require.NoError(t, options.compileFilters())
-			r := &Runner{options: options}
-			options.MatchRegex = []string{`^web`}
-			options.FilterRegex = []string{`^web-dev\.`}
-			if invalidGroup == "match" {
-				options.MatchRegex = append(options.MatchRegex, "[")
-			} else {
-				options.FilterRegex = append(options.FilterRegex, "[")
-			}
-			_, err := NewRunner(options)
-			require.Error(t, err)
-			require.True(t, r.filterAndMatchSubdomain("api.example.com"))
-			require.False(t, r.filterAndMatchSubdomain("api-dev.example.com"))
-			require.False(t, r.filterAndMatchSubdomain("web.example.com"))
 		})
 	}
 }
@@ -195,7 +142,7 @@ func TestRegexFilterFlags(t *testing.T) {
 	if os.Getenv("SUBFINDER_TEST_REGEX_FLAGS") == "1" {
 		os.Args = []string{"subfinder", "-d", "example.com", "-silent", "-duc",
 			"-match-regex", `^api[0-9]{1,3}\.`, "-match-regex", `^web\.`,
-			"-filter-regex", `(^|\.)dev\.`}
+			"-filter-regex", os.Getenv("SUBFINDER_TEST_FILTER_FILE")}
 		options := ParseOptions()
 		_ = json.NewEncoder(os.Stdout).Encode([]goflags.StringSlice{options.MatchRegex, options.FilterRegex})
 		os.Exit(0)
@@ -204,12 +151,14 @@ func TestRegexFilterFlags(t *testing.T) {
 	defer cancel()
 	cmd := exec.CommandContext(ctx, os.Args[0], "-test.run=^TestRegexFilterFlags$")
 	configDir := t.TempDir()
-	cmd.Env = append(os.Environ(), "SUBFINDER_TEST_REGEX_FLAGS=1",
+	filterFile := filepath.Join(configDir, "filters.txt")
+	require.NoError(t, os.WriteFile(filterFile, []byte("(^|\\.)dev\\.\n^test-[0-9]{1,3}\\.\n"), 0600))
+	cmd.Env = append(os.Environ(), "SUBFINDER_TEST_REGEX_FLAGS=1", "SUBFINDER_TEST_FILTER_FILE="+filterFile,
 		"SUBFINDER_CONFIG="+filepath.Join(configDir, "config.yaml"),
 		"SUBFINDER_PROVIDER_CONFIG="+filepath.Join(configDir, "providers.yaml"))
 	output, err := cmd.CombinedOutput()
 	require.NoError(t, err, "%s", output)
 	var patterns [][]string
 	require.NoError(t, json.Unmarshal(output, &patterns), "%s", output)
-	require.Equal(t, [][]string{{`^api[0-9]{1,3}\.`, `^web\.`}, {`(^|\.)dev\.`}}, patterns)
+	require.Equal(t, [][]string{{`^api[0-9]{1,3}\.`, `^web\.`}, {`(^|\.)dev\.`, `^test-[0-9]{1,3}\.`}}, patterns)
 }

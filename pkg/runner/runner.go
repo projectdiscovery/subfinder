@@ -36,21 +36,19 @@ type Runner struct {
 	sharedRateLimiter subscraping.RequestLimiter
 	outputMu          *sync.Mutex
 	domainOutput      bool
+	matchRegexes      []*regexp.Regexp
+	filterRegexes     []*regexp.Regexp
 }
 
 // NewRunner creates a new runner struct instance by parsing
 // the configuration options, configuring sources, reading lists
 // and setting up loggers, etc.
 func NewRunner(options *Options) (*Runner, error) {
-	// Compile into this runner's copy; another runner may still be reading the
-	// caller's options. The compiled slices are replaced, never modified in place.
-	ownedOptions := *options
-	options = &ownedOptions
-	if err := options.compileFilters(); err != nil {
-		return nil, err
-	}
 	options.ConfigureOutput()
 	runner := &Runner{options: options}
+	if err := runner.compileFilters(); err != nil {
+		return nil, err
+	}
 
 	var providerKeys map[string][]string
 
