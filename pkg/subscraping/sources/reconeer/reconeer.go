@@ -51,13 +51,15 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		apiURL := fmt.Sprintf("https://www.reconeer.com/api/domain/%s", domain)
 		stats.Requests++
 		resp, err := session.Get(ctx, apiURL, "", headers)
+		// Registered before the error check: a non-200 reply comes back as a
+		// response and an error together, and returning here would leave that
+		// body undrained. DiscardHTTPResponse ignores a nil response.
+		defer session.DiscardHTTPResponse(resp)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			stats.Errors++
 			return
 		}
-
-		defer session.DiscardHTTPResponse(resp)
 
 		if resp.StatusCode != 200 {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("request failed with status %d", resp.StatusCode)}

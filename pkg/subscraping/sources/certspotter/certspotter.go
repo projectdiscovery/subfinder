@@ -106,6 +106,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				stats.Errors++
+				session.DiscardHTTPResponse(resp)
 				return
 			}
 
