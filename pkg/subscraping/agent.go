@@ -145,15 +145,19 @@ func (s *Session) HTTPRequest(ctx context.Context, method, requestURL, cookies s
 
 // DiscardHTTPResponse discards the response content by demand
 func (s *Session) DiscardHTTPResponse(response *http.Response) {
-	if response != nil {
-		_, err := io.Copy(io.Discard, response.Body)
-		if err != nil {
-			gologger.Warning().Msgf("Could not discard response body: %s\n", err)
-			return
-		}
+	if response == nil {
+		return
+	}
+	// Close regardless of how draining went. Returning early on a drain error
+	// used to leak the connection in exactly the case this helper exists to
+	// handle, and every source now reaches it through a defer.
+	defer func() {
 		if closeErr := response.Body.Close(); closeErr != nil {
 			gologger.Warning().Msgf("Could not close response body: %s\n", closeErr)
 		}
+	}()
+	if _, err := io.Copy(io.Discard, response.Body); err != nil {
+		gologger.Warning().Msgf("Could not discard response body: %s\n", err)
 	}
 }
 

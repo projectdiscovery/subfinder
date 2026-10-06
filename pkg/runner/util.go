@@ -40,3 +40,10 @@ func preprocessDomain(s string) string {
 	}
 	return s
 }
+
+// normalizeSubdomain normalizes a subdomain reported by a source. Sources
+// reporting hosts verbatim keep the FQDN trailing dot or mixed case, which
+// the domain suffix check in the enumerator would otherwise reject.
+func normalizeSubdomain(s string) string {
+	return strings.TrimSuffix(strings.ToLower(s), ".")
+}

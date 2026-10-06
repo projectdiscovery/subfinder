@@ -161,6 +161,10 @@ func (s *Source) runSubsource(ctx context.Context, domain string, session *subsc
 	requestURL := fmt.Sprintf("%s%s?%s%s&summarize=host&summary_context=%s&summary_limit=%d", baseURL, epConfig.endpoint, epConfig.param, url.QueryEscape(domain), epConfig.context, summaryLimit)
 	run.requests.Add(1)
 	resp, err := session.Get(ctx, requestURL, "", headers)
+	// Registered before the error check: a non-200 reply comes back as a
+	// response and an error together, and returning here would leave that body
+	// undrained. DiscardHTTPResponse ignores a nil response.
+	defer session.DiscardHTTPResponse(resp)
 	if err != nil {
 		// HTTP 204 is not an error from the Driftnet API
 		if resp == nil || resp.StatusCode != http.StatusNoContent {
@@ -171,8 +175,6 @@ func (s *Source) runSubsource(ctx context.Context, domain string, session *subsc
 		wg.Done()
 		return
 	}
-
-	defer session.DiscardHTTPResponse(resp)
 
 	// 204 means no results, any other response code is an error
 	if resp.StatusCode != 200 {
