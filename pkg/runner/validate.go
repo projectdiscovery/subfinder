@@ -51,25 +51,6 @@ func (options *Options) validateOptions() error {
 		return fmt.Errorf("response-size-read cannot be negative")
 	}
 
-	if options.Match != nil {
-		options.matchRegexes = make([]*regexp.Regexp, len(options.Match))
-		var err error
-		for i, re := range options.Match {
-			if options.matchRegexes[i], err = regexp.Compile(stripRegexString(re)); err != nil {
-				return errors.New("invalid value for match regex option")
-			}
-		}
-	}
-	if options.Filter != nil {
-		options.filterRegexes = make([]*regexp.Regexp, len(options.Filter))
-		var err error
-		for i, re := range options.Filter {
-			if options.filterRegexes[i], err = regexp.Compile(stripRegexString(re)); err != nil {
-				return errors.New("invalid value for filter regex option")
-			}
-		}
-	}
-
 	sources := mapsutil.GetKeys(passive.NameSourceMap)
 	for source := range options.RateLimits.AsMap() {
 		if !sliceutil.Contains(sources, source) {
@@ -78,6 +59,42 @@ func (options *Options) validateOptions() error {
 	}
 	return nil
 }
+
+// compileFilters runs in NewRunner rather than option validation so SDK
+// callers, who never parse flags, get their filters applied too.
+func (r *Runner) compileFilters() error {
+	var err error
+	if r.matchRegexes, err = compileRegexes("match", r.options.Match, r.options.MatchRegex); err != nil {
+		return err
+	}
+	r.filterRegexes, err = compileRegexes("filter", r.options.Filter, r.options.FilterRegex)
+	return err
+}
+
+func compileRegexes(option string, globs, regexes []string) ([]*regexp.Regexp, error) {
+	// A non-nil empty glob list keeps its legacy meaning of matching nothing,
+	// while an empty regex list behaves like an unset option.
+	if globs == nil && len(regexes) == 0 {
+		return nil, nil
+	}
+	compiled := make([]*regexp.Regexp, 0, len(globs)+len(regexes))
+	for _, glob := range globs {
+		re, err := regexp.Compile(stripRegexString(glob))
+		if err != nil {
+			return nil, fmt.Errorf("invalid value for %s option %q: %w", option, glob, err)
+		}
+		compiled = append(compiled, re)
+	}
+	for _, pattern := range regexes {
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			return nil, fmt.Errorf("invalid value for %s-regex option %q: %w", option, pattern, err)
+		}
+		compiled = append(compiled, re)
+	}
+	return compiled, nil
+}
+
 func stripRegexString(val string) string {
 	val = strings.ReplaceAll(val, ".", "\\.")
 	val = strings.ReplaceAll(val, "*", ".*")

@@ -8,7 +8,6 @@ import (
 	"math"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/projectdiscovery/chaos-client/pkg/chaos"
@@ -66,10 +65,10 @@ type Options struct {
 	ExcludeIps         bool
 	Match              goflags.StringSlice
 	Filter             goflags.StringSlice
-	matchRegexes       []*regexp.Regexp
-	filterRegexes      []*regexp.Regexp
-	ResultCallback     OnResultCallback // OnResult callback
-	DisableUpdateCheck bool             // DisableUpdateCheck disable update checking
+	MatchRegex         goflags.StringSlice // MatchRegex contains regular expressions to include in results
+	FilterRegex        goflags.StringSlice // FilterRegex contains regular expressions to exclude from results
+	ResultCallback     OnResultCallback    // OnResult callback
+	DisableUpdateCheck bool                // DisableUpdateCheck disable update checking
 
 	// MaxResults limits the number of results requested per source.
 	// A value of 0 (default) means no limit. Sources that paginate honor this
@@ -110,6 +109,8 @@ func ParseOptions() *Options {
 	flagSet.CreateGroup("filter", "Filter",
 		flagSet.StringSliceVarP(&options.Match, "match", "m", nil, "subdomain or list of subdomain to match (file or comma separated)", goflags.FileNormalizedStringSliceOptions),
 		flagSet.StringSliceVarP(&options.Filter, "filter", "f", nil, " subdomain or list of subdomain to filter (file or comma separated)", goflags.FileNormalizedStringSliceOptions),
+		flagSet.StringSliceVar(&options.MatchRegex, "match-regex", nil, "regex or list of regex to match on output subdomain (cli, file)", goflags.FileStringSliceOptions),
+		flagSet.StringSliceVar(&options.FilterRegex, "filter-regex", nil, "regex or list of regex to filter on output subdomain (cli, file)", goflags.FileStringSliceOptions),
 	)
 
 	flagSet.CreateGroup("rate-limit", "Rate-limit",
@@ -125,7 +126,7 @@ func ParseOptions() *Options {
 
 	flagSet.CreateGroup("output", "Output",
 		flagSet.StringVarP(&options.OutputFile, "output", "o", "", "file to write output to"),
-		flagSet.BoolVarP(&options.JSON, "json", "oJ", false, "write output in JSONL(ines) format"),
+		flagSet.BoolVarP(&options.JSON, "json", "oJ", false, "write output in JSONL format"),
 		flagSet.StringVarP(&options.OutputDirectory, "output-dir", "oD", "", "directory to write output (-dL only)"),
 		flagSet.BoolVarP(&options.CaptureSources, "collect-sources", "cs", false, "include all sources in the output (-json only)"),
 		flagSet.BoolVarP(&options.HostIP, "ip", "oI", false, "include host IP in output (-active only)"),

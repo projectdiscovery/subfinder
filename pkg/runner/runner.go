@@ -36,6 +36,8 @@ type Runner struct {
 	sharedRateLimiter subscraping.RequestLimiter
 	outputMu          *sync.Mutex
 	domainOutput      bool
+	matchRegexes      []*regexp.Regexp
+	filterRegexes     []*regexp.Regexp
 }
 
 // NewRunner creates a new runner struct instance by parsing
@@ -44,6 +46,9 @@ type Runner struct {
 func NewRunner(options *Options) (*Runner, error) {
 	options.ConfigureOutput()
 	runner := &Runner{options: options}
+	if err := runner.compileFilters(); err != nil {
+		return nil, err
+	}
 
 	var providerKeys map[string][]string
 

@@ -76,7 +76,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 				value := normalizeSubdomain(result.Value)
 				subdomain := replacer.Replace(value)
 				// check if this subdomain is actually a wildcard subdomain
-				// that may have furthur subdomains associated with it
+				// that may have further subdomains associated with it
 				isWildcard := strings.Contains(value, "*."+subdomain)
 
 				// Validate the subdomain found and remove wildcards from
@@ -272,16 +272,14 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 }
 
 func (r *Runner) filterAndMatchSubdomain(subdomain string) bool {
-	if r.options.filterRegexes != nil {
-		for _, filter := range r.options.filterRegexes {
-			if m := filter.MatchString(subdomain); m {
-				return false
-			}
+	for _, filter := range r.filterRegexes {
+		if filter.MatchString(subdomain) {
+			return false
 		}
 	}
 
-	if r.options.matchRegexes != nil {
-		for _, match := range r.options.matchRegexes {
+	if r.matchRegexes != nil {
+		for _, match := range r.matchRegexes {
 			if m := match.MatchString(subdomain); m {
 				return true
 			}
