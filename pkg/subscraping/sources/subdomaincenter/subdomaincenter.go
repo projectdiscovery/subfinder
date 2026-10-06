@@ -5,8 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"net/url"
+	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -23,12 +25,9 @@ const crawlKeySuffix = "crawl"
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys   []string
-	timeTaken time.Duration
-	errors    int
-	results   int
-	requests  int
-	skipped   bool
+	mu      sync.Mutex
+	stats   subscraping.Statistics
+	apiKeys []string
 }
 
 // page is one response from the cuttlefish engine.
@@ -41,17 +40,21 @@ type page struct {
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
+	s.mu.Lock()
+	apiKeys := s.apiKeys
+	s.mu.Unlock()
 
 	go func() {
+		var stats subscraping.Statistics
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			stats.TimeTaken = time.Since(startTime)
+			s.mu.Lock()
+			s.stats = stats
+			s.mu.Unlock()
 			close(results)
 		}(time.Now())
 
-		apiKey, crawl := parseAPIKey(subscraping.PickRandom(s.apiKeys, s.Name()))
+		apiKey, crawl := parseAPIKey(subscraping.PickRandom(apiKeys, s.Name()))
 		authenticated := apiKey != ""
 
 		headers := map[string]string{"Accept": "application/json"}
@@ -64,10 +67,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		for offset := 0; ; {
 			// A live crawl is billed against its own quota and is cooled down
 			// per domain, so it is only worth asking for once, on the first page.
-			current, err := s.fetchPage(ctx, session, domain, headers, authenticated, offset, crawl && authenticated && offset == 0)
+			stats.Requests++
+			current, err := fetchPage(ctx, session, domain, headers, authenticated, offset, crawl && authenticated && offset == 0)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				stats.Errors++
 				return
 			}
 
@@ -77,8 +81,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					case <-ctx.Done():
 						return
 					case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
-						s.results++
-						if session.MaxResults > 0 && s.results >= session.MaxResults {
+						stats.Results++
+						if session.MaxResults > 0 && stats.Results >= session.MaxResults {
 							return
 						}
 					}
@@ -98,7 +102,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // fetchPage returns one page of the cuttlefish result set for the domain.
-func (s *Source) fetchPage(ctx context.Context, session *subscraping.Session, domain string, headers map[string]string, authenticated bool, offset int, crawl bool) (*page, error) {
+func fetchPage(ctx context.Context, session *subscraping.Session, domain string, headers map[string]string, authenticated bool, offset int, crawl bool) (*page, error) {
 	query := url.Values{}
 	query.Set("domain", domain)
 	query.Set("engine", "cuttlefish")
@@ -111,7 +115,6 @@ func (s *Source) fetchPage(ctx context.Context, session *subscraping.Session, do
 	}
 	requestURL := "https://api.subdomain.center/?" + query.Encode()
 
-	s.requests++
 	resp, err := session.Get(ctx, requestURL, "", headers)
 	if err != nil {
 		session.DiscardHTTPResponse(resp)
@@ -170,15 +173,14 @@ func (s *Source) NeedsKey() bool {
 }
 
 func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.apiKeys = slices.Clone(keys)
 }
 
+// Statistics returns a snapshot of the most recently completed run.
 func (s *Source) Statistics() subscraping.Statistics {
-	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		TimeTaken: s.timeTaken,
-		Skipped:   s.skipped,
-		Requests:  s.requests,
-	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.stats
 }
