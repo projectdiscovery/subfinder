@@ -69,8 +69,10 @@ SOURCE:
   -es, -exclude-sources string[]  sources to exclude from enumeration (-es alienvault,zoomeyeapi)
 
 FILTER:
-  -m, -match string[]   subdomain or list of subdomain to match (file or comma separated)
-  -f, -filter string[]   subdomain or list of subdomain to filter (file or comma separated)
+  -m, -match string[]     subdomain or list of subdomain to match (file or comma separated)
+  -f, -filter string[]     subdomain or list of subdomain to filter (file or comma separated)
+  -match-regex string[]   regex or list of regex to match on output subdomain (cli, file)
+  -filter-regex string[]  regex or list of regex to filter on output subdomain (cli, file)
 
 RATE-LIMIT:
   -rl, -rate-limit int  maximum number of http requests to send per second
@@ -83,7 +85,7 @@ UPDATE:
 
 OUTPUT:
   -o, -output string       file to write output to
-  -oJ, -json               write output in JSONL(ines) format
+  -oJ, -json               write output in JSONL format
   -oD, -output-dir string  directory to write output (-dL only)
   -cs, -collect-sources    include all sources in the output (-json only)
   -oI, -ip                 include host IP in output (-active only)
@@ -120,7 +122,7 @@ Subfinder supports environment variables to specify custom paths for configurati
 
 # Installation
 
-`subfinder` requires **go1.24** to install successfully. Run the following command to install the latest version:
+`subfinder` requires **go1.26** to install successfully. Run the following command to install the latest version:
 
 ```sh
 go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
@@ -135,6 +137,14 @@ Learn about more ways to install subfinder here: https://docs.projectdiscovery.i
 ## Running Subfinder
 
 Learn about how to run Subfinder here: https://docs.projectdiscovery.io/tools/subfinder/running.
+
+### Filtering results with regular expressions
+
+`-match-regex` and `-filter-regex` take Go regular expressions, repeated or from a file (one per line), and combine with `-match` and `-filter`:
+
+```sh
+subfinder -d example.com -match-regex '^(api|web)[0-9]{1,3}\.' -filter-regex '(^|\.)dev\.'
+```
 
 ## Subfinder Go library
 

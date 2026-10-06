@@ -22,6 +22,7 @@ var (
 		"chaos",
 		"chinaz",
 		"commoncrawl",
+		"crtname",
 		"crtsh",
 		"digitorus",
 		"dnsdumpster",
@@ -80,6 +81,7 @@ var (
 		"censys",
 		"chaos",
 		"chinaz",
+		"crtname",
 		"crtsh",
 		"digitorus",
 		"dnsdumpster",
@@ -162,6 +164,7 @@ func TestSourceFiltering(t *testing.T) {
 	someSources := []string{
 		"alienvault",
 		"chaos",
+		"crtname",
 		"crtsh",
 		"virustotal",
 	}

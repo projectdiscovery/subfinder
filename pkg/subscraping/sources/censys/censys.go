@@ -6,6 +6,7 @@ import (
 	"context"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -71,24 +72,25 @@ type resource struct {
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys   []apiKey
-	timeTaken time.Duration
-	errors    int
-	results   int
-	requests  int
-	skipped   bool
+	mu      sync.Mutex
+	stats   subscraping.Statistics
+	apiKeys []apiKey
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
+	s.mu.Lock()
+	apiKeys := s.apiKeys
+	s.mu.Unlock()
 
 	go func() {
+		var stats subscraping.Statistics
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			stats.TimeTaken = time.Since(startTime)
+			s.mu.Lock()
+			s.stats = stats
+			s.mu.Unlock()
 			close(results)
 		}(time.Now())
 
@@ -96,9 +98,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		// This enables load balancing when users configure multiple PATs
 		// (e.g., CENSYS_API_KEY=pat1:org1,pat2:org2) to distribute requests
 		// and avoid hitting rate limits on a single key.
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
 		if randomApiKey.pat == "" {
-			s.skipped = true
+			stats.Skipped = true
 			return
 		}
 
@@ -129,7 +131,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			bodyBytes, err := jsoniter.Marshal(reqBody)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				stats.Errors++
 				return
 			}
 
@@ -142,7 +144,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				headers[orgIDHeader] = randomApiKey.orgID
 			}
 
-			s.requests++
+			stats.Requests++
 			resp, err := session.HTTPRequest(
 				ctx,
 				http.MethodPost,
@@ -155,7 +157,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				stats.Errors++
 				session.DiscardHTTPResponse(resp)
 				return
 			}
@@ -165,7 +167,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			_ = resp.Body.Close()
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				stats.Errors++
 				return
 			}
 
@@ -175,9 +177,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					case <-ctx.Done():
 						return
 					case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: name}:
-						s.results++
+						stats.Results++
 					}
-					if maxResults > 0 && s.results >= maxResults {
+					if maxResults > 0 && stats.Results >= maxResults {
 						return
 					}
 				}
@@ -219,23 +221,23 @@ func (s *Source) NeedsKey() bool {
 // Format: "PAT:ORG_ID" where ORG_ID is required for paid accounts.
 // Example: "censys_xxx_token:12345678-91011-1213"
 func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = subscraping.CreateApiKeys(keys, func(pat, orgID string) apiKey {
+	apiKeys := subscraping.CreateApiKeys(keys, func(pat, orgID string) apiKey {
 		return apiKey{pat: pat, orgID: orgID}
 	})
 	// Also support single PAT without org ID for free users
 	for _, key := range keys {
 		if !strings.Contains(key, ":") && key != "" {
-			s.apiKeys = append(s.apiKeys, apiKey{pat: key, orgID: ""})
+			apiKeys = append(apiKeys, apiKey{pat: key, orgID: ""})
 		}
 	}
+	s.mu.Lock()
+	s.apiKeys = apiKeys
+	s.mu.Unlock()
 }
 
+// Statistics returns a snapshot of the most recently completed run.
 func (s *Source) Statistics() subscraping.Statistics {
-	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		Requests:  s.requests,
-		TimeTaken: s.timeTaken,
-		Skipped:   s.skipped,
-	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.stats
 }

@@ -5,6 +5,7 @@ Subfinder leverages multiple open APIs, it is developed for individuals to help 
 - Bufferover:  https://tls.bufferover.run
 - CommonCrawl: https://commoncrawl.org/terms-of-use/full
 - certspotter: https://sslmate.com/terms
+- crt.name: https://crt.name/
 - dnsdumpster: https://hackertarget.com/terms
 - Google Transparency: https://policies.google.com/terms
 - Alienvault: https://www.alienvault.com/terms/website-terms-of-use07may2018

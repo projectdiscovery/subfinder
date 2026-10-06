@@ -8,7 +8,6 @@ import (
 	"math"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/projectdiscovery/chaos-client/pkg/chaos"
@@ -46,7 +45,7 @@ type Options struct {
 	OnlyRecursive      bool                // Recursive specifies whether to use only recursive subdomain enumeration sources
 	All                bool                // All specifies whether to use all (slow) sources.
 	Statistics         bool                // Statistics specifies whether to report source statistics
-	Threads            int                 // Threads controls the number of threads to use for active enumerations
+	Threads            int                 // Threads bounds concurrent domains and total active DNS lookups
 	Timeout            int                 // Timeout is the seconds to wait for sources to respond
 	MaxEnumerationTime int                 // MaxEnumerationTime is the maximum amount of time in minutes to wait for enumeration
 	Domain             goflags.StringSlice // Domain is the domain to find subdomains for
@@ -66,10 +65,10 @@ type Options struct {
 	ExcludeIps         bool
 	Match              goflags.StringSlice
 	Filter             goflags.StringSlice
-	matchRegexes       []*regexp.Regexp
-	filterRegexes      []*regexp.Regexp
-	ResultCallback     OnResultCallback // OnResult callback
-	DisableUpdateCheck bool             // DisableUpdateCheck disable update checking
+	MatchRegex         goflags.StringSlice // MatchRegex contains regular expressions to include in results
+	FilterRegex        goflags.StringSlice // FilterRegex contains regular expressions to exclude from results
+	ResultCallback     OnResultCallback    // OnResult callback
+	DisableUpdateCheck bool                // DisableUpdateCheck disable update checking
 
 	// MaxResults limits the number of results requested per source.
 	// A value of 0 (default) means no limit. Sources that paginate honor this
@@ -110,12 +109,14 @@ func ParseOptions() *Options {
 	flagSet.CreateGroup("filter", "Filter",
 		flagSet.StringSliceVarP(&options.Match, "match", "m", nil, "subdomain or list of subdomain to match (file or comma separated)", goflags.FileNormalizedStringSliceOptions),
 		flagSet.StringSliceVarP(&options.Filter, "filter", "f", nil, " subdomain or list of subdomain to filter (file or comma separated)", goflags.FileNormalizedStringSliceOptions),
+		flagSet.StringSliceVar(&options.MatchRegex, "match-regex", nil, "regex or list of regex to match on output subdomain (cli, file)", goflags.FileStringSliceOptions),
+		flagSet.StringSliceVar(&options.FilterRegex, "filter-regex", nil, "regex or list of regex to filter on output subdomain (cli, file)", goflags.FileStringSliceOptions),
 	)
 
 	flagSet.CreateGroup("rate-limit", "Rate-limit",
 		flagSet.IntVarP(&options.RateLimit, "rate-limit", "rl", 0, "maximum number of http requests to send per second (global)"),
 		flagSet.RateLimitMapVarP(&options.RateLimits, "rate-limits", "rls", defaultRateLimits, "maximum number of http requests to send per second for providers in key=value format (-rls hackertarget=10/m)", goflags.NormalizedStringSliceOptions),
-		flagSet.IntVar(&options.Threads, "t", 10, "number of concurrent goroutines for resolving (-active only)"),
+		flagSet.IntVar(&options.Threads, "t", 10, "maximum concurrent domains and active DNS lookups"),
 	)
 
 	flagSet.CreateGroup("update", "Update",
@@ -125,7 +126,7 @@ func ParseOptions() *Options {
 
 	flagSet.CreateGroup("output", "Output",
 		flagSet.StringVarP(&options.OutputFile, "output", "o", "", "file to write output to"),
-		flagSet.BoolVarP(&options.JSON, "json", "oJ", false, "write output in JSONL(ines) format"),
+		flagSet.BoolVarP(&options.JSON, "json", "oJ", false, "write output in JSONL format"),
 		flagSet.StringVarP(&options.OutputDirectory, "output-dir", "oD", "", "directory to write output (-dL only)"),
 		flagSet.BoolVarP(&options.CaptureSources, "collect-sources", "cs", false, "include all sources in the output (-json only)"),
 		flagSet.BoolVarP(&options.HostIP, "ip", "oI", false, "include host IP in output (-active only)"),
@@ -222,7 +223,7 @@ func ParseOptions() *Options {
 }
 
 // loadProvidersFrom runs the app with source config
-func (options *Options) loadProvidersFrom(location string) {
+func (options *Options) loadProvidersFrom(location string) map[string][]string {
 	// todo: move elsewhere
 	if len(options.Resolvers) == 0 {
 		options.Resolvers = resolve.DefaultResolvers
@@ -230,9 +231,11 @@ func (options *Options) loadProvidersFrom(location string) {
 
 	// We skip bailing out if file doesn't exist because we'll create it
 	// at the end of options parsing from default via goflags.
-	if err := UnmarshalFrom(location); err != nil && (!strings.Contains(err.Error(), "file doesn't exist") || errors.Is(err, os.ErrNotExist)) {
+	keys, err := loadProviderConfig(location)
+	if err != nil && (!strings.Contains(err.Error(), "file doesn't exist") || errors.Is(err, os.ErrNotExist)) {
 		gologger.Error().Msgf("Could not read providers from %s: %s\n", location, err)
 	}
+	return keys
 }
 
 var keyRequirementLabels = map[subscraping.KeyRequirement]string{

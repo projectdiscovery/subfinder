@@ -8,8 +8,10 @@ import (
 	"fmt"
 	"io"
 	"net/url"
+	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -39,30 +41,33 @@ type dnsdbObj struct {
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys   []string
-	timeTaken time.Duration
-	errors    int
-	results   uint64
-	requests  int
-	skipped   bool
+	mu      sync.Mutex
+	stats   subscraping.Statistics
+	apiKeys []string
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
+	s.mu.Lock()
+	apiKeys := s.apiKeys
+	s.mu.Unlock()
 
 	go func() {
+		var stats subscraping.Statistics
+		var resultCount uint64
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			stats.TimeTaken = time.Since(startTime)
+			stats.Results = int(resultCount)
+			s.mu.Lock()
+			s.stats = stats
+			s.mu.Unlock()
 			close(results)
 		}(time.Now())
 
 		sourceName := s.Name()
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, sourceName)
+		randomApiKey := subscraping.PickRandom(apiKeys, sourceName)
 		if randomApiKey == "" {
 			return
 		}
@@ -76,11 +81,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			"Accept":    "application/x-ndjson",
 		}
 
-		s.requests++
+		stats.Requests++
 		offsetMax, err := getMaxOffset(ctx, session, headers)
 		if err != nil {
 			results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
-			s.errors++
+			stats.Errors++
 			return
 		}
 
@@ -99,11 +104,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 			url := urlTemplate + queryParams.Encode()
 
-			s.requests++
+			stats.Requests++
 			resp, err := session.Get(ctx, url, "", headers)
 			if err != nil {
 				results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
-				s.errors++
+				stats.Errors++
 				session.DiscardHTTPResponse(resp)
 				return
 			}
@@ -122,7 +127,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					break
 				} else if err != nil {
 					results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
-					s.errors++
+					stats.Errors++
 					session.DiscardHTTPResponse(resp)
 					return
 				}
@@ -131,7 +136,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				err = jsoniter.Unmarshal(n, &response)
 				if err != nil {
 					results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
-					s.errors++
+					stats.Errors++
 					session.DiscardHTTPResponse(resp)
 					return
 				}
@@ -144,9 +149,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 							session.DiscardHTTPResponse(resp)
 							return
 						case results <- subscraping.Result{Source: sourceName, Type: subscraping.Subdomain, Value: strings.TrimSuffix(response.Obj.Name, ".")}:
-							s.results++
+							resultCount++
 						}
-						if maxResults > 0 && s.results >= uint64(maxResults) {
+						if maxResults > 0 && resultCount >= uint64(maxResults) {
 							session.DiscardHTTPResponse(resp)
 							return
 						}
@@ -162,16 +167,16 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			// 3. anything else - This is an error and should be reported to the user. The user can then decide to use the results up to this
 			// point or discard and retry.
 			if respCond == "limited" {
-				if offsetMax != 0 && s.results <= offsetMax {
-					// Reset done to false to get more results with an offset query parameter set to s.results
-					queryParams.Set("offset", strconv.FormatUint(s.results, 10))
+				if offsetMax != 0 && resultCount <= offsetMax {
+					// Reset done to false to get more results with an offset query parameter set to resultCount
+					queryParams.Set("offset", strconv.FormatUint(resultCount, 10))
 					continue
 				}
 			} else if respCond != "succeeded" {
 				// DNSDB's terminating jsonl object's cond is not "limited" or succeeded" (#3), this is an error, notify the user.
 				err = fmt.Errorf("%s terminated with condition: %s", sourceName, respCond)
 				results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
-				s.errors++
+				stats.Errors++
 			}
 
 			session.DiscardHTTPResponse(resp)
@@ -204,17 +209,16 @@ func (s *Source) NeedsKey() bool {
 }
 
 func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.apiKeys = slices.Clone(keys)
 }
 
+// Statistics returns a snapshot of the most recently completed run.
 func (s *Source) Statistics() subscraping.Statistics {
-	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   int(s.results),
-		Requests:  s.requests,
-		TimeTaken: s.timeTaken,
-		Skipped:   s.skipped,
-	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.stats
 }
 
 func getMaxOffset(ctx context.Context, session *subscraping.Session, headers map[string]string) (uint64, error) {

@@ -37,6 +37,7 @@ func TestSourcesWithoutKeys(t *testing.T) {
 		"leakix",         // now requires API key (returns 401)
 		"reconeer",       // now requires API key (returns 401)
 		"sitedossier",    // flaky - returns no results in CI
+		"submd",          // origin is unavailable (Cloudflare 522/523)
 	}
 
 	domain := "hackerone.com"
