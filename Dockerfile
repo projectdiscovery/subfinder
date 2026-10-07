@@ -1,15 +1,15 @@
-# Build
-FROM golang:1.27-alpine AS build-env
-RUN apk add build-base
-WORKDIR /app
-COPY . /app
-RUN go mod download
-RUN go build ./cmd/subfinder
-
-# Release
 FROM alpine:latest
+
+LABEL org.opencontainers.image.authors="ProjectDiscovery"
+LABEL org.opencontainers.image.description="Fast passive subdomain enumeration tool."
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.title="subfinder"
+LABEL org.opencontainers.image.url="https://github.com/projectdiscovery/subfinder"
+
 RUN apk upgrade --no-cache \
     && apk add --no-cache bind-tools ca-certificates
-COPY --from=build-env /app/subfinder /usr/local/bin/
+
+ARG TARGETPLATFORM
+COPY $TARGETPLATFORM/subfinder /usr/local/bin/
 
 ENTRYPOINT ["subfinder"]
