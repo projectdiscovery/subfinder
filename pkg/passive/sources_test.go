@@ -22,6 +22,7 @@ var (
 		"chaos",
 		"chinaz",
 		"commoncrawl",
+		"crtname",
 		"crtsh",
 		"digitorus",
 		"dnsdumpster",
@@ -67,6 +68,7 @@ var (
 		"thc",
 		"urlscan",
 		"submd",
+		"subdomaincenter",
 	}
 
 	expectedDefaultSources = []string{
@@ -79,6 +81,7 @@ var (
 		"censys",
 		"chaos",
 		"chinaz",
+		"crtname",
 		"crtsh",
 		"digitorus",
 		"dnsdumpster",
@@ -111,6 +114,7 @@ var (
 		"digitalyama",
 		"urlscan",
 		"submd",
+		"subdomaincenter",
 	}
 
 	expectedDefaultRecursiveSources = []string{
@@ -129,6 +133,7 @@ var (
 		"leakix",
 		"merklemap",
 		"urlscan",
+		"subdomaincenter",
 		// "reconcloud",
 	}
 )
@@ -159,6 +164,7 @@ func TestSourceFiltering(t *testing.T) {
 	someSources := []string{
 		"alienvault",
 		"chaos",
+		"crtname",
 		"crtsh",
 		"virustotal",
 	}

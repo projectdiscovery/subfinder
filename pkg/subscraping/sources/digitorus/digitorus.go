@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -15,31 +16,30 @@ import (
 
 // Source is the passive scraping agent
 type Source struct {
-	timeTaken time.Duration
-	errors    int
-	results   int
-	requests  int
+	mu    sync.Mutex
+	stats subscraping.Statistics
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
 
 	go func() {
+		var stats subscraping.Statistics
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			stats.TimeTaken = time.Since(startTime)
+			s.mu.Lock()
+			s.stats = stats
+			s.mu.Unlock()
 			close(results)
 		}(time.Now())
 
-		s.requests++
+		stats.Requests++
 		resp, err := session.SimpleGet(ctx, fmt.Sprintf("https://certificatedetails.com/%s", domain))
 		// the 404 page still contains around 100 subdomains - https://github.com/projectdiscovery/subfinder/issues/774
 		if err != nil && ptr.Safe(resp).StatusCode != http.StatusNotFound {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			stats.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -47,7 +47,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		defer func() {
 			if err := resp.Body.Close(); err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				stats.Errors++
 			}
 		}()
 
@@ -68,7 +68,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				case <-ctx.Done():
 					return
 				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: strings.TrimPrefix(subdomain, ".")}:
-					s.results++
+					stats.Results++
 				}
 			}
 		}
@@ -102,11 +102,9 @@ func (s *Source) AddApiKeys(_ []string) {
 	// no key needed
 }
 
+// Statistics returns a snapshot of the most recently completed run.
 func (s *Source) Statistics() subscraping.Statistics {
-	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		Requests:  s.requests,
-		TimeTaken: s.timeTaken,
-	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.stats
 }

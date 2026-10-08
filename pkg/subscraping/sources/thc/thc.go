@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"sync"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -21,11 +22,8 @@ type response struct {
 
 // Source is the passive scraping agent
 type Source struct {
-	timeTaken time.Duration
-	errors    int
-	results   int
-	requests  int
-	skipped   bool
+	mu    sync.Mutex
+	stats subscraping.Statistics
 }
 
 type requestBody struct {
@@ -37,13 +35,14 @@ type requestBody struct {
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
 
 	go func() {
+		var stats subscraping.Statistics
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			stats.TimeTaken = time.Since(startTime)
+			s.mu.Lock()
+			s.stats = stats
+			s.mu.Unlock()
 			close(results)
 		}(time.Now())
 
@@ -61,15 +60,15 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			bodyBytes, err := json.Marshal(reqBody)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				stats.Errors++
 				return
 			}
 
-			s.requests++
+			stats.Requests++
 			resp, err := session.Post(ctx, apiURL, "", headers, bytes.NewReader(bodyBytes))
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				stats.Errors++
 				session.DiscardHTTPResponse(resp)
 				return
 			}
@@ -79,13 +78,13 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			session.DiscardHTTPResponse(resp)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				stats.Errors++
 				return
 			}
 
 			for _, domainRecord := range thcResponse.Domains {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: domainRecord.Domain}
-				s.results++
+				stats.Results++
 			}
 
 			pageState = thcResponse.NextPageState
@@ -124,12 +123,9 @@ func (s *Source) AddApiKeys(_ []string) {
 	// No API keys needed for THC
 }
 
+// Statistics returns a snapshot of the most recently completed run.
 func (s *Source) Statistics() subscraping.Statistics {
-	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		TimeTaken: s.timeTaken,
-		Skipped:   s.skipped,
-		Requests:  s.requests,
-	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.stats
 }

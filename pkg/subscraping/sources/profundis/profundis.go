@@ -6,7 +6,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
@@ -14,37 +16,38 @@ import (
 
 // Source is the passive scraping agent
 type Source struct {
-	apiKeys   []string
-	timeTaken time.Duration
-	errors    int
-	results   int
-	requests  int
-	skipped   bool
+	mu      sync.Mutex
+	stats   subscraping.Statistics
+	apiKeys []string
 }
 
 // Run function returns all subdomains found with the service
 func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
-	s.errors = 0
-	s.results = 0
-	s.requests = 0
+	s.mu.Lock()
+	apiKeys := s.apiKeys
+	s.mu.Unlock()
 
 	go func() {
+		var stats subscraping.Statistics
 		defer func(startTime time.Time) {
-			s.timeTaken = time.Since(startTime)
+			stats.TimeTaken = time.Since(startTime)
+			s.mu.Lock()
+			s.stats = stats
+			s.mu.Unlock()
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(s.apiKeys, s.Name())
+		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
 		if randomApiKey == "" {
-			s.skipped = true
+			stats.Skipped = true
 			return
 		}
 
 		requestBody, err := json.Marshal(map[string]string{"domain": domain})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			stats.Errors++
 			return
 		}
 
@@ -54,13 +57,13 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			"Accept":       "text/event-stream",
 		}
 
-		s.requests++
+		stats.Requests++
 		resp, err := session.Post(ctx, "https://api.profundis.io/api/v2/common/data/subdomains", "",
 			headers, bytes.NewReader(requestBody))
 
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			stats.Errors++
 			session.DiscardHTTPResponse(resp)
 			return
 		}
@@ -68,7 +71,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		defer func() {
 			if err := resp.Body.Close(); err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-				s.errors++
+				stats.Errors++
 			}
 		}()
 
@@ -87,13 +90,13 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			case <-ctx.Done():
 				return
 			case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: line}:
-				s.results++
+				stats.Results++
 			}
 		}
 
 		if err := scanner.Err(); err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
-			s.errors++
+			stats.Errors++
 		}
 	}()
 
@@ -121,15 +124,14 @@ func (s *Source) NeedsKey() bool {
 }
 
 func (s *Source) AddApiKeys(keys []string) {
-	s.apiKeys = keys
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.apiKeys = slices.Clone(keys)
 }
 
+// Statistics returns a snapshot of the most recently completed run.
 func (s *Source) Statistics() subscraping.Statistics {
-	return subscraping.Statistics{
-		Errors:    s.errors,
-		Results:   s.results,
-		TimeTaken: s.timeTaken,
-		Skipped:   s.skipped,
-		Requests:  s.requests,
-	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.stats
 }
