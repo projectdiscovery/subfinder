@@ -38,7 +38,9 @@ func preprocessDomain(s string) string {
 	if idx := strings.IndexAny(s, "/?#"); idx != -1 {
 		s = s[:idx]
 	}
-	return s
+	// Drop the root label of an FQDN ("example.com.") so the enumerator's
+	// suffix check matches the normalized hosts reported by sources.
+	return strings.TrimSuffix(s, ".")
 }
 
 // normalizeSubdomain normalizes a subdomain reported by a source. Sources

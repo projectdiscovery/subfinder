@@ -24,6 +24,8 @@ func TestPreprocessDomain(t *testing.T) {
 		{"path only", "example.com/foo", "example.com"},
 		{"query only", "example.com?x=1", "example.com"},
 		{"trailing slash", "example.com/", "example.com"},
+		{"trailing dot", "example.com.", "example.com"},
+		{"uppercase scheme and trailing dot", "HTTPS://Example.com./path", "example.com"},
 		{"ip with scheme", "https://8.8.8.8", "8.8.8.8"},
 		{"resolver host port kept", "8.8.8.8:53", "8.8.8.8:53"},
 		{"wildcard kept", "*.example.com", "*.example.com"},
