@@ -5,7 +5,6 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"net/url"
 	"strconv"
 	"strings"
 	"sync"
@@ -14,6 +13,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/internal/archive"
 )
 
 const (
@@ -158,12 +158,10 @@ func (s *Source) getSubdomains(ctx context.Context, searchURL, domain string, se
 				if line == "" {
 					continue
 				}
-				line, _ = url.QueryUnescape(line)
+				line = archive.DecodeLine(line)
 				for _, subdomain := range session.Extractor.Extract(line) {
 					if subdomain != "" {
 						subdomain = strings.ToLower(subdomain)
-						subdomain = strings.TrimPrefix(subdomain, "25")
-						subdomain = strings.TrimPrefix(subdomain, "2f")
 
 						select {
 						case <-ctx.Done():
