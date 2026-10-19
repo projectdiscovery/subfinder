@@ -179,6 +179,18 @@ func TestEnumerateMultipleDomainsCallbacksAndFiles(t *testing.T) {
 	}
 }
 
+func TestEnumerateMultipleDomainsTrailingDotInput(t *testing.T) {
+	source := &delayedSource{delay: time.Millisecond}
+	r := delayedRunner(t, 1, source)
+	var output strings.Builder
+	if err := r.EnumerateMultipleDomainsWithCtx(context.Background(), strings.NewReader("example.com.\n"), []io.Writer{&output}); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := strings.TrimSpace(output.String()), "www.example.com"; got != want {
+		t.Fatalf("output=%q, want %q", got, want)
+	}
+}
+
 func TestEnumerateMultipleDomainsDuplicateOutputDirectory(t *testing.T) {
 	source := &delayedSource{delay: time.Millisecond}
 	r := delayedRunner(t, 4, source)
