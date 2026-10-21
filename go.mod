@@ -1,8 +1,6 @@
 module github.com/projectdiscovery/subfinder/v2
 
-go 1.26.0
-
-toolchain go1.26.10
+go 1.26.10
 
 require (
 	github.com/corpix/uarand v0.2.0
