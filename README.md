@@ -122,7 +122,7 @@ Subfinder supports environment variables to specify custom paths for configurati
 
 # Installation
 
-`subfinder` requires **go1.26** to install successfully. Run the following command to install the latest version:
+`subfinder` requires **go1.26.10** to install successfully. Run the following command to install the latest version:
 
 ```sh
 go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
