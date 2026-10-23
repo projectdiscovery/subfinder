@@ -147,7 +147,9 @@ func TestSharedLookupLimit(t *testing.T) {
 		}()
 	}
 	for range pools {
-		<-done
+		if err := <-done; err != nil {
+			t.Fatal(err)
+		}
 	}
 	if got := peak.Load(); got != 2 {
 		t.Fatalf("maximum concurrent DNS calls = %d, want 2", got)
