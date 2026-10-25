@@ -88,8 +88,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				return
 			}
 
-			defer session.DiscardHTTPResponse(resp)
-
 			var windvaneResponse response
 			err = json.NewDecoder(resp.Body).Decode(&windvaneResponse)
 			if err != nil {
@@ -102,6 +100,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			for _, record := range windvaneResponse.Data.List {
 				select {
 				case <-ctx.Done():
+					session.DiscardHTTPResponse(resp)
 					return
 				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Domain}:
 					stats.Results++
@@ -112,13 +111,18 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			var totalRecords, recordsPerPage int
 
 			if totalRecords, err = strconv.Atoi(pageInfo.Total); err != nil {
+				session.DiscardHTTPResponse(resp)
 				break
 			}
 			if recordsPerPage, err = strconv.Atoi(pageInfo.Count); err != nil {
+				session.DiscardHTTPResponse(resp)
 				break
 			}
 
-			if (page-1)*recordsPerPage >= totalRecords {
+			totalPage, _ := strconv.Atoi(pageInfo.TotalPage)
+			session.DiscardHTTPResponse(resp)
+
+			if (totalPage > 0 && page >= totalPage) || (recordsPerPage > 0 && page*recordsPerPage >= totalRecords) || len(windvaneResponse.Data.List) == 0 {
 				break
 			}
 
