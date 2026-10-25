@@ -67,6 +67,13 @@ func TestWindvanePagination(t *testing.T) {
 			totalPage:     2,
 			expectedPages: []int{1, 2},
 		},
+		{
+			name:          "total 1500 with count 1000 and no total_page requests 2 pages (#1979)",
+			total:         1500,
+			count:         1000,
+			totalPage:     0,
+			expectedPages: []int{1, 2},
+		},
 	}
 
 	for _, tt := range tests {
