@@ -88,8 +88,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				return
 			}
 
-			defer session.DiscardHTTPResponse(resp)
-
 			var windvaneResponse response
 			err = json.NewDecoder(resp.Body).Decode(&windvaneResponse)
 			if err != nil {
@@ -102,11 +100,16 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			for _, record := range windvaneResponse.Data.List {
 				select {
 				case <-ctx.Done():
+					session.DiscardHTTPResponse(resp)
 					return
 				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: record.Domain}:
 					stats.Results++
 				}
 			}
+
+			// Close this page before the next request. A defer in the loop
+			// would hold every body until the source returns.
+			session.DiscardHTTPResponse(resp)
 
 			pageInfo := windvaneResponse.Data.PageResponse
 			var totalRecords, recordsPerPage int
