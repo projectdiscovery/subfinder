@@ -24,20 +24,21 @@ func TestSourcesWithoutKeys(t *testing.T) {
 	}
 
 	ignoredSources := []string{
-		"commoncrawl",    // commoncrawl is under resourced and will likely time-out so step over it for this test https://groups.google.com/u/2/g/common-crawl/c/3QmQjFA_3y4/m/vTbhGqIBBQAJ
-		"riddler",        // failing due to cloudfront protection
-		"crtsh",          // Fails in GH Action (possibly IP-based ban) causing a timeout.
-		"hackertarget",   // Fails in GH Action (possibly IP-based ban) but works locally
-		"waybackarchive", // Fails randomly
-		"alienvault",     // 503 Service Temporarily Unavailable
-		"digitorus",      // failing with "Failed to retrieve certificate"
-		"dnsdumpster",    // failing with "unexpected status code 403 received"
-		"anubis",         // previously failed on jonlu.ca (Cloudflare 403 / redirects); endpoint moved to anubisdb.com
-		"threatcrowd",    // failing with "randomly failing with unmarshal error when hit multiple times"
-		"leakix",         // now requires API key (returns 401)
-		"reconeer",       // now requires API key (returns 401)
-		"sitedossier",    // flaky - returns no results in CI
-		"submd",          // origin is unavailable (Cloudflare 522/523)
+		"commoncrawl",     // commoncrawl is under resourced and will likely time-out so step over it for this test https://groups.google.com/u/2/g/common-crawl/c/3QmQjFA_3y4/m/vTbhGqIBBQAJ
+		"riddler",         // failing due to cloudfront protection
+		"crtsh",           // Fails in GH Action (possibly IP-based ban) causing a timeout.
+		"hackertarget",    // Fails in GH Action (possibly IP-based ban) but works locally
+		"waybackarchive",  // Fails randomly
+		"alienvault",      // 503 Service Temporarily Unavailable
+		"digitorus",       // failing with "Failed to retrieve certificate"
+		"dnsdumpster",     // failing with "unexpected status code 403 received"
+		"anubis",          // previously failed on jonlu.ca (Cloudflare 403 / redirects); endpoint moved to anubisdb.com
+		"threatcrowd",     // failing with "randomly failing with unmarshal error when hit multiple times"
+		"leakix",          // now requires API key (returns 401)
+		"reconeer",        // now requires API key (returns 401)
+		"sitedossier",     // flaky - returns no results in CI
+		"submd",           // origin is unavailable (Cloudflare 522/523)
+		"subdomaincenter", // anonymous API returns 503 "server busy" from shared CI addresses
 	}
 
 	domain := "hackerone.com"
