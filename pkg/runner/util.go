@@ -71,3 +71,13 @@ func isValidHostname(s string) bool {
 	}
 	return true
 }
+
+// sourceHost returns the host part of a source value: a URL scheme and
+// everything from the first "/" are removed, so a path never joins the name.
+func sourceHost(s string) string {
+	s = strings.TrimPrefix(strings.TrimPrefix(s, "http://"), "https://")
+	if i := strings.IndexByte(s, '/'); i >= 0 {
+		s = s[:i]
+	}
+	return s
+}
