@@ -74,6 +74,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			"Accept":       "application/json",
 			"Content-Type": "application/json",
 		}
+		// Honor an optional per-source result limit (0 = no limit) so a single
+		// domain can't drain an API quota by paginating to the end.
+		maxResults := session.MaxResults
+
 		const pageSize = 1000
 		// Search web assets explicitly; the v2 API defaults to IPv4 assets.
 		query := base64.StdEncoding.EncodeToString(fmt.Appendf(nil, "domain=%q", domain))
@@ -129,6 +133,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					return
 				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: r.Domain}:
 					stats.Results++
+				}
+				if maxResults > 0 && stats.Results >= maxResults {
+					return
 				}
 			}
 			if len(res.Data) == 0 || currentPage >= (res.Total-1)/pageSize+1 {
