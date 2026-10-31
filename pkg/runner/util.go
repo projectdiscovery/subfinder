@@ -49,3 +49,35 @@ func preprocessDomain(s string) string {
 func normalizeSubdomain(s string) string {
 	return strings.TrimSuffix(strings.ToLower(s), ".")
 }
+
+// isValidHostname reports whether s is a DNS host name: at most 253 bytes,
+// labels of 1 to 63 bytes from a-z, 0-9, '-' and '_'. s must be normalized
+// (lowercase, no trailing dot). Whitespace, control characters and any other
+// byte are rejected.
+func isValidHostname(s string) bool {
+	if s == "" || len(s) > 253 {
+		return false
+	}
+	for _, label := range strings.Split(s, ".") {
+		if label == "" || len(label) > 63 {
+			return false
+		}
+		for i := 0; i < len(label); i++ {
+			c := label[i]
+			if (c < 'a' || c > 'z') && (c < '0' || c > '9') && c != '-' && c != '_' {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+// sourceHost returns the host part of a source value: a URL scheme and
+// everything from the first "/" are removed, so a path never joins the name.
+func sourceHost(s string) string {
+	s = strings.TrimPrefix(strings.TrimPrefix(s, "http://"), "https://")
+	if i := strings.IndexByte(s, '/'); i >= 0 {
+		s = s[:i]
+	}
+	return s
+}
