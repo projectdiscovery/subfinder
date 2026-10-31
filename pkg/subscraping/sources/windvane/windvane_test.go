@@ -79,6 +79,11 @@ func newPagedServer(t *testing.T, total int) (*httptest.Server, func() []int) {
 
 func runSource(t *testing.T, server *httptest.Server) (subs []string, errs []error) {
 	t.Helper()
+	return runSourceWithLimit(t, server, 0)
+}
+
+func runSourceWithLimit(t *testing.T, server *httptest.Server, maxResults int) (subs []string, errs []error) {
+	t.Helper()
 	target, err := url.Parse(server.URL)
 	require.NoError(t, err)
 
@@ -92,6 +97,7 @@ func runSource(t *testing.T, server *httptest.Server) (subs []string, errs []err
 	session := &subscraping.Session{
 		Client:           &http.Client{Transport: &rewriteTransport{target: target}, Timeout: 5 * time.Second},
 		MultiRateLimiter: mrl,
+		MaxResults:       maxResults,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -131,6 +137,31 @@ func TestWindvaneSource_StopsAfterLastPage(t *testing.T) {
 
 			assert.Empty(t, errs)
 			assert.Len(t, subs, tt.total)
+			assert.Equal(t, tt.pages, requestedPages())
+		})
+	}
+}
+
+// With -max-results set, pagination must stop once the limit is reached
+// instead of reading every page.
+func TestWindvaneSource_HonorsMaxResults(t *testing.T) {
+	tests := []struct {
+		name       string
+		maxResults int
+		pages      []int
+	}{
+		{name: "limit ends a page", maxResults: 1000, pages: []int{1}},
+		{name: "limit inside a page", maxResults: 1500, pages: []int{1, 2}},
+		{name: "limit above the total", maxResults: 5000, pages: []int{1, 2, 3}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server, requestedPages := newPagedServer(t, 3000)
+
+			subs, errs := runSourceWithLimit(t, server, tt.maxResults)
+
+			assert.Empty(t, errs)
+			assert.Len(t, subs, min(tt.maxResults, 3000))
 			assert.Equal(t, tt.pages, requestedPages())
 		})
 	}

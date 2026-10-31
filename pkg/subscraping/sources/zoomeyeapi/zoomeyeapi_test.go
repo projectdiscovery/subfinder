@@ -32,6 +32,11 @@ func (r *rewriteTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 
 func newTestSession(t *testing.T, server *httptest.Server) *subscraping.Session {
 	t.Helper()
+	return newTestSessionWithLimit(t, server, 0)
+}
+
+func newTestSessionWithLimit(t *testing.T, server *httptest.Server, maxResults int) *subscraping.Session {
+	t.Helper()
 	target, err := url.Parse(server.URL)
 	require.NoError(t, err)
 
@@ -46,6 +51,7 @@ func newTestSession(t *testing.T, server *httptest.Server) *subscraping.Session 
 	return &subscraping.Session{
 		Client:           &http.Client{Transport: &rewriteTransport{target: target}, Timeout: 5 * time.Second},
 		MultiRateLimiter: mrl,
+		MaxResults:       maxResults,
 	}
 }
 
@@ -207,6 +213,28 @@ func TestZoomeyeAPISource_StopsOnLastPage(t *testing.T) {
 
 	assert.Empty(t, errs)
 	assert.Equal(t, []string{"p1.example.com", "p2.example.com"}, subs)
+	assert.Equal(t, 2, source.Statistics().Requests)
+	assert.Equal(t, int32(2), atomic.LoadInt32(&hits))
+}
+
+// With -max-results set, pagination must stop once the limit is reached
+// instead of reading every page.
+func TestZoomeyeAPISource_HonorsMaxResults(t *testing.T) {
+	var hits int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		n := atomic.AddInt32(&hits, 1)
+		w.Header().Set("Content-Type", "application/json")
+		// pageSize is 1000, so total 3000 would take three pages of two names.
+		_, _ = fmt.Fprintf(w, `{"code":60000,"total":3000,"data":[{"domain":"a%d.example.com"},{"domain":"b%d.example.com"}]}`, n, n)
+	}))
+	defer server.Close()
+
+	source := &Source{}
+	source.AddApiKeys([]string{"zoomeye.ai:test-key"})
+	subs, errs := runSource(t, source, newTestSessionWithLimit(t, server, 3), "example.com")
+
+	assert.Empty(t, errs)
+	assert.Equal(t, []string{"a1.example.com", "b1.example.com", "a2.example.com"}, subs)
 	assert.Equal(t, 2, source.Statistics().Requests)
 	assert.Equal(t, int32(2), atomic.LoadInt32(&hits))
 }

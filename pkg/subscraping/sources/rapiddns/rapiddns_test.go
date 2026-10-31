@@ -1,0 +1,114 @@
+package rapiddns
+
+import (
+	"context"
+	"fmt"
+	"math"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"strconv"
+	"sync/atomic"
+	"testing"
+	"time"
+
+	"github.com/projectdiscovery/ratelimit"
+	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+// rewriteTransport sends every request to the test server's host while
+// preserving the original path, so the source's hardcoded rapiddns URL still
+// resolves to our handler.
+type rewriteTransport struct {
+	target *url.URL
+}
+
+func (r *rewriteTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.URL.Scheme = r.target.Scheme
+	req.URL.Host = r.target.Host
+	return http.DefaultTransport.RoundTrip(req)
+}
+
+func runSource(t *testing.T, server *httptest.Server, maxResults int) (source *Source, subs []string, errs []error) {
+	t.Helper()
+	target, err := url.Parse(server.URL)
+	require.NoError(t, err)
+
+	mrl, err := ratelimit.NewMultiLimiter(context.Background(), &ratelimit.Options{
+		Key:         "rapiddns",
+		IsUnlimited: false,
+		MaxCount:    math.MaxInt32,
+		Duration:    time.Millisecond,
+	})
+	require.NoError(t, err)
+	extractor, err := subscraping.NewSubdomainExtractor("example.com")
+	require.NoError(t, err)
+	session := &subscraping.Session{
+		Client:           &http.Client{Transport: &rewriteTransport{target: target}, Timeout: 5 * time.Second},
+		MultiRateLimiter: mrl,
+		Extractor:        extractor,
+		MaxResults:       maxResults,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	ctx = context.WithValue(ctx, subscraping.CtxSourceArg, "rapiddns")
+
+	source = &Source{}
+	for r := range source.Run(ctx, "example.com", session) {
+		switch r.Type {
+		case subscraping.Subdomain:
+			subs = append(subs, r.Value)
+		case subscraping.Error:
+			errs = append(errs, r.Error)
+		}
+	}
+	return source, subs, errs
+}
+
+// newPagedServer serves three pages of two names each, with the pagination
+// links of the rapiddns result page.
+func newPagedServer(t *testing.T) (*httptest.Server, *int32) {
+	t.Helper()
+	var hits int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		atomic.AddInt32(&hits, 1)
+		page, err := strconv.Atoi(r.URL.Query().Get("page"))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		_, _ = fmt.Fprintf(w, `<table><tr><td>a%d.example.com</td></tr><tr><td>b%d.example.com</td></tr></table>`, page, page)
+		for p := 1; p <= 3; p++ {
+			_, _ = fmt.Fprintf(w, `<a class="page-link" href="/subdomain/example.com?page=%d">%d</a>`, p, p)
+		}
+	}))
+	t.Cleanup(server.Close)
+	return server, &hits
+}
+
+func TestRapidDNSSource_FollowsPagesWhenUnlimited(t *testing.T) {
+	server, hits := newPagedServer(t)
+
+	source, subs, errs := runSource(t, server, 0)
+
+	assert.Empty(t, errs)
+	assert.Len(t, subs, 6)
+	assert.Equal(t, 3, source.Statistics().Requests)
+	assert.Equal(t, int32(3), atomic.LoadInt32(hits))
+}
+
+// With -max-results set, pagination must stop once the limit is reached
+// instead of reading every page.
+func TestRapidDNSSource_HonorsMaxResults(t *testing.T) {
+	server, hits := newPagedServer(t)
+
+	source, subs, errs := runSource(t, server, 3)
+
+	assert.Empty(t, errs)
+	assert.Equal(t, []string{"a1.example.com", "b1.example.com", "a2.example.com"}, subs)
+	assert.Equal(t, 2, source.Statistics().Requests)
+	assert.Equal(t, int32(2), atomic.LoadInt32(hits))
+}
