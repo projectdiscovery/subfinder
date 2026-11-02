@@ -46,6 +46,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
+		// Honor an optional per-source result limit (0 = no limit) so a single
+		// domain can't drain an API quota by paginating to the end.
+		maxResults := session.MaxResults
+
 		var pageState string
 		headers := map[string]string{"Content-Type": "application/json"}
 		apiURL := "https://ip.thc.org/api/v1/lookup/subdomains"
@@ -85,6 +89,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			for _, domainRecord := range thcResponse.Domains {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: domainRecord.Domain}
 				stats.Results++
+				if maxResults > 0 && stats.Results >= maxResults {
+					return
+				}
 			}
 
 			pageState = thcResponse.NextPageState

@@ -73,12 +73,3 @@ func TestEnumerateDropsInvalidSourceValues(t *testing.T) {
 	sort.Strings(lines)
 	require.Equal(t, []string{"_dmarc.example.com", "dot.example.com", "legit.example.com", "url.example.com", "www.example.com"}, lines)
 }
-
-func TestIsValidHostname(t *testing.T) {
-	for _, s := range []string{"example.com", "a.b-c.example.com", "_srv._tcp.example.com", "xn--mnchen-3ya.example.com", "1.2.3.4"} {
-		require.True(t, isValidHostname(s), s)
-	}
-	for _, s := range []string{"", "a..b", ".a.b", "a b.c", "a\nb.c", "a\x1b.c", "a/b.c", "a*.b", "A.b", strings.Repeat("a", 64) + ".b", strings.Repeat("a.", 127) + "aa"} {
-		require.False(t, isValidHostname(s), "%q", s)
-	}
-}

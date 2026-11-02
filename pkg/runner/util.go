@@ -47,29 +47,42 @@ func preprocessDomain(s string) string {
 // reporting hosts verbatim keep the FQDN trailing dot or mixed case, which
 // the domain suffix check in the enumerator would otherwise reject.
 func normalizeSubdomain(s string) string {
-	return strings.TrimSuffix(strings.ToLower(s), ".")
+	return strings.TrimSuffix(strings.TrimSpace(strings.ToLower(s)), ".")
 }
 
-// isValidHostname reports whether s is a DNS host name: at most 253 bytes,
-// labels of 1 to 63 bytes from a-z, 0-9, '-' and '_'. s must be normalized
-// (lowercase, no trailing dot). Whitespace, control characters and any other
-// byte are rejected.
-func isValidHostname(s string) bool {
-	if s == "" || len(s) > 253 {
+// isValidSubdomain reports whether s is a valid DNS hostname under RFC 1123 / RFC 952.
+func isValidSubdomain(s string) bool {
+	// Domain names must be between 1 and 253 octets.
+	if len(s) == 0 || len(s) > 253 {
 		return false
 	}
-	for _, label := range strings.Split(s, ".") {
-		if label == "" || len(label) > 63 {
+
+	labels := strings.Split(s, ".")
+	for _, label := range labels {
+		// Each label must be between 1 and 63 octets.
+		if len(label) == 0 || len(label) > 63 {
 			return false
 		}
+		// Labels cannot begin or end with a hyphen.
+		if label[0] == '-' || label[len(label)-1] == '-' {
+			return false
+		}
+		// Characters must be alphanumeric, hyphen, or underscore (used in service/DKIM/DMARC records).
 		for i := 0; i < len(label); i++ {
 			c := label[i]
-			if (c < 'a' || c > 'z') && (c < '0' || c > '9') && c != '-' && c != '_' {
-				return false
+			if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '_' {
+				continue
 			}
+			return false
 		}
 	}
 	return true
+}
+
+// sourceSubdomain returns the candidate subdomain in a normalized source
+// value, before the domain and syntax checks.
+func sourceSubdomain(value string) string {
+	return replacer.Replace(normalizeSubdomain(sourceHost(value)))
 }
 
 // sourceHost returns the host part of a source value: a URL scheme and
