@@ -55,6 +55,8 @@ func TestNormalizeSubdomain(t *testing.T) {
 		{"uppercase and trailing dot", "WWW.EXAMPLE.COM.", "www.example.com"},
 		{"wildcard kept", "*.sub.example.com", "*.sub.example.com"},
 		{"wildcard and trailing dot", "*.sub.example.com.", "*.sub.example.com"},
+		{"surrounding whitespace", "  www.example.com  ", "www.example.com"},
+		{"surrounding newlines and tabs", "\t\nwww.example.com\n", "www.example.com"},
 		{"empty", "", ""},
 	}
 	for _, tt := range tests {
@@ -63,6 +65,47 @@ func TestNormalizeSubdomain(t *testing.T) {
 				t.Fatalf("normalizeSubdomain(%q) = %q, want %q", tt.in, got, tt.want)
 			}
 		})
+	}
+}
+
+func TestIsValidSubdomain(t *testing.T) {
+	valid := []string{
+		"example.com",
+		"www.example.com",
+		"sub.domain.example.com",
+		"_dmarc.example.com",
+		"_sip._tcp.example.com",
+		"a-b-c.example.com",
+		"123.example.com",
+		"xn--fsqu00a.example.com",
+	}
+	for _, host := range valid {
+		if !isValidSubdomain(host) {
+			t.Errorf("expected %q to be valid", host)
+		}
+	}
+
+	invalid := []string{
+		"",
+		"foo\nbar.example.com",
+		"foo\r\nbar.example.com",
+		"foo bar.example.com",
+		"foo\tbar.example.com",
+		"foo\x00bar.example.com",
+		"-foo.example.com",
+		"foo-.example.com",
+		"foo..example.com",
+		".example.com",
+		"foo;bar.example.com",
+		"foo:80.example.com",
+		"foo@bar.example.com",
+		strings.Repeat("a", 64) + ".example.com",
+		strings.Repeat("a.", 130) + "com",
+	}
+	for _, host := range invalid {
+		if isValidSubdomain(host) {
+			t.Errorf("expected %q to be invalid", host)
+		}
 	}
 }
 
@@ -78,15 +121,28 @@ func TestSubdomainPassesDomainGate(t *testing.T) {
 		"dev.EXAMPLE.com",
 		"*.sub.example.com.",
 		"https://www.EXAMPLE.com",
+		"  sub.example.com  ",
 	} {
 		subdomain := replacer.Replace(normalizeSubdomain(value))
-		if !strings.HasSuffix(subdomain, "."+domain) {
+		if !strings.HasSuffix(subdomain, "."+domain) || !isValidSubdomain(subdomain) {
 			t.Fatalf("expected %q to pass the domain gate, got %q", value, subdomain)
 		}
 	}
-	for _, value := range []string{"example.com", "notexample.com", "foo.example.com.evil.org"} {
+	for _, value := range []string{
+		"example.com",
+		"notexample.com",
+		"foo.example.com.evil.org",
+		"foo\nbar.example.com",
+		"foo\r\nbar.example.com",
+		"foo bar.example.com",
+		"foo\tbar.example.com",
+		"foo\x00bar.example.com",
+		"foo;bar.example.com",
+		"-foo.example.com",
+		"foo-.example.com",
+	} {
 		subdomain := replacer.Replace(normalizeSubdomain(value))
-		if strings.HasSuffix(subdomain, "."+domain) {
+		if strings.HasSuffix(subdomain, "."+domain) && isValidSubdomain(subdomain) {
 			t.Fatalf("expected %q to be rejected by the domain gate, got %q", value, subdomain)
 		}
 	}
