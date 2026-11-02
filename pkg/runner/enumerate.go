@@ -80,7 +80,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 				isWildcard := strings.Contains(value, "*."+subdomain)
 
 				// Validate the subdomain found and remove wildcards from
-				if !strings.HasSuffix(subdomain, "."+domain) {
+				if !strings.HasSuffix(subdomain, "."+domain) || !isValidSubdomain(subdomain) {
 					skippedCounts[result.Source]++
 					continue
 				}
