@@ -80,16 +80,23 @@ func isValidSubdomain(s string) bool {
 }
 
 // sourceSubdomain returns the candidate subdomain in a normalized source
-// value, before the domain and syntax checks.
+// value, before the domain and syntax checks. The root dot of a URL host is
+// trimmed here; a bare value was already trimmed once by normalizeSubdomain,
+// and trimming it again would accept "foo.example.com..".
 func sourceSubdomain(value string) string {
-	return replacer.Replace(normalizeSubdomain(sourceHost(value)))
+	host := sourceHost(value)
+	if host != value {
+		host = normalizeSubdomain(host)
+	}
+	return replacer.Replace(host)
 }
 
 // sourceHost returns the host part of a source value: a URL scheme and
-// everything from the first "/" are removed, so a path never joins the name.
+// everything from the first "/", "?" or "#" are removed, so a path, query or
+// fragment never joins the name.
 func sourceHost(s string) string {
 	s = strings.TrimPrefix(strings.TrimPrefix(s, "http://"), "https://")
-	if i := strings.IndexByte(s, '/'); i >= 0 {
+	if i := strings.IndexAny(s, "/?#"); i >= 0 {
 		s = s[:i]
 	}
 	return s

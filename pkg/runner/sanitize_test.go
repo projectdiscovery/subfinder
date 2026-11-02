@@ -55,6 +55,9 @@ func TestEnumerateDropsInvalidSourceValues(t *testing.T) {
 		"a/b.example.com",
 		"https://url.example.com/path",
 		"https://dot.example.com./path",
+		"https://query.example.com?x=1",
+		"https://frag.example.com#top",
+		"two-dots.example.com..",
 	}}
 	name := source.Name()
 	passive.NameSourceMap[name] = source
@@ -71,5 +74,5 @@ func TestEnumerateDropsInvalidSourceValues(t *testing.T) {
 
 	lines := strings.Split(strings.TrimSpace(output.String()), "\n")
 	sort.Strings(lines)
-	require.Equal(t, []string{"_dmarc.example.com", "dot.example.com", "legit.example.com", "url.example.com", "www.example.com"}, lines)
+	require.Equal(t, []string{"_dmarc.example.com", "dot.example.com", "frag.example.com", "legit.example.com", "query.example.com", "url.example.com", "www.example.com"}, lines)
 }
