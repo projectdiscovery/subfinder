@@ -79,25 +79,37 @@ func isValidSubdomain(s string) bool {
 	return true
 }
 
-// sourceSubdomain returns the candidate subdomain in a normalized source
-// value, before the domain and syntax checks. The root dot of a URL host is
-// trimmed here; a bare value was already trimmed once by normalizeSubdomain,
-// and trimming it again would accept "foo.example.com..".
+// sourceSubdomain returns the candidate subdomain in a raw source value,
+// before the domain and syntax checks. The host is extracted first and
+// normalized once, so "foo.example.com.." and "https://foo.example.com.."
+// keep one dot and are rejected.
 func sourceSubdomain(value string) string {
-	host := sourceHost(value)
-	if host != value {
-		host = normalizeSubdomain(host)
-	}
-	return replacer.Replace(host)
+	host := sourceHost(strings.TrimSpace(strings.ToLower(value)))
+	return replacer.Replace(normalizeSubdomain(host))
 }
 
-// sourceHost returns the host part of a source value: a URL scheme and
-// everything from the first "/", "?" or "#" are removed, so a path, query or
-// fragment never joins the name.
+// sourceHost returns the host part of a source value: a URL scheme, everything
+// from the first "/", "?" or "#", and a numeric port are removed, so a path,
+// query, fragment or port never joins the name.
 func sourceHost(s string) string {
 	s = strings.TrimPrefix(strings.TrimPrefix(s, "http://"), "https://")
 	if i := strings.IndexAny(s, "/?#"); i >= 0 {
 		s = s[:i]
 	}
+	if host, port, ok := strings.Cut(s, ":"); ok && isPort(port) {
+		s = host
+	}
 	return s
+}
+
+func isPort(s string) bool {
+	if s == "" || len(s) > 5 {
+		return false
+	}
+	for _, c := range s {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
 }
