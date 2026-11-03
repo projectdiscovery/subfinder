@@ -69,6 +69,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		randomApiKey := subscraping.PickRandom(apiKeys, sourceName)
 		if randomApiKey == "" {
+			stats.Skipped = true
 			return
 		}
 

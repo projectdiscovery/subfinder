@@ -62,6 +62,13 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
+		// Pick an API key
+		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
+		if randomApiKey == "" {
+			stats.Skipped = true
+			return
+		}
+
 		// To get count of domains
 		endpoint := "https://app.netlas.io/api/domains_count/"
 		params := url.Values{}
@@ -69,8 +76,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		params.Set("q", countQuery)
 		countUrl := endpoint + "?" + params.Encode()
 
-		// Pick an API key
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
 		stats.Requests++
 		resp1, err := session.HTTPRequest(ctx, http.MethodGet, countUrl, "", map[string]string{
 			"accept":    "application/json",
