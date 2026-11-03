@@ -71,6 +71,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		// Pick an API key
 		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
+		if randomApiKey == "" {
+			stats.Skipped = true
+			return
+		}
 		stats.Requests++
 		resp1, err := session.HTTPRequest(ctx, http.MethodGet, countUrl, "", map[string]string{
 			"accept":    "application/json",
