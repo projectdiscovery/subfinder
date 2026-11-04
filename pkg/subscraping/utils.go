@@ -9,14 +9,24 @@ import (
 
 const MultipleKeyPartsLength = 2
 
-func PickRandom[T any](v []T, sourceName string) T {
-	var result T
-	length := len(v)
-	if length == 0 {
-		gologger.Debug().Msgf("Cannot use the %s source because there was no API key/secret defined for it.", sourceName)
-		return result
+// PickRandom returns a random usable (non-zero-value) entry from v, e.g. a
+// non-empty API key. A pool mixing blank and valid entries - such as a
+// provider-config list with some key slots left empty - must not make the
+// source skip or authenticate nondeterministically depending on the draw,
+// so blank entries are excluded before picking.
+func PickRandom[T comparable](v []T, sourceName string) T {
+	var zero T
+	usable := make([]T, 0, len(v))
+	for _, item := range v {
+		if item != zero {
+			usable = append(usable, item)
+		}
 	}
-	return v[rand.Intn(length)]
+	if len(usable) == 0 {
+		gologger.Debug().Msgf("Cannot use the %s source because there was no API key/secret defined for it.", sourceName)
+		return zero
+	}
+	return usable[rand.Intn(len(usable))]
 }
 
 func CreateApiKeys[T any](keys []string, provider func(k, v string) T) []T {

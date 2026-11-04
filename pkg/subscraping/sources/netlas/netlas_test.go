@@ -71,11 +71,14 @@ func TestNetlasSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *testi
 	ctxWithValue := context.WithValue(ctx, subscraping.CtxSourceArg, "netlas")
 
 	// One in five draws (1 valid key in a 5-entry pool) authenticates, so
-	// 200 attempts leaves a (4/5)^200 chance, effectively zero, of never
-	// seeing an authenticated run.
+	// 200 attempts leaves negligible odds of seeing fewer than
+	// minAuthenticatedRuns authenticated runs; stopping at the first one
+	// would leave this checking only a single draw, no more rigorous than
+	// a one-shot assertion.
 	const maxAttempts = 200
-	var sawAuthenticatedRun bool
-	for i := 0; i < maxAttempts && !sawAuthenticatedRun; i++ {
+	const minAuthenticatedRuns = 5
+	var authenticatedRuns int
+	for i := 0; i < maxAttempts && authenticatedRuns < minAuthenticatedRuns; i++ {
 		var mu sync.Mutex
 		var apiKeyHeaders []string
 
@@ -113,11 +116,12 @@ func TestNetlasSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *testi
 			for _, h := range apiKeyHeaders {
 				assert.Equal(t, "valid-key", h, "both requests in one run must use the same key")
 			}
-			sawAuthenticatedRun = true
+			authenticatedRuns++
 		default:
 			t.Errorf("attempt %d: got %d requests, want 0 or 2", i, len(apiKeyHeaders))
 		}
 		mu.Unlock()
 	}
-	require.True(t, sawAuthenticatedRun, "no attempt drew the valid key within %d tries", maxAttempts)
+	require.GreaterOrEqual(t, authenticatedRuns, minAuthenticatedRuns,
+		"too few attempts drew the valid key within %d tries", maxAttempts)
 }

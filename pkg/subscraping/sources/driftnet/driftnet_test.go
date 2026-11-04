@@ -70,11 +70,14 @@ func TestDriftnetSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *tes
 	ctxWithValue := context.WithValue(ctx, subscraping.CtxSourceArg, "driftnet")
 
 	// One in five draws (1 valid key in a 5-entry pool) authenticates, so
-	// 200 attempts leaves a (4/5)^200 chance, effectively zero, of never
-	// seeing an authenticated run.
+	// 200 attempts leaves negligible odds of seeing fewer than
+	// minAuthenticatedRuns authenticated runs; stopping at the first one
+	// would leave this checking only a single draw, no more rigorous than
+	// a one-shot assertion.
 	const maxAttempts = 200
-	var sawAuthenticatedRun bool
-	for i := 0; i < maxAttempts && !sawAuthenticatedRun; i++ {
+	const minAuthenticatedRuns = 5
+	var authenticatedRuns int
+	for i := 0; i < maxAttempts && authenticatedRuns < minAuthenticatedRuns; i++ {
 		var mu sync.Mutex
 		var authHeaders []string
 
@@ -107,11 +110,12 @@ func TestDriftnetSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *tes
 			for _, h := range authHeaders {
 				assert.Equal(t, "Bearer valid-key", h, "every endpoint in one run must use the same key")
 			}
-			sawAuthenticatedRun = true
+			authenticatedRuns++
 		default:
 			t.Errorf("attempt %d: got %d requests, want 0 or %d", i, len(authHeaders), len(endpoints))
 		}
 		mu.Unlock()
 	}
-	require.True(t, sawAuthenticatedRun, "no attempt drew the valid key within %d tries", maxAttempts)
+	require.GreaterOrEqual(t, authenticatedRuns, minAuthenticatedRuns,
+		"too few attempts drew the valid key within %d tries", maxAttempts)
 }
