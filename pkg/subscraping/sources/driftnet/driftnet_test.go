@@ -56,8 +56,11 @@ func TestDriftnetSource_NoApiKeySkipsRequest(t *testing.T) {
 // once and reused by every endpoint, so a run either skips entirely or
 // every endpoint uses that identical, already-verified key (see CodeRabbit
 // review on PR #1991). The pool keeps a blank possible on any single draw,
-// so this runs the source many times and checks the invariant on each run
-// rather than asserting a single run always picks the valid entry.
+// so every attempt's all-or-nothing invariant is checked regardless of
+// outcome, and the loop retries, up to a bound, until one attempt actually
+// draws the valid key - keeping the "at least one authenticated run"
+// assertion deterministic rather than resting on chance across a fixed
+// iteration count.
 func TestDriftnetSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *testing.T) {
 	ctx := context.Background()
 	mrl, err := ratelimit.NewMultiLimiter(ctx, &ratelimit.Options{
@@ -66,8 +69,12 @@ func TestDriftnetSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *tes
 	require.NoError(t, err)
 	ctxWithValue := context.WithValue(ctx, subscraping.CtxSourceArg, "driftnet")
 
+	// One in five draws (1 valid key in a 5-entry pool) authenticates, so
+	// 200 attempts leaves a (4/5)^200 chance, effectively zero, of never
+	// seeing an authenticated run.
+	const maxAttempts = 200
 	var sawAuthenticatedRun bool
-	for i := 0; i < 30; i++ {
+	for i := 0; i < maxAttempts && !sawAuthenticatedRun; i++ {
 		var mu sync.Mutex
 		var authHeaders []string
 
@@ -95,16 +102,16 @@ func TestDriftnetSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *tes
 		switch len(authHeaders) {
 		case 0:
 			// The single draw landed on a blank key: the whole run skips,
-			// never sending a partially-authenticated batch.
+			// never sending a partially-authenticated batch. Retry.
 		case len(endpoints):
 			for _, h := range authHeaders {
 				assert.Equal(t, "Bearer valid-key", h, "every endpoint in one run must use the same key")
 			}
 			sawAuthenticatedRun = true
 		default:
-			t.Errorf("run %d: got %d requests, want 0 or %d", i, len(authHeaders), len(endpoints))
+			t.Errorf("attempt %d: got %d requests, want 0 or %d", i, len(authHeaders), len(endpoints))
 		}
 		mu.Unlock()
 	}
-	assert.True(t, sawAuthenticatedRun, "expected at least one of 30 runs to draw the valid key")
+	require.True(t, sawAuthenticatedRun, "no attempt drew the valid key within %d tries", maxAttempts)
 }

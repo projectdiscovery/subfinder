@@ -57,9 +57,11 @@ func TestNetlasSource_NoApiKeySkipsRequest(t *testing.T) {
 // (download) request authenticate differently from the first
 // (domains_count) request in the same run: the key is picked once and
 // reused for both (see CodeRabbit review on PR #1991). The pool keeps a
-// blank possible on any single draw, so this runs the source many times
-// and checks the invariant on each run rather than asserting a single run
-// always picks the valid entry.
+// blank possible on any single draw, so every attempt's all-or-nothing
+// invariant is checked regardless of outcome, and the loop retries, up to
+// a bound, until one attempt actually draws the valid key - keeping the
+// "at least one authenticated run" assertion deterministic rather than
+// resting on chance across a fixed iteration count.
 func TestNetlasSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *testing.T) {
 	ctx := context.Background()
 	mrl, err := ratelimit.NewMultiLimiter(ctx, &ratelimit.Options{
@@ -68,8 +70,12 @@ func TestNetlasSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *testi
 	require.NoError(t, err)
 	ctxWithValue := context.WithValue(ctx, subscraping.CtxSourceArg, "netlas")
 
+	// One in five draws (1 valid key in a 5-entry pool) authenticates, so
+	// 200 attempts leaves a (4/5)^200 chance, effectively zero, of never
+	// seeing an authenticated run.
+	const maxAttempts = 200
 	var sawAuthenticatedRun bool
-	for i := 0; i < 30; i++ {
+	for i := 0; i < maxAttempts && !sawAuthenticatedRun; i++ {
 		var mu sync.Mutex
 		var apiKeyHeaders []string
 
@@ -102,16 +108,16 @@ func TestNetlasSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *testi
 		switch len(apiKeyHeaders) {
 		case 0:
 			// The single draw landed on a blank key: the whole run skips,
-			// never sending a partially-authenticated pair.
+			// never sending a partially-authenticated pair. Retry.
 		case 2:
 			for _, h := range apiKeyHeaders {
 				assert.Equal(t, "valid-key", h, "both requests in one run must use the same key")
 			}
 			sawAuthenticatedRun = true
 		default:
-			t.Errorf("run %d: got %d requests, want 0 or 2", i, len(apiKeyHeaders))
+			t.Errorf("attempt %d: got %d requests, want 0 or 2", i, len(apiKeyHeaders))
 		}
 		mu.Unlock()
 	}
-	assert.True(t, sawAuthenticatedRun, "expected at least one of 30 runs to draw the valid key")
+	require.True(t, sawAuthenticatedRun, "no attempt drew the valid key within %d tries", maxAttempts)
 }
