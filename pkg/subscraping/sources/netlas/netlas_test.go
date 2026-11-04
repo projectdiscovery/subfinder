@@ -56,12 +56,10 @@ func TestNetlasSource_NoApiKeySkipsRequest(t *testing.T) {
 // A key pool mixing blank and valid entries must never let the second
 // (download) request authenticate differently from the first
 // (domains_count) request in the same run: the key is picked once and
-// reused for both (see CodeRabbit review on PR #1991). The pool keeps a
-// blank possible on any single draw, so every attempt's all-or-nothing
-// invariant is checked regardless of outcome, and the loop retries, up to
-// a bound, until one attempt actually draws the valid key - keeping the
-// "at least one authenticated run" assertion deterministic rather than
-// resting on chance across a fixed iteration count.
+// reused for both (see CodeRabbit review on PR #1991). PickRandom now
+// excludes blanks before picking, so with a single non-blank entry in the
+// pool, every attempt must send both authenticated requests - a
+// zero-request attempt is a regression, not a valid outcome to tolerate.
 func TestNetlasSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *testing.T) {
 	ctx := context.Background()
 	mrl, err := ratelimit.NewMultiLimiter(ctx, &ratelimit.Options{
@@ -70,15 +68,8 @@ func TestNetlasSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *testi
 	require.NoError(t, err)
 	ctxWithValue := context.WithValue(ctx, subscraping.CtxSourceArg, "netlas")
 
-	// One in five draws (1 valid key in a 5-entry pool) authenticates, so
-	// 200 attempts leaves negligible odds of seeing fewer than
-	// minAuthenticatedRuns authenticated runs; stopping at the first one
-	// would leave this checking only a single draw, no more rigorous than
-	// a one-shot assertion.
-	const maxAttempts = 200
-	const minAuthenticatedRuns = 5
-	var authenticatedRuns int
-	for i := 0; i < maxAttempts && authenticatedRuns < minAuthenticatedRuns; i++ {
+	const attempts = 5
+	for i := 0; i < attempts; i++ {
 		var mu sync.Mutex
 		var apiKeyHeaders []string
 
@@ -98,8 +89,8 @@ func TestNetlasSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *testi
 		require.NoError(t, err)
 
 		source := &Source{}
-		// A pool mixing blanks and one valid entry: the single draw can
-		// land on either, but it must never differ between requests.
+		// A pool mixing blanks and the one valid entry: PickRandom excludes
+		// the blanks, so this must always pick "valid-key".
 		source.AddApiKeys([]string{"", "", "", "valid-key", ""})
 		session := &subscraping.Session{Client: &http.Client{Transport: &rewriteTransport{target: target}}, MultiRateLimiter: mrl}
 
@@ -109,19 +100,13 @@ func TestNetlasSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *testi
 
 		mu.Lock()
 		switch len(apiKeyHeaders) {
-		case 0:
-			// The single draw landed on a blank key: the whole run skips,
-			// never sending a partially-authenticated pair. Retry.
 		case 2:
 			for _, h := range apiKeyHeaders {
 				assert.Equal(t, "valid-key", h, "both requests in one run must use the same key")
 			}
-			authenticatedRuns++
 		default:
-			t.Errorf("attempt %d: got %d requests, want 0 or 2", i, len(apiKeyHeaders))
+			t.Errorf("attempt %d: got %d requests, want 2", i, len(apiKeyHeaders))
 		}
 		mu.Unlock()
 	}
-	require.GreaterOrEqual(t, authenticatedRuns, minAuthenticatedRuns,
-		"too few attempts drew the valid key within %d tries", maxAttempts)
 }

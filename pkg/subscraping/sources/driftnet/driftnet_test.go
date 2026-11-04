@@ -53,14 +53,11 @@ func TestDriftnetSource_NoApiKeySkipsRequest(t *testing.T) {
 
 // A key pool mixing blank and valid entries must never let one endpoint
 // authenticate while another in the same run doesn't: the key is picked
-// once and reused by every endpoint, so a run either skips entirely or
-// every endpoint uses that identical, already-verified key (see CodeRabbit
-// review on PR #1991). The pool keeps a blank possible on any single draw,
-// so every attempt's all-or-nothing invariant is checked regardless of
-// outcome, and the loop retries, up to a bound, until one attempt actually
-// draws the valid key - keeping the "at least one authenticated run"
-// assertion deterministic rather than resting on chance across a fixed
-// iteration count.
+// once and reused by every endpoint, so every endpoint uses that identical,
+// already-verified key (see CodeRabbit review on PR #1991). PickRandom now
+// excludes blanks before picking, so with a single non-blank entry in the
+// pool, every attempt must authenticate - a zero-request attempt is a
+// regression, not a valid outcome to tolerate.
 func TestDriftnetSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *testing.T) {
 	ctx := context.Background()
 	mrl, err := ratelimit.NewMultiLimiter(ctx, &ratelimit.Options{
@@ -69,15 +66,8 @@ func TestDriftnetSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *tes
 	require.NoError(t, err)
 	ctxWithValue := context.WithValue(ctx, subscraping.CtxSourceArg, "driftnet")
 
-	// One in five draws (1 valid key in a 5-entry pool) authenticates, so
-	// 200 attempts leaves negligible odds of seeing fewer than
-	// minAuthenticatedRuns authenticated runs; stopping at the first one
-	// would leave this checking only a single draw, no more rigorous than
-	// a one-shot assertion.
-	const maxAttempts = 200
-	const minAuthenticatedRuns = 5
-	var authenticatedRuns int
-	for i := 0; i < maxAttempts && authenticatedRuns < minAuthenticatedRuns; i++ {
+	const attempts = 5
+	for i := 0; i < attempts; i++ {
 		var mu sync.Mutex
 		var authHeaders []string
 
@@ -92,8 +82,8 @@ func TestDriftnetSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *tes
 		require.NoError(t, err)
 
 		source := &Source{}
-		// A pool mixing blanks and one valid entry: the single draw can
-		// land on either, but it must never differ between endpoints.
+		// A pool mixing blanks and the one valid entry: PickRandom excludes
+		// the blanks, so this must always pick "valid-key".
 		source.AddApiKeys([]string{"", "", "", "valid-key", ""})
 		session := &subscraping.Session{Client: &http.Client{Transport: &rewriteTransport{target: target}}, MultiRateLimiter: mrl}
 
@@ -103,19 +93,13 @@ func TestDriftnetSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *tes
 
 		mu.Lock()
 		switch len(authHeaders) {
-		case 0:
-			// The single draw landed on a blank key: the whole run skips,
-			// never sending a partially-authenticated batch. Retry.
 		case len(endpoints):
 			for _, h := range authHeaders {
 				assert.Equal(t, "Bearer valid-key", h, "every endpoint in one run must use the same key")
 			}
-			authenticatedRuns++
 		default:
-			t.Errorf("attempt %d: got %d requests, want 0 or %d", i, len(authHeaders), len(endpoints))
+			t.Errorf("attempt %d: got %d requests, want %d", i, len(authHeaders), len(endpoints))
 		}
 		mu.Unlock()
 	}
-	require.GreaterOrEqual(t, authenticatedRuns, minAuthenticatedRuns,
-		"too few attempts drew the valid key within %d tries", maxAttempts)
 }
