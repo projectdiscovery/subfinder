@@ -62,7 +62,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		if subscraping.PickRandom(apiKeys, s.Name()) == "" {
+		// Picked once and reused for both requests below: a pool mixing
+		// blank and valid entries must not let the second request draw a
+		// blank key after the first already confirmed a usable one.
+		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
+		if randomApiKey == "" {
 			stats.Skipped = true
 			return
 		}
@@ -74,8 +78,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		params.Set("q", countQuery)
 		countUrl := endpoint + "?" + params.Encode()
 
-		// Pick an API key
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
 		stats.Requests++
 		resp1, err := session.HTTPRequest(ctx, http.MethodGet, countUrl, "", map[string]string{
 			"accept":    "application/json",
@@ -127,9 +129,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			stats.Errors++
 			return
 		}
-
-		// Pick an API key
-		randomApiKey = subscraping.PickRandom(apiKeys, s.Name())
 
 		stats.Requests++
 		resp2, err := session.HTTPRequest(ctx, http.MethodPost, apiUrl, "", map[string]string{

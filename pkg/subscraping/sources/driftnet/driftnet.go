@@ -30,9 +30,12 @@ type Source struct {
 	apiKeys []string
 }
 
-// runState is shared by the endpoints of one enumeration.
+// runState is shared by the endpoints of one enumeration. apiKey is picked
+// once in Run and reused by every endpoint so a pool mixing blank and valid
+// entries can't let one endpoint draw a blank key after another already
+// confirmed a usable one.
 type runState struct {
-	apiKeys  []string
+	apiKey   string
 	errors   atomic.Int32
 	results  atomic.Int32
 	requests atomic.Int32
@@ -71,18 +74,21 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	// Final results channel
 	results := make(chan subscraping.Result)
 	s.mu.Lock()
-	run := &runState{apiKeys: s.apiKeys}
+	apiKeys := s.apiKeys
 	s.mu.Unlock()
 
-	// All endpoints share the same key pool, so check once up front instead
-	// of letting every endpoint send its own unauthenticated request.
-	if subscraping.PickRandom(run.apiKeys, s.Name()) == "" {
+	// All endpoints share the same key pool. Pick once here and reuse it so
+	// every endpoint sends an authenticated request with the same key,
+	// rather than letting each independently draw from the pool.
+	apiKey := subscraping.PickRandom(apiKeys, s.Name())
+	if apiKey == "" {
 		s.mu.Lock()
 		s.stats = subscraping.Statistics{Skipped: true}
 		s.mu.Unlock()
 		close(results)
 		return results
 	}
+	run := &runState{apiKey: apiKey}
 
 	// Waitgroup for subsources
 	var wg sync.WaitGroup
@@ -158,13 +164,8 @@ func (s *Source) Statistics() subscraping.Statistics {
 func (s *Source) runSubsource(ctx context.Context, domain string, session *subscraping.Session, results chan subscraping.Result, wg *sync.WaitGroup, dedupe *sync.Map, epConfig endpointConfig, run *runState) {
 	// Default headers
 	headers := map[string]string{
-		"accept": "application/json",
-	}
-
-	// Pick an API key
-	randomApiKey := subscraping.PickRandom(run.apiKeys, s.Name())
-	if randomApiKey != "" {
-		headers["authorization"] = "Bearer " + randomApiKey
+		"accept":        "application/json",
+		"authorization": "Bearer " + run.apiKey,
 	}
 
 	// Request
