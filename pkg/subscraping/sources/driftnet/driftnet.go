@@ -74,6 +74,16 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	run := &runState{apiKeys: s.apiKeys}
 	s.mu.Unlock()
 
+	// All endpoints share the same key pool, so check once up front instead
+	// of letting every endpoint send its own unauthenticated request.
+	if subscraping.PickRandom(run.apiKeys, s.Name()) == "" {
+		s.mu.Lock()
+		s.stats = subscraping.Statistics{Skipped: true}
+		s.mu.Unlock()
+		close(results)
+		return results
+	}
+
 	// Waitgroup for subsources
 	var wg sync.WaitGroup
 	wg.Add(len(endpoints))

@@ -94,6 +94,7 @@ func TestVirustotalSource_NoApiKey(t *testing.T) {
 	}
 	assert.Equal(t, 0, count, "expected no results without an api key")
 	assert.Equal(t, 0, source.Statistics().Requests)
+	assert.True(t, source.Statistics().Skipped, "Statistics.Skipped must be set when the key is missing")
 }
 
 // With no per-source limit the source must follow the cursor to the end and

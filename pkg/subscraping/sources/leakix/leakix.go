@@ -35,14 +35,16 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			s.mu.Unlock()
 			close(results)
 		}(time.Now())
-		// Default headers
-		headers := map[string]string{
-			"accept": "application/json",
-		}
 		// Pick an API key
 		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey != "" {
-			headers["api-key"] = randomApiKey
+		if randomApiKey == "" {
+			stats.Skipped = true
+			return
+		}
+		// Default headers
+		headers := map[string]string{
+			"accept":  "application/json",
+			"api-key": randomApiKey,
 		}
 		// Request
 		stats.Requests++

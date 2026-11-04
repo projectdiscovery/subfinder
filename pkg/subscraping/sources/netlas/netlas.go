@@ -62,6 +62,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
+		if subscraping.PickRandom(apiKeys, s.Name()) == "" {
+			stats.Skipped = true
+			return
+		}
+
 		// To get count of domains
 		endpoint := "https://app.netlas.io/api/domains_count/"
 		params := url.Values{}
