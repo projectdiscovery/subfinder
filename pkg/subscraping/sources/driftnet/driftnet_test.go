@@ -82,9 +82,12 @@ func TestDriftnetSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *tes
 		require.NoError(t, err)
 
 		source := &Source{}
-		// A pool mixing blanks and the one valid entry: PickRandom excludes
-		// the blanks, so this must always pick "valid-key".
-		source.AddApiKeys([]string{"", "", "", "valid-key", ""})
+		// A pool mixing blanks and two distinct valid entries: PickRandom
+		// excludes the blanks, and the run must reuse whichever of the two
+		// it picked for every endpoint. A single valid entry couldn't tell
+		// "picked once and reused" apart from "picked independently per
+		// endpoint," since there would be nothing else to pick.
+		source.AddApiKeys([]string{"", "valid-key-a", "", "valid-key-b", ""})
 		session := &subscraping.Session{Client: &http.Client{Transport: &rewriteTransport{target: target}}, MultiRateLimiter: mrl}
 
 		for range source.Run(ctxWithValue, "example.com", session) {
@@ -94,8 +97,9 @@ func TestDriftnetSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *tes
 		mu.Lock()
 		switch len(authHeaders) {
 		case len(endpoints):
+			assert.Contains(t, []string{"Bearer valid-key-a", "Bearer valid-key-b"}, authHeaders[0])
 			for _, h := range authHeaders {
-				assert.Equal(t, "Bearer valid-key", h, "every endpoint in one run must use the same key")
+				assert.Equal(t, authHeaders[0], h, "every endpoint in one run must use the same key")
 			}
 		default:
 			t.Errorf("attempt %d: got %d requests, want %d", i, len(authHeaders), len(endpoints))

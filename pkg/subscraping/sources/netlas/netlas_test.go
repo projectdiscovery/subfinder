@@ -89,9 +89,12 @@ func TestNetlasSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *testi
 		require.NoError(t, err)
 
 		source := &Source{}
-		// A pool mixing blanks and the one valid entry: PickRandom excludes
-		// the blanks, so this must always pick "valid-key".
-		source.AddApiKeys([]string{"", "", "", "valid-key", ""})
+		// A pool mixing blanks and two distinct valid entries: PickRandom
+		// excludes the blanks, and the run must reuse whichever of the two
+		// it picked for both requests. A single valid entry couldn't tell
+		// "picked once and reused" apart from "picked independently per
+		// request," since there would be nothing else to pick.
+		source.AddApiKeys([]string{"", "valid-key-a", "valid-key-b", ""})
 		session := &subscraping.Session{Client: &http.Client{Transport: &rewriteTransport{target: target}}, MultiRateLimiter: mrl}
 
 		for range source.Run(ctxWithValue, "example.com", session) {
@@ -101,9 +104,8 @@ func TestNetlasSource_MixedBlankAndValidKeysNeverPartiallyAuthenticates(t *testi
 		mu.Lock()
 		switch len(apiKeyHeaders) {
 		case 2:
-			for _, h := range apiKeyHeaders {
-				assert.Equal(t, "valid-key", h, "both requests in one run must use the same key")
-			}
+			assert.Contains(t, []string{"valid-key-a", "valid-key-b"}, apiKeyHeaders[0])
+			assert.Equal(t, apiKeyHeaders[0], apiKeyHeaders[1], "both requests in one run must use the same key")
 		default:
 			t.Errorf("attempt %d: got %d requests, want 2", i, len(apiKeyHeaders))
 		}
