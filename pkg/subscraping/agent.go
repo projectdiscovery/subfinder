@@ -48,8 +48,9 @@ func NewSession(domain string, proxy string, multiRateLimiter *ratelimit.MultiLi
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 100,
 		IdleConnTimeout:     90 * time.Second,
+		// Sources send API keys, so the server certificate must be verified.
 		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
+			MinVersion: tls.VersionTLS12,
 		},
 		DialContext: (&net.Dialer{
 			Timeout: time.Duration(timeout) * time.Second,

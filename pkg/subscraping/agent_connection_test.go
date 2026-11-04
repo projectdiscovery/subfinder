@@ -2,6 +2,8 @@ package subscraping
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"io"
 	"net"
 	"net/http"
@@ -28,6 +30,16 @@ func newConnectionTestSession(tb testing.TB) (*Session, context.Context) {
 	return session, ctx
 }
 
+// trustTestServer makes the session trust the certificate of a TLS test server.
+func trustTestServer(tb testing.TB, session *Session, server *httptest.Server) {
+	tb.Helper()
+	pool := x509.NewCertPool()
+	pool.AddCert(server.Certificate())
+	transport, ok := session.Client.Transport.(*http.Transport)
+	require.True(tb, ok)
+	transport.TLSClientConfig = &tls.Config{RootCAs: pool, MinVersion: tls.VersionTLS12}
+}
+
 // BenchmarkSessionConnectionReuse includes connection establishment in the first
 // request and measures successive page requests through the same session.
 func BenchmarkSessionConnectionReuse(b *testing.B) {
@@ -49,6 +61,9 @@ func BenchmarkSessionConnectionReuse(b *testing.B) {
 			}
 			b.Cleanup(server.Close)
 			session, ctx := newConnectionTestSession(b)
+			if protocol == "HTTPS" {
+				trustTestServer(b, session, server)
+			}
 			b.ReportAllocs()
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
@@ -88,6 +103,9 @@ func TestSessionConnectionReuse(t *testing.T) {
 				}
 				t.Cleanup(server.Close)
 				session, ctx := newConnectionTestSession(t)
+				if protocol == "HTTPS" {
+					trustTestServer(t, session, server)
+				}
 				var headers map[string]string
 				if explicitClose {
 					headers = map[string]string{"Connection": "close"}
@@ -136,4 +154,23 @@ func TestSessionIdleConnectionLifecycle(t *testing.T) {
 	case <-time.After(5 * time.Second):
 		t.Fatal("session close did not release its idle connection")
 	}
+}
+
+func TestSessionRejectsUntrustedCertificate(t *testing.T) {
+	var received atomic.Bool
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		received.Store(true)
+		_, _ = io.WriteString(w, "a.example.com\n")
+	}))
+	t.Cleanup(server.Close)
+	session, ctx := newConnectionTestSession(t)
+
+	response, err := session.Get(ctx, server.URL, "", map[string]string{"X-Api-Key": "test-key"})
+	if response != nil {
+		session.DiscardHTTPResponse(response)
+	}
+	require.Error(t, err)
+	var unknownAuthority x509.UnknownAuthorityError
+	require.ErrorAs(t, err, &unknownAuthority)
+	require.False(t, received.Load(), "request must not reach a server with an untrusted certificate")
 }
