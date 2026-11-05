@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -83,7 +82,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		tokens := NewTokenManager(apiKeys)
 
 		searchURL := fmt.Sprintf("https://api.github.com/search/code?per_page=100&q=%s&sort=created&order=asc", domain)
-		s.enumerate(ctx, searchURL, domainRegexp(domain), tokens, session, results, &run, 0)
+		s.enumerate(ctx, searchURL, tokens, session, results, &run, 0)
 	}()
 
 	return results
@@ -92,7 +91,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 // retries counts the rate-limit retries already spent on this URL. A new URL
 // starts over at zero, so a page that succeeds does not eat into the budget of
 // the pages after it.
-func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *regexp.Regexp, tokens *Tokens, session *subscraping.Session, results chan subscraping.Result, run *runState, retries int) {
+func (s *Source) enumerate(ctx context.Context, searchURL string, tokens *Tokens, session *subscraping.Session, results chan subscraping.Result, run *runState, retries int) {
 	select {
 	case <-ctx.Done():
 		return
@@ -136,7 +135,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 			return
 		}
 
-		s.enumerate(ctx, searchURL, domainRegexp, tokens, session, results, run, retries+1)
+		s.enumerate(ctx, searchURL, tokens, session, results, run, retries+1)
 		return
 	}
 
@@ -153,7 +152,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 
 	session.DiscardHTTPResponse(resp)
 
-	err = s.processItems(ctx, data.Items, domainRegexp, s.Name(), session, results, run)
+	err = s.processItems(ctx, data.Items, s.Name(), session, results, run)
 	if err != nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		run.errors.Add(1)
@@ -176,13 +175,13 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 				run.errors.Add(1)
 				return
 			}
-			s.enumerate(ctx, nextURL, domainRegexp, tokens, session, results, run, 0)
+			s.enumerate(ctx, nextURL, tokens, session, results, run, 0)
 		}
 	}
 }
 
 // processItems processes GitHub response items.
-func (s *Source) processItems(ctx context.Context, items []item, domainRegexp *regexp.Regexp, name string, session *subscraping.Session, results chan subscraping.Result, run *runState) error {
+func (s *Source) processItems(ctx context.Context, items []item, name string, session *subscraping.Session, results chan subscraping.Result, run *runState) error {
 	var wg sync.WaitGroup
 	errChan := make(chan error, len(items))
 
@@ -225,7 +224,7 @@ func (s *Source) processItems(ctx context.Context, items []item, domainRegexp *r
 					if line == "" {
 						continue
 					}
-					for _, subdomain := range domainRegexp.FindAllString(normalizeContent(line), -1) {
+					for _, subdomain := range session.Extractor.Extract(normalizeContent(line)) {
 						select {
 						case <-ctx.Done():
 							session.DiscardHTTPResponse(resp)
@@ -244,7 +243,7 @@ func (s *Source) processItems(ctx context.Context, items []item, domainRegexp *r
 					return
 				default:
 				}
-				for _, subdomain := range domainRegexp.FindAllString(normalizeContent(textMatch.Fragment), -1) {
+				for _, subdomain := range session.Extractor.Extract(normalizeContent(textMatch.Fragment)) {
 					select {
 					case <-ctx.Done():
 						return
@@ -280,12 +279,6 @@ func normalizeContent(content string) string {
 func rawURL(htmlURL string) string {
 	domain := strings.ReplaceAll(htmlURL, "https://github.com/", "https://raw.githubusercontent.com/")
 	return strings.ReplaceAll(domain, "/blob/", "/")
-}
-
-// DomainRegexp regular expression to match subdomains in github files code
-func domainRegexp(domain string) *regexp.Regexp {
-	rdomain := strings.ReplaceAll(domain, ".", "\\.")
-	return regexp.MustCompile("(\\w[a-zA-Z0-9][a-zA-Z0-9-\\.]*)" + rdomain)
 }
 
 // Name returns the name of the source
