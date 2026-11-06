@@ -224,7 +224,7 @@ func (s *Source) processItems(ctx context.Context, items []item, name string, se
 					if line == "" {
 						continue
 					}
-					for _, subdomain := range session.Extractor.Extract(normalizeContent(line)) {
+					for _, subdomain := range extractSubdomains(session.Extractor, line) {
 						select {
 						case <-ctx.Done():
 							session.DiscardHTTPResponse(resp)
@@ -243,7 +243,7 @@ func (s *Source) processItems(ctx context.Context, items []item, name string, se
 					return
 				default:
 				}
-				for _, subdomain := range session.Extractor.Extract(normalizeContent(textMatch.Fragment)) {
+				for _, subdomain := range extractSubdomains(session.Extractor, textMatch.Fragment) {
 					select {
 					case <-ctx.Done():
 						return
@@ -267,12 +267,25 @@ func (s *Source) processItems(ctx context.Context, items []item, name string, se
 	return nil
 }
 
-// Normalize content before matching, query unescape, remove tabs and new line chars
+// Normalize content before matching: query unescape, and turn tabs and new line chars into spaces
 func normalizeContent(content string) string {
 	normalizedContent, _ := url.QueryUnescape(content)
-	normalizedContent = strings.ReplaceAll(normalizedContent, "\\t", "")
-	normalizedContent = strings.ReplaceAll(normalizedContent, "\\n", "")
+	// Escaped whitespace separates hosts. Deleting it would join a host with
+	// the text after it, so the extractor would reject the host.
+	normalizedContent = strings.ReplaceAll(normalizedContent, "\\t", " ")
+	normalizedContent = strings.ReplaceAll(normalizedContent, "\\n", " ")
 	return normalizedContent
+}
+
+// extractSubdomains returns the hosts found in content. A cookie domain such
+// as ".foo.example.com" yields ".foo.example.com", which is not a valid host,
+// so its leading dots are removed.
+func extractSubdomains(extractor subscraping.SubdomainExtractor, content string) []string {
+	subdomains := extractor.Extract(normalizeContent(content))
+	for i := range subdomains {
+		subdomains[i] = strings.TrimLeft(subdomains[i], ".")
+	}
+	return subdomains
 }
 
 // Raw URL to get the files code and match for subdomains

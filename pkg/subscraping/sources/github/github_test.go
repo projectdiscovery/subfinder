@@ -16,7 +16,7 @@ import (
 // a longer host such as example.community or example.com.evil.org is not cut
 // down to a subdomain of example.com, and case and one-letter labels match.
 func TestGithubExtractsWholeSubdomains(t *testing.T) {
-	raw := "https://api.example.community/v1\nfoo.example.com.evil.org\ncdn.example.computer\nnotexample.com\nAPI.EXAMPLE.COM\nx.example.com\nwww.example.com\n"
+	raw := "https://api.example.community/v1\nfoo.example.com.evil.org\ncdn.example.computer\nnotexample.com\nAPI.EXAMPLE.COM\nx.example.com\nwww.example.com\nDomain=.dotted.example.com\nx\\nfoo.example.com\\tbar\n"
 	transport := roundTripFunc(func(req *http.Request) (*http.Response, error) {
 		body := `{"total_count":1,"items":[{"name":"a","html_url":"https://github.com/o/r/blob/main/a.txt","text_matches":[]}]}`
 		if req.URL.Host == "raw.githubusercontent.com" {
@@ -39,5 +39,5 @@ func TestGithubExtractsWholeSubdomains(t *testing.T) {
 		require.Equal(t, subscraping.Subdomain, result.Type, "%v", result.Error)
 		got = append(got, result.Value)
 	}
-	require.ElementsMatch(t, []string{"api.example.com", "x.example.com", "www.example.com"}, got)
+	require.ElementsMatch(t, []string{"api.example.com", "x.example.com", "www.example.com", "dotted.example.com", "foo.example.com"}, got)
 }
