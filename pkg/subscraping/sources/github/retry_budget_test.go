@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"regexp"
 	"strings"
 	"sync"
 	"testing"
@@ -96,7 +95,7 @@ func TestRateLimitRetryBudgetIsPerURL(t *testing.T) {
 		defer close(results)
 		tokens := NewTokenManager(source.apiKeys)
 		searchURL := "https://api.github.com/search/code?page=1"
-		source.enumerate(ctx, searchURL, regexp.MustCompile(`example\.com`), tokens, session, results, &run, 0)
+		source.enumerate(ctx, searchURL, tokens, session, results, &run, 0)
 	}()
 
 	var errs int
