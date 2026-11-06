@@ -74,6 +74,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	run := &runState{apiKeys: s.apiKeys}
 	s.mu.Unlock()
 
+	if subscraping.PickRandom(run.apiKeys, s.Name()) == "" {
+		s.mu.Lock()
+		s.stats = subscraping.Statistics{Skipped: true}
+		s.mu.Unlock()
+		close(results)
+		return results
+	}
+
 	// Waitgroup for subsources
 	var wg sync.WaitGroup
 	wg.Add(len(endpoints))

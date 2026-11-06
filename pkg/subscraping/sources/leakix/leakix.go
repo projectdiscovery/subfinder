@@ -41,9 +41,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 		// Pick an API key
 		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey != "" {
-			headers["api-key"] = randomApiKey
+		if randomApiKey == "" {
+			stats.Skipped = true
+			return
 		}
+		headers["api-key"] = randomApiKey
 		// Request
 		stats.Requests++
 		resp, err := session.Get(ctx, "https://leakix.net/api/subdomains/"+domain, "", headers)
