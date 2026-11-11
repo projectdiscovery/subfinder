@@ -189,16 +189,22 @@ func writeJSONHost(input string, results map[string]resolve.HostEntry, writer io
 
 // WriteSourceHost writes the output list of subdomain to an io.Writer
 func (o *OutputWriter) WriteSourceHost(input string, sourceMap map[string]map[string]struct{}, writer io.Writer) error {
+	return o.writeSourceHostEntries(input, sourceMap, nil, writer)
+}
+
+// writeSourceHostEntries is WriteSourceHost with the host entries, whose wildcard
+// certificate flag is added to the JSON output.
+func (o *OutputWriter) writeSourceHostEntries(input string, sourceMap map[string]map[string]struct{}, hosts map[string]resolve.HostEntry, writer io.Writer) error {
 	var err error
 	if o.JSON {
-		err = writeSourceJSONHost(input, sourceMap, writer)
+		err = writeSourceJSONHost(input, sourceMap, hosts, writer)
 	} else {
 		err = writeSourcePlainHost(input, sourceMap, writer)
 	}
 	return err
 }
 
-func writeSourceJSONHost(input string, sourceMap map[string]map[string]struct{}, writer io.Writer) error {
+func writeSourceJSONHost(input string, sourceMap map[string]map[string]struct{}, hosts map[string]resolve.HostEntry, writer io.Writer) error {
 	encoder := jsoniter.NewEncoder(writer)
 
 	var data jsonSourcesResult
@@ -211,6 +217,7 @@ func writeSourceJSONHost(input string, sourceMap map[string]map[string]struct{},
 			keys = append(keys, source)
 		}
 		data.Sources = keys
+		data.WildcardCertificate = hosts[host].WildcardCertificate
 
 		err := encoder.Encode(&data)
 		if err != nil {

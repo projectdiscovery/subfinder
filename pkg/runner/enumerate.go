@@ -218,7 +218,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 				err = outputWriter.WriteHostNoWildcard(domain, foundResults, writer)
 			} else {
 				if r.options.CaptureSources {
-					err = outputWriter.WriteSourceHost(domain, sourceMap, writer)
+					err = outputWriter.writeSourceHostEntries(domain, sourceMap, uniqueMap, writer)
 				} else {
 					err = outputWriter.WriteHost(domain, uniqueMap, writer)
 				}
