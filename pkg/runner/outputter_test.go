@@ -67,6 +67,8 @@ func TestJSONWildcardCertificateWithCollectSources(t *testing.T) {
 			got[rec.Host] = rec.WC
 		}
 		require.True(t, got["wild.example.com"], "-cs=%v: wild.example.com must carry wildcard_certificate", cs)
-		require.False(t, got["plain.example.com"])
+		val, ok := got["plain.example.com"]
+		require.True(t, ok, "-cs=%v: plain.example.com must be present in output", cs)
+		require.False(t, val, "-cs=%v: plain.example.com must not carry wildcard_certificate", cs)
 	}
 }
