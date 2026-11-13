@@ -32,8 +32,12 @@ func (options *Options) validateOptions() error {
 		return errors.New("threads must be positive")
 	}
 
-	if options.Timeout == 0 {
-		return errors.New("timeout cannot be zero")
+	if options.Timeout <= 0 {
+		return errors.New("timeout must be positive")
+	}
+
+	if options.MaxEnumerationTime <= 0 {
+		return errors.New("max-time must be positive")
 	}
 
 	// Always remove wildcard with hostip
