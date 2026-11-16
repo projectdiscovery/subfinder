@@ -12,6 +12,7 @@ func TestFilterAndMatchSubdomain(t *testing.T) {
 	options.Domain = []string{"example.com"}
 	options.Threads = 10
 	options.Timeout = 10
+	options.MaxEnumerationTime = 10
 	options.Output = os.Stdout
 	t.Run("Literal Match", func(t *testing.T) {
 		options.Match = []string{"req.example.com"}
