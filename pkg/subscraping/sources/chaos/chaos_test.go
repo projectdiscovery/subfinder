@@ -55,7 +55,7 @@ func TestChaosSource_Results(t *testing.T) {
 		assert.Equal(t, "/dns/example.com/subdomains", r.URL.Path)
 		assert.Equal(t, "test-key", r.Header.Get("Authorization"))
 		// Keys may come in any order; the list is found by name.
-		_, _ = fmt.Fprint(w, `{"count":2,"meta":{"x":[1,2]},"domain":"example.com","subdomains":["www","api.dev"]}`)
+		_, _ = fmt.Fprint(w, `{"count":2,"meta":{"x":[1,2]},"domain":"example.com","subdomains":["www","api.dev"],"next":{"cursor":null}}`)
 	}))
 	defer server.Close()
 	setBaseURL(t, server.URL+"/dns")
@@ -119,9 +119,13 @@ func TestChaosSource_ErrorStatus(t *testing.T) {
 
 func TestChaosSource_MalformedBody(t *testing.T) {
 	for name, body := range map[string]string{
-		"not an object":  `["www"]`,
-		"no subdomains":  `{"domain":"example.com"}`,
-		"truncated list": `{"subdomains":["www",`,
+		"not an object":           `["www"]`,
+		"no subdomains":           `{"domain":"example.com"}`,
+		"truncated list":          `{"subdomains":["www",`,
+		"truncated after open":    `{"subdomains":[`,
+		"truncated after element": `{"subdomains":["www"`,
+		"truncated after list":    `{"subdomains":["www"]`,
+		"truncated after key":     `{"subdomains":["www"],"count"`,
 	} {
 		t.Run(name, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

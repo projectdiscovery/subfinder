@@ -85,6 +85,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				stats.Results++
 			}
 		}
+		// More also reports false on a read error, so a truncated body only
+		// shows up when the closing tokens are checked.
+		if err := finishResponse(decoder); err != nil {
+			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			stats.Errors++
+		}
 	}()
 
 	return results
@@ -110,6 +116,24 @@ func seekSubdomains(decoder *json.Decoder) error {
 		}
 	}
 	return fmt.Errorf("no subdomains field in response")
+}
+
+// finishResponse consumes the end of the "subdomains" array and the rest of
+// the top-level object.
+func finishResponse(decoder *json.Decoder) error {
+	if err := expectDelim(decoder, ']'); err != nil {
+		return err
+	}
+	for decoder.More() {
+		if _, err := decoder.Token(); err != nil {
+			return err
+		}
+		var skip json.RawMessage
+		if err := decoder.Decode(&skip); err != nil {
+			return err
+		}
+	}
+	return expectDelim(decoder, '}')
 }
 
 func expectDelim(decoder *json.Decoder, want json.Delim) error {
