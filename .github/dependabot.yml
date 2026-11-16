@@ -46,3 +46,6 @@ updates:
       include: "scope"
     labels:
       - "Type: Maintenance"
+    groups:
+      docker:
+        patterns: ["*"]
