@@ -57,7 +57,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		// response and an error together. DiscardHTTPResponse ignores nil.
 		defer session.DiscardHTTPResponse(resp)
 		if err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.sendError(ctx, results, err)
 			stats.Errors++
 			return
 		}
@@ -67,14 +67,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		// return a very long one.
 		decoder := json.NewDecoder(resp.Body)
 		if err := seekSubdomains(decoder); err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.sendError(ctx, results, err)
 			stats.Errors++
 			return
 		}
 		for decoder.More() {
 			var subdomain string
 			if err := decoder.Decode(&subdomain); err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				s.sendError(ctx, results, err)
 				stats.Errors++
 				return
 			}
@@ -88,12 +88,21 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		// More also reports false on a read error, so a truncated body only
 		// shows up when the closing tokens are checked.
 		if err := finishResponse(decoder); err != nil {
-			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+			s.sendError(ctx, results, err)
 			stats.Errors++
 		}
 	}()
 
 	return results
+}
+
+// sendError reports err unless the consumer has stopped reading and the
+// context is done, so the goroutine can exit and close results.
+func (s *Source) sendError(ctx context.Context, results chan<- subscraping.Result, err error) {
+	select {
+	case <-ctx.Done():
+	case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}:
+	}
 }
 
 // seekSubdomains advances the decoder to the first element of the

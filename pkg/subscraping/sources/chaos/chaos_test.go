@@ -190,3 +190,28 @@ func TestChaosSource_StopsOnCancel(t *testing.T) {
 	}
 	assert.Less(t, source.Statistics().Results, 10000)
 }
+
+// A truncated body reports its error after a subdomain was sent. If the caller
+// cancels and stops reading, the error send must not block the goroutine, so
+// its deferred cleanup still runs and publishes the statistics.
+func TestChaosSource_ErrorAfterCancelDoesNotBlock(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = fmt.Fprint(w, `{"subdomains":["www"]`)
+	}))
+	defer server.Close()
+	setBaseURL(t, server.URL+"/dns")
+
+	source := &Source{}
+	source.AddApiKeys([]string{"test-key"})
+	session := &subscraping.Session{Client: server.Client(), MultiRateLimiter: newLimiter(t)}
+
+	ctx, cancel := context.WithCancel(context.WithValue(context.Background(), subscraping.CtxSourceArg, "chaos"))
+	defer cancel()
+	results := source.Run(ctx, "example.com", session)
+	<-results
+	cancel()
+
+	require.Eventually(t, func() bool {
+		return source.Statistics().TimeTaken > 0
+	}, 5*time.Second, 10*time.Millisecond, "goroutine blocked on the error send after cancel")
+}
