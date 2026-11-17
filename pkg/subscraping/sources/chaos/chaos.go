@@ -3,14 +3,18 @@ package chaos
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"slices"
 	"sync"
 	"time"
 
-	"github.com/projectdiscovery/chaos-client/pkg/chaos"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 )
+
+// baseURL is the Chaos API endpoint. It is a variable so tests can point the
+// source at a local server.
+var baseURL = "https://dns.projectdiscovery.io/dns"
 
 // Source is the passive scraping agent
 type Source struct {
@@ -20,7 +24,7 @@ type Source struct {
 }
 
 // Run function returns all subdomains found with the service
-func (s *Source) Run(ctx context.Context, domain string, _ *subscraping.Session) <-chan subscraping.Result {
+func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Session) <-chan subscraping.Result {
 	results := make(chan subscraping.Result)
 	s.mu.Lock()
 	apiKeys := s.apiKeys
@@ -42,29 +46,114 @@ func (s *Source) Run(ctx context.Context, domain string, _ *subscraping.Session)
 			return
 		}
 
-		chaosClient := chaos.New(randomApiKey)
+		// The request goes through the session like every other source, so it
+		// honors -proxy, -timeout, the rate limits and -max-response-body-size.
 		stats.Requests++
-		for result := range chaosClient.GetSubdomains(&chaos.SubdomainsRequest{
-			Domain: domain,
-		}) {
+		resp, err := session.Get(ctx, fmt.Sprintf("%s/%s/subdomains", baseURL, domain), "", map[string]string{
+			"Authorization": randomApiKey,
+			"Accept":        "application/json",
+		})
+		// Registered before the error check: a non-200 reply comes back as a
+		// response and an error together. DiscardHTTPResponse ignores nil.
+		defer session.DiscardHTTPResponse(resp)
+		if err != nil {
+			s.sendError(ctx, results, err)
+			stats.Errors++
+			return
+		}
+
+		// The body is {"domain": "...", "subdomains": ["a", "b", ...], ...}.
+		// Stream the list instead of decoding it whole: large domains can
+		// return a very long one.
+		decoder := json.NewDecoder(resp.Body)
+		if err := seekSubdomains(decoder); err != nil {
+			s.sendError(ctx, results, err)
+			stats.Errors++
+			return
+		}
+		for decoder.More() {
+			var subdomain string
+			if err := decoder.Decode(&subdomain); err != nil {
+				s.sendError(ctx, results, err)
+				stats.Errors++
+				return
+			}
 			select {
 			case <-ctx.Done():
 				return
-			default:
+			case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: fmt.Sprintf("%s.%s", subdomain, domain)}:
+				stats.Results++
 			}
-			if result.Error != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: result.Error}
-				stats.Errors++
-				break
-			}
-			results <- subscraping.Result{
-				Source: s.Name(), Type: subscraping.Subdomain, Value: fmt.Sprintf("%s.%s", result.Subdomain, domain),
-			}
-			stats.Results++
+		}
+		// More also reports false on a read error, so a truncated body only
+		// shows up when the closing tokens are checked.
+		if err := finishResponse(decoder); err != nil {
+			s.sendError(ctx, results, err)
+			stats.Errors++
 		}
 	}()
 
 	return results
+}
+
+// sendError reports err unless the consumer has stopped reading and the
+// context is done, so the goroutine can exit and close results.
+func (s *Source) sendError(ctx context.Context, results chan<- subscraping.Result, err error) {
+	select {
+	case <-ctx.Done():
+	case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}:
+	}
+}
+
+// seekSubdomains advances the decoder to the first element of the
+// "subdomains" array, skipping any other keys of the top-level object.
+func seekSubdomains(decoder *json.Decoder) error {
+	if err := expectDelim(decoder, '{'); err != nil {
+		return err
+	}
+	for decoder.More() {
+		token, err := decoder.Token()
+		if err != nil {
+			return err
+		}
+		if key, ok := token.(string); ok && key == "subdomains" {
+			return expectDelim(decoder, '[')
+		}
+		var skip json.RawMessage
+		if err := decoder.Decode(&skip); err != nil {
+			return err
+		}
+	}
+	return fmt.Errorf("no subdomains field in response")
+}
+
+// finishResponse consumes the end of the "subdomains" array and the rest of
+// the top-level object.
+func finishResponse(decoder *json.Decoder) error {
+	if err := expectDelim(decoder, ']'); err != nil {
+		return err
+	}
+	for decoder.More() {
+		if _, err := decoder.Token(); err != nil {
+			return err
+		}
+		var skip json.RawMessage
+		if err := decoder.Decode(&skip); err != nil {
+			return err
+		}
+	}
+	return expectDelim(decoder, '}')
+}
+
+func expectDelim(decoder *json.Decoder, want json.Delim) error {
+	token, err := decoder.Token()
+	if err != nil {
+		return err
+	}
+	if delim, ok := token.(json.Delim); !ok || delim != want {
+		return fmt.Errorf("unexpected token %v in response, expected %v", token, want)
+	}
+	return nil
 }
 
 // Name returns the name of the source
