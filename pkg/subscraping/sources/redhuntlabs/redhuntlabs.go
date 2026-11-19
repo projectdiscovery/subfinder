@@ -83,9 +83,26 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}
 
 		session.DiscardHTTPResponse(resp)
+		emitResults := func() bool {
+			for _, subdomain := range response.Subdomains {
+				select {
+				case <-ctx.Done():
+					return false
+				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
+					stats.Results++
+				}
+				if maxResults > 0 && stats.Results >= maxResults {
+					return false
+				}
+			}
+			return true
+		}
+		if !emitResults() {
+			return
+		}
 		if response.Metadata.ResultCount > pageSize {
 			totalPages := (response.Metadata.ResultCount + pageSize - 1) / pageSize
-			for page := 1; page <= totalPages; page++ {
+			for page := 2; page <= totalPages; page++ {
 				select {
 				case <-ctx.Done():
 					return
@@ -111,27 +128,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 				session.DiscardHTTPResponse(resp)
 
-				for _, subdomain := range response.Subdomains {
-					select {
-					case <-ctx.Done():
-						return
-					case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
-						stats.Results++
-					}
-					if maxResults > 0 && stats.Results >= maxResults {
-						return
-					}
-				}
-			}
-		} else {
-			for _, subdomain := range response.Subdomains {
-				select {
-				case <-ctx.Done():
-					return
-				case results <- subscraping.Result{Source: s.Name(), Type: subscraping.Subdomain, Value: subdomain}:
-					stats.Results++
-				}
-				if maxResults > 0 && stats.Results >= maxResults {
+				if !emitResults() {
 					return
 				}
 			}
