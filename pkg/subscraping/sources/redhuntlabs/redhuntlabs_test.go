@@ -28,7 +28,9 @@ func TestRunDoesNotFetchFirstPageTwice(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		page := r.URL.Query().Get("page")
 		pages = append(pages, page)
-		fmt.Fprintf(w, `{"subdomains":["page%s.example.com"],"metadata":{"result_count":1001}}`, page)
+		if _, err := fmt.Fprintf(w, `{"subdomains":["page%s.example.com"],"metadata":{"result_count":1001}}`, page); err != nil {
+			t.Errorf("write response: %v", err)
+		}
 	}))
 	defer server.Close()
 	target, err := url.Parse(server.URL)
