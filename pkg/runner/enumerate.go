@@ -22,12 +22,9 @@ import (
 const maxNumCount = 2
 
 var replacer = strings.NewReplacer(
-	"/", "",
 	"•.", "",
 	"•", "",
 	"*.", "",
-	"http://", "",
-	"https://", "",
 )
 
 // EnumerateSingleDomain wraps EnumerateSingleDomainWithCtx with an empty context
@@ -74,13 +71,13 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 				gologger.Warning().Msgf("Encountered an error with source %s: %s\n", result.Source, result.Error)
 			case subscraping.Subdomain:
 				value := normalizeSubdomain(result.Value)
-				subdomain := replacer.Replace(value)
+				subdomain := sourceSubdomain(result.Value)
 				// check if this subdomain is actually a wildcard subdomain
 				// that may have further subdomains associated with it
 				isWildcard := strings.Contains(value, "*."+subdomain)
 
 				// Validate the subdomain found and remove wildcards from
-				if !strings.HasSuffix(subdomain, "."+domain) || !isValidSubdomain(subdomain) {
+				if !strings.HasSuffix(subdomain, "."+normalizeSubdomain(domain)) || !isValidSubdomain(subdomain) {
 					skippedCounts[result.Source]++
 					continue
 				}

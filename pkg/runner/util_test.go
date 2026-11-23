@@ -123,7 +123,7 @@ func TestSubdomainPassesDomainGate(t *testing.T) {
 		"https://www.EXAMPLE.com",
 		"  sub.example.com  ",
 	} {
-		subdomain := replacer.Replace(normalizeSubdomain(value))
+		subdomain := sourceSubdomain(value)
 		if !strings.HasSuffix(subdomain, "."+domain) || !isValidSubdomain(subdomain) {
 			t.Fatalf("expected %q to pass the domain gate, got %q", value, subdomain)
 		}
@@ -141,7 +141,7 @@ func TestSubdomainPassesDomainGate(t *testing.T) {
 		"-foo.example.com",
 		"foo-.example.com",
 	} {
-		subdomain := replacer.Replace(normalizeSubdomain(value))
+		subdomain := sourceSubdomain(value)
 		if strings.HasSuffix(subdomain, "."+domain) && isValidSubdomain(subdomain) {
 			t.Fatalf("expected %q to be rejected by the domain gate, got %q", value, subdomain)
 		}
