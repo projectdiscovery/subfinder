@@ -30,6 +30,7 @@ import (
 type Runner struct {
 	options           *Options
 	passiveAgent      *passive.Agent
+	providerKeys      map[string][]string
 	resolverClient    *resolve.Resolver
 	rateLimit         *subscraping.CustomRateLimit
 	newPassiveAgent   func() *passive.Agent
@@ -101,6 +102,10 @@ func (r *Runner) RunEnumeration() error {
 
 // RunEnumerationWithCtx runs the subdomain enumeration flow on the targets specified
 func (r *Runner) RunEnumerationWithCtx(ctx context.Context) error {
+	if r.options.CheckKeys {
+		return r.CheckKeys(ctx, r.options.Output)
+	}
+
 	outputs := []io.Writer{r.options.Output}
 
 	if len(r.options.Domain) > 0 {

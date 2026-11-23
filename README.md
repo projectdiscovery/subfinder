@@ -106,6 +106,7 @@ DEBUG:
   -v                  show verbose output
   -nc, -no-color      disable color in output
   -ls, -list-sources  list all available sources (-oJ for JSON)
+  -ck, -check-keys    check the configured provider keys and report their status (-oJ for JSON)
 
 OPTIMIZATION:
   -timeout int                  seconds to wait before timing out (default 30)
