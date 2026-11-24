@@ -51,8 +51,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
@@ -62,7 +62,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		maxResults := session.MaxResults
 
 		var scrollId string
-		headers := map[string]string{"Content-Type": "application/json", "APIKEY": randomApiKey}
+		send := func(request func(headers map[string]string) (*http.Response, error)) (*http.Response, error) {
+			return keys.Do(session, func(key string) (*http.Response, error) {
+				stats.Requests++
+				return request(map[string]string{"Content-Type": "application/json", "APIKEY": key})
+			})
+		}
 
 		for {
 			select {
@@ -75,19 +80,22 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			if scrollId == "" {
 				var requestBody = fmt.Appendf(nil, `{"query":"apex_domain='%s'"}`, domain)
-				stats.Requests++
-				resp, err = session.Post(ctx, "https://api.securitytrails.com/v1/domains/list?include_ips=false&scroll=true", "",
-					headers, bytes.NewReader(requestBody))
+				resp, err = send(func(headers map[string]string) (*http.Response, error) {
+					return session.Post(ctx, "https://api.securitytrails.com/v1/domains/list?include_ips=false&scroll=true", "",
+						headers, bytes.NewReader(requestBody))
+				})
 			} else {
-				stats.Requests++
-				resp, err = session.Get(ctx, fmt.Sprintf("https://api.securitytrails.com/v1/scroll/%s", scrollId), "", headers)
+				resp, err = send(func(headers map[string]string) (*http.Response, error) {
+					return session.Get(ctx, fmt.Sprintf("https://api.securitytrails.com/v1/scroll/%s", scrollId), "", headers)
+				})
 			}
 
 			if err != nil && ptr.Safe(resp).StatusCode == 403 {
 				// The 403 body is about to be replaced, so drain it first.
 				session.DiscardHTTPResponse(resp)
-				stats.Requests++
-				resp, err = session.Get(ctx, fmt.Sprintf("https://api.securitytrails.com/v1/domain/%s/subdomains", domain), "", headers)
+				resp, err = send(func(headers map[string]string) (*http.Response, error) {
+					return session.Get(ctx, fmt.Sprintf("https://api.securitytrails.com/v1/domain/%s/subdomains", domain), "", headers)
+				})
 			}
 
 			if err != nil {

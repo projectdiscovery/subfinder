@@ -3,6 +3,7 @@ package rsecloud
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"slices"
 	"sync"
 	"time"
@@ -44,8 +45,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
@@ -53,8 +54,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		// Honor an optional per-source result limit (0 = no limit) so a single
 		// domain can't drain an API quota by paginating to the end.
 		maxResults := session.MaxResults
-
-		headers := map[string]string{"Content-Type": "application/json", "X-API-Key": randomApiKey}
 
 		fetchSubdomains := func(endpoint string) {
 			page := 1
@@ -64,8 +63,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					return
 				default:
 				}
-				stats.Requests++
-				resp, err := session.Get(ctx, fmt.Sprintf("https://api.rsecloud.com/api/v2/subdomains/%s/%s?page=%d", endpoint, domain, page), "", headers)
+				resp, err := keys.Do(session, func(key string) (*http.Response, error) {
+					stats.Requests++
+					return session.Get(ctx, fmt.Sprintf("https://api.rsecloud.com/api/v2/subdomains/%s/%s?page=%d", endpoint, domain, page), "", map[string]string{"Content-Type": "application/json", "X-API-Key": key})
+				})
 				if err != nil {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 					stats.Errors++

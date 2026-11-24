@@ -52,8 +52,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
@@ -66,18 +66,17 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			stats.Errors++
 			return
 		}
-		bodyReader := bytes.NewReader(bodyBytes)
-
-		// Prepare headers
-		headers := map[string]string{
-			"Authorization": "Bearer " + randomApiKey,
-			"Content-Type":  "application/json",
-			"Accept":        "application/json",
-		}
 
 		apiURL := "https://pugrecon.com/api/v1/domains"
-		stats.Requests++
-		resp, err := session.HTTPRequest(ctx, http.MethodPost, apiURL, "", headers, bodyReader, subscraping.BasicAuth{}) // Use HTTPRequest for full header control
+		resp, err := keys.Do(session, func(key string) (*http.Response, error) {
+			headers := map[string]string{
+				"Authorization": "Bearer " + key,
+				"Content-Type":  "application/json",
+				"Accept":        "application/json",
+			}
+			stats.Requests++
+			return session.HTTPRequest(ctx, http.MethodPost, apiURL, "", headers, bytes.NewReader(bodyBytes), subscraping.BasicAuth{}) // Use HTTPRequest for full header control
+		})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			stats.Errors++

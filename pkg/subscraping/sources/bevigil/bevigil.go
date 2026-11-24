@@ -4,6 +4,7 @@ package bevigil
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"slices"
 	"sync"
 	"time"
@@ -40,17 +41,19 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
 
 		getUrl := fmt.Sprintf("https://osint.bevigil.com/api/%s/subdomains/", domain)
 
-		stats.Requests++
-		resp, err := session.Get(ctx, getUrl, "", map[string]string{
-			"X-Access-Token": randomApiKey, "User-Agent": "subfinder",
+		resp, err := keys.Do(session, func(key string) (*http.Response, error) {
+			stats.Requests++
+			return session.Get(ctx, getUrl, "", map[string]string{
+				"X-Access-Token": key, "User-Agent": "subfinder",
+			})
 		})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}

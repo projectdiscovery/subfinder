@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 	"slices"
 	"strconv"
@@ -67,8 +68,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		sourceName := s.Name()
 
-		randomApiKey := subscraping.PickRandom(apiKeys, sourceName)
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
@@ -77,13 +78,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		// domain can't drain an API quota by paginating to the end.
 		maxResults := session.MaxResults
 
-		headers := map[string]string{
-			"X-API-KEY": randomApiKey,
-			"Accept":    "application/x-ndjson",
+		headers := func(key string) map[string]string {
+			return map[string]string{
+				"X-API-KEY": key,
+				"Accept":    "application/x-ndjson",
+			}
 		}
 
-		stats.Requests++
-		offsetMax, err := getMaxOffset(ctx, session, headers)
+		offsetMax, err := getMaxOffset(ctx, session, keys, headers, &stats)
 		if err != nil {
 			results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
 			stats.Errors++
@@ -105,8 +107,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 			url := urlTemplate + queryParams.Encode()
 
-			stats.Requests++
-			resp, err := session.Get(ctx, url, "", headers)
+			resp, err := keys.Do(session, func(key string) (*http.Response, error) {
+				stats.Requests++
+				return session.Get(ctx, url, "", headers(key))
+			})
 			if err != nil {
 				results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
 				stats.Errors++
@@ -222,10 +226,13 @@ func (s *Source) Statistics() subscraping.Statistics {
 	return s.stats
 }
 
-func getMaxOffset(ctx context.Context, session *subscraping.Session, headers map[string]string) (uint64, error) {
+func getMaxOffset(ctx context.Context, session *subscraping.Session, keys *subscraping.KeyRing[string], headers func(key string) map[string]string, stats *subscraping.Statistics) (uint64, error) {
 	var offsetMax uint64
 	url := fmt.Sprintf("%s/rate_limit", urlBase)
-	resp, err := session.Get(ctx, url, "", headers)
+	resp, err := keys.Do(session, func(key string) (*http.Response, error) {
+		stats.Requests++
+		return session.Get(ctx, url, "", headers(key))
+	})
 	defer session.DiscardHTTPResponse(resp)
 	if err != nil {
 		return offsetMax, err

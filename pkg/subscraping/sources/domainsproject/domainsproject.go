@@ -4,6 +4,7 @@ package domainsproject
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strings"
 	"sync"
 	"time"
@@ -47,23 +48,25 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey.username == "" || randomApiKey.password == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if key := keys.Key(); key.username == "" || key.password == "" {
 			stats.Skipped = true
 			return
 		}
 
 		searchURL := fmt.Sprintf("https://api.domainsproject.org/api/tld/search?domain=%s", domain)
-		stats.Requests++
-		resp, err := session.HTTPRequest(
-			ctx,
-			"GET",
-			searchURL,
-			"",
-			nil,
-			nil,
-			subscraping.BasicAuth{Username: randomApiKey.username, Password: randomApiKey.password},
-		)
+		resp, err := keys.Do(session, func(key apiKey) (*http.Response, error) {
+			stats.Requests++
+			return session.HTTPRequest(
+				ctx,
+				"GET",
+				searchURL,
+				"",
+				nil,
+				nil,
+				subscraping.BasicAuth{Username: key.username, Password: key.password},
+			)
+		})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			stats.Errors++

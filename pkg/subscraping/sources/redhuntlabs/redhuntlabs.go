@@ -4,6 +4,7 @@ package redhuntlabs
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"slices"
 	"strings"
 	"sync"
@@ -47,8 +48,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey == "" || !strings.Contains(randomApiKey, ":") {
+		// Keys are "<base url>:<blobr key>"; the colon after the URL scheme makes three parts.
+		keys := subscraping.NewKeyRing(slices.DeleteFunc(slices.Clone(apiKeys), func(key string) bool {
+			return len(strings.Split(key, ":")) != 3
+		}))
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
@@ -57,16 +61,15 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		// domain can't drain an API quota by paginating to the end.
 		maxResults := session.MaxResults
 
-		randomApiInfo := strings.Split(randomApiKey, ":")
-		if len(randomApiInfo) != 3 {
-			stats.Skipped = true
-			return
+		getPage := func(page int) (*http.Response, error) {
+			return keys.Do(session, func(key string) (*http.Response, error) {
+				parts := strings.Split(key, ":")
+				stats.Requests++
+				return session.Get(ctx, fmt.Sprintf("%s:%s?domain=%s&page=%d&page_size=%d", parts[0], parts[1], domain, page, pageSize), "",
+					map[string]string{"X-BLOBR-KEY": parts[2], "User-Agent": "subfinder"})
+			})
 		}
-		baseUrl := randomApiInfo[0] + ":" + randomApiInfo[1]
-		requestHeaders := map[string]string{"X-BLOBR-KEY": randomApiInfo[2], "User-Agent": "subfinder"}
-		getUrl := fmt.Sprintf("%s?domain=%s&page=1&page_size=%d", baseUrl, domain, pageSize)
-		stats.Requests++
-		resp, err := session.Get(ctx, getUrl, "", requestHeaders)
+		resp, err := getPage(1)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("encountered error: %v; note: if you get a 'limit has been reached' error, head over to https://devportal.redhuntlabs.com", err)}
 			session.DiscardHTTPResponse(resp)
@@ -108,9 +111,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 					return
 				default:
 				}
-				getUrl = fmt.Sprintf("%s?domain=%s&page=%d&page_size=%d", baseUrl, domain, page, pageSize)
-				stats.Requests++
-				resp, err := session.Get(ctx, getUrl, "", requestHeaders)
+				resp, err := getPage(page)
 				if err != nil {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("encountered error: %v; note: if you get a 'limit has been reached' error, head over to https://devportal.redhuntlabs.com", err)}
 					session.DiscardHTTPResponse(resp)
