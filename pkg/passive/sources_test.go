@@ -41,7 +41,6 @@ var (
 		"pugrecon",
 		"rapiddns",
 		"redhuntlabs",
-		// "riddler", // failing due to cloudfront protection
 		"robtex",
 		"rsecloud",
 		"scanmalware",
@@ -58,7 +57,6 @@ var (
 		"windvane",
 		"zoomeyeapi",
 		"leakix",
-		// "threatminer",
 		// "reconcloud",
 		"reconeer",
 		"builtwith",
@@ -96,7 +94,6 @@ var (
 		"quake",
 		"redhuntlabs",
 		"robtex",
-		// "riddler", // failing due to cloudfront protection
 		"rsecloud",
 		"scanmalware",
 		"securitytrails",
@@ -107,7 +104,6 @@ var (
 		"virustotal",
 		"whoisxmlapi",
 		"leakix",
-		// "threatminer",
 		// "reconcloud",
 		"reconeer",
 		"builtwith",

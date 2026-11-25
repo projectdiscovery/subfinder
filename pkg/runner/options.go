@@ -296,7 +296,6 @@ var defaultRateLimits = []string{
 	"shodan=1/s",
 	"virustotal=4/m",
 	"hackertarget=2/s",
-	// "threatminer=10/m",
 	"waybackarchive=15/m",
 	"whoisxmlapi=50/s",
 	"securitytrails=2/s",
