@@ -43,7 +43,6 @@ var (
 		"redhuntlabs",
 		// "riddler", // failing due to cloudfront protection
 		"robtex",
-		"rsecloud",
 		"scanmalware",
 		"securitytrails",
 		"profundis",
@@ -97,7 +96,6 @@ var (
 		"redhuntlabs",
 		"robtex",
 		// "riddler", // failing due to cloudfront protection
-		"rsecloud",
 		"scanmalware",
 		"securitytrails",
 		"profundis",
