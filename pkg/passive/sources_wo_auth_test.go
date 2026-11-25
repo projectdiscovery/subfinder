@@ -30,7 +30,6 @@ func TestSourcesWithoutKeys(t *testing.T) {
 		"hackertarget",    // Fails in GH Action (possibly IP-based ban) but works locally
 		"waybackarchive",  // Fails randomly
 		"alienvault",      // 503 Service Temporarily Unavailable
-		"digitorus",       // failing with "Failed to retrieve certificate"
 		"dnsdumpster",     // failing with "unexpected status code 403 received"
 		"anubis",          // previously failed on jonlu.ca (Cloudflare 403 / redirects); endpoint moved to anubisdb.com
 		"threatcrowd",     // failing with "randomly failing with unmarshal error when hit multiple times"
