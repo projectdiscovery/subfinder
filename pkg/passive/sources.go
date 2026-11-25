@@ -55,7 +55,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodanct"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/subdomaincenter"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/submd"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/thc"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatcrowd"
@@ -70,7 +69,7 @@ import (
 
 var AllSources = newSources()
 
-func newSources() [54]subscraping.Source {
+func newSources() [53]subscraping.Source {
 	return [...]subscraping.Source{
 		&alienvault.Source{},
 		&anubis.Source{},
@@ -128,7 +127,6 @@ func newSources() [54]subscraping.Source {
 		&whoisxmlapi.Source{},
 		&windvane.Source{},
 		&zoomeyeapi.Source{},
-		&submd.Source{},
 	}
 }
 
