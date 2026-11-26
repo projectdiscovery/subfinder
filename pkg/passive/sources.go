@@ -25,7 +25,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtname"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtsh"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitalyama"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitorus"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdb"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdumpster"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsrepo"
@@ -48,17 +47,14 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/reconeer"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/redhuntlabs"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/robtex"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rsecloud"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/scanmalware"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodanct"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/subdomaincenter"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/submd"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/thc"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatcrowd"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/urlscan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
@@ -70,7 +66,7 @@ import (
 
 var AllSources = newSources()
 
-func newSources() [54]subscraping.Source {
+func newSources() [50]subscraping.Source {
 	return [...]subscraping.Source{
 		&alienvault.Source{},
 		&anubis.Source{},
@@ -86,7 +82,6 @@ func newSources() [54]subscraping.Source {
 		&crtname.Source{},
 		&crtsh.Source{},
 		&digitalyama.Source{},
-		&digitorus.Source{},
 		&dnsdb.Source{},
 		&dnsdumpster.Source{},
 		&dnsrepo.Source{},
@@ -110,7 +105,6 @@ func newSources() [54]subscraping.Source {
 		&reconeer.Source{},
 		&redhuntlabs.Source{},
 		&robtex.Source{},
-		&rsecloud.Source{},
 		&scanmalware.Source{},
 		&securitytrails.Source{},
 		&shodan.Source{},
@@ -119,14 +113,12 @@ func newSources() [54]subscraping.Source {
 		&subdomaincenter.Source{},
 		&thc.Source{},
 		&threatbook.Source{},
-		&threatcrowd.Source{},
 		&urlscan.Source{},
 		&virustotal.Source{},
 		&waybackarchive.Source{},
 		&whoisxmlapi.Source{},
 		&windvane.Source{},
 		&zoomeyeapi.Source{},
-		&submd.Source{},
 	}
 }
 

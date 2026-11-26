@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"slices"
 	"strings"
 	"sync"
@@ -40,23 +41,22 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
 
-		randomApiInfo := strings.Split(randomApiKey, ":")
-		if len(randomApiInfo) != 2 {
+		if len(strings.Split(keys.Key(), ":")) != 2 {
 			stats.Skipped = true
 			return
 		}
 
-		token := randomApiInfo[0]
-		apiKey := randomApiInfo[1]
-
-		stats.Requests++
-		resp, err := session.Get(ctx, fmt.Sprintf("https://dnsarchive.net/api/?apikey=%s&search=%s", apiKey, domain), "", map[string]string{"X-API-Access": token})
+		resp, err := keys.Do(session, func(key string) (*http.Response, error) {
+			token, apiKey, _ := strings.Cut(key, ":")
+			stats.Requests++
+			return session.Get(ctx, fmt.Sprintf("https://dnsarchive.net/api/?apikey=%s&search=%s", apiKey, domain), "", map[string]string{"X-API-Access": token})
+		})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			stats.Errors++

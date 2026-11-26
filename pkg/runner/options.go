@@ -38,6 +38,7 @@ type Options struct {
 	HostIP             bool                // HostIP specifies whether to write subdomains in host:ip format
 	Silent             bool                // Silent suppresses any extra text and only writes subdomains to screen
 	ListSources        bool                // ListSources specifies whether to list all available sources
+	CheckKeys          bool                // CheckKeys probes each configured provider key and reports its status
 	RemoveWildcard     bool                // RemoveWildcard specifies whether to remove potential wildcard or dead subdomains from the results.
 	CaptureSources     bool                // CaptureSources specifies whether to save all sources that returned a specific domains or just the first source
 	Stdin              bool                // Stdin specifies whether stdin input was given to the process
@@ -149,6 +150,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVar(&options.Verbose, "v", false, "show verbose output"),
 		flagSet.BoolVarP(&options.NoColor, "no-color", "nc", false, "disable color in output"),
 		flagSet.BoolVarP(&options.ListSources, "list-sources", "ls", false, "list all available sources (-oJ for JSON)"),
+		flagSet.BoolVarP(&options.CheckKeys, "check-keys", "ck", false, "check the configured provider keys and report their status (-oJ for JSON)"),
 		flagSet.BoolVar(&options.Statistics, "stats", false, "report source statistics"),
 	)
 

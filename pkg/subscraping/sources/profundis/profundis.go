@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"net/http"
 	"slices"
 	"strings"
 	"sync"
@@ -38,8 +39,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
@@ -51,15 +52,16 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		headers := map[string]string{
-			"Content-Type": "application/json",
-			"X-API-KEY":    randomApiKey,
-			"Accept":       "text/event-stream",
-		}
-
-		stats.Requests++
-		resp, err := session.Post(ctx, "https://api.profundis.io/api/v2/common/data/subdomains", "",
-			headers, bytes.NewReader(requestBody))
+		resp, err := keys.Do(session, func(key string) (*http.Response, error) {
+			headers := map[string]string{
+				"Content-Type": "application/json",
+				"X-API-KEY":    key,
+				"Accept":       "text/event-stream",
+			}
+			stats.Requests++
+			return session.Post(ctx, "https://api.profundis.io/api/v2/common/data/subdomains", "",
+				headers, bytes.NewReader(requestBody))
+		})
 
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}

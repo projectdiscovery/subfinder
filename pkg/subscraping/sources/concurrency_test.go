@@ -29,7 +29,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtname"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtsh"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitalyama"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitorus"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdb"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdumpster"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsrepo"
@@ -54,17 +53,14 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/reconeer"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/redhuntlabs"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/robtex"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rsecloud"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/scanmalware"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodanct"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/sitedossier"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/subdomaincenter"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/submd"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/thc"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatcrowd"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/urlscan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
@@ -165,7 +161,6 @@ func TestSourceConcurrentResults(t *testing.T) {
 		{&merklemap.Source{}, `{"count":3,"results":[{"hostname":"one.example.com"},{"hostname":"two.example.com"},{"hostname":"three.example.com"}]}`, 1, true},
 		{&shodan.Source{}, `{"domain":"example.com","subdomains":["one","two","three"]}`, 1, true},
 		{&sitedossier.Source{}, "one.example.com two.example.com three.example.com", 1, false},
-		{&submd.Source{}, "one.example.com\ntwo.example.com\nthree.example.com\n", 1, false},
 		{&urlscan.Source{}, `{"results":[{"task":{"domain":"one.example.com"}},{"task":{"domain":"two.example.com"}},{"task":{"domain":"three.example.com"}}]}`, 1, true},
 		{&virustotal.Source{}, `{"data":[{"id":"one.example.com"},{"id":"two.example.com"},{"id":"three.example.com"}]}`, 1, true},
 	}
@@ -430,7 +425,6 @@ func concurrencySources() []subscraping.Source {
 		&crtname.Source{},
 		&crtsh.Source{},
 		&digitalyama.Source{},
-		&digitorus.Source{},
 		&dnsdb.Source{},
 		&dnsdumpster.Source{},
 		&dnsrepo.Source{},
@@ -455,17 +449,14 @@ func concurrencySources() []subscraping.Source {
 		&reconeer.Source{},
 		&redhuntlabs.Source{},
 		&robtex.Source{},
-		&rsecloud.Source{},
 		&scanmalware.Source{},
 		&securitytrails.Source{},
 		&shodan.Source{},
 		&shodanct.Source{},
 		&sitedossier.Source{},
 		&subdomaincenter.Source{},
-		&submd.Source{},
 		&thc.Source{},
 		&threatbook.Source{},
-		&threatcrowd.Source{},
 		&urlscan.Source{},
 		&virustotal.Source{},
 		&waybackarchive.Source{},

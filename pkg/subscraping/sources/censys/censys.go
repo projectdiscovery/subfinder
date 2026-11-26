@@ -94,12 +94,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		// PickRandom selects a random API key from configured keys.
-		// This enables load balancing when users configure multiple PATs
-		// (e.g., CENSYS_API_KEY=pat1:org1,pat2:org2) to distribute requests
-		// and avoid hitting rate limits on a single key.
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey.pat == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Key().pat == "" {
 			stats.Skipped = true
 			return
 		}
@@ -135,25 +131,27 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				return
 			}
 
-			headers := map[string]string{
-				"Content-Type":  contentTypeJSON,
-				"Authorization": authHeaderPrefix + randomApiKey.pat,
-			}
-			// Add Organization ID header if provided
-			if randomApiKey.orgID != "" {
-				headers[orgIDHeader] = randomApiKey.orgID
-			}
+			resp, err := keys.Do(session, func(key apiKey) (*http.Response, error) {
+				headers := map[string]string{
+					"Content-Type":  contentTypeJSON,
+					"Authorization": authHeaderPrefix + key.pat,
+				}
+				// Add Organization ID header if provided
+				if key.orgID != "" {
+					headers[orgIDHeader] = key.orgID
+				}
 
-			stats.Requests++
-			resp, err := session.HTTPRequest(
-				ctx,
-				http.MethodPost,
-				apiURL,
-				"",
-				headers,
-				bytes.NewReader(bodyBytes),
-				subscraping.BasicAuth{},
-			)
+				stats.Requests++
+				return session.HTTPRequest(
+					ctx,
+					http.MethodPost,
+					apiURL,
+					"",
+					headers,
+					bytes.NewReader(bodyBytes),
+					subscraping.BasicAuth{},
+				)
+			})
 
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}

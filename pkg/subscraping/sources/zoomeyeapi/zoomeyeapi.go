@@ -6,8 +6,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"slices"
-	"strings"
 	"sync"
 	"time"
 
@@ -21,6 +21,11 @@ type zoomeyeResults struct {
 	Data  []struct {
 		Domain string `json:"domain"`
 	} `json:"data"`
+}
+
+type apiKey struct {
+	host string
+	key  string
 }
 
 // Source is the passive scraping agent
@@ -55,25 +60,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 		}
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(subscraping.CreateApiKeys(apiKeys, func(host, key string) apiKey {
+			return apiKey{host: host, key: key}
+		}))
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
 
-		randomApiInfo := strings.Split(randomApiKey, ":")
-		if len(randomApiInfo) != 2 {
-			stats.Skipped = true
-			return
-		}
-		host := randomApiInfo[0]
-		apiKey := randomApiInfo[1]
-
-		headers := map[string]string{
-			"API-KEY":      apiKey,
-			"Accept":       "application/json",
-			"Content-Type": "application/json",
-		}
 		// Honor an optional per-source result limit (0 = no limit) so a single
 		// domain can't drain an API quota by paginating to the end.
 		maxResults := session.MaxResults
@@ -81,7 +75,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		const pageSize = 1000
 		// Search web assets explicitly; the v2 API defaults to IPv4 assets.
 		query := base64.StdEncoding.EncodeToString(fmt.Appendf(nil, "domain=%q", domain))
-		api := fmt.Sprintf("https://api.%s/v2/search", host)
 		for currentPage := 1; ; currentPage++ {
 			select {
 			case <-ctx.Done():
@@ -102,8 +95,15 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				reportError(fmt.Errorf("encode ZoomEye search request: %w", err))
 				return
 			}
-			stats.Requests++
-			resp, err := session.Post(ctx, api, "", headers, bytes.NewReader(body))
+			resp, err := keys.Do(session, func(key apiKey) (*http.Response, error) {
+				stats.Requests++
+				headers := map[string]string{
+					"API-KEY":      key.key,
+					"Accept":       "application/json",
+					"Content-Type": "application/json",
+				}
+				return session.Post(ctx, fmt.Sprintf("https://api.%s/v2/search", key.host), "", headers, bytes.NewReader(body))
+			})
 			if err != nil {
 				if resp != nil {
 					_ = resp.Body.Close()

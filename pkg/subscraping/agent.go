@@ -189,7 +189,17 @@ func httpRequestWrapper(client *http.Client, request *http.Request, maxResponseB
 			_, _ = buffer.ReadFrom(response.Body)
 			return fmt.Sprintf("Response for failed request against %s:\n%s", requestURL, buffer.String())
 		})
-		return response, fmt.Errorf("unexpected status code %d received from %s", response.StatusCode, requestURL)
+		return response, &StatusCodeError{StatusCode: response.StatusCode, URL: requestURL}
 	}
 	return response, nil
+}
+
+// StatusCodeError is returned for a source response whose status is not 200 OK.
+type StatusCodeError struct {
+	StatusCode int
+	URL        string
+}
+
+func (e *StatusCodeError) Error() string {
+	return fmt.Sprintf("unexpected status code %d received from %s", e.StatusCode, e.URL)
 }

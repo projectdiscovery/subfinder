@@ -24,7 +24,6 @@ var (
 		"commoncrawl",
 		"crtname",
 		"crtsh",
-		"digitorus",
 		"dnsdumpster",
 		"dnsdb",
 		"dnsrepo",
@@ -42,7 +41,6 @@ var (
 		"rapiddns",
 		"redhuntlabs",
 		"robtex",
-		"rsecloud",
 		"scanmalware",
 		"securitytrails",
 		"profundis",
@@ -50,7 +48,6 @@ var (
 		"shodanct",
 		"sitedossier",
 		"threatbook",
-		"threatcrowd",
 		"virustotal",
 		"waybackarchive",
 		"whoisxmlapi",
@@ -65,7 +62,6 @@ var (
 		"merklemap",
 		"thc",
 		"urlscan",
-		"submd",
 		"subdomaincenter",
 	}
 
@@ -81,7 +77,6 @@ var (
 		"chinaz",
 		"crtname",
 		"crtsh",
-		"digitorus",
 		"dnsdumpster",
 		"domainsproject",
 		"dnsrepo",
@@ -94,7 +89,6 @@ var (
 		"quake",
 		"redhuntlabs",
 		"robtex",
-		"rsecloud",
 		"scanmalware",
 		"securitytrails",
 		"profundis",
@@ -109,7 +103,6 @@ var (
 		"builtwith",
 		"digitalyama",
 		"urlscan",
-		"submd",
 		"subdomaincenter",
 	}
 
@@ -119,7 +112,6 @@ var (
 		"certspotter",
 		"crtsh",
 		"dnsdb",
-		"digitorus",
 		"driftnet",
 		"hackertarget",
 		"scanmalware",
