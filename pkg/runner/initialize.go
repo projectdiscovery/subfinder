@@ -30,6 +30,8 @@ func (r *Runner) initializePassiveEngine(providerKeys map[string][]string) {
 		}
 	}
 
+	r.providerKeys = keys
+
 	sources, excluded := slices.Clone(r.options.Sources), slices.Clone(r.options.ExcludeSources)
 	all, recursive := r.options.All, r.options.OnlyRecursive
 	r.newPassiveAgent = func() *passive.Agent {

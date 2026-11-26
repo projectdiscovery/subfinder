@@ -48,7 +48,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/reconeer"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/redhuntlabs"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/robtex"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/rsecloud"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/scanmalware"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/securitytrails"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/shodan"
@@ -58,7 +57,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/submd"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/thc"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatcrowd"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/urlscan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
@@ -70,7 +68,7 @@ import (
 
 var AllSources = newSources()
 
-func newSources() [54]subscraping.Source {
+func newSources() [52]subscraping.Source {
 	return [...]subscraping.Source{
 		&alienvault.Source{},
 		&anubis.Source{},
@@ -111,7 +109,6 @@ func newSources() [54]subscraping.Source {
 		&redhuntlabs.Source{},
 		// &riddler.Source{}, // failing due to cloudfront protection
 		&robtex.Source{},
-		&rsecloud.Source{},
 		&scanmalware.Source{},
 		&securitytrails.Source{},
 		&shodan.Source{},
@@ -120,7 +117,6 @@ func newSources() [54]subscraping.Source {
 		&subdomaincenter.Source{},
 		&thc.Source{},
 		&threatbook.Source{},
-		&threatcrowd.Source{},
 		// &threatminer.Source{}, // failing  api
 		&urlscan.Source{},
 		&virustotal.Source{},

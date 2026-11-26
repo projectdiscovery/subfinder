@@ -18,7 +18,7 @@ import (
 func (options *Options) validateOptions() error {
 	// Check if domain, list of domains, or stdin info was provided.
 	// If none was provided, then return.
-	if len(options.Domain) == 0 && options.DomainsFile == "" && !options.Stdin {
+	if !options.CheckKeys && len(options.Domain) == 0 && options.DomainsFile == "" && !options.Stdin {
 		return errors.New("no input list provided")
 	}
 
