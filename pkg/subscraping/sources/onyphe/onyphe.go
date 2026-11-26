@@ -56,8 +56,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
@@ -65,8 +65,6 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		// Honor an optional per-source result limit (0 = no limit) so a single
 		// domain can't drain an API quota by paginating to the end.
 		maxResults := session.MaxResults
-
-		headers := map[string]string{"Content-Type": "application/json", "Authorization": "bearer " + randomApiKey}
 
 		page := 1
 		pageSize := 1000
@@ -82,8 +80,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			urlWithQuery := fmt.Sprintf("https://www.onyphe.io/api/v2/search/?q=%s&page=%d&size=%d",
 				url.QueryEscape("category:resolver domain:"+domain), page, pageSize)
-			stats.Requests++
-			resp, err = session.Get(ctx, urlWithQuery, "", headers)
+			resp, err = keys.Do(session, func(key string) (*http.Response, error) {
+				stats.Requests++
+				return session.Get(ctx, urlWithQuery, "", map[string]string{"Content-Type": "application/json", "Authorization": "bearer " + key})
+			})
 
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}

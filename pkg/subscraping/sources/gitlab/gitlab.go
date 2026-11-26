@@ -60,31 +60,31 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
 
-		headers := map[string]string{"PRIVATE-TOKEN": randomApiKey}
-
 		searchURL := fmt.Sprintf("https://gitlab.com/api/v4/search?scope=blobs&search=%s&per_page=100", domain)
-		s.enumerate(ctx, searchURL, domainRegexp(domain), headers, session, results, &run)
+		s.enumerate(ctx, searchURL, domainRegexp(domain), keys, session, results, &run)
 
 	}()
 
 	return results
 }
 
-func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *regexp.Regexp, headers map[string]string, session *subscraping.Session, results chan subscraping.Result, run *runState) {
+func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *regexp.Regexp, keys *subscraping.KeyRing[string], session *subscraping.Session, results chan subscraping.Result, run *runState) {
 	select {
 	case <-ctx.Done():
 		return
 	default:
 	}
 
-	run.requests.Add(1)
-	resp, err := session.Get(ctx, searchURL, "", headers)
+	resp, err := keys.Do(session, func(key string) (*http.Response, error) {
+		run.requests.Add(1)
+		return session.Get(ctx, searchURL, "", map[string]string{"PRIVATE-TOKEN": key})
+	})
 	if err != nil && resp == nil {
 		results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 		run.errors.Add(1)
@@ -110,8 +110,10 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 			defer wg.Done()
 			// The original item.Path causes 404 error because the Gitlab API is expecting the url encoded path
 			fileUrl := fmt.Sprintf("https://gitlab.com/api/v4/projects/%d/repository/files/%s/raw?ref=%s", item.ProjectId, url.QueryEscape(item.Path), item.Ref)
-			run.requests.Add(1)
-			resp, err := session.Get(ctx, fileUrl, "", headers)
+			resp, err := keys.Do(session, func(key string) (*http.Response, error) {
+				run.requests.Add(1)
+				return session.Get(ctx, fileUrl, "", map[string]string{"PRIVATE-TOKEN": key})
+			})
 			if err != nil {
 				if resp == nil || (resp != nil && resp.StatusCode != http.StatusNotFound) {
 					session.DiscardHTTPResponse(resp)
@@ -154,7 +156,7 @@ func (s *Source) enumerate(ctx context.Context, searchURL string, domainRegexp *
 				return
 			}
 
-			s.enumerate(ctx, nextURL, domainRegexp, headers, session, results, run)
+			s.enumerate(ctx, nextURL, domainRegexp, keys, session, results, run)
 		}
 	}
 

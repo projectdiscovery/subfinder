@@ -32,7 +32,7 @@ type Source struct {
 
 // runState is shared by the endpoints of one enumeration.
 type runState struct {
-	apiKeys  []string
+	keys     *subscraping.KeyRing[string]
 	errors   atomic.Int32
 	results  atomic.Int32
 	requests atomic.Int32
@@ -71,10 +71,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	// Final results channel
 	results := make(chan subscraping.Result)
 	s.mu.Lock()
-	run := &runState{apiKeys: s.apiKeys}
+	run := &runState{keys: subscraping.NewKeyRing(s.apiKeys)}
 	s.mu.Unlock()
 
-	if subscraping.PickRandom(run.apiKeys, s.Name()) == "" {
+	if run.keys.Empty() {
 		s.mu.Lock()
 		s.stats = subscraping.Statistics{Skipped: true}
 		s.mu.Unlock()
@@ -154,21 +154,15 @@ func (s *Source) Statistics() subscraping.Statistics {
 
 // runSubsource queries a specific driftnet endpoint for subdomains and sends results to the channel
 func (s *Source) runSubsource(ctx context.Context, domain string, session *subscraping.Session, results chan subscraping.Result, wg *sync.WaitGroup, dedupe *sync.Map, epConfig endpointConfig, run *runState) {
-	// Default headers
-	headers := map[string]string{
-		"accept": "application/json",
-	}
-
-	// Pick an API key
-	randomApiKey := subscraping.PickRandom(run.apiKeys, s.Name())
-	if randomApiKey != "" {
-		headers["authorization"] = "Bearer " + randomApiKey
-	}
-
 	// Request
 	requestURL := fmt.Sprintf("%s%s?%s%s&summarize=host&summary_context=%s&summary_limit=%d", baseURL, epConfig.endpoint, epConfig.param, url.QueryEscape(domain), epConfig.context, summaryLimit)
-	run.requests.Add(1)
-	resp, err := session.Get(ctx, requestURL, "", headers)
+	resp, err := run.keys.Do(session, func(key string) (*http.Response, error) {
+		run.requests.Add(1)
+		return session.Get(ctx, requestURL, "", map[string]string{
+			"accept":        "application/json",
+			"authorization": "Bearer " + key,
+		})
+	})
 	// Registered before the error check: a non-200 reply comes back as a
 	// response and an error together, and returning here would leave that body
 	// undrained. DiscardHTTPResponse ignores a nil response.

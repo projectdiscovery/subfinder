@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/http"
 	"slices"
 	"sync"
 	"time"
@@ -51,15 +52,15 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
 
 		headers := map[string]string{"Content-Type": "application/x-ndjson"}
 
-		ips, err := enumerate(ctx, session, fmt.Sprintf("%s/forward/%s?key=%s", baseURL, domain, randomApiKey), headers)
+		ips, err := enumerate(ctx, session, keys, fmt.Sprintf("%s/forward/%s", baseURL, domain), headers)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			stats.Errors++
@@ -73,7 +74,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			default:
 			}
 			if result.Rrtype == addrRecord || result.Rrtype == iPv6AddrRecord {
-				domains, err := enumerate(ctx, session, fmt.Sprintf("%s/reverse/%s?key=%s", baseURL, result.Rrdata, randomApiKey), headers)
+				domains, err := enumerate(ctx, session, keys, fmt.Sprintf("%s/reverse/%s", baseURL, result.Rrdata), headers)
 				if err != nil {
 					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 					stats.Errors++
@@ -94,10 +95,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	return results
 }
 
-func enumerate(ctx context.Context, session *subscraping.Session, targetURL string, headers map[string]string) ([]result, error) {
+func enumerate(ctx context.Context, session *subscraping.Session, keys *subscraping.KeyRing[string], targetURL string, headers map[string]string) ([]result, error) {
 	var results []result
 
-	resp, err := session.Get(ctx, targetURL, "", headers)
+	resp, err := keys.Do(session, func(key string) (*http.Response, error) {
+		return session.Get(ctx, targetURL+"?key="+key, "", headers)
+	})
 	if err != nil {
 		session.DiscardHTTPResponse(resp)
 		return results, err

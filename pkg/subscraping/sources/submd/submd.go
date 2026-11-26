@@ -34,8 +34,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		stats.Requests++
-		resp, err := s.fetch(ctx, domain, session, apiKeys)
+		resp, err := s.fetch(ctx, domain, session, apiKeys, &stats)
 		if err != nil {
 			s.trySendError(ctx, results, err, &stats)
 			session.DiscardHTTPResponse(resp)
@@ -87,14 +86,16 @@ func (s *Source) trySendError(ctx context.Context, ch chan<- subscraping.Result,
 }
 
 // fetch issues the API call, upgrades to Bearer auth when a key is available.
-func (s *Source) fetch(ctx context.Context, domain string, session *subscraping.Session, apiKeys []string) (*http.Response, error) {
+func (s *Source) fetch(ctx context.Context, domain string, session *subscraping.Session, apiKeys []string, stats *subscraping.Statistics) (*http.Response, error) {
 	endpoint := "https://api.sub.md/v1/search?apex=" + url.QueryEscape(domain)
 
-	if len(apiKeys) > 0 {
-		return session.Get(ctx, endpoint, "", map[string]string{
-			"Authorization": "Bearer " + subscraping.PickRandom(apiKeys, s.Name()),
+	if keys := subscraping.NewKeyRing(apiKeys); !keys.Empty() {
+		return keys.Do(session, func(key string) (*http.Response, error) {
+			stats.Requests++
+			return session.Get(ctx, endpoint, "", map[string]string{"Authorization": "Bearer " + key})
 		})
 	}
+	stats.Requests++
 	return session.SimpleGet(ctx, endpoint)
 }
 

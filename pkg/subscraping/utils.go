@@ -9,6 +9,7 @@ import (
 
 const MultipleKeyPartsLength = 2
 
+// Deprecated: Use NewKeyRing, which also moves past rejected keys.
 func PickRandom[T any](v []T, sourceName string) T {
 	var result T
 	length := len(v)

@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"sync"
 	"time"
 
@@ -66,13 +67,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey.host == "" || randomApiKey.key == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if key := keys.Key(); key.host == "" || key.key == "" {
 			stats.Skipped = true
 			return
 		}
 
-		searchURL := fmt.Sprintf("https://%s/phonebook/search?k=%s", randomApiKey.host, randomApiKey.key)
 		reqBody := requestBody{
 			Term:       domain,
 			Maxresults: 100000,
@@ -88,8 +88,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		stats.Requests++
-		resp, err := session.SimplePost(ctx, searchURL, "application/json", bytes.NewBuffer(body))
+		resp, err := keys.Do(session, func(key apiKey) (*http.Response, error) {
+			stats.Requests++
+			return session.SimplePost(ctx, fmt.Sprintf("https://%s/phonebook/search?k=%s", key.host, key.key), "application/json", bytes.NewBuffer(body))
+		})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			stats.Errors++
@@ -108,7 +110,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		session.DiscardHTTPResponse(resp)
 
-		resultsURL := fmt.Sprintf("https://%s/phonebook/search/result?k=%s&id=%s&limit=10000", randomApiKey.host, randomApiKey.key, response.ID)
+		// The search ID belongs to the key that created it, so polling stays on that key.
+		key := keys.Key()
+		resultsURL := fmt.Sprintf("https://%s/phonebook/search/result?k=%s&id=%s&limit=10000", key.host, key.key, response.ID)
 		status := 0
 		for status == 0 || status == 3 {
 			select {
