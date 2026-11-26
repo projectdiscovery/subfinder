@@ -15,11 +15,19 @@ type KeyRing[T any] struct {
 	current int
 }
 
-// NewKeyRing returns a ring over keys, starting at a random one.
+// NewKeyRing returns a ring over keys, starting at a random one. Empty
+// entries are dropped: a configured blank key is not a key to send.
 func NewKeyRing[T any](keys []T) *KeyRing[T] {
-	ring := &KeyRing[T]{keys: keys}
-	if len(keys) > 0 {
-		ring.current = rand.Intn(len(keys))
+	kept := make([]T, 0, len(keys))
+	for _, key := range keys {
+		if s, isString := any(key).(string); isString && s == "" {
+			continue
+		}
+		kept = append(kept, key)
+	}
+	ring := &KeyRing[T]{keys: kept}
+	if len(kept) > 0 {
+		ring.current = rand.Intn(len(kept))
 	}
 	return ring
 }
@@ -50,20 +58,31 @@ func (r *KeyRing[T]) Do(session *Session, request func(key T) (*http.Response, e
 		var zero T
 		return request(zero)
 	}
+	r.mu.Lock()
+	start := r.current
+	r.mu.Unlock()
+	// used is this call's own position in the ring. Other calls can move the
+	// shared current key, but they cannot make this call repeat or skip a key.
+	used := start
 	for attempt := 1; ; attempt++ {
-		r.mu.Lock()
-		used := r.current
-		r.mu.Unlock()
 		resp, err := request(r.keys[used])
 		if err == nil || resp == nil || !keyRejected(resp.StatusCode) || attempt == len(r.keys) {
+			if used != start {
+				// The key that worked stays current, so later pages reuse it.
+				r.mu.Lock()
+				r.current = used
+				r.mu.Unlock()
+			}
 			return resp, err
 		}
 		session.DiscardHTTPResponse(resp)
+		previous := used
+		used = (used + 1) % len(r.keys)
 		r.mu.Lock()
-		// Concurrent requests rejected on the same key advance the ring once,
-		// so no key is skipped.
-		if r.current == used {
-			r.current = (used + 1) % len(r.keys)
+		// Advance the shared key only if nobody has moved it since this call
+		// started, so concurrent rejections do not skip a key.
+		if r.current == previous {
+			r.current = used
 		}
 		r.mu.Unlock()
 	}

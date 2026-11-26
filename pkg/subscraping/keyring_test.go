@@ -2,6 +2,7 @@ package subscraping
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"sync"
@@ -94,4 +95,45 @@ func TestKeyRingEmpty(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.Equal(t, []string{""}, sent)
+}
+
+func TestKeyRingDropsBlankKeys(t *testing.T) {
+	session, request, seen := keyServer(t, map[string]int{"revoked": 401, "good": 200})
+	ring := NewKeyRing([]string{"", "revoked", "", "good"})
+
+	resp, err := ring.Do(session, request)
+	require.NoError(t, err)
+	session.DiscardHTTPResponse(resp)
+	require.NotContains(t, seen(), "")
+	require.Equal(t, "good", seen()[len(seen())-1])
+}
+
+// Another call moves the shared key while this call is retrying. This call
+// must still try each key once, in its own order, so it does not skip "b".
+func TestKeyRingLocalSequenceSurvivesConcurrentMove(t *testing.T) {
+	session, _, _ := keyServer(t, nil)
+	ring := NewKeyRing([]string{"a", "b", "c"})
+	ring.mu.Lock()
+	ring.current = 0
+	ring.mu.Unlock()
+
+	var sent []string
+	request := func(key string) (*http.Response, error) {
+		sent = append(sent, key)
+		switch key {
+		case "a":
+			// Simulate another call advancing the shared key to "c".
+			ring.mu.Lock()
+			ring.current = 2
+			ring.mu.Unlock()
+			return &http.Response{StatusCode: http.StatusUnauthorized, Body: http.NoBody}, errors.New("rejected")
+		case "b":
+			return &http.Response{StatusCode: http.StatusUnauthorized, Body: http.NoBody}, errors.New("rejected")
+		}
+		return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody}, nil
+	}
+	resp, err := ring.Do(session, request)
+	require.NoError(t, err)
+	session.DiscardHTTPResponse(resp)
+	require.Equal(t, []string{"a", "b", "c"}, sent)
 }

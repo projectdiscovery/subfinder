@@ -91,6 +91,9 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			stats.Errors++
 			return
 		}
+		// The offset limit belongs to the key that answered /rate_limit. A
+		// rejected key rotates the ring, so offsetKey tracks the key to compare.
+		offsetKey := keys.Key()
 
 		path := fmt.Sprintf("lookup/rrset/name/*.%s", domain)
 		urlTemplate := fmt.Sprintf("%s/%s?", urlBase, path)
@@ -172,6 +175,17 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			// 3. anything else - This is an error and should be reported to the user. The user can then decide to use the results up to this
 			// point or discard and retry.
 			if respCond == "limited" {
+				// If rotation moved the ring to another key, its own offset limit
+				// applies to the next page, so re-read it.
+				if servedBy := keys.Key(); servedBy != offsetKey {
+					offsetMax, err = getMaxOffset(ctx, session, keys, headers, &stats)
+					if err != nil {
+						results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
+						stats.Errors++
+						return
+					}
+					offsetKey = keys.Key()
+				}
 				if offsetMax != 0 && resultCount <= offsetMax {
 					// Reset done to false to get more results with an offset query parameter set to resultCount
 					queryParams.Set("offset", strconv.FormatUint(resultCount, 10))

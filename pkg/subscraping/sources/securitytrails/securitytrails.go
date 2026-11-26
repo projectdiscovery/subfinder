@@ -14,7 +14,6 @@ import (
 	jsoniter "github.com/json-iterator/go"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
-	"github.com/projectdiscovery/utils/ptr"
 )
 
 type response struct {
@@ -62,10 +61,17 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		maxResults := session.MaxResults
 
 		var scrollId string
+		// forbidden is set when any key in one request returned 403, even if a
+		// later key's response is the one returned.
+		var forbidden bool
 		send := func(request func(headers map[string]string) (*http.Response, error)) (*http.Response, error) {
 			return keys.Do(session, func(key string) (*http.Response, error) {
 				stats.Requests++
-				return request(map[string]string{"Content-Type": "application/json", "APIKEY": key})
+				resp, err := request(map[string]string{"Content-Type": "application/json", "APIKEY": key})
+				if resp != nil && resp.StatusCode == http.StatusForbidden {
+					forbidden = true
+				}
+				return resp, err
 			})
 		}
 
@@ -77,6 +83,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 			var resp *http.Response
 			var err error
+			forbidden = false
 
 			if scrollId == "" {
 				var requestBody = fmt.Appendf(nil, `{"query":"apex_domain='%s'"}`, domain)
@@ -90,7 +97,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				})
 			}
 
-			if err != nil && ptr.Safe(resp).StatusCode == 403 {
+			if err != nil && forbidden {
 				// The 403 body is about to be replaced, so drain it first.
 				session.DiscardHTTPResponse(resp)
 				resp, err = send(func(headers map[string]string) (*http.Response, error) {
