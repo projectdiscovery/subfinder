@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/projectdiscovery/subfinder/v2/pkg/passive"
+	"github.com/projectdiscovery/subfinder/v2/pkg/resolve"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping"
 	"github.com/stretchr/testify/require"
 )
@@ -105,4 +106,46 @@ func TestPlainOutputStreamsHostsAsFound(t *testing.T) {
 	file, err := os.ReadFile(filepath.Join(dir, "example.com.txt"))
 	require.NoError(t, err)
 	require.Equal(t, want, sortedLines(string(file)))
+}
+
+// oneHostSource reports a single host immediately.
+type oneHostSource struct{ host string }
+
+func (s *oneHostSource) Run(ctx context.Context, _ string, _ *subscraping.Session) <-chan subscraping.Result {
+	results := make(chan subscraping.Result, 1)
+	go func() {
+		defer close(results)
+		results <- subscraping.Result{Type: subscraping.Subdomain, Source: s.Name(), Value: s.host}
+	}()
+	return results
+}
+func (*oneHostSource) Name() string                               { return "test-one-host" }
+func (*oneHostSource) IsDefault() bool                            { return false }
+func (*oneHostSource) HasRecursiveSupport() bool                  { return false }
+func (*oneHostSource) NeedsKey() bool                             { return false }
+func (*oneHostSource) KeyRequirement() subscraping.KeyRequirement { return subscraping.NoKey }
+func (*oneHostSource) AddApiKeys([]string)                        {}
+func (*oneHostSource) Statistics() subscraping.Statistics         { return subscraping.Statistics{} }
+
+// A ResultCallback that rewrites Host must change the streamed stdout line too,
+// so stdout matches the per-domain file.
+func TestPlainStreamUsesCallbackHost(t *testing.T) {
+	source := &oneHostSource{host: "raw.example.com"}
+	name := source.Name()
+	passive.NameSourceMap[name] = source
+	t.Cleanup(func() { delete(passive.NameSourceMap, name) })
+
+	dir := t.TempDir()
+	r := &Runner{
+		options: &Options{Threads: 1, Timeout: 5, MaxEnumerationTime: 1, OutputDirectory: dir,
+			ResultCallback: func(h *resolve.HostEntry) { h.Host = "callback.example.com" }},
+		passiveAgent:    passive.New([]string{name}, nil, false, false),
+		newPassiveAgent: func() *passive.Agent { return passive.New([]string{name}, nil, false, false) },
+	}
+	out := &notifyWriter{writes: make(chan struct{}, 1)}
+	require.NoError(t, r.EnumerateMultipleDomainsWithCtx(context.Background(), strings.NewReader("example.com\n"), []io.Writer{out}))
+	require.Equal(t, "callback.example.com\n", out.String())
+	file, err := os.ReadFile(filepath.Join(dir, "example.com.txt"))
+	require.NoError(t, err)
+	require.Equal(t, "callback.example.com\n", string(file))
 }

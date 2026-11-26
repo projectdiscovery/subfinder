@@ -119,7 +119,7 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 
 					uniqueMap[subdomain] = hostEntry
 					if stream && streamErr == nil {
-						streamErr = r.writeHostLine(writers, subdomain)
+						streamErr = r.writeHostLine(writers, hostEntry.Host)
 					}
 					// If the user asked to remove wildcard then send on the resolve
 					// queue. Otherwise, if mode is not verbose print the results on
