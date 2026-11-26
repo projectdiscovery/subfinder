@@ -58,6 +58,10 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 	uniqueMap := make(map[string]resolve.HostEntry)
 	// Create a map to track sources for each host
 	sourceMap := make(map[string]map[string]struct{})
+	// Plain hosts are written to the caller's writers as they are found. JSON,
+	// -cs, -nW and -oI stay batched because their lines depend on later results.
+	stream := !r.options.JSON && !r.options.CaptureSources && !r.options.RemoveWildcard && !r.options.HostIP
+	var streamErr error
 	skippedCounts := make(map[string]int)
 	// Process the results in a separate goroutine
 	go func() {
@@ -114,6 +118,9 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 					}
 
 					uniqueMap[subdomain] = hostEntry
+					if stream && streamErr == nil {
+						streamErr = r.writeHostLine(writers, hostEntry.Host)
+					}
 					// If the user asked to remove wildcard then send on the resolve
 					// queue. Otherwise, if mode is not verbose print the results on
 					// the screen as they are discovered.
@@ -169,6 +176,11 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 		}
 	}
 
+	if streamErr != nil {
+		gologger.Error().Msgf("Could not write results for %s: %s\n", domain, streamErr)
+		return nil, streamErr
+	}
+
 	if r.outputMu != nil {
 		r.outputMu.Lock()
 		defer r.outputMu.Unlock()
@@ -208,6 +220,11 @@ func (r *Runner) EnumerateSingleDomainWithCtx(ctx context.Context, domain string
 	var err error
 
 	for _, writer := range writers {
+		// A per-domain file is not shared with other workers, so it is written
+		// once here; the other writers already received the streamed hosts.
+		if stream && (file == nil || writer != io.Writer(file)) {
+			continue
+		}
 		if r.options.HostIP {
 			err = outputWriter.WriteHostIP(domain, foundResults, writer)
 		} else {
@@ -285,4 +302,19 @@ func (r *Runner) filterAndMatchSubdomain(subdomain string) bool {
 	}
 
 	return true
+}
+
+// writeHostLine writes one streamed host to every writer, holding the batch
+// output lock so lines from concurrent domains do not interleave.
+func (r *Runner) writeHostLine(writers []io.Writer, host string) error {
+	if r.outputMu != nil {
+		r.outputMu.Lock()
+		defer r.outputMu.Unlock()
+	}
+	for _, writer := range writers {
+		if _, err := io.WriteString(writer, host+"\n"); err != nil {
+			return err
+		}
+	}
+	return nil
 }
