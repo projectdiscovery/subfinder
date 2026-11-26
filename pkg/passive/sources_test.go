@@ -50,7 +50,6 @@ var (
 		"shodanct",
 		"sitedossier",
 		"threatbook",
-		"threatcrowd",
 		"virustotal",
 		"waybackarchive",
 		"whoisxmlapi",
