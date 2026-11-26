@@ -104,7 +104,6 @@ func newSources() [50]subscraping.Source {
 		// &reconcloud.Source{}, // failing due to cloudflare bot protection
 		&reconeer.Source{},
 		&redhuntlabs.Source{},
-		// &riddler.Source{}, // failing due to cloudfront protection
 		&robtex.Source{},
 		&scanmalware.Source{},
 		&securitytrails.Source{},
@@ -114,7 +113,6 @@ func newSources() [50]subscraping.Source {
 		&subdomaincenter.Source{},
 		&thc.Source{},
 		&threatbook.Source{},
-		// &threatminer.Source{}, // failing  api
 		&urlscan.Source{},
 		&virustotal.Source{},
 		&waybackarchive.Source{},

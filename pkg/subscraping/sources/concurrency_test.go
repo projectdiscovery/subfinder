@@ -52,7 +52,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/reconcloud"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/reconeer"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/redhuntlabs"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/riddler"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/robtex"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/scanmalware"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/securitytrails"
@@ -62,7 +61,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/subdomaincenter"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/thc"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatbook"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatminer"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/urlscan"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive"
@@ -450,7 +448,6 @@ func concurrencySources() []subscraping.Source {
 		&reconcloud.Source{},
 		&reconeer.Source{},
 		&redhuntlabs.Source{},
-		&riddler.Source{},
 		&robtex.Source{},
 		&scanmalware.Source{},
 		&securitytrails.Source{},
@@ -460,7 +457,6 @@ func concurrencySources() []subscraping.Source {
 		&subdomaincenter.Source{},
 		&thc.Source{},
 		&threatbook.Source{},
-		&threatminer.Source{},
 		&urlscan.Source{},
 		&virustotal.Source{},
 		&waybackarchive.Source{},
