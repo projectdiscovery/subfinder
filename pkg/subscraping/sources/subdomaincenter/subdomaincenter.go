@@ -4,6 +4,7 @@ package subdomaincenter
 import (
 	"context"
 	"encoding/json"
+	"net/http"
 	"net/url"
 	"slices"
 	"strconv"
@@ -32,9 +33,10 @@ type Source struct {
 
 // page is one response from the cuttlefish engine.
 type page struct {
-	names      []string
-	truncated  bool
-	nextOffset int
+	names         []string
+	truncated     bool
+	nextOffset    int
+	authenticated bool
 }
 
 // Run function returns all subdomains found with the service
@@ -54,21 +56,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		apiKey, crawl := parseAPIKey(subscraping.PickRandom(apiKeys, s.Name()))
-		authenticated := apiKey != ""
-
-		headers := map[string]string{"Accept": "application/json"}
-		if authenticated {
-			// The key travels in a header only: the API rejects it as a query
-			// parameter so it cannot leak through proxy, browser or CDN logs.
-			headers["X-API-Key"] = apiKey
-		}
+		keys := subscraping.NewKeyRing(apiKeys)
 
 		for offset := 0; ; {
-			// A live crawl is billed against its own quota and is cooled down
-			// per domain, so it is only worth asking for once, on the first page.
-			stats.Requests++
-			current, err := fetchPage(ctx, session, domain, headers, authenticated, offset, crawl && authenticated && offset == 0)
+			current, err := fetchPage(ctx, session, keys, domain, offset, &stats)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				stats.Errors++
@@ -91,7 +82,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 			// The anonymous tier ignores limit/offset and always answers with a
 			// single capped sample, so there is nothing to page through.
-			if !authenticated || !current.truncated || len(current.names) == 0 {
+			if !current.authenticated || !current.truncated || len(current.names) == 0 {
 				return
 			}
 			offset = current.nextOffset
@@ -102,20 +93,33 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 }
 
 // fetchPage returns one page of the cuttlefish result set for the domain.
-func fetchPage(ctx context.Context, session *subscraping.Session, domain string, headers map[string]string, authenticated bool, offset int, crawl bool) (*page, error) {
-	query := url.Values{}
-	query.Set("domain", domain)
-	query.Set("engine", "cuttlefish")
-	if authenticated {
-		query.Set("limit", strconv.Itoa(pageSize))
-		query.Set("offset", strconv.Itoa(offset))
-	}
-	if crawl {
-		query.Set("crawl", "true")
-	}
-	requestURL := "https://api.subdomain.center/?" + query.Encode()
+func fetchPage(ctx context.Context, session *subscraping.Session, keys *subscraping.KeyRing[string], domain string, offset int, stats *subscraping.Statistics) (*page, error) {
+	var authenticated bool
+	request := func(key string) (*http.Response, error) {
+		apiKey, crawl := parseAPIKey(key)
+		authenticated = apiKey != ""
 
-	resp, err := session.Get(ctx, requestURL, "", headers)
+		headers := map[string]string{"Accept": "application/json"}
+		query := url.Values{}
+		query.Set("domain", domain)
+		query.Set("engine", "cuttlefish")
+		if authenticated {
+			// The key travels in a header only: the API rejects it as a query
+			// parameter so it cannot leak through proxy, browser or CDN logs.
+			headers["X-API-Key"] = apiKey
+			query.Set("limit", strconv.Itoa(pageSize))
+			query.Set("offset", strconv.Itoa(offset))
+		}
+		// A live crawl is billed against its own quota and is cooled down
+		// per domain, so it is only worth asking for once, on the first page.
+		if crawl && authenticated && offset == 0 {
+			query.Set("crawl", "true")
+		}
+		stats.Requests++
+		return session.Get(ctx, "https://api.subdomain.center/?"+query.Encode(), "", headers)
+	}
+
+	resp, err := keys.Do(session, request)
 	if err != nil {
 		session.DiscardHTTPResponse(resp)
 		return nil, err
@@ -128,8 +132,9 @@ func fetchPage(ctx context.Context, session *subscraping.Session, domain string,
 	}
 
 	current := &page{
-		names:     names,
-		truncated: strings.EqualFold(resp.Header.Get("X-Truncated"), "true"),
+		names:         names,
+		truncated:     strings.EqualFold(resp.Header.Get("X-Truncated"), "true"),
+		authenticated: authenticated,
 		// Crawl-sourced names are added on top of the requested page, so the
 		// response can hold more names than the page actually advanced by.
 		nextOffset: offset + len(names),

@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"net/http"
 	"slices"
 	"sync"
 	"time"
@@ -37,13 +38,16 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}(time.Now())
 
 		htSearchUrl := fmt.Sprintf("https://api.hackertarget.com/hostsearch/?q=%s", domain)
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey != "" {
-			htSearchUrl = fmt.Sprintf("%s&apikey=%s", htSearchUrl, randomApiKey)
+		search := func(key string) (*http.Response, error) {
+			searchURL := htSearchUrl
+			if key != "" {
+				searchURL = fmt.Sprintf("%s&apikey=%s", htSearchUrl, key)
+			}
+			stats.Requests++
+			return session.SimpleGet(ctx, searchURL)
 		}
 
-		stats.Requests++
-		resp, err := session.SimpleGet(ctx, htSearchUrl)
+		resp, err := subscraping.NewKeyRing(apiKeys).Do(session, search)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			stats.Errors++

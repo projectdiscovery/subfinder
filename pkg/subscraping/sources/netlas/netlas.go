@@ -63,8 +63,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}(time.Now())
 
 		// Pick an API key
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
@@ -76,11 +76,13 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		params.Set("q", countQuery)
 		countUrl := endpoint + "?" + params.Encode()
 
-		stats.Requests++
-		resp1, err := session.HTTPRequest(ctx, http.MethodGet, countUrl, "", map[string]string{
-			"accept":    "application/json",
-			"X-API-Key": randomApiKey,
-		}, nil, subscraping.BasicAuth{})
+		resp1, err := keys.Do(session, func(key string) (*http.Response, error) {
+			stats.Requests++
+			return session.HTTPRequest(ctx, http.MethodGet, countUrl, "", map[string]string{
+				"accept":    "application/json",
+				"X-API-Key": key,
+			}, nil, subscraping.BasicAuth{})
+		})
 
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -128,14 +130,13 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			return
 		}
 
-		// Pick an API key
-		randomApiKey = subscraping.PickRandom(apiKeys, s.Name())
-
-		stats.Requests++
-		resp2, err := session.HTTPRequest(ctx, http.MethodPost, apiUrl, "", map[string]string{
-			"accept":       "application/json",
-			"X-API-Key":    randomApiKey,
-			"Content-Type": "application/json"}, strings.NewReader(string(jsonRequestBody)), subscraping.BasicAuth{})
+		resp2, err := keys.Do(session, func(key string) (*http.Response, error) {
+			stats.Requests++
+			return session.HTTPRequest(ctx, http.MethodPost, apiUrl, "", map[string]string{
+				"accept":       "application/json",
+				"X-API-Key":    key,
+				"Content-Type": "application/json"}, strings.NewReader(string(jsonRequestBody)), subscraping.BasicAuth{})
+		})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			stats.Errors++

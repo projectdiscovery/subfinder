@@ -55,8 +55,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		// pagination requests (e.g. to stay within API quotas). 0 = no limit.
 		maxResults := session.MaxResults
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
@@ -71,8 +71,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			if cursor != "" {
 				url = fmt.Sprintf("%s&cursor=%s", url, cursor)
 			}
-			stats.Requests++
-			resp, err := session.Get(ctx, url, "", map[string]string{"x-apikey": randomApiKey})
+			resp, err := keys.Do(session, func(key string) (*http.Response, error) {
+				stats.Requests++
+				return session.Get(ctx, url, "", map[string]string{"x-apikey": key})
+			})
 			if err != nil {
 				// The free tier grants 500 requests/day; once it is exhausted every
 				// call returns HTTP 429. Surface an actionable message instead of the

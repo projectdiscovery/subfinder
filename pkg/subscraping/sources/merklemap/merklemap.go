@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"net/http"
 	"net/url"
 	"slices"
 	"strconv"
@@ -41,29 +42,21 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 		// Pick an API key, skip if no key is found
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
 
-		// Default headers
-		headers := map[string]string{
-			"accept": "application/json",
-			// Set a user agent to prevent random one from pkg/subscraping/agent.go, it triggers the cloudflare protection of the api
-			"User-Agent":    "subfinder",
-			"Authorization": "Bearer " + randomApiKey,
-		}
-
 		// Fetch all pages with pagination
 		// https://www.merklemap.com/documentation/search
-		s.fetchAllPages(ctx, domain, headers, session, results, &stats)
+		s.fetchAllPages(ctx, domain, keys, session, results, &stats)
 	}()
 	return results
 }
 
 // fetchAllPages fetches all pages of results using pagination
-func (s *Source) fetchAllPages(ctx context.Context, domain string, headers map[string]string, session *subscraping.Session, results chan subscraping.Result, stats *subscraping.Statistics) {
+func (s *Source) fetchAllPages(ctx context.Context, domain string, keys *subscraping.KeyRing[string], session *subscraping.Session, results chan subscraping.Result, stats *subscraping.Statistics) {
 	baseURL := "https://api.merklemap.com/v1/search?query=" + url.QueryEscape("*."+domain)
 	totalCount := math.MaxInt
 	processedResults := 0
@@ -74,7 +67,7 @@ func (s *Source) fetchAllPages(ctx context.Context, domain string, headers map[s
 
 	// Iterate through all pages
 	for page := 0; processedResults < totalCount; page++ {
-		pageResp, err := s.fetchPage(ctx, baseURL, page, headers, session, stats)
+		pageResp, err := s.fetchPage(ctx, baseURL, page, keys, session, stats)
 
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
@@ -106,11 +99,18 @@ func (s *Source) fetchAllPages(ctx context.Context, domain string, headers map[s
 }
 
 // fetchPage fetches a single page of results
-func (s *Source) fetchPage(ctx context.Context, baseURL string, page int, headers map[string]string, session *subscraping.Session, stats *subscraping.Statistics) (*response, error) {
+func (s *Source) fetchPage(ctx context.Context, baseURL string, page int, keys *subscraping.KeyRing[string], session *subscraping.Session, stats *subscraping.Statistics) (*response, error) {
 	url := baseURL + "&page=" + strconv.Itoa(page)
 
-	stats.Requests++
-	resp, err := session.Get(ctx, url, "", headers)
+	resp, err := keys.Do(session, func(key string) (*http.Response, error) {
+		stats.Requests++
+		return session.Get(ctx, url, "", map[string]string{
+			"accept": "application/json",
+			// Set a user agent to prevent random one from pkg/subscraping/agent.go, it triggers the cloudflare protection of the api
+			"User-Agent":    "subfinder",
+			"Authorization": "Bearer " + key,
+		})
+	})
 	// Registered before the error check: a non-200 reply comes back as a
 	// response and an error together, and returning here would leave that body
 	// undrained. DiscardHTTPResponse ignores a nil response.

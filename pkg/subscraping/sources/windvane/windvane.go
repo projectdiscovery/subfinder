@@ -57,13 +57,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
-
-		headers := map[string]string{"Content-Type": "application/json", "X-Api-Key": randomApiKey}
 
 		// Honor an optional per-source result limit (0 = no limit) so a single
 		// domain can't drain an API quota by paginating to the end.
@@ -81,9 +79,11 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			var err error
 
 			requestBody, _ := json.Marshal(map[string]interface{}{"domain": domain, "page_request": map[string]int{"page": page, "count": count}})
-			stats.Requests++
-			resp, err = session.Post(ctx, "https://windvane.lichoin.com/trpc.backendhub.public.WindvaneService/ListSubDomain",
-				"", headers, bytes.NewReader(requestBody))
+			resp, err = keys.Do(session, func(key string) (*http.Response, error) {
+				stats.Requests++
+				return session.Post(ctx, "https://windvane.lichoin.com/trpc.backendhub.public.WindvaneService/ListSubDomain",
+					"", map[string]string{"Content-Type": "application/json", "X-Api-Key": key}, bytes.NewReader(requestBody))
+			})
 
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"slices"
 	"sync"
 	"time"
@@ -40,18 +41,20 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
 
 		// The request goes through the session like every other source, so it
 		// honors -proxy, -timeout, the rate limits and -max-response-body-size.
-		stats.Requests++
-		resp, err := session.Get(ctx, fmt.Sprintf("%s/%s/subdomains", baseURL, domain), "", map[string]string{
-			"Authorization": randomApiKey,
-			"Accept":        "application/json",
+		resp, err := keys.Do(session, func(key string) (*http.Response, error) {
+			stats.Requests++
+			return session.Get(ctx, fmt.Sprintf("%s/%s/subdomains", baseURL, domain), "", map[string]string{
+				"Authorization": key,
+				"Accept":        "application/json",
+			})
 		})
 		// Registered before the error check: a non-200 reply comes back as a
 		// response and an error together. DiscardHTTPResponse ignores nil.

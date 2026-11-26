@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 	"slices"
 	"strconv"
@@ -67,8 +68,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 
 		sourceName := s.Name()
 
-		randomApiKey := subscraping.PickRandom(apiKeys, sourceName)
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
@@ -77,18 +78,22 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		// domain can't drain an API quota by paginating to the end.
 		maxResults := session.MaxResults
 
-		headers := map[string]string{
-			"X-API-KEY": randomApiKey,
-			"Accept":    "application/x-ndjson",
+		headers := func(key string) map[string]string {
+			return map[string]string{
+				"X-API-KEY": key,
+				"Accept":    "application/x-ndjson",
+			}
 		}
 
-		stats.Requests++
-		offsetMax, err := getMaxOffset(ctx, session, headers)
+		offsetMax, err := getMaxOffset(ctx, session, keys, headers, &stats)
 		if err != nil {
 			results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
 			stats.Errors++
 			return
 		}
+		// The offset limit belongs to the key that answered /rate_limit. A
+		// rejected key rotates the ring, so offsetKey tracks the key to compare.
+		offsetKey := keys.Key()
 
 		path := fmt.Sprintf("lookup/rrset/name/*.%s", domain)
 		urlTemplate := fmt.Sprintf("%s/%s?", urlBase, path)
@@ -105,8 +110,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			}
 			url := urlTemplate + queryParams.Encode()
 
-			stats.Requests++
-			resp, err := session.Get(ctx, url, "", headers)
+			resp, err := keys.Do(session, func(key string) (*http.Response, error) {
+				stats.Requests++
+				return session.Get(ctx, url, "", headers(key))
+			})
 			if err != nil {
 				results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
 				stats.Errors++
@@ -168,6 +175,17 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			// 3. anything else - This is an error and should be reported to the user. The user can then decide to use the results up to this
 			// point or discard and retry.
 			if respCond == "limited" {
+				// If rotation moved the ring to another key, its own offset limit
+				// applies to the next page, so re-read it.
+				if servedBy := keys.Key(); servedBy != offsetKey {
+					offsetMax, err = getMaxOffset(ctx, session, keys, headers, &stats)
+					if err != nil {
+						results <- subscraping.Result{Source: sourceName, Type: subscraping.Error, Error: err}
+						stats.Errors++
+						return
+					}
+					offsetKey = keys.Key()
+				}
 				if offsetMax != 0 && resultCount <= offsetMax {
 					// Reset done to false to get more results with an offset query parameter set to resultCount
 					queryParams.Set("offset", strconv.FormatUint(resultCount, 10))
@@ -222,10 +240,13 @@ func (s *Source) Statistics() subscraping.Statistics {
 	return s.stats
 }
 
-func getMaxOffset(ctx context.Context, session *subscraping.Session, headers map[string]string) (uint64, error) {
+func getMaxOffset(ctx context.Context, session *subscraping.Session, keys *subscraping.KeyRing[string], headers func(key string) map[string]string, stats *subscraping.Statistics) (uint64, error) {
 	var offsetMax uint64
 	url := fmt.Sprintf("%s/rate_limit", urlBase)
-	resp, err := session.Get(ctx, url, "", headers)
+	resp, err := keys.Do(session, func(key string) (*http.Response, error) {
+		stats.Requests++
+		return session.Get(ctx, url, "", headers(key))
+	})
 	defer session.DiscardHTTPResponse(resp)
 	if err != nil {
 		return offsetMax, err

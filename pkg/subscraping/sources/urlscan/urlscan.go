@@ -4,6 +4,7 @@ package urlscan
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"net/url"
 	"slices"
 	"strings"
@@ -65,23 +66,21 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
 
-		headers := map[string]string{"api-key": randomApiKey}
-
 		// Search with wildcard to get more subdomain results
-		s.enumerate(ctx, domain, headers, session, results, &stats)
+		s.enumerate(ctx, domain, keys, session, results, &stats)
 	}()
 
 	return results
 }
 
 // enumerate performs the actual enumeration with pagination
-func (s *Source) enumerate(ctx context.Context, domain string, headers map[string]string, session *subscraping.Session, results chan subscraping.Result, stats *subscraping.Statistics) {
+func (s *Source) enumerate(ctx context.Context, domain string, keys *subscraping.KeyRing[string], session *subscraping.Session, results chan subscraping.Result, stats *subscraping.Statistics) {
 	var searchAfter string
 	currentPage := 0
 
@@ -106,8 +105,10 @@ func (s *Source) enumerate(ctx context.Context, domain string, headers map[strin
 			searchURL += "&search_after=" + url.QueryEscape(searchAfter)
 		}
 
-		stats.Requests++
-		resp, err := session.Get(ctx, searchURL, "", headers)
+		resp, err := keys.Do(session, func(key string) (*http.Response, error) {
+			stats.Requests++
+			return session.Get(ctx, searchURL, "", map[string]string{"api-key": key})
+		})
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			stats.Errors++

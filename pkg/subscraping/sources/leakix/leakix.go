@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"slices"
 	"sync"
 	"time"
@@ -35,20 +36,19 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			s.mu.Unlock()
 			close(results)
 		}(time.Now())
-		// Default headers
-		headers := map[string]string{
-			"accept": "application/json",
-		}
-		// Pick an API key
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
-		headers["api-key"] = randomApiKey
 		// Request
-		stats.Requests++
-		resp, err := session.Get(ctx, "https://leakix.net/api/subdomains/"+domain, "", headers)
+		resp, err := keys.Do(session, func(key string) (*http.Response, error) {
+			stats.Requests++
+			return session.Get(ctx, "https://leakix.net/api/subdomains/"+domain, "", map[string]string{
+				"accept":  "application/json",
+				"api-key": key,
+			})
+		})
 		// Registered before the error check: a non-200 reply comes back as a
 		// response and an error together, and returning here would leave that
 		// body undrained. DiscardHTTPResponse ignores a nil response.
