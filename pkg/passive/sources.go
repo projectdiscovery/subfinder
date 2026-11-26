@@ -68,7 +68,7 @@ import (
 
 var AllSources = newSources()
 
-func newSources() [53]subscraping.Source {
+func newSources() [52]subscraping.Source {
 	return [...]subscraping.Source{
 		&alienvault.Source{},
 		&anubis.Source{},
