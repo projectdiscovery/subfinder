@@ -25,7 +25,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtname"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtsh"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitalyama"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitorus"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdb"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdumpster"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsrepo"
@@ -67,7 +66,7 @@ import (
 
 var AllSources = newSources()
 
-func newSources() [51]subscraping.Source {
+func newSources() [50]subscraping.Source {
 	return [...]subscraping.Source{
 		&alienvault.Source{},
 		&anubis.Source{},
@@ -83,7 +82,6 @@ func newSources() [51]subscraping.Source {
 		&crtname.Source{},
 		&crtsh.Source{},
 		&digitalyama.Source{},
-		&digitorus.Source{},
 		&dnsdb.Source{},
 		&dnsdumpster.Source{},
 		&dnsrepo.Source{},

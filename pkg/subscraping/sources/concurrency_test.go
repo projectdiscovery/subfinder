@@ -29,7 +29,6 @@ import (
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtname"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/crtsh"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitalyama"
-	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/digitorus"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdb"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsdumpster"
 	"github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/dnsrepo"
@@ -428,7 +427,6 @@ func concurrencySources() []subscraping.Source {
 		&crtname.Source{},
 		&crtsh.Source{},
 		&digitalyama.Source{},
-		&digitorus.Source{},
 		&dnsdb.Source{},
 		&dnsdumpster.Source{},
 		&dnsrepo.Source{},
