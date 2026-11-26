@@ -32,11 +32,9 @@ func TestSourcesWithoutKeys(t *testing.T) {
 		"alienvault",      // 503 Service Temporarily Unavailable
 		"dnsdumpster",     // failing with "unexpected status code 403 received"
 		"anubis",          // previously failed on jonlu.ca (Cloudflare 403 / redirects); endpoint moved to anubisdb.com
-		"threatcrowd",     // failing with "randomly failing with unmarshal error when hit multiple times"
 		"leakix",          // now requires API key (returns 401)
 		"reconeer",        // now requires API key (returns 401)
 		"sitedossier",     // flaky - returns no results in CI
-		"submd",           // origin is unavailable (Cloudflare 522/523)
 		"subdomaincenter", // anonymous API returns 503 "server busy" from shared CI addresses
 	}
 

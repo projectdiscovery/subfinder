@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/http"
 	"slices"
 	"strings"
 	"sync"
@@ -56,8 +57,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
@@ -78,10 +79,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			default:
 			}
 			var requestBody = fmt.Appendf(nil, `{"query":"domain: %s", "include":["service.http.host"], "latest": true, "size":%d, "start":%d}`, domain, pageSize, start)
-			stats.Requests++
-			resp, err := session.Post(ctx, "https://quake.360.net/api/v3/search/quake_service", "", map[string]string{
-				"Content-Type": "application/json", "X-QuakeToken": randomApiKey,
-			}, bytes.NewReader(requestBody))
+			resp, err := keys.Do(session, func(key string) (*http.Response, error) {
+				stats.Requests++
+				return session.Post(ctx, "https://quake.360.net/api/v3/search/quake_service", "", map[string]string{
+					"Content-Type": "application/json", "X-QuakeToken": key,
+				}, bytes.NewReader(requestBody))
+			})
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				stats.Errors++

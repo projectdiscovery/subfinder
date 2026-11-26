@@ -42,7 +42,6 @@ var (
 		"redhuntlabs",
 		// "riddler", // failing due to cloudfront protection
 		"robtex",
-		"rsecloud",
 		"scanmalware",
 		"securitytrails",
 		"profundis",
@@ -50,7 +49,6 @@ var (
 		"shodanct",
 		"sitedossier",
 		"threatbook",
-		"threatcrowd",
 		"virustotal",
 		"waybackarchive",
 		"whoisxmlapi",
@@ -66,7 +64,6 @@ var (
 		"merklemap",
 		"thc",
 		"urlscan",
-		"submd",
 		"subdomaincenter",
 	}
 
@@ -95,7 +92,6 @@ var (
 		"redhuntlabs",
 		"robtex",
 		// "riddler", // failing due to cloudfront protection
-		"rsecloud",
 		"scanmalware",
 		"securitytrails",
 		"profundis",
@@ -111,7 +107,6 @@ var (
 		"builtwith",
 		"digitalyama",
 		"urlscan",
-		"submd",
 		"subdomaincenter",
 	}
 

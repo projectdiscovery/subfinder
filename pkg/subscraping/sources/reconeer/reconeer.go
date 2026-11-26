@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"slices"
 	"sync"
 	"time"
@@ -44,13 +45,15 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		headers := map[string]string{
 			"Accept": "application/json",
 		}
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey != "" {
-			headers["X-API-KEY"] = randomApiKey
-		}
 		apiURL := fmt.Sprintf("https://www.reconeer.com/api/domain/%s", domain)
-		stats.Requests++
-		resp, err := session.Get(ctx, apiURL, "", headers)
+		get := func(key string) (*http.Response, error) {
+			if key != "" {
+				headers["X-API-KEY"] = key
+			}
+			stats.Requests++
+			return session.Get(ctx, apiURL, "", headers)
+		}
+		resp, err := subscraping.NewKeyRing(apiKeys).Do(session, get)
 		// Registered before the error check: a non-200 reply comes back as a
 		// response and an error together, and returning here would leave that
 		// body undrained. DiscardHTTPResponse ignores a nil response.

@@ -40,8 +40,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
-		stats.Requests++
-		resp, err := s.fetch(ctx, domain, session, apiKeys)
+		resp, err := s.fetch(ctx, domain, session, apiKeys, &stats)
 		if err != nil {
 			results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 			stats.Errors++
@@ -86,13 +85,16 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 	return results
 }
 
-func (s *Source) fetch(ctx context.Context, domain string, session *subscraping.Session, apiKeys []string) (*http.Response, error) {
+func (s *Source) fetch(ctx context.Context, domain string, session *subscraping.Session, apiKeys []string, stats *subscraping.Statistics) (*http.Response, error) {
 	endpoint := searchURL + url.QueryEscape(domain)
-	headers := map[string]string{"User-Agent": "subfinder"}
-	if len(apiKeys) > 0 {
-		headers["Authorization"] = "Bearer " + subscraping.PickRandom(apiKeys, s.Name())
-	}
-	return session.Get(ctx, endpoint, "", headers)
+	return subscraping.NewKeyRing(apiKeys).Do(session, func(key string) (*http.Response, error) {
+		headers := map[string]string{"User-Agent": "subfinder"}
+		if key != "" {
+			headers["Authorization"] = "Bearer " + key
+		}
+		stats.Requests++
+		return session.Get(ctx, endpoint, "", headers)
+	})
 }
 
 // Name returns the name of the source

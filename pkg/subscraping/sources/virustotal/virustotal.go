@@ -55,8 +55,8 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		// pagination requests (e.g. to stay within API quotas). 0 = no limit.
 		maxResults := session.MaxResults
 
-		randomApiKey := subscraping.PickRandom(apiKeys, s.Name())
-		if randomApiKey == "" {
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
 			stats.Skipped = true
 			return
 		}
@@ -71,15 +71,20 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			if cursor != "" {
 				url = fmt.Sprintf("%s&cursor=%s", url, cursor)
 			}
-			stats.Requests++
-			resp, err := session.Get(ctx, url, "", map[string]string{"x-apikey": randomApiKey})
+			resp, err := keys.Do(session, func(key string) (*http.Response, error) {
+				stats.Requests++
+				return session.Get(ctx, url, "", map[string]string{"x-apikey": key})
+			})
 			if err != nil {
 				// The free tier grants 500 requests/day; once it is exhausted every
 				// call returns HTTP 429. Surface an actionable message instead of the
 				// generic "unexpected status code 429" so operators know to supply an
 				// enterprise key or lower the scope (see #1718).
 				if resp != nil && resp.StatusCode == http.StatusTooManyRequests {
-					err = fmt.Errorf("virustotal quota exhausted (HTTP 429); some subdomains for %s may be missing", domain)
+					// Wrap the status error so callers such as -check-keys can
+					// still classify the 429 as rate-limited.
+					err = fmt.Errorf("virustotal quota exhausted (HTTP 429); some subdomains for %s may be missing: %w", domain,
+						&subscraping.StatusCodeError{StatusCode: http.StatusTooManyRequests, URL: url})
 				}
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				stats.Errors++
