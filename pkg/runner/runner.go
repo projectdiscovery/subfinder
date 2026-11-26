@@ -30,6 +30,7 @@ import (
 type Runner struct {
 	options           *Options
 	passiveAgent      *passive.Agent
+	providerKeys      map[string][]string
 	resolverClient    *resolve.Resolver
 	rateLimit         *subscraping.CustomRateLimit
 	newPassiveAgent   func() *passive.Agent
@@ -101,6 +102,19 @@ func (r *Runner) RunEnumeration() error {
 
 // RunEnumerationWithCtx runs the subdomain enumeration flow on the targets specified
 func (r *Runner) RunEnumerationWithCtx(ctx context.Context) error {
+	if r.options.CheckKeys {
+		writer := r.options.Output
+		if r.options.OutputFile != "" {
+			file, err := NewOutputWriter(r.options.JSON).createFile(r.options.OutputFile, false)
+			if err != nil {
+				return err
+			}
+			defer func() { _ = file.Close() }()
+			writer = io.MultiWriter(r.options.Output, file)
+		}
+		return r.CheckKeys(ctx, writer)
+	}
+
 	outputs := []io.Writer{r.options.Output}
 
 	if len(r.options.Domain) > 0 {

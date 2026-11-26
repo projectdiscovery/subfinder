@@ -79,7 +79,10 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				// generic "unexpected status code 429" so operators know to supply an
 				// enterprise key or lower the scope (see #1718).
 				if resp != nil && resp.StatusCode == http.StatusTooManyRequests {
-					err = fmt.Errorf("virustotal quota exhausted (HTTP 429); some subdomains for %s may be missing", domain)
+					// Wrap the status error so callers such as -check-keys can
+					// still classify the 429 as rate-limited.
+					err = fmt.Errorf("virustotal quota exhausted (HTTP 429); some subdomains for %s may be missing: %w", domain,
+						&subscraping.StatusCodeError{StatusCode: http.StatusTooManyRequests, URL: url})
 				}
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
 				stats.Errors++
