@@ -103,7 +103,16 @@ func (r *Runner) RunEnumeration() error {
 // RunEnumerationWithCtx runs the subdomain enumeration flow on the targets specified
 func (r *Runner) RunEnumerationWithCtx(ctx context.Context) error {
 	if r.options.CheckKeys {
-		return r.CheckKeys(ctx, r.options.Output)
+		writer := r.options.Output
+		if r.options.OutputFile != "" {
+			file, err := NewOutputWriter(r.options.JSON).createFile(r.options.OutputFile, false)
+			if err != nil {
+				return err
+			}
+			defer func() { _ = file.Close() }()
+			writer = io.MultiWriter(r.options.Output, file)
+		}
+		return r.CheckKeys(ctx, writer)
 	}
 
 	outputs := []io.Writer{r.options.Output}

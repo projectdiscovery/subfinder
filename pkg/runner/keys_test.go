@@ -3,8 +3,11 @@ package runner
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
@@ -101,4 +104,64 @@ func TestCheckKeys(t *testing.T) {
 func TestRedactKey(t *testing.T) {
 	message := `Get "https://api.example/?email=me@example.com&key=s3cr3t": dial tcp: timeout`
 	require.Equal(t, `Get "https://api.example/?email=[redacted]&key=[redacted]": dial tcp: timeout`, redactKey(message, "me@example.com:s3cr3t"))
+}
+
+// silentSource accepts any key and returns nothing, like a quota body or a
+// timeout does. Its key must not be reported as valid.
+type silentSource struct{}
+
+func (*silentSource) Run(_ context.Context, _ string, _ *subscraping.Session) <-chan subscraping.Result {
+	results := make(chan subscraping.Result)
+	close(results)
+	return results
+}
+func (*silentSource) Name() string                               { return "test-silent" }
+func (*silentSource) IsDefault() bool                            { return false }
+func (*silentSource) HasRecursiveSupport() bool                  { return false }
+func (*silentSource) NeedsKey() bool                             { return true }
+func (*silentSource) KeyRequirement() subscraping.KeyRequirement { return subscraping.RequiredKey }
+func (*silentSource) AddApiKeys([]string)                        {}
+func (*silentSource) Statistics() subscraping.Statistics         { return subscraping.Statistics{} }
+
+func TestCheckKeysNoResultIsUnverified(t *testing.T) {
+	source := &silentSource{}
+	name := source.Name()
+	passive.NameSourceMap[name] = source
+	t.Cleanup(func() { delete(passive.NameSourceMap, name) })
+
+	r := &Runner{
+		options:      &Options{Timeout: 5, JSON: true, Sources: []string{name}},
+		providerKeys: map[string][]string{name: {"unconfirmed-key"}},
+	}
+	var out strings.Builder
+	require.NoError(t, r.CheckKeys(context.Background(), &out))
+	require.Contains(t, out.String(), `"status":"unverified"`)
+	require.NotContains(t, out.String(), `"status":"valid"`)
+}
+
+func TestRedactKeyQuotedAndShortParts(t *testing.T) {
+	// A key with a newline reaches the error quoted, as \n.
+	require.Equal(t, `Get "https://api.example/?k=[redacted]": refused`,
+		redactKey(`Get "https://api.example/?k=abc\ndef-secret": refused`, "abc\ndef-secret"))
+	// A short part (under minRedactLen) must not mangle unrelated text.
+	require.Equal(t, `reason: abx [redacted]`, redactKey("reason: abx verylongsecret", "ab:verylongsecret"))
+}
+
+// -check-keys with -o must write the report to the file, not only to stdout.
+func TestCheckKeysWritesOutputFile(t *testing.T) {
+	source := &silentSource{}
+	name := source.Name()
+	passive.NameSourceMap[name] = source
+	t.Cleanup(func() { delete(passive.NameSourceMap, name) })
+
+	file := filepath.Join(t.TempDir(), "keys.json")
+	r := &Runner{
+		options: &Options{Timeout: 5, JSON: true, CheckKeys: true, Sources: []string{name},
+			OutputFile: file, Output: io.Discard},
+		providerKeys: map[string][]string{name: {"unconfirmed-key"}},
+	}
+	require.NoError(t, r.RunEnumerationWithCtx(context.Background()))
+	data, err := os.ReadFile(file)
+	require.NoError(t, err)
+	require.Contains(t, string(data), `"status":"unverified"`)
 }

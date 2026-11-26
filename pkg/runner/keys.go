@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -31,6 +33,9 @@ const (
 	KeyError       KeyStatus = "error"
 	// KeySkipped means the source did not use the key, usually a malformed one.
 	KeySkipped KeyStatus = "skipped"
+	// KeyUnverified means the probe got no error and no result, so the key
+	// could not be confirmed. A timeout or a quota body lands here too.
+	KeyUnverified KeyStatus = "unverified"
 )
 
 // KeyCheck is the result of probing one configured key of a source.
@@ -82,18 +87,30 @@ func (r *Runner) checkKeys(ctx context.Context) []KeyCheck {
 		wg     sync.WaitGroup
 	)
 	for _, name := range r.keyedSources() {
+		keys := r.providerKeys[name]
+		// One budget per source, shared by all of its keys, so the source's
+		// rate limit holds across the probes.
+		base := passive.NewWithProviderConfig([]string{name}, nil, false, false, map[string][]string{name: keys})
+		limiter, err := base.NewRateLimiter(ctx, r.options.RateLimit, r.rateLimit)
+		if err != nil {
+			mu.Lock()
+			checks = append(checks, KeyCheck{Source: name, Status: KeyError, Error: err.Error()})
+			mu.Unlock()
+			continue
+		}
 		wg.Add(1)
 		// Keys of one source run in sequence to respect its rate limit.
-		go func(name string, keys []string) {
+		go func(name string, keys []string, limiter *passive.RateLimiter) {
 			defer wg.Done()
+			defer func() { _ = limiter.Close() }()
 			for i, key := range keys {
-				check := r.probeKey(ctx, name, key, domain)
+				check := r.probeKey(ctx, name, key, domain, limiter)
 				check.Key = i + 1
 				mu.Lock()
 				checks = append(checks, check)
 				mu.Unlock()
 			}
-		}(name, r.providerKeys[name])
+		}(name, keys, limiter)
 	}
 	wg.Wait()
 
@@ -122,33 +139,37 @@ func (r *Runner) keyedSources() []string {
 	return names
 }
 
-func (r *Runner) probeKey(ctx context.Context, name, key, domain string) KeyCheck {
+func (r *Runner) probeKey(ctx context.Context, name, key, domain string, limiter *passive.RateLimiter) KeyCheck {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	agent := passive.NewWithProviderConfig([]string{name}, nil, false, false, map[string][]string{name: {key}})
 	results := agent.EnumerateSubdomainsWithCtx(ctx, domain, r.options.Proxy, r.options.RateLimit, r.options.Timeout,
 		time.Duration(r.options.Timeout)*time.Second,
-		passive.WithCustomRateLimit(r.rateLimit),
+		passive.WithRateLimiter(limiter),
 		passive.WithMaxResults(1),
 		passive.WithMaxResponseBodySize(int64(r.options.MaxResponseBodySize)),
 	)
 
-	check := KeyCheck{Source: name, Status: KeyValid}
+	// A key is valid only when the source returned a result for it. No error
+	// and no result (a quota body, a timeout) cannot confirm the key.
+	check := KeyCheck{Source: name, Status: KeyUnverified}
 	var firstErr error
 	for result := range results {
 		switch result.Type {
 		case subscraping.Subdomain:
 			// One result proves the key works; stop spending its quota.
+			check.Status = KeyValid
 			firstErr = nil
 			cancel()
 		case subscraping.Error:
-			if firstErr == nil && ctx.Err() == nil {
+			if check.Status != KeyValid && firstErr == nil && ctx.Err() == nil {
 				firstErr = result.Error
 			}
 		}
 	}
 	switch {
+	case check.Status == KeyValid:
 	case firstErr != nil:
 		check.Status, check.Error = classifyKeyError(firstErr, key)
 	case agent.GetStatistics()[name].Skipped:
@@ -172,12 +193,24 @@ func classifyKeyError(err error, key string) (KeyStatus, string) {
 	return KeyError, redactKey(err.Error(), key)
 }
 
+// minRedactLen keeps short fragments of a key from mangling unrelated text.
+const minRedactLen = 6
+
 // redactKey removes the key from an error message, since sources often put it
 // in the request URL. Multi-part keys ("user:secret") are redacted per part.
+// Each part is also redacted in its escaped and URL-encoded forms, because Go
+// quotes a key with a newline or special characters before it reaches the error.
 func redactKey(message, key string) string {
 	for _, part := range append([]string{key}, strings.Split(key, ":")...) {
-		if part != "" {
-			message = strings.ReplaceAll(message, part, "[redacted]")
+		if len(part) < minRedactLen {
+			continue
+		}
+		forms := []string{part, url.QueryEscape(part), url.PathEscape(part)}
+		if quoted := strconv.Quote(part); len(quoted) >= 2 {
+			forms = append(forms, quoted[1:len(quoted)-1])
+		}
+		for _, form := range forms {
+			message = strings.ReplaceAll(message, form, "[redacted]")
 		}
 	}
 	return message
