@@ -35,6 +35,7 @@ func TestSourcesWithoutKeys(t *testing.T) {
 		"reconeer",        // now requires API key (returns 401)
 		"sitedossier",     // flaky - returns no results in CI
 		"subdomaincenter", // anonymous API returns 503 "server busy" from shared CI addresses
+		"shodanct",        // ends with EOF from GitHub runners
 	}
 
 	domain := "hackerone.com"
