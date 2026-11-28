@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"slices"
 	"strconv"
@@ -96,6 +97,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			err = json.NewDecoder(resp.Body).Decode(&windvaneResponse)
 			if err != nil {
 				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				stats.Errors++
+				session.DiscardHTTPResponse(resp)
+				return
+			}
+
+			// The API reports failures with HTTP 200 and a non-zero code.
+			if windvaneResponse.Code != 0 {
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("api error code %d: %s", windvaneResponse.Code, windvaneResponse.Msg)}
 				stats.Errors++
 				session.DiscardHTTPResponse(resp)
 				return

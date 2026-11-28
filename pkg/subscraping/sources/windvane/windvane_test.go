@@ -166,3 +166,18 @@ func TestWindvaneSource_HonorsMaxResults(t *testing.T) {
 		})
 	}
 }
+
+// The API reports failures with HTTP 200 and a non-zero code.
+func TestWindvaneSource_ReportsAPIError(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = fmt.Fprint(w, `{"code":999,"msg":"rpc error: code = Unimplemented","data":null}`)
+	}))
+	t.Cleanup(server.Close)
+
+	subs, errs := runSource(t, server)
+
+	assert.Empty(t, subs)
+	require.Len(t, errs, 1)
+	assert.Contains(t, errs[0].Error(), "999")
+	assert.Contains(t, errs[0].Error(), "rpc error: code = Unimplemented")
+}
