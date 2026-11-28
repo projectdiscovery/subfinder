@@ -42,18 +42,22 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			close(results)
 		}(time.Now())
 
+		keys := subscraping.NewKeyRing(apiKeys)
+		if keys.Empty() {
+			stats.Skipped = true
+			return
+		}
+
 		headers := map[string]string{
 			"Accept": "application/json",
 		}
 		apiURL := fmt.Sprintf("https://www.reconeer.com/api/domain/%s", domain)
 		get := func(key string) (*http.Response, error) {
-			if key != "" {
-				headers["X-API-KEY"] = key
-			}
+			headers["X-API-KEY"] = key
 			stats.Requests++
 			return session.Get(ctx, apiURL, "", headers)
 		}
-		resp, err := subscraping.NewKeyRing(apiKeys).Do(session, get)
+		resp, err := keys.Do(session, get)
 		// Registered before the error check: a non-200 reply comes back as a
 		// response and an error together, and returning here would leave that
 		// body undrained. DiscardHTTPResponse ignores a nil response.
@@ -102,7 +106,7 @@ func (s *Source) HasRecursiveSupport() bool {
 }
 
 func (s *Source) KeyRequirement() subscraping.KeyRequirement {
-	return subscraping.OptionalKey
+	return subscraping.RequiredKey
 }
 
 func (s *Source) NeedsKey() bool {
