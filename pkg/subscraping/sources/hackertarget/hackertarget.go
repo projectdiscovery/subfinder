@@ -4,9 +4,11 @@ package hackertarget
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -63,6 +65,7 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 		}()
 
 		scanner := bufio.NewScanner(resp.Body)
+		firstLine := true
 		for scanner.Scan() {
 			select {
 			case <-ctx.Done():
@@ -72,6 +75,14 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 			line := scanner.Text()
 			if line == "" {
 				continue
+			}
+			if firstLine {
+				firstLine = false
+				if isErrorBody(line) {
+					results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: errors.New(line)}
+					stats.Errors++
+					return
+				}
 			}
 			match := session.Extractor.Extract(line)
 			for _, subdomain := range match {
@@ -120,4 +131,12 @@ func (s *Source) Statistics() subscraping.Statistics {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.stats
+}
+
+// isErrorBody reports whether the first line of a response is an API error.
+// The API sends errors such as "error invalid key" and "API count exceeded"
+// with HTTP 200, so the status code alone does not reveal them.
+func isErrorBody(line string) bool {
+	line = strings.ToLower(line)
+	return strings.HasPrefix(line, "error") || strings.HasPrefix(line, "api count exceeded")
 }
